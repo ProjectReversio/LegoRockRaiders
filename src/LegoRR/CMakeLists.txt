@@ -7,8 +7,12 @@ set(MAIN_SRC
     main.c
 
     # Headers
+    resource/resource.h
     main.h
     ../Shared/types.h
+
+    # Resource
+    resource/LegoRR.rc
 )
 
 add_executable(LegoRR WIN32 ${MAIN_SRC})

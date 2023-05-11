@@ -7,7 +7,15 @@ set(MAIN_SRC
     main.c
 
     # Headers
+    resource/Resource.h
+    resource/targetver.h
     ../Shared/types.h
+
+    # Resource
+    resource/CLGen.rc
+
+    # Other
+    resource/CLGen.exe.manifest
 )
 
 add_executable(CLGen WIN32 ${MAIN_SRC})
