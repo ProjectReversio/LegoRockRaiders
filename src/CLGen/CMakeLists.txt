@@ -1,4 +1,4 @@
-project(LegoRR C)
+project(CLGen C)
 
 set(CMAKE_C_STANDARD 11)
 
@@ -7,18 +7,10 @@ set(MAIN_SRC
     main.c
 
     # Headers
-    main.h
     ../Shared/types.h
 )
 
-add_executable(LegoRR WIN32 ${MAIN_SRC})
-target_include_directories(LegoRR PRIVATE ${CMAKE_SOURCE_DIR}/src/Shared)
-
-target_link_libraries(LegoRR ddraw)
-
-# Include D3DRM
-target_include_directories(LegoRR PRIVATE ${CMAKE_SOURCE_DIR}/lib/d3drm/inc)
-target_link_libraries(LegoRR ${CMAKE_SOURCE_DIR}/lib/d3drm/d3drm.lib)
+add_executable(CLGen WIN32 ${MAIN_SRC})
 
 # Output to output directory with configuration in name
 set_property(TARGET ${PROJECT_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY "${ProjectOutDir}")
