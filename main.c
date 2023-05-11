@@ -18,6 +18,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         return 0;
     }
 
+    // TODO: Cleanup this messy decompiled code
     LPSTR cmd;
     CHAR c;
     const char *i;
