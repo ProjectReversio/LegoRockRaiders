@@ -18,4 +18,4 @@ typedef float       F32;
 typedef double      F64;
 
 typedef U8          B8;
-typedef U32          B32;
+typedef U32         B32;
