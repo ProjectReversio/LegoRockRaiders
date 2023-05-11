@@ -5,10 +5,16 @@ set(CMAKE_C_STANDARD 11)
 set(MAIN_SRC
     # Sources
     main.c
+    registry.c
+    error.c
+    file.c
 
     # Headers
     resource/resource.h
     main.h
+    registry.h
+    error.h
+    file.h
     ../Shared/types.h
 
     # Resource

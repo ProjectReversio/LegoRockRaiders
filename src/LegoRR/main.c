@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <windows.h>
 #include "main.h"
+#include "registry.h"
+#include "error.h"
 
 Main_Globs mainGlobs = { NULL };
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    BOOL nosound = FALSE;
-    BOOL insistOnCD = FALSE;
+    B32 nosound = FALSE;
+    B32 insistOnCD = FALSE;
 
     char mutexName[128];
     sprintf(mutexName, "%s Mutex", "Lego Rock Raiders");
@@ -71,7 +73,27 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     mainGlobs.fixedFrameTiming = 0.0f;
     mainGlobs.flags = MAIN_FLAG_NONE;
 
+    char fullCmdLine[1024];
+    char standardParameters[1024];
+    if (Registry_GetValue("SOFTWARE\\LEGO Media\\Games\\Rock Raiders", "StandardParameters", REGISTRY_STRING_VALUE, standardParameters, 1024))
+        sprintf(fullCmdLine, "%s %s", lpCmdLine, standardParameters);
+    else
+        sprintf(fullCmdLine, "%s", lpCmdLine);
+
+    Main_ParseCommandLine(fullCmdLine, &nosound, &insistOnCD);
+
+    char errorMessage[1024];
+    if (!Registry_GetValue("SOFTWARE\\LEGO Media\\Games\\Rock Raiders", "NoHALMessage", REGISTRY_STRING_VALUE, errorMessage, 1024))
+        sprintf(errorMessage, "No DirectX 3D accelerator could be found.");
+
+    Error_Initialize();
+
     // TODO: Finish Implementing WinMain
 
     return 0;
+}
+
+void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_insistOnCD)
+{
+    // TODO: Implement Main_ParseCommandLine
 }

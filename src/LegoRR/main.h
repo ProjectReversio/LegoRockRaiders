@@ -102,3 +102,5 @@ typedef struct Main_Globs
 } Main_Globs, *lpMain_Globs;
 
 extern Main_Globs mainGlobs;
+
+extern void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_insistOnCD);
