@@ -109,7 +109,23 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             Draw_Initialize(NULL);
             Gods_Go(mainGlobs.programName);
 
-            // TODO: Finish Implementing WinMain
+            if (mainGlobs.stateSet)
+            {
+                if (mainGlobs.currState.Initialize != NULL && !mainGlobs.currState.Initialize())
+                {
+                    mainGlobs.currState.Initialize = NULL;
+                    mainGlobs.currState.MainLoop = NULL;
+                    mainGlobs.currState.Shutdown = NULL;
+                }
+
+                if (mainGlobs.currState.MainLoop != NULL)
+                {
+                    // TODO: Finish Implementing WinMain
+                }
+
+                if (mainGlobs.currState.Shutdown != NULL)
+                    mainGlobs.currState.Shutdown();
+            }
         }
         DirectDraw_Shutdown();
         DestroyWindow(mainGlobs.hWnd);

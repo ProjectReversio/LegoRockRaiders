@@ -13,7 +13,7 @@ typedef void (*MainWindowCallback)(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 
 typedef struct Main_State
 {
-    MainStateInitialize Initialise;
+    MainStateInitialize Initialize;
     MainStateMainLoop MainLoop;
     MainStateShutdown Shutdown;
 } Main_State, *lpMain_State;
