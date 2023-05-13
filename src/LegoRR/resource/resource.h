@@ -1,6 +1,6 @@
-#define IDI_ICON1                       113
+#define LEGORR_MAIN_ICONGROUP           113
 
-#define IDD_DIALOG1                     101
+#define LEGORR_MODESELECTION_DIALOG     101
 
 // Next default values for new objects
 //

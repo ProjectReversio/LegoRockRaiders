@@ -145,8 +145,38 @@ void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_i
     // TODO: Implement Main_ParseCommandLine
 }
 
+LRESULT CALLBACK Main_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    // TODO: Implement Main_WndProc
+    return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
 B32 Main_InitApp(HINSTANCE hInstance)
 {
-    // TODO: Implement Main_InitApp
-    return FALSE;
+    WNDCLASSA wndClass;
+    wndClass.style = CS_DBLCLKS;
+    wndClass.lpfnWndProc = Main_WndProc;
+    wndClass.cbClsExtra = 0;
+    wndClass.cbWndExtra = 0;
+    wndClass.hInstance = hInstance;
+    wndClass.hIcon = NULL;
+    wndClass.hCursor = NULL;
+    wndClass.hbrBackground = NULL;
+    wndClass.lpszMenuName = NULL;
+    wndClass.lpszClassName = mainGlobs.className;
+    if (!RegisterClassA(&wndClass))
+    {
+        MessageBoxA(NULL, "\"Unable to register window class", "Fatal Error", MB_OK);
+        return FALSE;
+    }
+
+    mainGlobs.hWnd = CreateWindowExA(WS_EX_APPWINDOW, mainGlobs.className, "", WS_POPUP | WS_SYSMENU, 0, 0, 100, 100, NULL, NULL, hInstance, NULL);
+    if (!mainGlobs.hWnd)
+    {
+        MessageBoxA(NULL, "Unable to Create Main Window", "Fatal Error", MB_OK);
+        return FALSE;
+    }
+
+    SetFocus(mainGlobs.hWnd);
+    return TRUE;
 }
