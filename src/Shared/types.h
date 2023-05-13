@@ -19,3 +19,6 @@ typedef double      F64;
 
 typedef U8          B8;
 typedef U32         B32;
+
+#define TRUE 1
+#define FALSE 0

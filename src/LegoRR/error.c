@@ -11,3 +11,13 @@ void Error_Initialize()
     errorGlobs.redundantLogFile = NULL;
     errorGlobs.fullScreen = FALSE;
 }
+
+void Error_CloseLog()
+{
+    // TODO: Implement Error_CloseLog
+}
+
+void Error_Shutdown()
+{
+    // TODO: Implement Error_Shutdown
+}

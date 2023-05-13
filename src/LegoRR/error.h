@@ -18,3 +18,5 @@ typedef struct Error_Globs
 extern Error_Globs errorGlobs;
 
 extern void Error_Initialize();
+extern void Error_CloseLog();
+extern void Error_Shutdown();

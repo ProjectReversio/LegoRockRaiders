@@ -25,3 +25,5 @@ typedef struct File
         WadFile* wad;
     };
 } File, *lpFile;
+
+extern void File_Initialize(const char* programName, B32 insistOnCD, const char* registryLocation);

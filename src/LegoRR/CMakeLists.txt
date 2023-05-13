@@ -8,6 +8,16 @@ set(MAIN_SRC
     registry.c
     error.c
     file.c
+    mem.c
+    config.c
+    input.c
+    directdraw.c
+    sound.c
+    init.c
+    animation.c
+    draw.c
+    lego.c
+    maths.c
 
     # Headers
     resource/resource.h
@@ -15,6 +25,16 @@ set(MAIN_SRC
     registry.h
     error.h
     file.h
+    mem.h
+    config.h
+    input.h
+    directdraw.h
+    sound.h
+    init.h
+    animation.h
+    draw.h
+    lego.h
+    maths.h
     ../Shared/types.h
 
     # Resource
