@@ -19,6 +19,7 @@ set(MAIN_SRC
     lego.c
     maths.c
     dxbug.c
+    platform/d3drm.c
 
     # Headers
     resource/resource.h
@@ -46,14 +47,11 @@ set(MAIN_SRC
 add_executable(LegoRR WIN32 ${MAIN_SRC})
 target_include_directories(LegoRR PRIVATE ${CMAKE_SOURCE_DIR}/src/Shared)
 
-target_link_libraries(LegoRR ddraw dinput8 winmm dsound)
+target_link_libraries(LegoRR ddraw dinput8 winmm dsound dxguid)
 
 # Include D3DRM
 target_include_directories(LegoRR PRIVATE ${CMAKE_SOURCE_DIR}/lib/d3drm/inc)
 target_link_libraries(LegoRR ${CMAKE_SOURCE_DIR}/lib/d3drm/d3drm.lib)
-
-# Include dxguid from DX6
-target_link_libraries(LegoRR ${CMAKE_SOURCE_DIR}/lib/dxguid/dxguid.lib)
 
 # Output to output directory with configuration in name
 set_property(TARGET ${PROJECT_NAME} PROPERTY RUNTIME_OUTPUT_DIRECTORY "${ProjectOutDir}")
