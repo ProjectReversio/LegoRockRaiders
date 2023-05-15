@@ -16,6 +16,11 @@
 
 Main_Globs mainGlobs = { NULL };
 
+#define STANDARD_FRAMERATE 25.0f
+
+void Main_HandleIO();
+void Main_Finalize3D();
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     B32 nosound = FALSE;
@@ -27,7 +32,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
         //MessageBoxA(NULL, "Lego Rock Raiders is already running.", "Error", MB_OK | MB_ICONERROR);
-        return 0;
+        return 0; // App is already running
     }
 
     // TODO: Cleanup this messy decompiled code
@@ -96,11 +101,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     if (!Registry_GetValue("SOFTWARE\\LEGO Media\\Games\\Rock Raiders", "NoHALMessage", REGISTRY_STRING_VALUE, errorMessage, 1024))
         sprintf(errorMessage, "No DirectX 3D accelerator could be found.");
 
+    // Initialize everything (memory, window, DirectDraw, etc.)
     Error_Initialize();
     Mem_Initialize();
     File_Initialize(mainGlobs.programName, insistOnCD, "SOFTWARE\\\\LEGO Media\\\\Games\\\\Rock Raiders");
     Config_Initialize();
     Input_InitKeysAndDI();
+
     if (Main_InitApp(hInstance))
     {
         DirectDraw_Initialize(mainGlobs.hWnd);
@@ -108,28 +115,96 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         {
             Animation_Initialize(directDrawGlobs.lpDirectDraw);
             Draw_Initialize(NULL);
+
+            // Call the Gods_Go() function in the application
             Gods_Go(mainGlobs.programName);
 
+            // If the game wants to run in state mode...
             if (mainGlobs.stateSet)
             {
+                // Run their initialization code (if required)
                 if (mainGlobs.currState.Initialize != NULL && !mainGlobs.currState.Initialize())
                 {
+                    // Initialization failed so drop out...
+                    Error_Warn(TRUE, "Initialization function failed...");
                     mainGlobs.currState.Initialize = NULL;
                     mainGlobs.currState.MainLoop = NULL;
                     mainGlobs.currState.Shutdown = NULL;
                 }
 
+                // If? a main loop is specified then run it until it returns false...
                 if (mainGlobs.currState.MainLoop != NULL)
                 {
-                    // TODO: Finish Implementing WinMain
+                    // Use the MultiMedia timer to give a 'realtime passed' value
+                    // per frame to the main loop (in 25th's of a second)
+                    F32 time = 1.0f;
+                    U32 lastTime, currTime;
+
+                    lastTime = timeGetTime();
+
+                    while(!mainGlobs.exit)
+                    {
+                        // Handle windows messages and input...
+                        inputGlobs.lClicked = FALSE;
+                        inputGlobs.rClicked = FALSE;
+                        inputGlobs.lDoubleClicked = FALSE;
+                        inputGlobs.rDoubleClicked = FALSE;
+
+                        Main_HandleIO();
+
+                        // In fullscreen mode we will always be the active application or I will eat my hat.
+                        if (mainGlobs.flags & MAIN_FLAG_FULLSCREEN)
+                            mainGlobs.active = TRUE;
+
+                        Input_ReadKeys();
+                        Input_ReadMouse2();
+
+                        // Run the main loop (pass 1.0f as the initial timing value)
+                        if (!mainGlobs.currState.MainLoop(time))
+                            mainGlobs.exit = TRUE;
+
+                        // Update the device and flip the surfaces...
+                        Main_Finalize3D();
+                        DirectDraw_Flip();
+                        mainGlobs.flags &= ~MAIN_FLAG_UPDATED;
+
+                        if (mainGlobs.flags & MAIN_FLAG_DUMPMODE)
+                        {
+                            time = STANDARD_FRAMERATE / 30.0f;
+                        } else if (mainGlobs.flags & MAIN_FLAG_PAUSED)
+                        {
+                            time = 0.0f;
+                            lastTime = timeGetTime();
+                        } else if (mainGlobs.fixedFrameTiming == 0.0f)
+                        {
+                            // Measure the time taken over the last frame (to be passed next loop)
+                            currTime = timeGetTime();
+                            time = ((F32)(currTime - lastTime)) / (1000.0f / STANDARD_FRAMERATE);
+                            lastTime = currTime;
+
+#ifndef _UNLIMITEDUPDATETIME
+                            if (time > 3.0f)
+                                time = 3.0f;
+#endif // _UNLIMITEDUPATETIME
+                        } else {
+                            time = mainGlobs.fixedFrameTiming;
+                            lastTime = timeGetTime();
+                        }
+                    }
                 }
 
                 if (mainGlobs.currState.Shutdown != NULL)
                     mainGlobs.currState.Shutdown();
+            } else {
+                Error_Warn(TRUE, "No State Set: Exiting...");
             }
+        } else {
+            Error_Warn(TRUE, "Initialisation Failed: Exiting...");
         }
         DirectDraw_Shutdown();
         DestroyWindow(mainGlobs.hWnd);
+    } else {
+        Error_Warn(TRUE, "Unable to initialise window");
     }
 
     Input_ReleaseKeysAndDI();
@@ -144,6 +219,40 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_insistOnCD)
 {
     // TODO: Implement Main_ParseCommandLine
+}
+
+void Main_Finalize3D()
+{
+    if (!(mainGlobs.flags & MAIN_FLAG_UPDATED))
+    {
+        mainGlobs.device->lpVtbl->Update(mainGlobs.device);
+        mainGlobs.flags |= MAIN_FLAG_UPDATED;
+    }
+}
+
+B32 Main_DispatchMessage(MSG* msg)
+{
+    if ((mainGlobs.flags & MAIN_FLAG_FULLSCREEN) &&
+        (msg->message == WM_ACTIVATEAPP || msg->message == WM_SYSKEYDOWN || msg->message == WM_SYSKEYUP))
+    {
+        return FALSE;
+    } else {
+        return TRUE;
+    }
+}
+
+void Main_HandleIO()
+{
+    MSG msg;
+
+    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    {
+        if (Main_DispatchMessage(&msg))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
 }
 
 LRESULT CALLBACK Main_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)

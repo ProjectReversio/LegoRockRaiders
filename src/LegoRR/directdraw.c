@@ -415,3 +415,40 @@ B32 DirectDraw_CreateClipper(B32 fullscreen, U32 width, U32 height)
 
     return FALSE;
 }
+
+void DirectDraw_BlitBuffers()
+{
+    POINT pt;
+    RECT src, dest;
+    HRESULT r;
+
+    // Calculate the destination blitting rectangle
+    pt.x = pt.y = 0;
+    dest.top = dest.left = 0;
+    dest.right = directDrawGlobs.width;
+    dest.bottom = directDrawGlobs.height;
+    ClientToScreen(directDrawGlobs.hWnd, &pt);
+    OffsetRect(&dest, pt.x, pt.y);
+
+    // Fill out the source of the blit
+    src.left = 0;
+    src.top = 0;
+    src.right = directDrawGlobs.width;
+    src.bottom = directDrawGlobs.height;
+
+    r = directDrawGlobs.fSurf->lpVtbl->Blt(directDrawGlobs.fSurf, &dest, directDrawGlobs.bSurf, &src, DDBLT_WAIT, NULL);
+    Error_Fatal(r == DDERR_SURFACELOST, "Front surface lost");
+}
+
+void DirectDraw_Flip()
+{
+    HRESULT r;
+
+    if (directDrawGlobs.fullScreen)
+    {
+        r = directDrawGlobs.fSurf->lpVtbl->Flip(directDrawGlobs.fSurf, NULL, DDFLIP_WAIT);
+        Error_Fatal(r == DDERR_SURFACELOST, "Surface lost");
+    } else {
+        DirectDraw_BlitBuffers();
+    }
+}
