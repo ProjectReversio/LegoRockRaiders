@@ -47,7 +47,7 @@ set(MAIN_SRC
 add_executable(LegoRR WIN32 ${MAIN_SRC})
 target_include_directories(LegoRR PRIVATE ${CMAKE_SOURCE_DIR}/src/Shared)
 
-target_link_libraries(LegoRR ddraw dinput8 winmm dsound dxguid)
+target_link_libraries(LegoRR ddraw dinput8 winmm dsound dxguid vfw32)
 
 # Include D3DRM
 target_include_directories(LegoRR PRIVATE ${CMAKE_SOURCE_DIR}/lib/d3drm/inc)
