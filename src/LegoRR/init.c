@@ -132,6 +132,19 @@ void Init_SetModeList(HWND hWndDlg)
     SendMessageA(hWndList, LB_SETCURSEL, 0, 0);
 }
 
+B32 Init_GetMode(U8* name, U32* mode)
+{
+    for (U32 loop = 0; loop < initGlobs.modeCount; loop++)
+    {
+        if (!strcmp(initGlobs.modes[loop].desc, name))
+        {
+            *mode = loop;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 BOOL CALLBACK Init_DialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     if (uMsg == WM_INITDIALOG)
@@ -166,7 +179,42 @@ BOOL CALLBACK Init_DialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
         return FALSE;
     } else if (uMsg == WM_COMMAND)
     {
-        // TODO: Implement Init_DialogProc
+        if (HIWORD(wParam) == LBN_SELCHANGE)
+        {
+            if (LOWORD(wParam) == IDC_DEVICE)
+            {
+                initGlobs.selDevice = &initGlobs.devices[SendMessageA((HWND)lParam, LB_GETCURSEL, 0, 0)];
+            } else if (LOWORD(wParam) == IDC_MODE)
+            {
+                U32 num;
+                U8 desc[1024];
+                U32 mode;
+
+                num = SendMessageA((HWND)lParam, LB_GETCURSEL, 0, 0);
+                SendMessageA((HWND)lParam, LB_GETTEXT, num, (LPARAM)desc);
+                if (Init_GetMode(desc, &mode))
+                    initGlobs.selMode = &initGlobs.modes[mode];
+            } else if (LOWORD(wParam) == IDC_DRIVER)
+            {
+                initGlobs.selDriver = &initGlobs.drivers[SendMessageA((HWND)lParam, LB_GETCURSEL, 0, 0)];
+
+                Init_HandleWindowButton(hWndDlg);
+                Init_SetModeList(hWndDlg);
+                Init_SetDeviceList(hWndDlg);
+            }
+        } else if (HIWORD(wParam) == BN_CLICKED)
+        {
+            if (LOWORD(wParam) == IDC_WINDOW)
+                Init_SetFullScreen(hWndDlg, FALSE);
+            if (LOWORD(wParam) == IDC_FULLSCREEN) // this is not an else if in the original code
+                Init_SetFullScreen(hWndDlg, TRUE);
+            else if (LOWORD(wParam) == IDOK)
+                EndDialog(hWndDlg, wParam);
+            else if (LOWORD(wParam) == IDCANCEL)
+                EndDialog(hWndDlg, wParam);
+        }
+
+        return TRUE;
     }
     return FALSE;
 }
