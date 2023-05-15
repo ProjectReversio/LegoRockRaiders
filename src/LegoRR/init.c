@@ -225,11 +225,9 @@ B32 Init_Initialize(B32 setup, B32 debug, B32 best, B32 window, const char* noHA
     initGlobs.selDevice = NULL;
     initGlobs.selMode = NULL;
 #ifdef _DEBUG // For convenience, default to windowed mode in debug builds
-    initGlobs.wasFullScreen = FALSE;
-    initGlobs.selFullScreen = FALSE;
+    initGlobs.selFullScreen = initGlobs.wasFullScreen = FALSE;
 #else
-    initGlobs.wasFullScreen = TRUE;
-    initGlobs.selFullScreen = TRUE;
+    initGlobs.selFullScreen = initGlobs.wasFullScreen = TRUE;
 #endif
     initGlobs.validModeCount = 0;
 
@@ -242,21 +240,66 @@ B32 Init_Initialize(B32 setup, B32 debug, B32 best, B32 window, const char* noHA
     DirectDraw_EnumDrivers(initGlobs.drivers, &initGlobs.driverCount);
 
     U32 rval = 1;
-    if (initGlobs.driverCount != 0)
+    if (initGlobs.driverCount)
     {
         initGlobs.selDriver = initGlobs.drivers;
-        if (best == 0)
+        if (best)
         {
-            if (setup)
+            B32 found = FALSE;
+
+            initGlobs.selFullScreen = !window;
+            rval = IDOK;
+
+            for (S32 loop = initGlobs.driverCount - 1; loop >= 0; loop--)
             {
-                rval = DialogBoxParamA(mainGlobs.hInst, (LPCSTR)LEGORR_MODESELECTION_DIALOG, mainGlobs.hWnd, Init_DialogProc, 0);
+                if (DirectDraw_EnumDevices(&initGlobs.drivers[loop], initGlobs.devices, &initGlobs.deviceCount))
+                {
+                    DirectDraw_EnumModes(&initGlobs.drivers[loop], initGlobs.selFullScreen, initGlobs.modes, &initGlobs.modeCount);
+                    for (U32 mode = 0; mode < initGlobs.modeCount; mode++)
+                    {
+                        if (Init_IsValidMode(mode))
+                        {
+                            for (S32 sub = initGlobs.deviceCount - 1; sub >= 0; sub--)
+                            {
+                                if (initGlobs.devices[sub].flags & GRAPHICS_DEVICE_FLAG_HARDWARE)
+                                {
+                                    initGlobs.selDriver = &initGlobs.drivers[loop];
+                                    initGlobs.selDevice = &initGlobs.devices[sub];
+                                    initGlobs.selMode = &initGlobs.modes[mode];
+                                    found = TRUE;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    MessageBoxA(NULL, "Please install DirectX version 6 or later", "Error", MB_OK);
+                    return FALSE;
+                }
+                if (found == TRUE)
+                    break;
+            }
+
+            if (!found)
+            {
+                MessageBoxA(NULL, noHALMsg, "Error", MB_OK);
+                return FALSE;
             }
         } else {
-            // TODO: Implement Init_Initialize
+            if (setup)
+                rval = DialogBoxParamA(Main_hInst(), MAKEINTRESOURCE(LEGORR_MODESELECTION_DIALOG), Main_hWnd(), Init_DialogProc, 0);
         }
-        return FALSE;
+
+        if (rval == IDOK)
+        {
+            if (initGlobs.selFullScreen)
+                return DirectDraw_Setup(TRUE, initGlobs.selDriver, initGlobs.selDevice, initGlobs.selMode, 0, 0, 320, 200);
+            else if (initGlobs.selMode)
+                return DirectDraw_Setup(FALSE, NULL, initGlobs.selDevice, NULL, 100, 100, initGlobs.selMode->width, initGlobs.selMode->height);
+            else
+                return DirectDraw_Setup(FALSE, NULL, initGlobs.selDevice, NULL, 40, 40, 640, 480);
+        }
     }
-    // TODO: Implement Init_Initialize
     return FALSE;
 }
 

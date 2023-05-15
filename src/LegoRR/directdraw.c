@@ -205,3 +205,10 @@ B32 DirectDraw_EnumModes(lpGraphics_Driver driver, B32 fullScreen, lpGraphics_Mo
 
     return res;
 }
+
+B32 DirectDraw_Setup(B32 fullscreen, lpGraphics_Driver driver, lpGraphics_Device device, lpGraphics_Mode screen, U32 xPos, U32 yPos, U32 width, U32 height)
+{
+    // TODO: Implement DirectDraw_Setup
+
+    return FALSE;
+}

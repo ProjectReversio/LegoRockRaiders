@@ -94,3 +94,5 @@ extern void DirectDraw_Shutdown();
 extern B32 DirectDraw_EnumDrivers(lpGraphics_Driver ref_list, U32* out_count);
 extern B32 DirectDraw_EnumDevices(lpGraphics_Driver driver, lpGraphics_Device ref_list, U32* out_count);
 extern B32 DirectDraw_EnumModes(lpGraphics_Driver driver, B32 fullScreen, lpGraphics_Mode ref_list, U32* out_count);
+
+extern B32 DirectDraw_Setup(B32 fullscreen, lpGraphics_Driver driver, lpGraphics_Device device, lpGraphics_Mode screen, U32 xPos, U32 yPos, U32 width, U32 height);
