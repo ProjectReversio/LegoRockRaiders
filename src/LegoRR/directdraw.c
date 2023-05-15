@@ -1,4 +1,5 @@
 #include "directdraw.h"
+#include "main.h"
 #include <stdio.h>
 
 DirectDraw_Globs directDrawGlobs = { NULL };
@@ -134,6 +135,73 @@ B32 DirectDraw_EnumDevices(lpGraphics_Driver driver, lpGraphics_Device ref_list,
     }
 
     *out_count = directDrawGlobs.deviceCount;
+
+    return res;
+}
+
+HRESULT WINAPI DirectDraw_EnumModeCallback(LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpContext)
+{
+    lpGraphics_Mode mode = &directDrawGlobs.modeList[directDrawGlobs.modeCount];
+    B32* fullScreen = lpContext;
+
+    mode->flags = GRAPHICS_MODE_FLAG_VALID;
+    mode->width = lpDDSurfaceDesc->dwWidth;
+    mode->height = lpDDSurfaceDesc->dwHeight;
+    mode->bitDepth = lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount;
+
+    if ((*fullScreen))
+        sprintf(mode->desc, "%ix%i (%i bit)", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight, lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
+    else
+        sprintf(mode->desc, "%ix%i", lpDDSurfaceDesc->dwWidth, lpDDSurfaceDesc->dwHeight);
+
+    if (!(*fullScreen) && directDrawGlobs.modeCount)
+    {
+        if (mode->bitDepth == Main_GetWindowsBitDepth())
+            directDrawGlobs.modeCount++;
+        else
+            mode->flags &= ~GRAPHICS_MODE_FLAG_VALID;
+    } else
+    {
+        directDrawGlobs.modeCount++;
+    }
+
+    return DDENUMRET_OK;
+}
+
+B32 DirectDraw_EnumModes(lpGraphics_Driver driver, B32 fullScreen, lpGraphics_Mode ref_list, U32* out_count)
+{
+    LPDIRECTDRAW4 lpDD;
+    LPDIRECTDRAW lpDD1;
+    LPGUID guid;
+    B32 res = FALSE;
+
+    directDrawGlobs.modeCount = 0;
+
+    if (driver)
+    {
+        if (driver->flags & GRAPHICS_DRIVER_FLAG_VALID)
+        {
+            if (driver->flags & GRAPHICS_DRIVER_FLAG_PRIMARY)
+                guid = NULL;
+            else
+                guid = &driver->guid;
+
+            if (DirectDrawCreate(guid, &lpDD1, NULL) == DD_OK)
+            {
+                if (lpDD1->lpVtbl->QueryInterface(lpDD1, &IID_IDirectDraw4, &lpDD) == DD_OK)
+                {
+                    directDrawGlobs.modeList = ref_list;
+                    lpDD->lpVtbl->EnumDisplayModes(lpDD, 0, NULL, &fullScreen, DirectDraw_EnumModeCallback);
+                    res = TRUE;
+
+                    lpDD->lpVtbl->Release(lpDD);
+                }
+                lpDD1->lpVtbl->Release(lpDD1);
+            }
+        }
+    }
+
+    *out_count = directDrawGlobs.modeCount;
 
     return res;
 }

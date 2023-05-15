@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "init.h"
 #include "main.h"
 #include "resource/resource.h"
@@ -71,9 +72,64 @@ void Init_SetDeviceList(HWND hWndDlg)
     SendMessageA(hWndList, LB_SETCURSEL, best, 0);
 }
 
+B32 Init_IsValidMode(U32 mode)
+{
+    if (initGlobs.validModeCount)
+    {
+        for (U32 loop = 0; loop < initGlobs.validModeCount; loop++)
+        {
+            if ((initGlobs.validModes[loop].width == 0 || initGlobs.modes[mode].width == initGlobs.validModes[loop].width) &&
+                (initGlobs.validModes[loop].height == 0 || initGlobs.modes[mode].height == initGlobs.validModes[loop].height) &&
+                (initGlobs.validModes[loop].bitDepth == 0 || initGlobs.modes[mode].bitDepth == initGlobs.validModes[loop].bitDepth))
+            {
+                return TRUE;
+            }
+        }
+        return FALSE;
+    } else {
+        return TRUE;
+    }
+}
+
 void Init_SetModeList(HWND hWndDlg)
 {
-    // TODO: Implement Init_SetModeList
+    HWND hWndList = GetDlgItem(hWndDlg, IDC_MODE);
+
+    // Clear the existing list (if any)...
+    while (SendMessageA(hWndList, LB_DELETESTRING, 0, 0) != -1);
+
+    B32 first = TRUE;
+
+    DirectDraw_EnumModes(initGlobs.selDriver, initGlobs.selFullScreen, initGlobs.modes, &initGlobs.modeCount);
+    for (U32 loop = 0; loop < initGlobs.modeCount; loop++)
+    {
+        if (Init_IsValidMode(loop))
+        {
+            SendMessageA(hWndList, LB_ADDSTRING, 0, (LPARAM)initGlobs.modes[loop].desc);
+            if (first)
+            {
+                initGlobs.selMode = &initGlobs.modes[loop];
+                first = FALSE;
+            }
+        }
+    }
+
+    HWND hWndButton = GetDlgItem(hWndDlg, IDOK);
+
+    if (first)
+    {
+        U8 msg[256];
+        if (!initGlobs.selFullScreen)
+            sprintf(msg, "No supported %i bit modes found", Main_GetWindowsBitDepth());
+        else
+            sprintf(msg, "No supported screen modes found");
+        SendMessageA(hWndList, LB_ADDSTRING, 0, (LPARAM)msg);
+        EnableWindow(hWndButton, FALSE);
+    } else {
+        EnableWindow(hWndButton, TRUE);
+    }
+
+    SendMessageA(hWndList, LB_SETCURSEL, 0, 0);
 }
 
 BOOL CALLBACK Init_DialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -120,8 +176,13 @@ B32 Init_Initialize(B32 setup, B32 debug, B32 best, B32 window, const char* noHA
     initGlobs.selDriver = NULL;
     initGlobs.selDevice = NULL;
     initGlobs.selMode = NULL;
+#ifdef _DEBUG // For convenience, default to windowed mode in debug builds
+    initGlobs.wasFullScreen = FALSE;
+    initGlobs.selFullScreen = FALSE;
+#else
     initGlobs.wasFullScreen = TRUE;
     initGlobs.selFullScreen = TRUE;
+#endif
     initGlobs.validModeCount = 0;
 
     Init_AddValidMode(640, 480, 16);

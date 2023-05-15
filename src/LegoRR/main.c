@@ -180,3 +180,8 @@ B32 Main_InitApp(HINSTANCE hInstance)
     SetFocus(mainGlobs.hWnd);
     return TRUE;
 }
+
+U32 Main_GetWindowsBitDepth()
+{
+    return GetDeviceCaps(GetDC(Main_hWnd()), BITSPIXEL);
+}

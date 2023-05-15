@@ -105,3 +105,7 @@ extern Main_Globs mainGlobs;
 
 extern void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_insistOnCD);
 extern B32 Main_InitApp(HINSTANCE hInstance);
+
+extern U32 Main_GetWindowsBitDepth();
+inline HWND Main_hWnd() { return mainGlobs.hWnd; }
+inline HINSTANCE Main_hInst() { return mainGlobs.hInst; }
