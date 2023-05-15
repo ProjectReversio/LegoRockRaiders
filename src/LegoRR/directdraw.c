@@ -253,6 +253,8 @@ B32 DirectDraw_Setup(B32 fullscreen, lpGraphics_Driver driver, lpGraphics_Device
     if (DirectDrawCreate(guid, &ddraw1, NULL) == DD_OK)
     {
         // TODO: Implement DirectDraw_Setup
+
+        ddraw1->lpVtbl->Release(ddraw1);
     }
 
     return FALSE;
