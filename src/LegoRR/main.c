@@ -12,6 +12,7 @@
 #include "animation.h"
 #include "draw.h"
 #include "lego.h"
+#include "dxbug.h"
 
 Main_Globs mainGlobs = { NULL };
 
@@ -233,8 +234,57 @@ void Main_SetupDisplay(B32 fullScreen, U32 xPos, U32 yPos, U32 width, U32 height
     SetActiveWindow(mainGlobs.hWnd);
 }
 
+
+
 B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRECTDRAWSURFACE4 backSurf, B32 doubleBuffered)
 {
-    // TODO: Implement Main_SetupDirect3D
+    LPGUID guid = NULL;
+    LPDIRECT3DRM lpD3DRM1;
+    HRESULT r;
+    LPDIRECTDRAWSURFACE surf1;
+
+    if (dev)
+    {
+        guid = &dev->guid;
+        if (dev->flags & GRAPHICS_DEVICE_FLAG_VIDEOTEXTURE)
+            mainGlobs.flags |= MAIN_FLAG_VIDEOTEXTURE;
+    }
+
+    if (!(mainGlobs.flags & MAIN_FLAG_FORCEVERTEXFOG) && (dev->flags & GRAPHICS_DEVICE_FLAG_HARDWARE))
+        Main_SetFogMethod(D3DRMFOGMETHOD_TABLE);
+    else
+        Main_SetFogMethod(D3DRMFOGMETHOD_VERTEX);
+
+    // Create D3DRM and the device...
+
+    if (Direct3DRMCreate(&lpD3DRM1) == D3DRM_OK)
+    {
+        if (lpD3DRM1->lpVtbl->QueryInterface(lpD3DRM1, &IID_IDirect3DRM3, &mainGlobs.lpD3DRM) == D3DRM_OK)
+        {
+            backSurf->lpVtbl->QueryInterface(backSurf, &IID_IDirectDrawSurface, &surf1);
+            if ((r = mainGlobs.lpD3DRM->lpVtbl->CreateDeviceFromSurface(mainGlobs.lpD3DRM, guid, ddraw1, surf1, 0, &mainGlobs.device)) == D3DRM_OK)
+            {
+                LPDIRECT3DDEVICE2 imdev2;
+                mainGlobs.device->lpVtbl->GetDirect3DDevice2(mainGlobs.device, &imdev2);
+                imdev2->lpVtbl->QueryInterface(imdev2, &IID_IDirect3DDevice3, &mainGlobs.imDevice);
+                imdev2->lpVtbl->Release(imdev2);
+
+                if (doubleBuffered)
+                    mainGlobs.device->lpVtbl->SetBufferCount(mainGlobs.device, 2);
+
+                return TRUE;
+            } else {
+                CHKDD(r);
+                Error_Warn(TRUE, "Unable to create Device");
+            }
+        } else {
+            Error_Warn(TRUE, "Failed query for IID_IDirect3DRM3");
+        }
+    } else {
+        Error_Warn(TRUE, "Unable to create lpD3DRM1");
+    }
+
+    CHKRM(r);
+
     return FALSE;
 }
