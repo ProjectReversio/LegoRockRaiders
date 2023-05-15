@@ -22,7 +22,19 @@ void DirectDraw_Initialize(HWND hWnd)
 
 void DirectDraw_Shutdown()
 {
-    // TODO: Implement DirectDraw_Shutdown
+    if (directDrawGlobs.fSurf)
+        directDrawGlobs.fSurf->lpVtbl->Release(directDrawGlobs.fSurf);
+    if (directDrawGlobs.lpFrontClipper)
+        directDrawGlobs.lpFrontClipper->lpVtbl->Release(directDrawGlobs.lpFrontClipper);
+    if (directDrawGlobs.lpBackClipper)
+        directDrawGlobs.lpBackClipper->lpVtbl->Release(directDrawGlobs.lpBackClipper);
+    if (directDrawGlobs.lpDirectDraw)
+    {
+        if (directDrawGlobs.fullScreen)
+            directDrawGlobs.lpDirectDraw->lpVtbl->RestoreDisplayMode(directDrawGlobs.lpDirectDraw);
+        if (directDrawGlobs.lpDirectDraw)
+            directDrawGlobs.lpDirectDraw->lpVtbl->Release(directDrawGlobs.lpDirectDraw);
+    }
 }
 
 BOOL WINAPI DirectDraw_EnumDriverCallback(GUID FAR *lpGUID, LPSTR lpDriverDescription, LPSTR lpDriverName, LPVOID lpContext)
