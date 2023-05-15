@@ -185,3 +185,50 @@ U32 Main_GetWindowsBitDepth()
 {
     return GetDeviceCaps(GetDC(Main_hWnd()), BITSPIXEL);
 }
+
+void Main_AdjustWindowRect(LPRECT rect)
+{
+    if (!(mainGlobs.flags & MAIN_FLAG_FULLSCREEN))
+        AdjustWindowRect(rect, mainGlobs.style, FALSE);
+}
+
+void Main_SetupDisplay(B32 fullScreen, U32 xPos, U32 yPos, U32 width, U32 height)
+{
+    mainGlobs.appWidth = width;
+    mainGlobs.appHeight = height;
+    if (fullScreen)
+        mainGlobs.flags |= MAIN_FLAG_FULLSCREEN;
+
+    Error_FullScreen(fullScreen);
+
+    if (!fullScreen)
+    {
+        // Adjust the window to any new settings...
+
+        RECT rect;
+        mainGlobs.style = WS_POPUP | WS_SYSMENU | WS_CAPTION;
+
+        rect.left = xPos;
+        rect.top = yPos;
+        rect.right = xPos + width;
+        rect.bottom = yPos + height;
+
+        Main_AdjustWindowRect(&rect);
+
+        SetWindowLong(mainGlobs.hWnd, GWL_STYLE, mainGlobs.style);
+        SetWindowPos(mainGlobs.hWnd, NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER);
+
+        ShowCursor(FALSE);
+    } else {
+        RECT rect;
+        HWND hWndDesktop = GetDesktopWindow();
+
+        GetWindowRect(hWndDesktop, &rect);
+        SetWindowPos(mainGlobs.hWnd, NULL, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, SWP_NOZORDER);
+
+        SetCursor(FALSE);
+    }
+
+    ShowWindow(mainGlobs.hWnd, SW_SHOW);
+    SetActiveWindow(mainGlobs.hWnd);
+}

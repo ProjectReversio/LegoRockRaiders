@@ -21,3 +21,8 @@ void Error_Shutdown()
 {
     // TODO: Implement Error_Shutdown
 }
+
+void Error_FullScreen(B32 on)
+{
+    errorGlobs.fullScreen = on;
+}

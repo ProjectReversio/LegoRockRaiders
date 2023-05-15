@@ -218,9 +218,42 @@ B32 DirectDraw_EnumModes(lpGraphics_Driver driver, B32 fullScreen, lpGraphics_Mo
     return res;
 }
 
-B32 DirectDraw_Setup(B32 fullscreen, lpGraphics_Driver driver, lpGraphics_Device device, lpGraphics_Mode screen, U32 xPos, U32 yPos, U32 width, U32 height)
+B32 DirectDraw_Setup(B32 fullscreen, lpGraphics_Driver driver, lpGraphics_Device device, lpGraphics_Mode mode, U32 xPos, U32 yPos, U32 width, U32 height)
 {
-    // TODO: Implement DirectDraw_Setup
+    if (driver && !(driver->flags & GRAPHICS_DRIVER_FLAG_VALID))
+        driver = NULL;
+    if (device && !(device->flags & GRAPHICS_DEVICE_FLAG_VALID))
+        device = NULL;
+    if (mode && !(mode->flags & GRAPHICS_MODE_FLAG_VALID))
+        mode = NULL;
+
+    U32 bpp = 16;
+    if (mode)
+    {
+        width = mode->width;
+        height = mode->height;
+        bpp = mode->bitDepth;
+    }
+
+    directDrawGlobs.width = width;
+    directDrawGlobs.height = height;
+    directDrawGlobs.fullScreen = fullscreen;
+
+    LPGUID guid;
+    if (driver == NULL)
+        guid = NULL;
+    else if (driver->flags & GRAPHICS_DRIVER_FLAG_PRIMARY)
+        guid = NULL;
+    else
+        guid = &driver->guid;
+
+    Main_SetupDisplay(fullscreen, xPos, yPos, width, height);
+
+    LPDIRECTDRAW ddraw1;
+    if (DirectDrawCreate(guid, &ddraw1, NULL) == DD_OK)
+    {
+        // TODO: Implement DirectDraw_Setup
+    }
 
     return FALSE;
 }
