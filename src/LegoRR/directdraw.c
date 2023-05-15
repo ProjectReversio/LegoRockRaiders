@@ -1,6 +1,9 @@
 #include "directdraw.h"
-#include "main.h"
+
 #include <stdio.h>
+#include "main.h"
+#include "mem.h"
+#include "error.h"
 
 DirectDraw_Globs directDrawGlobs = { NULL };
 
@@ -59,6 +62,7 @@ BOOL WINAPI DirectDraw_EnumDriverCallback(GUID FAR *lpGUID, LPSTR lpDriverDescri
 B32 DirectDraw_EnumDrivers(lpGraphics_Driver ref_list, U32* out_count)
 {
     directDrawGlobs.driverList = ref_list;
+    // Enumerate each driver and record its GUID and description
     DirectDrawEnumerateA(DirectDraw_EnumDriverCallback, NULL);
     *out_count = directDrawGlobs.driverCount;
     return TRUE;
@@ -140,10 +144,16 @@ B32 DirectDraw_EnumDevices(lpGraphics_Driver driver, lpGraphics_Device ref_list,
                 res = TRUE;
 
                 lpD3D->lpVtbl->Release(lpD3D);
+            } else {
+                Error_Warn(TRUE, "Unable to obtain Direct3D3");
             }
             lpDD->lpVtbl->Release(lpDD);
+        } else {
+            Error_Warn(TRUE, "Unable to obtain DirectDraw4");
         }
         lpDD1->lpVtbl->Release(lpDD1);
+    } else {
+        Error_Warn(TRUE, "Unable to create DirectDraw");
     }
 
     *out_count = directDrawGlobs.deviceCount;
@@ -207,10 +217,18 @@ B32 DirectDraw_EnumModes(lpGraphics_Driver driver, B32 fullScreen, lpGraphics_Mo
                     res = TRUE;
 
                     lpDD->lpVtbl->Release(lpDD);
+                } else {
+                    Error_Warn(TRUE, "Unable to obtain DirectDraw4");
                 }
                 lpDD1->lpVtbl->Release(lpDD1);
+            } else {
+                Error_Warn(TRUE, "Unable to create DirectDraw");
             }
+        } else {
+            Error_Fatal(TRUE, "Invalid driver passed to DirectDraw_EnumModes()");
         }
+    } else {
+        Error_Fatal(TRUE, "NULL passed as driver to DirectDraw_EnumModes()");
     }
 
     *out_count = directDrawGlobs.modeCount;
@@ -220,6 +238,8 @@ B32 DirectDraw_EnumModes(lpGraphics_Driver driver, B32 fullScreen, lpGraphics_Mo
 
 B32 DirectDraw_Setup(B32 fullscreen, lpGraphics_Driver driver, lpGraphics_Device device, lpGraphics_Mode mode, U32 xPos, U32 yPos, U32 width, U32 height)
 {
+    HRESULT r;
+
     if (driver && !(driver->flags & GRAPHICS_DRIVER_FLAG_VALID))
         driver = NULL;
     if (device && !(device->flags & GRAPHICS_DEVICE_FLAG_VALID))
@@ -252,9 +272,145 @@ B32 DirectDraw_Setup(B32 fullscreen, lpGraphics_Driver driver, lpGraphics_Device
     LPDIRECTDRAW ddraw1;
     if (DirectDrawCreate(guid, &ddraw1, NULL) == DD_OK)
     {
-        // TODO: Implement DirectDraw_Setup
+        if (ddraw1->lpVtbl->QueryInterface(ddraw1, &IID_IDirectDraw4, &directDrawGlobs.lpDirectDraw) == DD_OK)
+        {
+            if (directDrawGlobs.lpDirectDraw->lpVtbl->SetCooperativeLevel(directDrawGlobs.lpDirectDraw, directDrawGlobs.hWnd, fullscreen ? (DDSCL_EXCLUSIVE | DDSCL_FULLSCREEN) : DDSCL_NORMAL) == DD_OK)
+            {
+                if (fullscreen)
+                    r = directDrawGlobs.lpDirectDraw->lpVtbl->SetDisplayMode(directDrawGlobs.lpDirectDraw, width, height, bpp, 0, 0);
+                else
+                    r = DD_OK;
 
+                if (r == DD_OK)
+                {
+                    DDSURFACEDESC2 desc;
+                    memset(&desc, 0, sizeof(desc));
+                    desc.dwSize = sizeof(desc);
+                    desc.dwFlags = DDSD_CAPS;
+                    desc.ddsCaps.dwCaps = DDSCAPS_3DDEVICE | DDSCAPS_PRIMARYSURFACE;
+                    if (fullscreen)
+                    {
+                        desc.dwFlags |= DDSD_BACKBUFFERCOUNT;
+                        desc.dwBackBufferCount = 1;
+                        desc.ddsCaps.dwCaps |= DDSCAPS_FLIP | DDSCAPS_COMPLEX;
+                    }
+
+                    if (directDrawGlobs.lpDirectDraw->lpVtbl->CreateSurface(directDrawGlobs.lpDirectDraw, &desc, &directDrawGlobs.fSurf, 0) == DD_OK)
+                    {
+                        if (!fullscreen)
+                        {
+                            // Create the back buffer
+                            desc.ddsCaps.dwCaps &= ~DDSCAPS_PRIMARYSURFACE;
+                            desc.ddsCaps.dwCaps |= DDSCAPS_OFFSCREENPLAIN;
+                            desc.dwFlags |= DDSD_HEIGHT | DDSD_WIDTH;
+                            desc.dwWidth = width;
+                            desc.dwHeight = height;
+                            r = directDrawGlobs.lpDirectDraw->lpVtbl->CreateSurface(directDrawGlobs.lpDirectDraw, &desc, &directDrawGlobs.bSurf, NULL);
+                        } else {
+                            DDSCAPS2 ddscaps;
+                            memset(&ddscaps, 0, sizeof(ddscaps));
+                            ddscaps.dwCaps = DDSCAPS_BACKBUFFER;
+                            r = directDrawGlobs.fSurf->lpVtbl->GetAttachedSurface(directDrawGlobs.fSurf, &ddscaps, &directDrawGlobs.bSurf);
+                        }
+
+                        if (r == DD_OK)
+                        {
+                            if (DirectDraw_CreateClipper(fullscreen, width, height))
+                            {
+                                if (Main_SetupDirect3D(device, ddraw1, directDrawGlobs.bSurf, fullscreen))
+                                {
+                                    // Everything went OK, so tidy up and return
+                                    ddraw1->lpVtbl->Release(ddraw1);
+
+                                    if (fullscreen)
+                                        ShowCursor(FALSE);
+
+                                    return TRUE;
+                                }
+                            }
+                            directDrawGlobs.bSurf->lpVtbl->Release(directDrawGlobs.bSurf);
+                            directDrawGlobs.bSurf = NULL;
+                        } else {
+                            Error_Warn(TRUE, "Error creating back surface");
+                        }
+
+                        directDrawGlobs.fSurf->lpVtbl->Release(directDrawGlobs.fSurf);
+                        directDrawGlobs.fSurf = NULL;
+                    } else {
+                        Error_Warn(TRUE, "Error creating front surface");
+                    }
+                } else {
+                    Error_Warn(TRUE, "Cannot set Display Mode");
+                }
+            } else {
+                Error_Warn(TRUE, "Cannot set Cooperative Level");
+            }
+            directDrawGlobs.lpDirectDraw->lpVtbl->Release(directDrawGlobs.lpDirectDraw);
+            directDrawGlobs.lpDirectDraw = NULL;
+        } else {
+            Error_Warn(TRUE, "Cannot obtain DirectDraw4");
+        }
         ddraw1->lpVtbl->Release(ddraw1);
+    } else {
+        Error_Warn(TRUE, "Cannot create DirectDraw");
+    }
+
+    return FALSE;
+}
+
+B32 DirectDraw_CreateClipper(B32 fullscreen, U32 width, U32 height)
+{
+    HRGN handle;
+    U32 size;
+    RGNDATA *region;
+
+    if (directDrawGlobs.lpDirectDraw->lpVtbl->CreateClipper(directDrawGlobs.lpDirectDraw, 0, &directDrawGlobs.lpBackClipper, NULL) == DD_OK)
+    {
+        handle = CreateRectRgn(0, 0, width, height);
+        size = GetRegionData(handle, 0, NULL);
+        region = Mem_Alloc(size);
+        GetRegionData(handle, size, region);
+
+        if (directDrawGlobs.lpBackClipper->lpVtbl->SetClipList(directDrawGlobs.lpBackClipper, region, 0) == DD_OK)
+        {
+            Mem_Free(region);
+
+            if (directDrawGlobs.bSurf->lpVtbl->SetClipper(directDrawGlobs.bSurf, directDrawGlobs.lpBackClipper) == DD_OK)
+            {
+                if (!fullscreen)
+                {
+                    // Create the window clipper
+                    if (directDrawGlobs.lpDirectDraw->lpVtbl->CreateClipper(directDrawGlobs.lpDirectDraw, 0, &directDrawGlobs.lpFrontClipper, NULL) == DD_OK)
+                    {
+                        // Associate the clipper with the window (obtain window sizes).
+                        if (directDrawGlobs.lpFrontClipper->lpVtbl->SetHWnd(directDrawGlobs.lpFrontClipper, 0, directDrawGlobs.hWnd) == DD_OK)
+                        {
+                            if (directDrawGlobs.fSurf->lpVtbl->SetClipper(directDrawGlobs.fSurf, directDrawGlobs.lpFrontClipper) == DD_OK)
+                            {
+                                return TRUE;
+                            } else
+                            {
+                                Error_Warn(TRUE, "Cannot attach clipper to front buffer");
+                            }
+                        } else {
+                            Error_Warn(TRUE, "Cannot initialize clipper from hWnd");
+                        }
+
+                    } else {
+                        Error_Warn(TRUE, "Cannot create front clipper");
+                    }
+                } else {
+                    return TRUE;
+                }
+            } else {
+                Error_Warn(TRUE, "Cannot attach clipper to back buffer");
+            }
+            directDrawGlobs.lpBackClipper->lpVtbl->Release(directDrawGlobs.lpBackClipper);
+            directDrawGlobs.lpBackClipper = NULL;
+        } else {
+            Error_Warn(TRUE, "Cannot set clip list");
+        }
+        Mem_Free(region);
     }
 
     return FALSE;

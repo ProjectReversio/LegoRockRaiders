@@ -4,6 +4,8 @@
 #include "types.h"
 #include <d3d.h>
 #include <d3drm.h>
+#include "directdraw.h"
+#include <ddraw.h>
 
 typedef B32 (*MainStateInitialize)();
 typedef B32 (*MainStateMainLoop)(F32 delta);
@@ -109,6 +111,7 @@ extern B32 Main_InitApp(HINSTANCE hInstance);
 extern U32 Main_GetWindowsBitDepth();
 
 extern void Main_SetupDisplay(B32 fullScreen, U32 xPos, U32 yPos, U32 width, U32 height);
+extern B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRECTDRAWSURFACE4 backSurf, B32 doubleBuffered);
 
 inline HWND Main_hWnd() { return mainGlobs.hWnd; }
 inline HINSTANCE Main_hInst() { return mainGlobs.hInst; }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "init.h"
 #include "main.h"
+#include "error.h"
 #include "resource/resource.h"
 
 Init_Globs initGlobs = { NULL };
@@ -181,6 +182,8 @@ BOOL CALLBACK Init_DialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lPa
     {
         if (HIWORD(wParam) == LBN_SELCHANGE)
         {
+            //Error_Debug(Error_Format("Selection changed on list box #%i (hWnd == 0x%x)\n", LOWORD(wParam), lParam));
+
             if (LOWORD(wParam) == IDC_DEVICE)
             {
                 initGlobs.selDevice = &initGlobs.devices[SendMessageA((HWND)lParam, LB_GETCURSEL, 0, 0)];
@@ -298,7 +301,12 @@ B32 Init_Initialize(B32 setup, B32 debug, B32 best, B32 window, const char* noHA
                 return DirectDraw_Setup(FALSE, NULL, initGlobs.selDevice, NULL, 100, 100, initGlobs.selMode->width, initGlobs.selMode->height);
             else
                 return DirectDraw_Setup(FALSE, NULL, initGlobs.selDevice, NULL, 40, 40, 640, 480);
+        } else if (rval == -1)
+        {
+            Error_Warn(TRUE, "Cannot create dialog box");
         }
+    } else {
+        Error_Warn(TRUE, "Cannot Enumerate Drivers");
     }
     return FALSE;
 }

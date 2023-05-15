@@ -232,3 +232,9 @@ void Main_SetupDisplay(B32 fullScreen, U32 xPos, U32 yPos, U32 width, U32 height
     ShowWindow(mainGlobs.hWnd, SW_SHOW);
     SetActiveWindow(mainGlobs.hWnd);
 }
+
+B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRECTDRAWSURFACE4 backSurf, B32 doubleBuffered)
+{
+    // TODO: Implement Main_SetupDirect3D
+    return FALSE;
+}

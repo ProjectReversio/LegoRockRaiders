@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include <malloc.h>
 
 #define MEMORY_MAXHANDLES 2000
 
@@ -26,3 +27,18 @@ extern Mem_Globs memGlobs;
 
 extern void Mem_Initialize();
 extern void Mem_Shutdown(B32 freeAll);
+
+inline void* Mem_Alloc(U32 size)
+{
+    return malloc(size);
+}
+
+inline void* Mem_ReAlloc(void* addr, U32 size)
+{
+    return realloc(addr, size);
+}
+
+inline void Mem_Free(void* addr)
+{
+    free(addr);
+}
