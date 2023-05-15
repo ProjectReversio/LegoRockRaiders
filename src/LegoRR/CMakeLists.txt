@@ -18,6 +18,7 @@ set(MAIN_SRC
     draw.c
     lego.c
     maths.c
+    dxbug.c
 
     # Headers
     resource/resource.h
@@ -35,6 +36,7 @@ set(MAIN_SRC
     draw.h
     lego.h
     maths.h
+    dxbug.h
     ../Shared/types.h
 
     # Resource
