@@ -4,9 +4,114 @@
 
 Init_Globs initGlobs = { NULL };
 
+void Init_SetModeList(HWND hWndDlg);
+
+void Init_SetFullScreen(HWND hWndDlg, B32 on)
+{
+    HWND hWndText;
+
+    initGlobs.selFullScreen = on;
+    Init_SetModeList(hWndDlg);
+    hWndText = GetDlgItem(hWndDlg, IDC_MODELISTTEXT);
+    if (on)
+        SendMessageA(hWndText, WM_SETTEXT, 0, (LPARAM)"Screen Mode");
+    else
+        SendMessageA(hWndText, WM_SETTEXT, 0, (LPARAM)"Window Size");
+}
+
+void Init_HandleWindowButton(HWND hWndDlg)
+{
+    HWND hWndButton;
+
+    if (initGlobs.selDriver->flags & GRAPHICS_DRIVER_FLAG_WINDOWOK)
+    {
+        hWndButton = GetDlgItem(hWndDlg, IDC_WINDOW);
+        EnableWindow(hWndButton, TRUE);
+        if (!initGlobs.wasFullScreen)
+        {
+            Init_SetFullScreen(hWndDlg, FALSE);
+            hWndButton = GetDlgItem(hWndDlg, IDC_FULLSCREEN);
+            SendMessageA(hWndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+            hWndButton = GetDlgItem(hWndDlg, IDC_WINDOW);
+            SendMessageA(hWndButton, BM_SETCHECK, BST_CHECKED, 0);
+        }
+    } else {
+        initGlobs.wasFullScreen = initGlobs.selFullScreen;
+        Init_SetFullScreen(hWndDlg, TRUE);
+        hWndButton = GetDlgItem(hWndDlg, IDC_WINDOW);
+        SendMessageA(hWndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+        EnableWindow(hWndButton, FALSE);
+        hWndButton = GetDlgItem(hWndDlg, IDC_FULLSCREEN);
+        SendMessageA(hWndButton, BM_SETCHECK, BST_CHECKED, 0);
+    }
+}
+
+void Init_SetDeviceList(HWND hWndDlg)
+{
+    HWND hWndList = GetDlgItem(hWndDlg, IDC_DEVICE);
+
+    U32 loop;
+    // Clear the existing list (if any)...
+    while ((loop = SendMessageA(hWndList, LB_DELETESTRING, 0, 0) != -1));
+
+    U32 best = 0;
+    if (DirectDraw_EnumDevices(initGlobs.selDriver, initGlobs.devices, &initGlobs.deviceCount))
+    {
+        for (loop = 0; loop < initGlobs.deviceCount; loop++)
+        {
+            if (initGlobs.devices[loop].flags & GRAPHICS_DEVICE_FLAG_HARDWARE)
+                best = loop;
+            SendMessageA(hWndList, LB_ADDSTRING, 0, (LPARAM)initGlobs.devices[loop].desc);
+        }
+        initGlobs.selDevice = &initGlobs.devices[best];
+    } else {
+        SendMessageA(hWndList, LB_ADDSTRING, 0, (LPARAM)"Error: DirectX6 not installed.");
+    }
+
+    SendMessageA(hWndList, LB_SETCURSEL, best, 0);
+}
+
+void Init_SetModeList(HWND hWndDlg)
+{
+    // TODO: Implement Init_SetModeList
+}
+
 BOOL CALLBACK Init_DialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    // TODO: Implement Init_DialogProc
+    if (uMsg == WM_INITDIALOG)
+    {
+        HWND hWndDesktop = GetDesktopWindow();
+        RECT rectDesktop;
+        GetWindowRect(hWndDesktop, &rectDesktop);
+        RECT dlgRect;
+        GetWindowRect(hWndDlg, &dlgRect);
+        S32 xPos = rectDesktop.right / 2 - (dlgRect.right - dlgRect.left) / 2;
+        S32 yPos = rectDesktop.bottom / 2 - (dlgRect.bottom - dlgRect.top) / 2;
+        MoveWindow(hWndDlg, xPos, yPos, dlgRect.right - dlgRect.left, dlgRect.bottom - dlgRect.top, 1);
+
+        HWND hWndButton;
+        if (initGlobs.selFullScreen)
+            hWndButton = GetDlgItem(hWndDlg, IDC_FULLSCREEN);
+        else
+            hWndButton = GetDlgItem(hWndDlg, IDC_WINDOW);
+        SendMessageA(hWndButton, BM_SETCHECK, BST_CHECKED, 0);
+
+        HWND hWndList = GetDlgItem(hWndDlg, IDC_DRIVER);
+        for (U32 i = 0; i < initGlobs.driverCount; i++)
+            SendMessageA(hWndList, LB_ADDSTRING, 0, (LPARAM)initGlobs.drivers[i].desc);
+
+        SendMessageA(hWndList, LB_SETCURSEL, 0, 0);
+        SetFocus(hWndList);
+
+        Init_HandleWindowButton(hWndDlg);
+        Init_SetDeviceList(hWndDlg);
+        Init_SetModeList(hWndDlg);
+
+        return FALSE;
+    } else if (uMsg == WM_COMMAND)
+    {
+        // TODO: Implement Init_DialogProc
+    }
     return FALSE;
 }
 

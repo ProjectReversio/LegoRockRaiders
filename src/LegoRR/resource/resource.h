@@ -1,6 +1,12 @@
 #define LEGORR_MAIN_ICONGROUP           113
 
 #define LEGORR_MODESELECTION_DIALOG     101
+#define IDC_DRIVER                      1000
+#define IDC_DEVICE                      1002
+#define IDC_MODE                        1003
+#define IDC_FULLSCREEN                  1004
+#define IDC_WINDOW                      1005
+#define IDC_MODELISTTEXT                1006
 
 // Next default values for new objects
 //

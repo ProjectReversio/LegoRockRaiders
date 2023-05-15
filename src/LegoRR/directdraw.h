@@ -3,6 +3,7 @@
 #include "types.h"
 #include <windows.h>
 #include <ddraw.h>
+#include <d3d.h>
 
 #define DIRECTDRAW_MAXDRIVERS 20
 #define DIRECTDRAW_MAXDEVICES 20
@@ -91,3 +92,4 @@ extern void DirectDraw_Initialize(HWND hWnd);
 extern void DirectDraw_Shutdown();
 
 extern B32 DirectDraw_EnumDrivers(lpGraphics_Driver ref_list, U32* out_count);
+extern B32 DirectDraw_EnumDevices(lpGraphics_Driver driver, lpGraphics_Device ref_list, U32* out_count);
