@@ -255,10 +255,235 @@ void Main_HandleIO()
     }
 }
 
+LRESULT Main_WndProc_Fullscreen(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    inputGlobs.lClicked = FALSE;
+    inputGlobs.rClicked = FALSE;
+
+    if (mainGlobs.windowCallback != NULL)
+        mainGlobs.windowCallback(hWnd, message, wParam, lParam);
+
+    switch (message)
+    {
+        // Keyboard messages
+        case WM_KEYDOWN:
+        case WM_KEYUP:
+            return 0;
+
+        // Mouse
+        case WM_MOUSEMOVE:
+            return 0;
+
+        // Handle single or dual mouse
+        case WM_LBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_RBUTTONDOWN:
+        case WM_RBUTTONUP:
+        {
+            if (mainGlobs.flags & MAIN_FLAG_DUALMOUSE)
+            {
+                // Both buttons valid
+                switch (message)
+                {
+                    case WM_LBUTTONDOWN:
+                        inputGlobs.mslb = TRUE;
+                        inputGlobs.lClicked = FALSE;
+                        return 0;
+
+                    case WM_LBUTTONUP:
+                        inputGlobs.mslb = FALSE;
+                        inputGlobs.lClicked = TRUE;
+                        return 0;
+
+                    case WM_RBUTTONDOWN:
+                        inputGlobs.msrb = TRUE;
+                        inputGlobs.rClicked = FALSE;
+                        return 0;
+
+                    case WM_RBUTTONUP:
+                        inputGlobs.msrb = FALSE;
+                        inputGlobs.rClicked = TRUE;
+                        return 0;
+                }
+            } else {
+                // Merged buttons
+                switch (message)
+                {
+                    case WM_LBUTTONDOWN:
+                    case WM_RBUTTONDOWN:
+                        if (!inputGlobs.mslb)
+                        {
+                            inputGlobs.lClicked = FALSE;
+                            inputGlobs.rClicked = FALSE;
+                        }
+                        inputGlobs.mslb = inputGlobs.msrb = TRUE;
+                        break;
+                    case WM_LBUTTONUP:
+                    case WM_RBUTTONUP:
+                        inputGlobs.lClicked = TRUE;
+                        inputGlobs.rClicked = TRUE;
+                        inputGlobs.mslb = inputGlobs.msrb = FALSE;
+                        break;
+                }
+            }
+        }
+
+        case WM_LBUTTONDBLCLK:
+            inputGlobs.lDoubleClicked = TRUE;
+            return 0;
+        case WM_RBUTTONDBLCLK:
+            inputGlobs.rDoubleClicked = TRUE;
+            return 0;
+
+        // Exit messages
+        case WM_CLOSE:
+        case WM_QUIT:
+        case WM_DESTROY:
+            mainGlobs.exit = TRUE;
+            break;
+
+        // Window messages
+        case WM_SIZE:
+        case WM_MOVE:
+            return 0;
+
+        case WM_ACTIVATE:
+            return 0;
+
+        case WM_ACTIVATEAPP:
+            mainGlobs.active = (B32) wParam;
+            return 0;
+
+        case WM_PAINT:
+        case WM_CREATE:
+        case WM_COMMAND:
+            break;
+
+        case WM_WINDOWPOSCHANGING:
+        {
+            WINDOWPOS *pos = (WINDOWPOS *) lParam;
+            pos->flags &= ~(SWP_NOOWNERZORDER);
+            return 0;
+        }
+
+        case WM_ENTERMENULOOP:
+            return 0;
+        case WM_EXITMENULOOP:
+            return 0;
+        case WM_NCACTIVATE:
+            return 0;
+        case WM_SYSKEYDOWN:
+            return 0;
+        default:
+            break;
+    }
+
+    return DefWindowProc(hWnd, message, wParam, lParam);
+}
+
+LRESULT Main_WndProc_Windowed(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    if (mainGlobs.windowCallback != NULL)
+        mainGlobs.windowCallback(hWnd, message, wParam, lParam);
+
+    switch (message)
+    {
+        // Exit messages
+        case WM_CLOSE:
+        case WM_QUIT:
+        case WM_DESTROY:
+            mainGlobs.exit = TRUE;
+            break;
+
+        // Handle single or dual mouse
+        case WM_LBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_RBUTTONDOWN:
+        case WM_RBUTTONUP:
+        {
+            if (mainGlobs.flags & MAIN_FLAG_DUALMOUSE)
+            {
+                switch (message)
+                {
+                    case WM_LBUTTONDOWN:
+                        SetCapture(hWnd);
+                        inputGlobs.mslb = TRUE;
+                        inputGlobs.lClicked = FALSE;
+                        return 0;
+
+                    case WM_LBUTTONUP:
+                        ReleaseCapture();
+                        inputGlobs.mslb = FALSE;
+                        inputGlobs.lClicked = TRUE;
+                        return 0;
+
+                    case WM_RBUTTONDOWN:
+                        SetCapture(hWnd);
+                        inputGlobs.msrb = TRUE;
+                        inputGlobs.rClicked = FALSE;
+                        return 0;
+
+                    case WM_RBUTTONUP:
+                        ReleaseCapture();
+                        inputGlobs.msrb = FALSE;
+                        inputGlobs.rClicked = TRUE;
+                        return 0;
+                }
+            } else {
+                // Merged buttons
+                switch (message)
+                {
+                    case WM_LBUTTONDOWN:
+                    case WM_RBUTTONDOWN:
+                        SetCapture(hWnd);
+                        if (!inputGlobs.mslb)
+                        {
+                            inputGlobs.lClicked = FALSE;
+                            inputGlobs.rClicked = FALSE;
+                        }
+                        inputGlobs.mslb = inputGlobs.msrb = TRUE;
+                        break;
+                    case WM_LBUTTONUP:
+                    case WM_RBUTTONUP:
+                        ReleaseCapture();
+                        inputGlobs.lClicked = TRUE;
+                        inputGlobs.rClicked = TRUE;
+                        inputGlobs.mslb = inputGlobs.msrb = FALSE;
+                        break;
+                }
+            }
+        }
+
+        case WM_LBUTTONDBLCLK:
+            inputGlobs.lDoubleClicked = TRUE;
+            break;
+
+        case WM_RBUTTONDBLCLK:
+            inputGlobs.rDoubleClicked = TRUE;
+            break;
+
+        case WM_ACTIVATEAPP:
+            mainGlobs.active = (B32)wParam;
+            return 0;
+
+        case WM_ACTIVATE:
+            break;
+
+        default:
+            return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+
+    return 0L;
+}
+
 LRESULT CALLBACK Main_WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    // TODO: Implement Main_WndProc
-    return DefWindowProc(hWnd, message, wParam, lParam);
+    if (mainGlobs.flags & MAIN_FLAG_FULLSCREEN)
+    {
+        return Main_WndProc_Fullscreen(hWnd, message, wParam, lParam);
+    } else {
+        return Main_WndProc_Windowed(hWnd, message, wParam, lParam);
+    }
 }
 
 B32 Main_InitApp(HINSTANCE hInstance)
