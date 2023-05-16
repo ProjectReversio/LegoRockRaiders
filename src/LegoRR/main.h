@@ -108,6 +108,9 @@ extern Main_Globs mainGlobs;
 extern void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_insistOnCD);
 extern B32 Main_InitApp(HINSTANCE hInstance);
 
+extern B32 Main_SetState(Main_State* state);
+extern void Main_SetTitle(const char* title);
+
 extern U32 Main_GetWindowsBitDepth();
 
 extern void Main_SetupDisplay(B32 fullScreen, U32 xPos, U32 yPos, U32 width, U32 height);
@@ -116,3 +119,4 @@ extern B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRE
 inline HWND Main_hWnd() { return mainGlobs.hWnd; }
 inline HINSTANCE Main_hInst() { return mainGlobs.hInst; }
 inline void Main_SetFogMethod(U32 m) { mainGlobs.fogMethod = m; }
+inline ProgrammerMode Main_ProgrammerMode() { return mainGlobs.programmerLevel; }

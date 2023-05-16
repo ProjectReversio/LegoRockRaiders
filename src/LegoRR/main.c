@@ -291,6 +291,23 @@ B32 Main_InitApp(HINSTANCE hInstance)
     return TRUE;
 }
 
+B32 Main_SetState(Main_State* state)
+{
+    if (state != NULL)
+    {
+        mainGlobs.currState = *state;
+        mainGlobs.stateSet = TRUE;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+void Main_SetTitle(const char* title)
+{
+    SetWindowTextA(mainGlobs.hWnd, title);
+}
+
 U32 Main_GetWindowsBitDepth()
 {
     return GetDeviceCaps(GetDC(Main_hWnd()), BITSPIXEL);
