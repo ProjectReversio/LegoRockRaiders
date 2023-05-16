@@ -99,3 +99,8 @@ extern B32 DirectDraw_Setup(B32 fullscreen, lpGraphics_Driver driver, lpGraphics
 extern B32 DirectDraw_CreateClipper(B32 fullscreen, U32 width, U32 height);
 
 extern void DirectDraw_Flip();
+
+inline LPDIRECTDRAW4 DirectDraw() { return directDrawGlobs.lpDirectDraw; }
+inline LPDIRECTDRAWSURFACE4 DirectDraw_fSurf() { return directDrawGlobs.fSurf; }
+inline LPDIRECTDRAWSURFACE4 DirectDraw_bSurf() { return directDrawGlobs.bSurf; }
+inline B32 DirectDraw_FullScreen() { return directDrawGlobs.fullScreen; }
