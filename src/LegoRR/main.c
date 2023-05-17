@@ -105,10 +105,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Error_Initialize();
     Mem_Initialize();
 
-#ifdef _DEBUG
-    // Log file access in debug mode
-    File_LogFileAccess(TRUE);
-#endif
+//#ifdef _DEBUG
+//    // Log file access in debug mode
+//    File_LogFileAccess(TRUE);
+//#endif
 
 #ifdef _DEBUG
     // Since we currently have a different name for the debug executable,
