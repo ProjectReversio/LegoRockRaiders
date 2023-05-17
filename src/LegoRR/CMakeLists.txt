@@ -19,6 +19,7 @@ set(MAIN_SRC
     lego.c
     maths.c
     dxbug.c
+    wad.c
     platform/d3drm.c
 
     # Headers
@@ -38,6 +39,7 @@ set(MAIN_SRC
     lego.h
     maths.h
     dxbug.h
+    wad.h
     ../Shared/types.h
 
     # Resource

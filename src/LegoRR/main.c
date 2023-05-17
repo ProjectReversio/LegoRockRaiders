@@ -104,7 +104,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // Initialize everything (memory, window, DirectDraw, etc.)
     Error_Initialize();
     Mem_Initialize();
+#ifdef _DEBUG
+    // Since we currently have a different name for the debug executable,
+    // we need to specify LegoRR for the program name in order to load the right WAD files.
+    File_Initialize("LegoRR", insistOnCD, "SOFTWARE\\\\LEGO Media\\\\Games\\\\Rock Raiders");
+#else
     File_Initialize(mainGlobs.programName, insistOnCD, "SOFTWARE\\\\LEGO Media\\\\Games\\\\Rock Raiders");
+#endif
     Config_Initialize();
     Input_InitKeysAndDI();
 
