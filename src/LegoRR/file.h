@@ -46,6 +46,7 @@ extern File_Globs fileGlobs;
 
 extern void File_Initialize(const char* programName, B32 insistOnCD, const char* registryLocation);
 
+extern void File_LogFileAccess(B32 mode);
 extern void File_ErrorFile(char* msg, ...);
 
 extern S32 File_LoadWad(char* fName);

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <direct.h>
 #include <string.h>
+#include <stdarg.h>
 #include "file.h"
 #include "error.h"
 #include "wad.h"
@@ -52,10 +53,36 @@ void File_Initialize(const char* programName, B32 insistOnCD, const char* regist
     // TODO: Implement File_Initialize
 }
 
+void File_LogFileAccess(B32 mode)
+{
+    fileLogFileAccess = mode;
+}
+
 void File_ErrorFile(char* msg, ...)
 {
 #ifdef _DEBUG
-    // TODO: Implement File_ErrorFile
+    static FILE *f;
+    va_list arg;
+
+    if (fileLogFileAccess)
+    {
+        va_start(arg, msg);
+        if (f)
+        {
+            if (msg)
+                vfprintf(f, msg, arg);
+            else
+            {
+                fclose(f);
+                f = 0;
+            }
+        } else if (!msg)
+        {
+            f = fopen("file.log", "w");
+            fprintf(f, "File access log\n");
+        }
+        va_end(arg);
+    }
 #endif
 }
 

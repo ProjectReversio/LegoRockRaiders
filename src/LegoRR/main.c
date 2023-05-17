@@ -104,6 +104,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     // Initialize everything (memory, window, DirectDraw, etc.)
     Error_Initialize();
     Mem_Initialize();
+
+#ifdef _DEBUG
+    // Log file access in debug mode
+    File_LogFileAccess(TRUE);
+#endif
+
 #ifdef _DEBUG
     // Since we currently have a different name for the debug executable,
     // we need to specify LegoRR for the program name in order to load the right WAD files.
