@@ -118,3 +118,20 @@ B32 File_SetBaseSearchPath(const char* basePath)
         return TRUE;
     }
 }
+
+lpFile File_Open(const char* fName, char* mode)
+{
+    // TODO: Implement File_Open
+    return NULL;
+}
+
+S32 File_Close(lpFile f)
+{
+    // TODO: Implement File_Close
+    return 0;
+}
+
+void File_CheckRedundantFiles(const char* logName)
+{
+    // TODO: Implement File_CheckRedundantFiles
+}

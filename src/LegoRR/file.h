@@ -53,3 +53,7 @@ extern S32 File_LoadWad(char* fName);
 extern void File_CloseWad(S32 hWad);
 extern void File_SetActiveWad(S32 hWad);
 extern B32 File_SetBaseSearchPath(const char* basePath);
+
+extern lpFile File_Open(const char* fName, char* mode);
+extern S32 File_Close(lpFile f);
+extern void File_CheckRedundantFiles(const char* logName);
