@@ -56,9 +56,117 @@ char* Error_Format(char *msg, ...)
     return res;
 }
 
-void Error_Out(B32 errFatal, const char* msg, ...)
+void Error_Out(B32 errFatal, const char* lpOutputString, ...)
 {
-    // TODO: Implement Error_Out
+    if (errorGlobs.dumpFile)
+    {
+        va_list args;
+        U8 msg[512];
+        va_start(args, lpOutputString);
+        File_VPrintF(errorGlobs.dumpFile, lpOutputString, args);
+        vsprintf(msg, lpOutputString, args);
+        va_end(args);
+        File_Flush(errorGlobs.dumpFile);
+        if (errFatal)
+            Error_TerminateProgram(msg);
+    } else {
+
+        HANDLE heventDBWIN;  /* DBWIN32 synchronization object */
+        HANDLE heventData;   /* data passing synch object */
+        HANDLE hSharedFile;  /* memory mapped file shared data */
+        LPSTR lpszSharedMem;
+        char achBuffer[500];
+
+        /* create the output buffer */
+        va_list args;
+        va_start(args, lpOutputString);
+        vsprintf(achBuffer, lpOutputString, args);
+        va_end(args);
+
+        /*
+        Do a regular OutputDebugString so that the output is
+        still seen in the debugger window if it exists.
+
+          This ifdef is necessary to avoid infinite recursion
+          from the inclusion of W95TRACE.H
+        */
+#ifdef _cplusplus
+        #ifdef _UNICODE
+		::OutputDebugStringW(achBuffer);
+#else
+		::OutputDebugStringA(achBuffer);
+#endif
+#else
+#ifdef _UNICODE
+        OutputDebugStringW(achBuffer);
+#else
+        OutputDebugStringA(achBuffer);
+#endif
+#endif
+        // TEMP: Not in original source, but needed for CLion console output
+        {
+            setvbuf(stdout, NULL, _IONBF, 0);
+            printf("%s", achBuffer);
+        }
+
+        // TODO: Finish Implementing Error_Out
+
+        if (errFatal)
+            Error_TerminateProgram(achBuffer);
+    }
+}
+
+void Error_Log(lpFile logFile, B32 log, const char* lpOutputString, ...)
+{
+    if (log)
+    {
+        if (logFile)
+        {
+            va_list args;
+
+            U8 msg[512];
+
+            va_start(args, lpOutputString);
+            File_VPrintF(logFile, lpOutputString, args);
+            vsprintf(msg, lpOutputString, args);
+            va_end(args);
+            File_Flush(logFile);
+        }
+    }
+}
+
+B32 Error_SetDumpFile(const char* errors, const char* loadLog, const char* loadErrorLog, const char* redundantLog)
+{
+    B32 ok = TRUE;
+
+    if (loadLog)
+    {
+        if (!(errorGlobs.loadLogFile = File_Open(loadLog, "w")))
+            ok = FALSE;
+        else
+            strcpy(errorGlobs.loadLogName, loadLog);
+    }
+
+    if (loadErrorLog)
+    {
+        if (!(errorGlobs.loadErrorLogFile = File_Open(loadErrorLog, "w")))
+            ok = FALSE;
+        else
+            Error_LogLoadError(TRUE, "<ErrorNum>[0=InvalidFName,1=UnableToOpen,2=UnableToOpenForWrite,3=UnableToVerifyName4=TextureError] <File>");
+    }
+
+    if (errors)
+    {
+        if (!(errorGlobs.dumpFile = File_Open(errors, "w")))
+            ok = FALSE;
+    }
+
+    if (redundantLog)
+    {
+        strcpy(errorGlobs.redundantLogName, redundantLog);
+    }
+
+    return ok;
 }
 
 void Error_DebugBreak()

@@ -57,3 +57,6 @@ extern B32 File_SetBaseSearchPath(const char* basePath);
 extern lpFile File_Open(const char* fName, char* mode);
 extern S32 File_Close(lpFile f);
 extern void File_CheckRedundantFiles(const char* logName);
+
+extern U32 File_VPrintF(lpFile file, const char* msg, va_list args);
+extern S32 File_Flush(lpFile file);

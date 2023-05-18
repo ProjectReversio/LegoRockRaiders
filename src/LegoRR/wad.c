@@ -259,6 +259,10 @@ void Wad_Error(char *msg, ...)
     va_end(arg);
     OutputDebugString(buffer);
 //#ifdef _DEBUG
-//    printf("%s", buffer);
+//    // TEMP: Not in original source, but needed for CLion console output
+//    {
+//        setvbuf(stdout, NULL, _IONBF, 0);
+//        printf("%s", buffer);
+//    }
 //#endif
 }

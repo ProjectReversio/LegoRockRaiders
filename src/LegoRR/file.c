@@ -135,3 +135,15 @@ void File_CheckRedundantFiles(const char* logName)
 {
     // TODO: Implement File_CheckRedundantFiles
 }
+
+U32 File_VPrintF(lpFile file, const char* msg, va_list args)
+{
+    // TODO: Implement File_VPrintF
+    return 0;
+}
+
+S32 File_Flush(lpFile file)
+{
+    // TODO: Implement File_Flush
+    return 0;
+}

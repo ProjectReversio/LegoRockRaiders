@@ -211,7 +211,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
                 Error_Warn(TRUE, "No State Set: Exiting...");
             }
         } else {
-            Error_Warn(TRUE, "Initialisation Failed: Exiting...");
+            Error_Warn(TRUE, "Initialization Failed: Exiting...");
         }
         DirectDraw_Shutdown();
         DestroyWindow(mainGlobs.hWnd);

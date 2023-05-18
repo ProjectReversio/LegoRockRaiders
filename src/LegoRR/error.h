@@ -26,6 +26,9 @@ extern void Error_FullScreen(B32 on);
 extern char* Error_Format(char *msg, ...);
 
 extern void Error_Out(B32 errFatal, const char* msg, ...);
+extern void Error_Log(lpFile logFile, B32 log, const char* msg, ...);
+
+extern B32 Error_SetDumpFile(const char* errors, const char* loadLog, const char* loadErrorLog, const char* redundantLog);
 
 extern void Error_DebugBreak();
 extern void Error_TerminateProgram(const char* msg);
