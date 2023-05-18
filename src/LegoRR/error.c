@@ -2,6 +2,8 @@
 #include <windows.h>
 #include <stdio.h>
 #include "file.h"
+#include "directdraw.h"
+#include "config.h"
 
 Error_Globs errorGlobs = { NULL };
 
@@ -52,4 +54,39 @@ char* Error_Format(char *msg, ...)
     va_end(args);
 
     return res;
+}
+
+void Error_Out(B32 errFatal, const char* msg, ...)
+{
+    // TODO: Implement Error_Out
+}
+
+void Error_DebugBreak()
+{
+    if (MessageBox(NULL, "Error_DebugBreak() called\nCrash to debugger?", "Debugger", MB_OKCANCEL) == IDOK)
+        DebugBreak();
+}
+
+void Error_TerminateProgram(const char* msg)
+{
+    // Call exit 0.  Should probably terminate properly and clean everything up.
+#ifdef _DEBUG
+    if (!DirectDraw_FullScreen())
+    {
+        U8 message[1024];
+        S32 r;
+        sprintf(message, "Error:\n%s\nLast entry read from config: \"%s\"\n\nSelect Retry to crash to debugger", msg, Config_Debug_GetLastFind());
+
+        ShowCursor(TRUE);
+
+        r = MessageBox(NULL, message, "Debugger", MB_ABORTRETRYIGNORE);
+        if (r == IDRETRY)
+            DebugBreak();
+        else if (r == IDIGNORE)
+            return;
+    }
+#endif // _DEBUG
+
+    Error_Shutdown();
+    exit(0);
 }

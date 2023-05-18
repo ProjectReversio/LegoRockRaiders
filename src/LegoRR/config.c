@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include "config.h"
 #include "mem.h"
 
@@ -47,3 +48,18 @@ const char* Config_BuildStringID(const char* s, ...)
 
     return string;
 }
+
+#ifdef _DEBUG
+const char* Config_Debug_GetLastFind()
+{
+    static U8 msg[1024];
+
+    if (configGlobs.debugLastFind)
+    {
+        sprintf(msg, "%s %s", configGlobs.debugLastFind->key, configGlobs.debugLastFind->value);
+        return msg;
+    }
+
+    return NULL;
+}
+#endif // _DEBUG

@@ -32,6 +32,11 @@ typedef struct Config_Globs
     lpConfig freeList;
     U32 listCount;
     Config_GlobFlags flags;
+
+#ifdef _DEBUG
+    lpConfig debugLastFind;
+#endif
+
 } Config_Globs, *lpConfig_Globs;
 
 extern Config_Globs configGlobs;
@@ -40,3 +45,7 @@ extern void Config_Initialize();
 extern void Config_Shutdown();
 
 extern const char* Config_BuildStringID(const char* s, ...);
+
+#ifdef _DEBUG
+extern const char* Config_Debug_GetLastFind();
+#endif // _DEBUG
