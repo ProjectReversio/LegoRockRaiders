@@ -69,6 +69,15 @@ typedef enum ProgrammerMode
     PROGRAMMER_MODE_11 = 11,
 } ProgrammerMode;
 
+typedef enum Graphics_Quality
+{
+    Wireframe = 0,
+    UnlitFlat = 1,
+    Flat      = 2,
+    Gouraud   = 3,
+    Phong     = 4,
+} Graphics_Quality;
+
 // Flags specified by the "-flags #" command line argument (which has to be in decimal...)
 typedef enum MainCLFlags
 {

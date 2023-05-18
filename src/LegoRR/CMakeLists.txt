@@ -20,6 +20,12 @@ set(MAIN_SRC
     maths.c
     dxbug.c
     wad.c
+    container.c
+    fonts.c
+    lego_camera.c
+    lego_object.c
+    text_window.c
+    viewport.c
     platform/d3drm.c
 
     # Headers
@@ -40,6 +46,12 @@ set(MAIN_SRC
     maths.h
     dxbug.h
     wad.h
+    container.h
+    fonts.h
+    lego_camera.h
+    lego_object.h
+    text_window.h
+    viewport.h
     ../Shared/types.h
 
     # Resource
