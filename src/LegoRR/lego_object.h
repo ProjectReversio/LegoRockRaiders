@@ -4,5 +4,6 @@
 
 typedef struct LegoObject
 {
+    void* temp;
     // TODO: Implement LegoObject
 } LegoObject, *lpLegoObject;

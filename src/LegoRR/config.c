@@ -63,3 +63,10 @@ const char* Config_Debug_GetLastFind()
     return NULL;
 }
 #endif // _DEBUG
+
+lpConfig Config_Load(const char* filename)
+{
+    // TODO: Implement Config_Load
+
+    return NULL;
+}

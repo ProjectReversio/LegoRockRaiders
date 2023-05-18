@@ -49,3 +49,5 @@ extern const char* Config_BuildStringID(const char* s, ...);
 #ifdef _DEBUG
 extern const char* Config_Debug_GetLastFind();
 #endif // _DEBUG
+
+extern lpConfig Config_Load(const char* filename);

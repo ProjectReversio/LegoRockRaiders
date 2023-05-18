@@ -13,6 +13,7 @@
 
 typedef struct Lego_Level
 {
+    void* temp;
     // TODO: Implement Lego_Level
 } Lego_Level, *lpLego_Level;
 

@@ -4,5 +4,6 @@
 
 typedef struct LegoCamera
 {
+    void* temp;
     // TODO: Implement LegoCamera
 } LegoCamera, *lpLegoCamera;

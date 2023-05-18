@@ -2,6 +2,7 @@
 #include <string.h>
 #include "types.h"
 #include "main.h"
+#include "front.h"
 
 Lego_Globs legoGlobs;
 
@@ -24,6 +25,32 @@ B32 Gods_Go(const char* programName)
 
 B32 Lego_Initialize()
 {
+    // TODO: Implement Lego_Initialize
+
+    legoGlobs.rootCont = Container_Initialize(legoGlobs.gameName);
+    if (legoGlobs.rootCont == NULL)
+        return FALSE;
+
+    // TODO: Implement Lego_Initialize
+
+    legoGlobs.config = Config_Load("Lego.cfg");
+    if (legoGlobs.config == NULL)
+    {
+        Container_Shutdown();
+        return FALSE;
+    }
+
+    // TODO: Implement Lego_Initialize
+
+    if(Front_IsFrontEndEnabled() && Front_IsIntrosEnabled())
+    {
+        Front_PlayIntroMovie("LegoAvi", Main_ProgrammerMode() != PROGRAMMER_OFF);
+        Front_PlayIntroSplash("DDILogo", TRUE, "DDILogoTime");
+        Front_PlayIntroMovie("DDIAvi", TRUE);
+        Front_PlayIntroMovie("RRAvi", TRUE);
+        Front_PlayIntroSplash("LMILogo", Main_ProgrammerMode() != PROGRAMMER_OFF, "LMILogoTime");
+    }
+
     // TODO: Implement Lego_Initialize
 
     return TRUE;

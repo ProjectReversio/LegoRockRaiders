@@ -4,5 +4,6 @@
 
 typedef struct Font
 {
+    void* temp;
     // TODO: Implement Font
 } Font, *lpFont;

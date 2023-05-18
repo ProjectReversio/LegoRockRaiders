@@ -26,6 +26,7 @@ set(MAIN_SRC
     lego_object.c
     text_window.c
     viewport.c
+    front.c
     platform/d3drm.c
 
     # Headers
@@ -52,6 +53,7 @@ set(MAIN_SRC
     lego_object.h
     text_window.h
     viewport.h
+    front.h
     ../Shared/types.h
 
     # Resource

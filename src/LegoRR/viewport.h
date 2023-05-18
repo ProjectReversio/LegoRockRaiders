@@ -4,5 +4,6 @@
 
 typedef struct Viewport
 {
+    void* temp;
     // TODO: Implement Viewport
 } Viewport, *lpViewport;
