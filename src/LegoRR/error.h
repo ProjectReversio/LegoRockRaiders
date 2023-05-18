@@ -31,7 +31,6 @@ extern void Error_DebugBreak();
 extern void Error_TerminateProgram(const char* msg);
 
 #ifdef _DEBUG
-// TODO: Error functions for debug
 #define Error_Warn(b,s)             { if (b) { Error_Out(FALSE, "%s(%i): Warning: %s\n", __FILE__, __LINE__, (s)); Error_SetWarn(); } }
 #define Error_Fatal(b,s)            { if (b) { Error_Out(TRUE, "%s(%i): Fatal: %s\n", __FILE__, __LINE__, (s)); } }
 #define Error_Debug(s)              Error_Out(FALSE, "%s", (s))
