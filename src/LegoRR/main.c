@@ -216,7 +216,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         DirectDraw_Shutdown();
         DestroyWindow(mainGlobs.hWnd);
     } else {
-        Error_Warn(TRUE, "Unable to initialise window");
+        Error_Warn(TRUE, "Unable to initialize window");
     }
 
     Input_ReleaseKeysAndDI();
