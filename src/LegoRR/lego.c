@@ -3,6 +3,7 @@
 #include "types.h"
 #include "main.h"
 #include "front.h"
+#include "error.h"
 
 Lego_Globs legoGlobs;
 
@@ -29,13 +30,17 @@ B32 Lego_Initialize()
 
     legoGlobs.rootCont = Container_Initialize(legoGlobs.gameName);
     if (legoGlobs.rootCont == NULL)
+    {
+        Error_Warn(TRUE, "Failed to initialize root container");
         return FALSE;
+    }
 
     // TODO: Implement Lego_Initialize
 
     legoGlobs.config = Config_Load("Lego.cfg");
     if (legoGlobs.config == NULL)
     {
+        Error_Warn(TRUE, "Failed to load config file 'Lego.cfg'");
         Container_Shutdown();
         return FALSE;
     }
