@@ -6,6 +6,14 @@
 
 #define CONFIG_SEPARATOR "::"
 
+#ifdef _DEBUG
+#define Config_CheckInit() \
+    if (!(configGlobs.flags & CONFIG_GLOB_FLAG_INITIALIZED)) \
+        Error_Fatal(TRUE, "Error: Config_Intitialise() Has Not Been Called");
+#else
+#define Config_CheckInit()
+#endif
+
 typedef enum Config_GlobFlags
 {
     CONFIG_GLOB_FLAG_NONE = 0,
@@ -15,9 +23,9 @@ typedef enum Config_GlobFlags
 
 typedef struct Config
 {
-    char* fileData;
-    char* key;
-    char* value;
+    U8* fileData;
+    U8* itemName;
+    U8* dataString;
     U32 depth;
     U32 itemHashCode;
     struct Config* linkNext;
@@ -51,3 +59,8 @@ extern const char* Config_Debug_GetLastFind();
 #endif // _DEBUG
 
 extern lpConfig Config_Load(const char* filename);
+
+extern lpConfig Config_Create(lpConfig prev);
+extern void Config_Remove(lpConfig dead);
+
+extern void Config_AddList();

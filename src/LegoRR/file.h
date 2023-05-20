@@ -60,3 +60,7 @@ extern void File_CheckRedundantFiles(const char* logName);
 
 extern U32 File_VPrintF(lpFile file, const char* msg, va_list args);
 extern S32 File_Flush(lpFile file);
+
+extern void* File_LoadBinary(const char* filename, U32* sizeptr);
+extern void* File_LoadASCII(const char* filename, U32* sizeptr);
+extern void* File_Load(const char*  filename, U32* sizeptr, B32 binary);

@@ -147,3 +147,19 @@ S32 File_Flush(lpFile file)
     // TODO: Implement File_Flush
     return 0;
 }
+
+void* File_LoadBinary(const char* filename, U32* sizeptr)
+{
+    return File_Load(filename, sizeptr, TRUE);
+}
+
+void* File_LoadASCII(const char* filename, U32* sizeptr)
+{
+    return File_Load(filename, sizeptr, FALSE);
+}
+
+void* File_Load(const char*  filename, U32* sizeptr, B32 binary)
+{
+    // TODO: Implement File_Load
+    return NULL;
+}
