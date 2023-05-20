@@ -95,7 +95,7 @@ typedef struct Main_Globs
     char programName[256];
     LPDIRECT3DRM3 lpD3DRM;
     LPDIRECT3DRMDEVICE3 device;
-    LPDIRECT3DDEVICE3* imDevice;
+    LPDIRECT3DDEVICE3 imDevice;
     ULONG fogMethod;
     U32 appWidth, appHeight;
     Main_State currState;
@@ -129,3 +129,6 @@ inline HWND Main_hWnd() { return mainGlobs.hWnd; }
 inline HINSTANCE Main_hInst() { return mainGlobs.hInst; }
 inline void Main_SetFogMethod(U32 m) { mainGlobs.fogMethod = m; }
 inline ProgrammerMode Main_ProgrammerMode() { return mainGlobs.programmerLevel; }
+inline LPDIRECT3DRM3 lpD3DRM() { return mainGlobs.lpD3DRM; }
+inline LPDIRECT3DRMDEVICE3 lpDevice() { return mainGlobs.device; }
+inline LPDIRECT3DDEVICE3 lpIMDevice() { return mainGlobs.imDevice; }

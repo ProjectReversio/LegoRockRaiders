@@ -27,6 +27,8 @@ set(MAIN_SRC
     text_window.c
     viewport.c
     front.c
+    activities.c
+    anim_clone.c
     platform/d3drm.c
 
     # Headers
@@ -54,6 +56,8 @@ set(MAIN_SRC
     text_window.h
     viewport.h
     front.h
+    activities.h
+    anim_clone.h
     ../Shared/types.h
 
     # Resource
