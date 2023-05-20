@@ -6,6 +6,7 @@
 #include "file.h"
 #include "error.h"
 #include "wad.h"
+#include "mem.h"
 
 File_Globs fileGlobs = { NULL };
 
@@ -136,6 +137,24 @@ void File_CheckRedundantFiles(const char* logName)
     // TODO: Implement File_CheckRedundantFiles
 }
 
+S32 File_Seek(lpFile f, S32 pos, S32 mode)
+{
+    // TODO: Implement File_Seek
+    return 0;
+}
+
+S32 File_Tell(lpFile f)
+{
+    // TODO: Implement File_Tell
+    return 0;
+}
+
+S32 File_Read(void* buffer, S32 size, S32 count, lpFile f)
+{
+    // TODO: Implement File_Read
+    return 0;
+}
+
 U32 File_VPrintF(lpFile file, const char* msg, va_list args)
 {
     // TODO: Implement File_VPrintF
@@ -160,6 +179,33 @@ void* File_LoadASCII(const char* filename, U32* sizeptr)
 
 void* File_Load(const char*  filename, U32* sizeptr, B32 binary)
 {
-    // TODO: Implement File_Load
+    lpFile ifp;
+    U32 size;
+    U8* buffer;
+
+    if ((ifp = File_Open(filename, binary ? "rb" : "r")))
+    {
+        File_Seek(ifp, 0, File_SeekEnd);
+        size = File_Tell(ifp);
+
+#ifdef _DEBUG
+        Error_Fatal(size == 0, Error_Format("Attempt to File_LoadBinary() a file of zero length \"%s\"", filename));
+#endif // _DEBUG
+
+        if (fileGlobs.loadCallback)
+            fileGlobs.loadCallback(filename, size, fileGlobs.loadCallbackData);
+
+        if ((buffer = Mem_Alloc(size)))
+        {
+            File_Seek(ifp, 0, File_SeekSet);
+            File_Read(buffer, sizeof(U8), size, ifp);
+            if (sizeptr != NULL)
+                *sizeptr = size;
+
+            File_Close(ifp);
+            return buffer;
+        }
+        File_Close(ifp);
+    }
     return NULL;
 }

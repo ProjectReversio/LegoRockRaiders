@@ -9,6 +9,12 @@
 
 #define WAD_ERROR -1
 
+enum {
+    File_SeekSet,
+    File_SeekCur,
+    File_SeekEnd
+};
+
 typedef enum FileSys
 {
     FileSys_Wad,
@@ -36,7 +42,7 @@ typedef struct File
 typedef struct File_Globs
 {
     char dataDir[FILE_MAXPATH];
-    void (*loadCallback)();
+    void (*loadCallback)(const char*, U32, void*);
     void* loadCallbackData;
     char cdLetter;
     U8 padding1[3];
@@ -57,6 +63,10 @@ extern B32 File_SetBaseSearchPath(const char* basePath);
 extern lpFile File_Open(const char* fName, char* mode);
 extern S32 File_Close(lpFile f);
 extern void File_CheckRedundantFiles(const char* logName);
+
+extern S32 File_Seek(lpFile f, S32 pos, S32 mode);
+extern S32 File_Tell(lpFile f);
+extern S32 File_Read(void* buffer, S32 size, S32 count, lpFile f);
 
 extern U32 File_VPrintF(lpFile file, const char* msg, va_list args);
 extern S32 File_Flush(lpFile file);
