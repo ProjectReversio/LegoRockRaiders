@@ -147,7 +147,7 @@ lpConfig Config_Create(lpConfig prev)
 
     Config_CheckInit();
 
-    if (configGlobs.freeList)
+    if (configGlobs.freeList == NULL)
         Config_AddList();
 
     newConfig = configGlobs.freeList;

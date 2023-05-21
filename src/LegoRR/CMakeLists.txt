@@ -30,6 +30,7 @@ set(MAIN_SRC
     activities.c
     anim_clone.c
     utils.c
+    compress.c
     platform/d3drm.c
 
     # Headers
@@ -60,6 +61,7 @@ set(MAIN_SRC
     activities.h
     anim_clone.h
     utils.h
+    compress.h
     ../Shared/types.h
 
     # Resource

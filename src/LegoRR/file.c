@@ -105,6 +105,11 @@ void File_Error(char* msg, ...)
     va_end(args);
 }
 
+void* _File_Malloc(S32 size)
+{
+    return Mem_Alloc(size);
+}
+
 void _File_Dealloc(lpFile file)
 {
     if (file)
@@ -131,10 +136,35 @@ void _File_Free(void* ptr)
     Mem_Free(ptr);
 }
 
-const char *_File_GetWadName(const char *fName)
+const char *_File_GetWadName(char *fName)
 {
-    // TODO: Implement _File_GetWadName
-    return NULL;
+    static char wadedName[MAX_WAD_BASE_PATH];
+
+    if (basePathSet)
+    {
+        S32 fLen = strlen(fName);
+        S32 wLen = strlen(wadBasePath);
+        if (fLen <= wLen)
+            return fName;
+        else
+        {
+            char copy = fName[wLen], *ptr;
+            fName[wLen] = 0;
+            if (!_stricmp(fName, wadBasePath))
+            {
+                ptr = fName + wLen + 1;
+                sprintf(wadedName, "%s", ptr);
+                fName[wLen] = copy;
+                return wadedName;
+            } else {
+                fName[wLen] = copy;
+                return fName;
+            }
+        }
+    } else
+    {
+        return fName;
+    }
 }
 
 char* File_VerifyFilename(const char* filename)
@@ -239,14 +269,34 @@ B32 File_GetCDFilePath(const char* path, const char* fname)
 
 lpFile _File_Alloc(FileSys fType)
 {
-    // TODO: Implement _File_Alloc
+    if (fType == FileSys_Standard)
+    {
+        lpFile f;
+        f = (lpFile) _File_Malloc(sizeof(File));
+        f->type = fType;
+        return f;
+    } else if (fType == FileSys_Wad)
+    {
+        lpFile f = (lpFile) _File_Malloc(sizeof(File));
+        if (f)
+        {
+            f->type = fType;
+            f->wad = (WadFile*) _File_Malloc(sizeof(WadFile));
+            if (f->wad)
+                return f;
+            else
+                _File_Free(f);
+        }
+    }
     return NULL;
 }
 
 B32 _File_OpenWad(WadFile* wad, const char* fName)
 {
-    // TODO: Implement _File_OpenWad
-    return FALSE;
+    wad->eof = FALSE;
+    wad->streamPos = 0;
+    wad->hFile = Wad_FileOpen(fName, currWadHandle);
+    return wad->hFile == WAD_ERROR ? FALSE : TRUE;
 }
 
 lpFile File_Open(const char* fName, char* mode)
@@ -332,19 +382,90 @@ void File_CheckRedundantFiles(const char* logName)
 
 S32 File_Seek(lpFile f, S32 pos, S32 mode)
 {
-    // TODO: Implement File_Seek
+    FileSys fs = _File_GetSystem(f);
+    switch (fs)
+    {
+        case FileSys_Standard:
+            return fseek(StdFile(f), pos, mode);
+            break;
+        case FileSys_Wad:
+            switch(mode)
+            {
+                case SEEK_SET:
+                    WadFile(f)->streamPos = pos;
+                    if (WadFile(f)->streamPos > Wad_hLength(WadFile(f)->hFile))
+                        WadFile(f)->streamPos = Wad_hLength(WadFile(f)->hFile);
+                    if (WadFile(f)->streamPos < 0)
+                        WadFile(f)->streamPos = 0;
+                    break;
+                case SEEK_CUR:
+                    WadFile(f)->streamPos += pos;
+                    if (WadFile(f)->streamPos > Wad_hLength(WadFile(f)->hFile))
+                        WadFile(f)->streamPos = Wad_hLength(WadFile(f)->hFile);
+                    if (WadFile(f)->streamPos < 0)
+                        WadFile(f)->streamPos = 0;
+                    break;
+                case SEEK_END:
+                    WadFile(f)->streamPos = Wad_hLength(WadFile(f)->hFile) + pos;
+                    break;
+                default:
+                    File_Error("Unknown seek mode (%i)", mode);
+            }
+            break;
+        case FileSys_Error:
+        default:
+            File_Error("%s(%i) : Unknown file system in call to %s", __FILE__, __LINE__, "File_Seek");
+            break;
+    }
     return 0;
 }
 
 S32 File_Tell(lpFile f)
 {
-    // TODO: Implement File_Tell
+    FileSys fs = _File_GetSystem(f);
+    switch (fs)
+    {
+        case FileSys_Standard:
+            return ftell(StdFile(f));
+            break;
+        case FileSys_Wad:
+            return WadFile(f)->streamPos;
+            break;
+        case FileSys_Error:
+        default:
+            File_Error("%s(%i) : Unknown file system in call to %s", __FILE__, __LINE__, "File_Tell");
+            break;
+    }
+
     return 0;
 }
 
 S32 File_Read(void* buffer, S32 size, S32 count, lpFile f)
 {
-    // TODO: Implement File_Read
+    FileSys fs = _File_GetSystem(f);
+    switch (fs)
+    {
+        case FileSys_Standard:
+            return fread(buffer, size, count, StdFile(f));
+            break;
+        case FileSys_Wad:
+        {
+            S32 len = Wad_hLength(WadFile(f)->hFile);
+            S32 amountToCopy;
+            if ((WadFile(f)->streamPos + (size * count)) > len)
+                amountToCopy = len - WadFile(f)->streamPos;
+            else
+                amountToCopy = size * count;
+            memcpy(buffer, (char*)Wad_hData(WadFile(f)->hFile) + WadFile(f)->streamPos, amountToCopy);
+            WadFile(f)->streamPos += amountToCopy;
+            return amountToCopy / size;
+        }
+        break;
+        case FileSys_Error:
+        default:
+            File_Error("%s(%i) : Unknown file system in call to %s", __FILE__, __LINE__, "File_Read");
+            break;
+    }
     return 0;
 }
 

@@ -10,7 +10,7 @@
 #define WAD_ERROR -1
 
 #define StdFile(f) ((FILE*)((f)->std))
-#define WadFile(f) ((WADFILE*)((f)->wad))
+#define WadFile(f) ((WadFile*)((f)->wad))
 
 enum {
     File_SeekSet,
@@ -60,10 +60,11 @@ extern void File_ErrorFile(char* msg, ...);
 
 extern void File_Error(char* msg, ...);
 
+extern void* _File_Malloc(S32 size);
 extern void _File_Dealloc(lpFile file);
 extern void _File_Free(void* ptr);
 
-extern const char *_File_GetWadName(const char *fName);
+extern const char *_File_GetWadName(char *fName);
 
 extern char* File_VerifyFilename(const char* filename);
 extern FileSys _File_CheckSystem(const char* fName, const char* mode);
