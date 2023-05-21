@@ -28,6 +28,10 @@ extern Mem_Globs memGlobs;
 extern void Mem_Initialize();
 extern void Mem_Shutdown(B32 freeAll);
 
+#ifdef _DEBUG
+extern void* Mem_AllocDebug(U32 size, U32 line, const char* file);
+#endif
+
 inline void* Mem_Alloc(U32 size)
 {
     return malloc(size);

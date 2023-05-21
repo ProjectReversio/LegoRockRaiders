@@ -5,6 +5,7 @@
 #include "mem.h"
 #include "fonts.h"
 #include "error.h"
+#include "utils.h"
 
 Config_Globs configGlobs = { NULL };
 
@@ -32,6 +33,152 @@ void Config_Shutdown()
     configGlobs.flags = CONFIG_GLOB_FLAG_NONE;
 }
 
+U32 Config_Tokenize(char* string, const char** argv, const char* sep)
+{
+    char* s = string;
+    U32 count = 0;
+
+    if (!*s)
+        return 0;
+
+    argv[count++] = string;
+
+    while (*s)
+    {
+        if (!strncmp(sep, s, strlen(sep)))
+        {
+            *s = '\0';
+            argv[count++] = s + strlen(sep);
+        }
+        s++;
+    }
+    return count;
+}
+
+lpConfig Config_FindItem(lpConfig conf, const char* stringID)
+{
+    // Search the list for the given item.
+
+    const char* argv[CONFIG_MAXDEPTH];
+    U32 count, currDepth, i;
+    lpConfig backConf, foundConf = NULL;
+    char* tempstring = (char*)Mem_Alloc(strlen(stringID) + 1);
+
+    strcpy(tempstring, stringID);
+
+    count = Config_Tokenize(tempstring, argv, "::");
+
+    // First find anything that matches the depth of the request
+    // then see if the hierarchy matches the request.
+
+    while (conf)
+    {
+        if (conf->depth == count - 1)
+        {
+            B32 wildcard = FALSE;
+
+            if (count == 1)
+            {
+                const char* s;
+                U32 index = 0;
+                for (s = conf->itemName; *s != '\0'; s++)
+                {
+                    if (*s == '*')
+                        break;
+                    index++;
+                }
+                if (*s == '*')
+                    wildcard = _strnicmp(argv[count - 1], conf->itemName, index) == 0;
+            }
+
+            if (wildcard || stricmp(argv[count - 1], conf->itemName) == 0)
+            {
+                wildcard = FALSE;
+
+                // Look backwards down the list to check the hierarchy.
+                currDepth = count - 1;
+                backConf = conf;
+                while (backConf)
+                {
+                    if (backConf->depth == currDepth - 1)
+                    {
+                        if (currDepth == 1)
+                        {
+                            const char* s;
+                            U32 index = 0;
+                            for (s = backConf->itemName; *s != '\0'; s++)
+                            {
+                                if (*s == '*')
+                                    break;
+                                index++;
+                            }
+                            if (*s == '*')
+                                wildcard = _strnicmp(argv[currDepth - 1], backConf->itemName, index) == 0;
+                        }
+
+                        if (wildcard || stricmp(argv[currDepth - 1], backConf->itemName) == 0)
+                        {
+                            currDepth--;
+                        } else
+                        {
+                            break;
+                        }
+                    }
+                    backConf = backConf->linkPrev;
+                }
+
+                if (currDepth == 0)
+                {
+                    foundConf = conf;
+                    if (!wildcard)
+                        break;
+                }
+            }
+        }
+        conf = conf->linkNext;
+    }
+    Mem_Free(tempstring);
+    return foundConf;
+}
+
+#ifdef _DEBUG
+const char* Config_GetStringValueDebug(lpConfig root, const char* stringID, U32 line, const char* file)
+{
+    lpConfig conf;
+    const char* str;
+
+    if ((conf = Config_FindItem(root, stringID)))
+    {
+        if (conf->dataString)
+        {
+            str = Mem_AllocDebug(strlen(conf->dataString) + 1, line, file);
+            strcpy(str, conf->dataString);
+            return str;
+        }
+    }
+
+    return NULL;
+}
+#else
+const char* Config_GetStringValue(lpConfig root, const char* stringID)
+{
+    lpConfig conf;
+    const char* str;
+
+    if ((conf = Config_FindItem(root, stringID)))
+    {
+        if (conf->dataString)
+        {
+            str = Mem_Alloc(strlen(conf->dataString) + 1);
+            strcpy(str, conf->dataString);
+            return str;
+        }
+    }
+
+    return NULL;
+}
+#endif // _DEBUG
+
 const char* Config_BuildStringID(const char* s, ...)
 {
     va_list args;
@@ -49,6 +196,20 @@ const char* Config_BuildStringID(const char* s, ...)
     va_end(s);
 
     return string;
+}
+
+U32 Config_GetBoolValue(lpConfig root, const char* stringID)
+{
+    const char* string;
+    U32 res = 2;
+
+    if ((string = Config_GetStringValue(root, stringID)))
+    {
+        res = Util_GetBoolFromString(string);
+        Mem_Free(string);
+    }
+
+    return res;
 }
 
 #ifdef _DEBUG

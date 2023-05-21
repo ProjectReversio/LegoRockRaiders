@@ -1,15 +1,18 @@
 #include "front.h"
+#include "lego.h"
 
 B32 Front_IsFrontEndEnabled()
 {
-    // TODO: Implement Front_IsFrontEndEnabled
-    return TRUE;
+    B32 result = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "FrontEnd", 0));
+
+    return result == 1 && Main_ProgrammerMode() < PROGRAMMER_MODE_3;
 }
 
 B32 Front_IsIntrosEnabled()
 {
-    // TODO: Implement Front_IsIntrosEnabled
-    return TRUE;
+    B32 result = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DontPlayAvis", 0));
+
+    return result != 1 && Main_ProgrammerMode() < PROGRAMMER_MODE_3;
 }
 
 void Front_PlayIntroMovie(const char* aviKey, B32 skippable)

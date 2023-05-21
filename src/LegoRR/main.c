@@ -80,6 +80,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             *v12 = 0;
     }
 
+//#ifdef _DEBUG
+//    // Since we currently have a different name for the debug executable,
+//    // we need to specify LegoRR for the program name in order to load things correctly.
+//    strcpy(mainGlobs.programName, "LegoRR");
+//#endif
+
     mainGlobs.className = mainGlobs.programName;
     mainGlobs.active = FALSE;
     mainGlobs.exit = FALSE;

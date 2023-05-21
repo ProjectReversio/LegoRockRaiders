@@ -3,6 +3,7 @@
 #include "types.h"
 
 #define CONFIG_MAXLISTS 32
+#define CONFIG_MAXDEPTH 100
 
 #define CONFIG_SEPARATOR "::"
 
@@ -52,7 +53,19 @@ extern Config_Globs configGlobs;
 extern void Config_Initialize();
 extern void Config_Shutdown();
 
+extern U32 Config_Tokenize(char* string, const char** argv, const char* sep);
+
+extern lpConfig Config_FindItem(lpConfig conf, const char* stringID);
+
+#ifdef _DEBUG
+extern const char* Config_GetStringValueDebug(lpConfig root, const char* stringID, U32 line, const char* file);
+#define Config_GetStringValue(c,s) Config_GetStringValueDebug((c),(s),__LINE__,__FILE__)
+#else
+extern const char* Config_GetStringValue(lpConfig root, const char* stringID);
+#endif
+
 extern const char* Config_BuildStringID(const char* s, ...);
+extern U32 Config_GetBoolValue(lpConfig root, const char* stringID);
 
 #ifdef _DEBUG
 extern const char* Config_Debug_GetLastFind();

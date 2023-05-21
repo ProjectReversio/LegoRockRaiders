@@ -17,3 +17,9 @@ void Mem_Shutdown(B32 freeAll)
     // TODO: Implement Mem_Shutdown
 #endif
 }
+
+void* Mem_AllocDebug(U32 size, U32 line, const char* file)
+{
+    // TODO: Implement Mem_AllocDebug
+    return Mem_Alloc(size);
+}

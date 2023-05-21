@@ -24,3 +24,21 @@ const char* Util_StrIStr(const char* str1, const char* str2)
 
     return NULL;
 }
+
+U32 Util_GetBoolFromString(const char* string)
+{
+    if (stricmp(string, "YES") == 0)
+        return TRUE;
+    if (stricmp(string, "TRUE") == 0)
+        return TRUE;
+    if (stricmp(string, "ON") == 0)
+        return TRUE;
+    if (stricmp(string, "NO") == 0)
+        return FALSE;
+    if (stricmp(string, "FALSE") == 0)
+        return FALSE;
+    if (stricmp(string, "OFF") == 0)
+        return FALSE;
+
+    return 2;
+}
