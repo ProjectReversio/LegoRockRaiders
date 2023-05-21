@@ -212,6 +212,18 @@ U32 Config_GetBoolValue(lpConfig root, const char* stringID)
     return res;
 }
 
+const char* Config_GetTempStringValue(lpConfig root, const char* stringID)
+{
+    lpConfig conf;
+
+    if ((conf = Config_FindItem(root, stringID)))
+    {
+        return conf->dataString;
+    }
+
+    return NULL;
+}
+
 #ifdef _DEBUG
 const char* Config_Debug_GetLastFind()
 {

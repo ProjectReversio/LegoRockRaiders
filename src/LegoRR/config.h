@@ -64,8 +64,13 @@ extern const char* Config_GetStringValueDebug(lpConfig root, const char* stringI
 extern const char* Config_GetStringValue(lpConfig root, const char* stringID);
 #endif
 
+#define Config_GetIntValue(c,s)     atoi(Config_GetTempStringValue((c),(s))?Config_GetTempStringValue((c),(s)):"")
+#define Config_GetFloatValue(c,s)     (F32)atof(Config_GetTempStringValue((c),(s))?Config_GetTempStringValue((c),(s)):"")
+
+
 extern const char* Config_BuildStringID(const char* s, ...);
 extern U32 Config_GetBoolValue(lpConfig root, const char* stringID);
+extern const char* Config_GetTempStringValue(lpConfig root, const char* stringID);
 
 #ifdef _DEBUG
 extern const char* Config_Debug_GetLastFind();

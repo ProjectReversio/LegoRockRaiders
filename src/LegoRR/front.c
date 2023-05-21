@@ -17,10 +17,19 @@ B32 Front_IsIntrosEnabled()
 
 void Front_PlayIntroMovie(const char* aviKey, B32 skippable)
 {
+    if (aviKey == NULL)
+        return;
+
+    const char* fName = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", aviKey, 0));
+    if (fName == NULL)
+        return;
+
     // TODO: Implement Front_PlayIntroMovie
 }
 
 void Front_PlayIntroSplash(const char* imageKey, B32 skippable, const char* timeKey)
 {
+    F32 time = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", timeKey, 0));
+
     // TODO: Implement Front_PlayIntroSplash
 }
