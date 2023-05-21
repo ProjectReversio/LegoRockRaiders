@@ -33,8 +33,12 @@ typedef struct Wad
 extern S32 Wad_Load(char* fName);
 extern void Wad_Close(S32 wadNo);
 
+extern void Wad_FileClose(S32 handle);
+
 extern S32 Wad_GetFreeWadSlot();
 extern Wad* Wad_Get(int wadNo);
 extern B32 GetFileName(FILE* f, char* buffer);
+
+extern S32 Wad_IsFileInWad(const char *fName, S32 wadNo);
 
 extern void Wad_Error(char *msg, ...);

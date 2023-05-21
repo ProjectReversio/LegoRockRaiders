@@ -7,6 +7,7 @@
 #include "error.h"
 #include "wad.h"
 #include "mem.h"
+#include "utils.h"
 
 File_Globs fileGlobs = { NULL };
 
@@ -87,6 +88,116 @@ void File_ErrorFile(char* msg, ...)
 #endif
 }
 
+void File_Error(char* msg, ...)
+{
+    va_list args;
+    char buff[1024];
+    va_start(args, msg);
+    vsprintf(buff, msg, args);
+    OutputDebugString(buff);
+
+    // TEMP: Not in original source, but needed for CLion console output
+    {
+        setvbuf(stdout, NULL, _IONBF, 0);
+        printf("%s", buff);
+    }
+
+    va_end(args);
+}
+
+void _File_Dealloc(lpFile file)
+{
+    if (file)
+    {
+        if (_File_GetSystem(file) == FileSys_Standard)
+        {
+            if (file->std)
+                fclose(StdFile(file));
+            _File_Free(file);
+        } else if (_File_GetSystem(file) == FileSys_Wad)
+        {
+            if (file->wad)
+            {
+                Wad_FileClose(file->wad->hFile);
+                _File_Free(file->wad);
+            }
+            _File_Free(file);
+        }
+    }
+}
+
+void _File_Free(void* ptr)
+{
+    Mem_Free(ptr);
+}
+
+const char *_File_GetWadName(const char *fName)
+{
+    // TODO: Implement _File_GetWadName
+    return NULL;
+}
+
+char* File_VerifyFilename(const char* filename)
+{
+    static char full[_MAX_PATH];
+    char part[_MAX_PATH];
+    char *temp;
+
+    if (filename != NULL)
+    {
+        // REMOVE THE LEADING FORWARD SLASH IF ANY
+        temp = filename;
+        if (*temp == '\\')
+            temp++;
+
+        if (*temp == '@')
+        {
+            temp++;
+            sprintf(full, "%s\\%s", fileGlobs.dataDir, temp);
+            return full;
+        } else {
+            sprintf(part, "%s\\%s", fileGlobs.dataDir, temp);
+        }
+
+        if (_fullpath(full, part, _MAX_PATH) != NULL)
+        {
+            if (strncmp(full, fileGlobs.dataDir, strlen(fileGlobs.dataDir)) == 0)
+                return full;
+        }
+    }
+
+    Error_Warn(TRUE, Error_Format("Cannot verify file name \"%s\".", filename));
+    Error_LogLoadError(TRUE, Error_Format("%d\t%s", Error_LoadError_UnableToVerifyName, filename));
+
+    return NULL;
+}
+
+FileSys _File_CheckSystem(const char* fName, const char* mode)
+{
+    if (!fName || !mode || !strlen(fName) || !strlen(mode))
+        return FileSys_Error;
+
+    if (mode[0] == 'w' || mode[0] == 'W')
+    {
+        // File must be opened as stdC
+        return FileSys_Standard;
+    } else {
+        if (Wad_IsFileInWad(_File_GetWadName(fName), currWadHandle) != WAD_ERROR)
+        {
+            // The file is in the wad so we can use the wad version
+            return FileSys_Wad;
+        } else {
+            // Otherwise we will try the normal file system
+            return FileSys_Standard;
+        }
+    }
+}
+
+FileSys _File_GetSystem(lpFile f)
+{
+    return f->type;
+}
+
 S32 File_LoadWad(char* fName)
 {
     File_ErrorFile(0); // Open the wad error log
@@ -120,15 +231,97 @@ B32 File_SetBaseSearchPath(const char* basePath)
     }
 }
 
+B32 File_GetCDFilePath(const char* path, const char* fname)
+{
+    // TODO: Implement File_GetCDFilePath
+    return FALSE;
+}
+
+lpFile _File_Alloc(FileSys fType)
+{
+    // TODO: Implement _File_Alloc
+    return NULL;
+}
+
+B32 _File_OpenWad(WadFile* wad, const char* fName)
+{
+    // TODO: Implement _File_OpenWad
+    return FALSE;
+}
+
 lpFile File_Open(const char* fName, char* mode)
 {
-    // TODO: Implement File_Open
+    U8* fullName = File_VerifyFilename(fName);
+    FileSys fs = _File_CheckSystem(fullName, mode);
+    lpFile file;
+
+    switch (fs)
+    {
+        case FileSys_Standard:
+            file = _File_Alloc(fs);
+            if (!file)
+                return NULL;
+            file->std = fopen(fullName, mode);
+            if (file->std)
+            {
+                File_ErrorFile("STD Load %s\n", fullName);
+                return file;
+            } else {
+                if (Util_StrIStr(mode, "w"))
+                {
+                    char cdName[FILE_MAXPATH];
+
+                    if (File_GetCDFilePath(cdName, fName))
+                    {
+                        if ((file->std = fopen(cdName, mode)))
+                            return file;
+                    }
+                }
+
+                File_ErrorFile("STD Fail %s\n", fullName);
+                _File_Dealloc(file);
+                return NULL;
+            }
+            break;
+
+        case FileSys_Wad:
+            file = _File_Alloc(fs);
+            if (!file)
+                return NULL;
+
+            if (_File_OpenWad(file->wad, _File_GetWadName(fullName)) != FALSE)
+            {
+                File_ErrorFile("WAD Load %s\n", _File_GetWadName(fullName));
+                return file;
+            } else {
+                File_ErrorFile("WAD Fail %s\n", _File_GetWadName(fullName));
+                _File_Dealloc(file);
+                return NULL;
+            }
+            break;
+
+        case FileSys_Error:
+        default:
+            File_Error("%s(%i) : Error in call to %s\n", __FILE__, __LINE__, "File_Open");
+            break;
+    }
     return NULL;
 }
 
 S32 File_Close(lpFile f)
 {
-    // TODO: Implement File_Close
+    FileSys fs = _File_GetSystem(f);
+    switch (fs)
+    {
+        case FileSys_Standard:
+        case FileSys_Wad:
+            _File_Dealloc(f);
+            break;
+        case FileSys_Error:
+        default:
+            File_Error("%s(%i) : Unknown file system in call to %s", __FILE__, __LINE__, "File_Close");
+            break;
+    }
     return 0;
 }
 

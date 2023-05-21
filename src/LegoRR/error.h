@@ -3,6 +3,17 @@
 #include "types.h"
 #include "file.h"
 
+typedef enum Error_LoadErrorTAG
+{
+    Error_LoadError_InvalidFName,
+    Error_LoadError_UnableToOpen,
+    Error_LoadError_UnableToOpenForWrite,
+    Error_LoadError_UnableToVerifyName,
+    Error_LoadError_RMTexture,
+
+    Error_LoadError_Count
+} Error_LoadErrorTAG;
+
 typedef struct Error_Globs
 {
     File* dumpFile;

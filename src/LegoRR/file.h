@@ -9,6 +9,9 @@
 
 #define WAD_ERROR -1
 
+#define StdFile(f) ((FILE*)((f)->std))
+#define WadFile(f) ((WADFILE*)((f)->wad))
+
 enum {
     File_SeekSet,
     File_SeekCur,
@@ -55,10 +58,27 @@ extern void File_Initialize(const char* programName, B32 insistOnCD, const char*
 extern void File_LogFileAccess(B32 mode);
 extern void File_ErrorFile(char* msg, ...);
 
+extern void File_Error(char* msg, ...);
+
+extern void _File_Dealloc(lpFile file);
+extern void _File_Free(void* ptr);
+
+extern const char *_File_GetWadName(const char *fName);
+
+extern char* File_VerifyFilename(const char* filename);
+extern FileSys _File_CheckSystem(const char* fName, const char* mode);
+extern FileSys _File_GetSystem(lpFile f);
+
 extern S32 File_LoadWad(char* fName);
 extern void File_CloseWad(S32 hWad);
 extern void File_SetActiveWad(S32 hWad);
 extern B32 File_SetBaseSearchPath(const char* basePath);
+
+extern B32 File_GetCDFilePath(const char* path, const char* fname);
+
+extern lpFile _File_Alloc(FileSys fType);
+
+extern B32 _File_OpenWad(WadFile* wad, const char* fName);
 
 extern lpFile File_Open(const char* fName, char* mode);
 extern S32 File_Close(lpFile f);

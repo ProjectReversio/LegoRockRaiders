@@ -218,6 +218,11 @@ void Wad_Close(S32 wadNo)
     }
 }
 
+void Wad_FileClose(S32 handle)
+{
+    // TODO: Implement Wad_FileClose
+}
+
 S32 Wad_GetFreeWadSlot()
 {
     for (S32 i = 0; i < MAX_WADS; i++)
@@ -248,6 +253,12 @@ B32 GetFileName(FILE* f, char* buffer)
     }
     *buffer = 0;
     return TRUE;
+}
+
+S32 Wad_IsFileInWad(const char *fName, S32 wadNo)
+{
+    // TODO: Implement Wad_IsFileInWad
+    return WAD_ERROR;
 }
 
 void Wad_Error(char *msg, ...)

@@ -29,6 +29,7 @@ set(MAIN_SRC
     front.c
     activities.c
     anim_clone.c
+    utils.c
     platform/d3drm.c
 
     # Headers
@@ -58,6 +59,7 @@ set(MAIN_SRC
     front.h
     activities.h
     anim_clone.h
+    utils.h
     ../Shared/types.h
 
     # Resource
