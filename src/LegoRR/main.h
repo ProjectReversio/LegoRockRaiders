@@ -130,6 +130,7 @@ extern void Main_SetupDisplay(B32 fullScreen, U32 xPos, U32 yPos, U32 width, U32
 extern B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRECTDRAWSURFACE4 backSurf, B32 doubleBuffered);
 
 extern void Main_ChangeRenderState(D3DRENDERSTATETYPE dwRenderStateType, U32 dwRenderState);
+extern void Main_RestoreStates(B32 force);
 
 inline HWND Main_hWnd() { return mainGlobs.hWnd; }
 inline HINSTANCE Main_hInst() { return mainGlobs.hInst; }

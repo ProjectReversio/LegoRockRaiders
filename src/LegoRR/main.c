@@ -696,3 +696,22 @@ void Main_ChangeRenderState(D3DRENDERSTATETYPE dwRenderStateType, U32 dwRenderSt
         }
     }
 }
+
+void Main_RestoreStates(B32 force)
+{
+    if (force)
+    {
+        U32 loop;
+        lpMain_StateChangeData data;
+
+        for (loop = 0; loop < MAIN_MAXRENDERSTATES; loop++)
+        {
+            data = &mainGlobs.renderStateData[loop];
+            if (data->changed)
+            {
+                mainGlobs.imDevice->lpVtbl->SetRenderState(mainGlobs.imDevice, loop, data->origValue);
+                data->changed = FALSE;
+            }
+        }
+    }
+}
