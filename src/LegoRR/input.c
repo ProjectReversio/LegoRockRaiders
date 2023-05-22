@@ -23,3 +23,9 @@ void Input_ReadMouse2()
 {
     // TODO: Implement Input_ReadMouse2
 }
+
+U32 Input_AnyKeyPressed()
+{
+    // TODO: Implement Input_AnyKeyPressed
+    return 0;
+}

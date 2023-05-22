@@ -1,6 +1,7 @@
 #pragma once
 
 #include "types.h"
+#include "maths.h"
 #include <windows.h>
 #include <ddraw.h>
 #include <d3d.h>
@@ -99,6 +100,7 @@ extern B32 DirectDraw_Setup(B32 fullscreen, lpGraphics_Driver driver, lpGraphics
 extern B32 DirectDraw_CreateClipper(B32 fullscreen, U32 width, U32 height);
 
 extern void DirectDraw_Flip();
+extern void DirectDraw_Clear(Area2F* window, U32 colour);
 
 inline LPDIRECTDRAW4 DirectDraw() { return directDrawGlobs.lpDirectDraw; }
 inline LPDIRECTDRAWSURFACE4 DirectDraw_fSurf() { return directDrawGlobs.fSurf; }

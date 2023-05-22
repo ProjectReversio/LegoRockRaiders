@@ -120,6 +120,8 @@ extern B32 Main_InitApp(HINSTANCE hInstance);
 extern B32 Main_SetState(Main_State* state);
 extern void Main_SetTitle(const char* title);
 
+extern void Main_LoopUpdate(B32 clear);
+
 extern U32 Main_GetWindowsBitDepth();
 
 extern void Main_SetupDisplay(B32 fullScreen, U32 xPos, U32 yPos, U32 width, U32 height);

@@ -1,5 +1,7 @@
 #include "front.h"
 #include "lego.h"
+#include "input.h"
+#include "images.h"
 
 B32 Front_IsFrontEndEnabled()
 {
@@ -31,5 +33,28 @@ void Front_PlayIntroSplash(const char* imageKey, B32 skippable, const char* time
 {
     F32 time = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", timeKey, 0));
 
-    // TODO: Implement Front_PlayIntroSplash
+    if (time == 0.0f)
+        time = 3.0f;
+
+    S32 startTime = timeGetTime() - (S32)(time * -1000.0f);
+
+    if (imageKey == NULL)
+        return;
+
+    const char* bmpFile = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", imageKey, 0));
+
+    if (bmpFile == NULL)
+        return;
+
+    lpImage img = Image_LoadBMP(bmpFile);
+    if (img == NULL)
+        return;
+
+    do
+    {
+        Image_Display(img, 0);
+        Main_LoopUpdate(0);
+        Sleep(100);
+    } while (timeGetTime() < startTime && (!skippable || !Input_AnyKeyPressed() && !inputGlobs.msrb && !inputGlobs.mslb));
+    Image_Remove(img);
 }

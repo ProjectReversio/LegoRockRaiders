@@ -551,6 +551,21 @@ void Main_SetTitle(const char* title)
     SetWindowTextA(mainGlobs.hWnd, title);
 }
 
+void Main_LoopUpdate(B32 clear)
+{
+    Main_HandleIO();
+    Input_ReadKeys();
+    Input_ReadMouse2();
+
+    // Update the device and flip the surfaces...
+    Main_Finalize3D();
+    DirectDraw_Flip();
+
+    if (clear)
+        DirectDraw_Clear(NULL, 0);
+    mainGlobs.flags &= ~MAIN_FLAG_UPDATED;
+}
+
 U32 Main_GetWindowsBitDepth()
 {
     return GetDeviceCaps(GetDC(Main_hWnd()), BITSPIXEL);

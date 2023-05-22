@@ -40,3 +40,5 @@ extern void Input_ReleaseKeysAndDI();
 
 extern void Input_ReadKeys();
 extern void Input_ReadMouse2();
+
+extern U32 Input_AnyKeyPressed();

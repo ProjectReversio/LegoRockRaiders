@@ -4,6 +4,7 @@
 #include "main.h"
 #include "front.h"
 #include "error.h"
+#include "images.h"
 
 Lego_Globs legoGlobs;
 
@@ -26,6 +27,10 @@ B32 Gods_Go(const char* programName)
 
 B32 Lego_Initialize()
 {
+    // TODO: Implement Lego_Initialize
+
+    Image_Initialize();
+
     // TODO: Implement Lego_Initialize
 
     legoGlobs.rootCont = Container_Initialize(legoGlobs.gameName);
@@ -63,6 +68,10 @@ B32 Lego_Initialize()
 
 B32 Lego_Shutdown_Full()
 {
+    // TODO: Implement Lego_Shutdown_Full
+
+    Image_Shutdown();
+
     // TODO: Implement Lego_Shutdown_Full
 
     return TRUE;

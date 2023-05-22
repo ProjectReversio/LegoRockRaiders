@@ -452,3 +452,8 @@ void DirectDraw_Flip()
         DirectDraw_BlitBuffers();
     }
 }
+
+void DirectDraw_Clear(Area2F* window, U32 colour)
+{
+    // TODO: Implement DirectDraw_Clear
+}

@@ -31,6 +31,8 @@ set(MAIN_SRC
     anim_clone.c
     utils.c
     compress.c
+    images.c
+    bmp.c
     platform/d3drm.c
 
     # Headers
@@ -62,6 +64,8 @@ set(MAIN_SRC
     anim_clone.h
     utils.h
     compress.h
+    images.h
+    bmp.h
     ../Shared/types.h
 
     # Resource
