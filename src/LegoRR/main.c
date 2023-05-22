@@ -618,8 +618,6 @@ void Main_SetupDisplay(B32 fullScreen, U32 xPos, U32 yPos, U32 width, U32 height
     SetActiveWindow(mainGlobs.hWnd);
 }
 
-
-
 B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRECTDRAWSURFACE4 backSurf, B32 doubleBuffered)
 {
     LPGUID guid = NULL;
@@ -671,4 +669,30 @@ B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRECTDRAWS
     CHKRM(r);
 
     return FALSE;
+}
+
+void Main_ChangeRenderState(D3DRENDERSTATETYPE dwRenderStateType, U32 dwRenderState)
+{
+    lpMain_StateChangeData data;
+    U32 currValue;
+    HRESULT r;
+
+    Error_Fatal(dwRenderStateType >= MAIN_MAXRENDERSTATES, "RenderState type is out of range");
+
+    data = &mainGlobs.renderStateData[dwRenderStateType];
+    r = mainGlobs.imDevice->lpVtbl->GetRenderState(mainGlobs.imDevice, dwRenderStateType, &currValue);
+    Error_Fatal(r != D3D_OK, Error_Format("Failed to GetRenderState(%i)", dwRenderStateType));
+
+    if (currValue != dwRenderState)
+    {
+        mainGlobs.imDevice->lpVtbl->SetRenderState(mainGlobs.imDevice, dwRenderStateType, dwRenderState);
+        if (data->changed)
+        {
+            if (data->origValue == currValue)
+                data->changed = FALSE;
+        } else {
+            data->origValue = currValue;
+            data->changed = TRUE;
+        }
+    }
 }

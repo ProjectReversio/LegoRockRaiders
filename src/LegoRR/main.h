@@ -7,6 +7,8 @@
 #include "directdraw.h"
 #include <ddraw.h>
 
+#define MAIN_MAXRENDERSTATES 200
+
 typedef B32 (*MainStateInitialize)();
 typedef B32 (*MainStateMainLoop)(F32 delta);
 typedef B32 (*MainStateShutdown)();
@@ -126,6 +128,8 @@ extern U32 Main_GetWindowsBitDepth();
 
 extern void Main_SetupDisplay(B32 fullScreen, U32 xPos, U32 yPos, U32 width, U32 height);
 extern B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRECTDRAWSURFACE4 backSurf, B32 doubleBuffered);
+
+extern void Main_ChangeRenderState(D3DRENDERSTATETYPE dwRenderStateType, U32 dwRenderState);
 
 inline HWND Main_hWnd() { return mainGlobs.hWnd; }
 inline HINSTANCE Main_hInst() { return mainGlobs.hInst; }
