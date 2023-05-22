@@ -26,7 +26,7 @@ typedef struct BMP_Header
     U32 colours;
     U32 important_colours;
 
-} BMP_Header, *LPBMP_Header;
+} BMP_Header, *lpBMP_Header;
 
 #pragma pack(pop)
 
