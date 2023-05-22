@@ -72,7 +72,6 @@ extern void Image_AddList();
 
 extern lpImage Image_LoadBMPScaled(const char* fileName, U32 width, U32 height);
 extern void Image_DisplayScaled(lpImage image, Area2F* src, Point2F* destPos, Point2F* destSize);
-extern void Image_DisplayScaled2(lpImage image, Area2F* src, Point2F* destPos, Point2F* destSize, Image_TextureMode textureMode, F32 level, Point2F uvs[4]);
 
 extern void Image_RemoveAll();
 extern void Image_Remove(lpImage dead);

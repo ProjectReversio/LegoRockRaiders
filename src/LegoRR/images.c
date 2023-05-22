@@ -156,11 +156,6 @@ lpImage Image_LoadBMPScaled(const char* fileName, U32 width, U32 height)
 
 void Image_DisplayScaled(lpImage image, Area2F* src, Point2F* destPos, Point2F* destSize)
 {
-    Image_DisplayScaled2(image, src, destPos, destSize, Image_TextureMode_Normal, 0.0f, NULL);
-}
-
-void Image_DisplayScaled2(lpImage image, Area2F* src, Point2F* destPos, Point2F* destSize, Image_TextureMode textureMode, F32 level, Point2F uvs[4])
-{
     RECT r_src, r_dst;
 
     Error_Fatal(!image, "NULL passed as image to Image_DisplayScaled()");
