@@ -112,7 +112,6 @@ bool G98CMovie::OpenAMStream(const char *fName, IAMMultiMediaStream **lplpAMMMSt
                     MultiByteToWideChar(CP_ACP, 0, fName, -1, wFilename, MAX_PATH);
                     amMMStream->OpenFile(wFilename, 0);
                     *lplpAMMMStream = amMMStream;
-                    amMMStream->AddRef();
                     return true;
                 }
             }

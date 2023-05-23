@@ -236,6 +236,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_insistOnCD)
 {
+#ifdef _DEBUG // TEMP
+    mainGlobs.programmerLevel = PROGRAMMER_MODE_2;
+#endif
     // TODO: Implement Main_ParseCommandLine
 }
 
