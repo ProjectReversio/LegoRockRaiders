@@ -2,6 +2,9 @@
 #include "lego.h"
 #include "input.h"
 #include "images.h"
+#include "mem.h"
+#include "movie.h"
+#include "file.h"
 
 B32 Front_IsFrontEndEnabled()
 {
@@ -26,7 +29,13 @@ void Front_PlayIntroMovie(const char* aviKey, B32 skippable)
     if (fName == NULL)
         return;
 
-    // TODO: Implement Front_PlayIntroMovie
+    if (File_Exists(fName))
+    {
+        Movie_t* mov = Movie_Load(fName);
+        Front_PlayMovie(mov, skippable);
+        Movie_Free(mov);
+        Mem_Free(fName);
+    }
 }
 
 void Front_PlayIntroSplash(const char* imageKey, B32 skippable, const char* timeKey)
@@ -53,8 +62,30 @@ void Front_PlayIntroSplash(const char* imageKey, B32 skippable, const char* time
     do
     {
         Image_Display(img, 0);
-        Main_LoopUpdate(0);
+        Main_LoopUpdate(FALSE);
         Sleep(100);
     } while (timeGetTime() < startTime && (!skippable || !Input_AnyKeyPressed() && !inputGlobs.msrb && !inputGlobs.mslb));
     Image_Remove(img);
+}
+
+void Front_PlayMovie(Movie_t* mov, B32 skippable)
+{
+    // HARDCODED SCREEN RESOLUTION
+    RECT rect;
+    rect.left = 0;
+    rect.top = 0;
+    rect.right = 640;
+    rect.bottom = 480;
+
+    F32 num = 0.0f;
+    if (Movie_Update(mov, 1.0f, &rect))
+    {
+        do
+        {
+            Main_LoopUpdate(FALSE);
+            num -= -1.0f;
+        } while (Movie_GetDuration(mov) >= num
+            && (!skippable || !Input_AnyKeyPressed() && !inputGlobs.msrb && !inputGlobs.mslb) &&
+            Movie_Update(mov, 1.0f, &rect));
+    }
 }

@@ -1,6 +1,7 @@
-project(LegoRR C)
+project(LegoRR C CXX)
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 11)
 
 set(MAIN_SRC
     # Sources
@@ -33,6 +34,8 @@ set(MAIN_SRC
     compress.c
     images.c
     bmp.c
+    movie.cpp
+    G98CMovie.cpp
     platform/d3drm.c
 
     # Headers
@@ -66,6 +69,8 @@ set(MAIN_SRC
     compress.h
     images.h
     bmp.h
+    movie.h
+    G98CMovie.hpp
     ../Shared/types.h
 
     # Resource
@@ -75,7 +80,7 @@ set(MAIN_SRC
 add_executable(LegoRR WIN32 ${MAIN_SRC})
 target_include_directories(LegoRR PRIVATE ${CMAKE_SOURCE_DIR}/src/Shared)
 
-target_link_libraries(LegoRR ddraw dinput8 winmm dsound dxguid vfw32)
+target_link_libraries(LegoRR ddraw dinput8 winmm dsound dxguid vfw32 strmbase strmiids)
 
 # Include D3DRM
 target_include_directories(LegoRR PRIVATE ${CMAKE_SOURCE_DIR}/lib/d3drm/inc)

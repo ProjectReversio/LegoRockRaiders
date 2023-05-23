@@ -3,7 +3,12 @@
 #include "types.h"
 #include "file.h"
 
-typedef enum Error_LoadErrorTAG
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+    typedef enum Error_LoadErrorTAG
 {
     Error_LoadError_InvalidFName,
     Error_LoadError_UnableToOpen,
@@ -61,4 +66,8 @@ inline void Error_CheckWarn(B32 check) {}
 #define Error_LogLoad(b,s)          (b)
 #define Error_LogLoadError(b,s)     (b)
 #define Error_LogRedundantFile(b,s) (b)
+#endif
+
+#ifdef __cplusplus
+}
 #endif

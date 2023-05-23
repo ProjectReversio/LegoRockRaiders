@@ -10,6 +10,11 @@
 #define DIRECTDRAW_MAXDEVICES 20
 #define DIRECTDRAW_MAXMODES 200
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 typedef enum Graphics_DeviceFlags
 {
     GRAPHICS_DEVICE_FLAG_NONE          = 0,
@@ -106,3 +111,7 @@ inline LPDIRECTDRAW4 DirectDraw() { return directDrawGlobs.lpDirectDraw; }
 inline LPDIRECTDRAWSURFACE4 DirectDraw_fSurf() { return directDrawGlobs.fSurf; }
 inline LPDIRECTDRAWSURFACE4 DirectDraw_bSurf() { return directDrawGlobs.bSurf; }
 inline B32 DirectDraw_FullScreen() { return directDrawGlobs.fullScreen; }
+
+#ifdef __cplusplus
+}
+#endif

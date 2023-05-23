@@ -167,6 +167,38 @@ const char *_File_GetWadName(char *fName)
     }
 }
 
+B32 File_Exists(const char* fName)
+{
+    const char* fullName = File_VerifyFilename(fName);
+    FileSys fs = _File_CheckSystem(fullName, "r");
+    if (fs == FileSys_Standard)
+    {
+        FILE *f;
+        f = fopen(fullName, "r");
+        if (f)
+        {
+            fclose(f);
+            return TRUE;
+        } else {
+            char cdName[FILE_MAXPATH];
+            if (File_GetCDFilePath(cdName, fName))
+            {
+                if ((f = fopen(cdName, "r")))
+                {
+                    fclose(f);
+                    return TRUE;
+                }
+            }
+            return FALSE;
+        }
+    } else if (fs == FileSys_Wad)
+    {
+        return Wad_IsFileInWad(fullName, currWadHandle);
+    } else {
+        return FALSE;
+    }
+}
+
 char* File_VerifyFilename(const char* filename)
 {
     static char full[_MAX_PATH];

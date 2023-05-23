@@ -11,7 +11,10 @@
 
 #define StdFile(f) ((FILE*)((f)->std))
 #define WadFile(f) ((WadFile*)((f)->wad))
-
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 enum {
     File_SeekSet,
     File_SeekCur,
@@ -66,6 +69,8 @@ extern void _File_Free(void* ptr);
 
 extern const char *_File_GetWadName(char *fName);
 
+extern B32 File_Exists(const char* fName);
+
 extern char* File_VerifyFilename(const char* filename);
 extern FileSys _File_CheckSystem(const char* fName, const char* mode);
 extern FileSys _File_GetSystem(lpFile f);
@@ -95,3 +100,6 @@ extern S32 File_Flush(lpFile file);
 extern void* File_LoadBinary(const char* filename, U32* sizeptr);
 extern void* File_LoadASCII(const char* filename, U32* sizeptr);
 extern void* File_Load(const char*  filename, U32* sizeptr, B32 binary);
+#ifdef __cplusplus
+}
+#endif
