@@ -42,3 +42,24 @@ U32 Util_GetBoolFromString(const char* string)
 
     return 2;
 }
+
+U32 Util_Tokenize(const char* string, char** argv, const char* sep)
+{
+    char* s = string;
+    U32 count = 0;
+
+    if (!*s)
+        return 0;
+
+    argv[count++] = string;
+    while (*s)
+    {
+        if (!strncmp(sep, s, strlen(sep)))
+        {
+            *s = '\0';
+            argv[count++] = s + strlen(sep);
+        }
+        s++;
+    }
+    return count;
+}

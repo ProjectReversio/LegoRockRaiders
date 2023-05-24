@@ -5,6 +5,12 @@
 #include "front.h"
 #include "error.h"
 #include "images.h"
+#include "sfx.h"
+#include "common.h"
+#include "mem.h"
+#include "sound.h"
+#include "loader.h"
+#include "utils.h"
 
 Lego_Globs legoGlobs;
 
@@ -60,6 +66,63 @@ B32 Lego_Initialize()
         Front_PlayIntroMovie("RRAvi", TRUE);
         Front_PlayIntroSplash("LMILogo", Main_ProgrammerMode() != PROGRAMMER_OFF, "LMILogoTime");
     }
+    SFX_Initialize();
+
+    const char* progressBar = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ProgressBar", 0));
+    const char* loadScreen = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "LoadScreen", 0));
+    const char* shutdownScreen = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ShutdownScreen", 0));
+    const char* progressWindow = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ProgressWindow", 0));
+    const char* loadingText = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "LoadingText", 0));
+
+    Direction progressBarDirection;
+    char* progressWindow_stringParts[10];
+    Area2F progressWindow_rect;
+
+    if (progressWindow == NULL)
+    {
+        progressBar = NULL;
+    } else {
+        char d = toupper(progressWindow[0]);
+        switch (d)
+        {
+            case 'D':
+                progressBarDirection = DIRECTION_DOWN;
+                break;
+            case 'L':
+                progressBarDirection = DIRECTION_LEFT;
+                break;
+            case 'R':
+                progressBarDirection = DIRECTION_RIGHT;
+                break;
+            case 'U':
+                progressBarDirection = DIRECTION_UP;
+                break;
+            default:
+                progressBarDirection = DIRECTION_COUNT;
+                break;
+        }
+
+        U32 count = Util_Tokenize(progressWindow, progressWindow_stringParts, ",");
+        if ((count == 4 && progressWindow[1] == ':') && progressBarDirection != DIRECTION_COUNT)
+        {
+            progressWindow_rect.x = atoi(progressWindow_stringParts[0] + 2);
+            progressWindow_rect.y = atoi(progressWindow_stringParts[1]);
+            progressWindow_rect.width = atoi(progressWindow_stringParts[2]);
+            progressWindow_rect.height = atoi(progressWindow_stringParts[3]);
+        }
+    }
+
+    // TODO: This is in the original code, but it crashes here. Figure this out.
+    //Mem_Free(progressWindow);
+
+    const char* loaderProfile_filename;
+    if (Sound_IsInitialized())
+        loaderProfile_filename = "LoaderProfile.txt";
+    else
+        loaderProfile_filename = "LoaderProfileNoSound.txt";
+
+    Loader_Initialize(loadScreen, shutdownScreen, legoGlobs.bmpFONT5_HI, loaderProfile_filename, progressBarDirection, progressBar, &progressWindow_rect, loadingText);
+    Loader_Display_Loading_Bar("Game Data");
 
     // TODO: Implement Lego_Initialize
 

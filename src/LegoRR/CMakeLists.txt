@@ -34,6 +34,9 @@ set(MAIN_SRC
     compress.c
     images.c
     bmp.c
+    sfx.c
+    common.c
+    loader.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -69,6 +72,9 @@ set(MAIN_SRC
     compress.h
     images.h
     bmp.h
+    sfx.h
+    common.h
+    loader.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h
