@@ -110,14 +110,18 @@ void Loader_FileLoadCallback(const char* filename, U32 fileSize, void* data)
     if ((loaderGlobs.flags & LOADER_GLOB_FLAG_ENABLED) == 0)
         return;
 
+    F32 progress = 0.0f;
+
     if (loaderGlobs.current && (loaderGlobs.current->currentSize += fileSize, loaderGlobs.current) && loaderGlobs.current->totalSize != 0)
     {
-        fileSize = (U32)((F32)loaderGlobs.current->currentSize / (F32)loaderGlobs.current->totalSize);
+        progress = (U32)((F32)loaderGlobs.current->currentSize / (F32)loaderGlobs.current->totalSize);
     } else {
-        fileSize = 0;
+        progress = 0;
     }
 
-    if (fileSize <= (loaderGlobs.progressLast - 0.002f))
+    //progress = 0.75f;
+
+    if (progress <= (loaderGlobs.progressLast - 0.002f))
         return;
 
     Point2F barPos;
@@ -130,23 +134,23 @@ void Loader_FileLoadCallback(const char* filename, U32 fileSize, void* data)
 
     Image_Display(loaderGlobs.loadScreen, NULL);
 
-    if (fileSize > 1.0f)
-        fileSize = 1.0f;
+    if (progress > 1.0f)
+        progress = 1.0f;
 
     switch (loaderGlobs.progressDirection)
     {
         case DIRECTION_UP:
-            barPos.y = (barSize.height + barPos.y) - barSize.height * (F32)fileSize;
+            barPos.y = (barSize.height + barPos.y) - barSize.height * (F32)progress;
             barSize.height = (barSize.height + barPos.y) - barPos.y;
             break;
         case DIRECTION_RIGHT:
-            barSize.width *= (F32)fileSize;
+            barSize.width *= (F32)progress;
             break;
         case DIRECTION_DOWN:
-            barSize.height *= (F32)fileSize;
+            barSize.height *= (F32)progress;
             break;
         case DIRECTION_LEFT:
-            barPos.x = (barSize.width + barPos.x) - barSize.width * (F32)fileSize;
+            barPos.x = (barSize.width + barPos.x) - barSize.width * (F32)progress;
             barSize.width = (barSize.width + barPos.x) - barPos.x;
             break;
     }
@@ -163,5 +167,5 @@ void Loader_FileLoadCallback(const char* filename, U32 fileSize, void* data)
     }
 
     Main_LoopUpdate(FALSE);
-    loaderGlobs.progressLast = fileSize;
+    loaderGlobs.progressLast = progress;
 }
