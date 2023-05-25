@@ -71,7 +71,7 @@ extern lpImage Image_Create(LPDIRECTDRAWSURFACE4 surface, U32 width, U32 height,
 extern void Image_AddList();
 
 extern lpImage Image_LoadBMPScaled(const char* fileName, U32 width, U32 height);
-extern void Image_DisplayScaled(lpImage image, Area2F* src, Point2F* destPos, Point2F* destSize);
+extern void Image_DisplayScaled(lpImage image, Area2F* src, Point2F* destPos, Size2F* destSize);
 
 extern void Image_RemoveAll();
 extern void Image_Remove(lpImage dead);

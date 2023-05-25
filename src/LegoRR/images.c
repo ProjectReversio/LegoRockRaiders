@@ -154,7 +154,7 @@ lpImage Image_LoadBMPScaled(const char* fileName, U32 width, U32 height)
     return NULL;
 }
 
-void Image_DisplayScaled(lpImage image, Area2F* src, Point2F* destPos, Point2F* destSize)
+void Image_DisplayScaled(lpImage image, Area2F* src, Point2F* destPos, Size2F* destSize)
 {
     RECT r_src, r_dst;
 
@@ -174,8 +174,8 @@ void Image_DisplayScaled(lpImage image, Area2F* src, Point2F* destPos, Point2F* 
         r_dst.top = (U32) destPos->y;
         if (destSize)
         {
-            r_dst.right = (U32) (destPos->x + destSize->x);
-            r_dst.bottom = (U32) (destPos->y + destSize->y);
+            r_dst.right = (U32) (destPos->x + destSize->width);
+            r_dst.bottom = (U32) (destPos->y + destSize->height);
         } else if (src)
         {
             r_dst.right = (U32) (destPos->x + src->width);

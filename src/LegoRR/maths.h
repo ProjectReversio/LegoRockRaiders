@@ -12,3 +12,8 @@ typedef struct Point2F
 {
     F32 x, y;
 } Point2F, *lpPoint2F;
+
+typedef struct Size2F
+{
+    F32 width, height;
+} Size2F, *lpSize2F;

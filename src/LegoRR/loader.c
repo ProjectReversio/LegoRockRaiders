@@ -1,6 +1,8 @@
 #include "loader.h"
 #include "file.h"
 #include "utils.h"
+#include "mem.h"
+#include "main.h"
 
 Loader_Globs loaderGlobs = { NULL };
 
@@ -59,10 +61,107 @@ void Loader_Initialize(const char* loadScreenName, const char* shutdownScreenNam
 
 void Loader_Display_Loading_Bar(const char* section)
 {
-    // TODO: Implement Loader_Display_Loading_Bar
+    if (section == NULL)
+    {
+        loaderGlobs.flags &= ~LOADER_GLOB_FLAG_ENABLED;
+        return;
+    }
+
+    // TODO: Cleanup this decompile and avoid goto statements
+    lpLoaderSection loaderSec = NULL;
+    S32 it = 0;
+    lpLoaderSection secList = loaderGlobs.sectionList;
+    while(!secList->name)
+    {
+        loaderSec = secList;
+        LABEL_7:
+        secList++;
+        it++;
+        if (secList >= &loaderGlobs.current)
+            goto LABEL_10;
+    }
+
+    if (_strcmpi(secList->name, section))
+        goto LABEL_7;
+
+    loaderGlobs.current = &loaderGlobs.sectionList[it];
+    loaderGlobs.current->currentSize = 0;
+
+    LABEL_10:
+    if (it == 50)
+    {
+        if (loaderSec)
+        {
+            char* secName = Mem_Alloc(strlen(section) + 1);
+            strcpy(secName, section);
+            loaderSec->name = secName;
+            loaderSec->currentSize = 0;
+            loaderSec->totalSize = 0;
+            loaderGlobs.current = loaderSec;
+        }
+    }
+    loaderGlobs.progressLast = -1.0f;
+    loaderGlobs.flags |= LOADER_GLOB_FLAG_ENABLED;
+    Loader_FileLoadCallback(NULL, 0, NULL);
 }
 
 void Loader_FileLoadCallback(const char* filename, U32 fileSize, void* data)
 {
-    // TODO: Implement Loader_FileLoadCallback
+    if ((loaderGlobs.flags & LOADER_GLOB_FLAG_ENABLED) == 0)
+        return;
+
+    if (loaderGlobs.current && (loaderGlobs.current->currentSize += fileSize, loaderGlobs.current) && loaderGlobs.current->totalSize != 0)
+    {
+        fileSize = (U32)((F32)loaderGlobs.current->currentSize / (F32)loaderGlobs.current->totalSize);
+    } else {
+        fileSize = 0;
+    }
+
+    if (fileSize <= (loaderGlobs.progressLast - 0.002f))
+        return;
+
+    Point2F barPos;
+    barPos.x = loaderGlobs.progressWindow.x;
+    barPos.y = loaderGlobs.progressWindow.y;
+
+    Size2F barSize;
+    barSize.width = loaderGlobs.progressWindow.width;
+    barSize.height = loaderGlobs.progressWindow.height;
+
+    Image_Display(loaderGlobs.loadScreen, NULL);
+
+    if (fileSize > 1.0f)
+        fileSize = 1.0f;
+
+    switch (loaderGlobs.progressDirection)
+    {
+        case DIRECTION_UP:
+            barPos.y = (barSize.height + barPos.y) - barSize.height * (F32)fileSize;
+            barSize.height = (barSize.height + barPos.y) - barPos.y;
+            break;
+        case DIRECTION_RIGHT:
+            barSize.width *= (F32)fileSize;
+            break;
+        case DIRECTION_DOWN:
+            barSize.height *= (F32)fileSize;
+            break;
+        case DIRECTION_LEFT:
+            barPos.x = (barSize.width + barPos.x) - barSize.width * (F32)fileSize;
+            barSize.width = (barSize.width + barPos.x) - barPos.x;
+            break;
+    }
+
+    if (loaderGlobs.progressBar)
+        Image_DisplayScaled(loaderGlobs.progressBar, NULL, &barPos, &barSize);
+
+    if (loaderGlobs.loadingText)
+    {
+        Font_PrintF(loaderGlobs.font, (loaderGlobs.progressWindow.width * 0.5f + loaderGlobs.progressWindow.x) - (loaderGlobs.loadingWidth >> 1),
+                    loaderGlobs.progressWindow.y - 1,
+                    "%s",
+                    loaderGlobs.loadingText);
+    }
+
+    Main_LoopUpdate(FALSE);
+    loaderGlobs.progressLast = fileSize;
 }
