@@ -114,7 +114,7 @@ void Loader_FileLoadCallback(const char* filename, U32 fileSize, void* data)
 
     if (loaderGlobs.current && (loaderGlobs.current->currentSize += fileSize, loaderGlobs.current) && loaderGlobs.current->totalSize != 0)
     {
-        progress = (U32)((F32)loaderGlobs.current->currentSize / (F32)loaderGlobs.current->totalSize);
+        progress = ((F32)loaderGlobs.current->currentSize / (F32)loaderGlobs.current->totalSize);
     } else {
         progress = 0;
     }
