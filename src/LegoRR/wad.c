@@ -90,8 +90,8 @@ S32 Wad_Load(char* fName)
                 {
                     if (Wad_Get(newWad)->wadNames[i])
                         free(Wad_Get(newWad)->wadNames[i]);
-                    free(Wad_Get(newWad)->wadNames);
                 }
+                free(Wad_Get(newWad)->wadNames);
             }
             if (Wad_Get(newWad)->fileNames)
                 free(Wad_Get(newWad)->fileNames);
@@ -113,14 +113,14 @@ S32 Wad_Load(char* fName)
         char buffer[4096]; // Nice big buffer to read into likes.
         if (!GetFileName(f, buffer))
         {
-            if (Wad_Get(newWad)->fileNames)
+            if (Wad_Get(newWad)->wadNames)
             {
                 for (i = 0; i < Wad_Get(newWad)->numFiles; i++)
                 {
                     if (Wad_Get(newWad)->wadNames[i])
                         free(Wad_Get(newWad)->wadNames[i]);
-                    free(Wad_Get(newWad)->wadNames);
                 }
+                free(Wad_Get(newWad)->wadNames);
             }
             if (Wad_Get(newWad)->fileNames)
             {
@@ -128,8 +128,8 @@ S32 Wad_Load(char* fName)
                 {
                     if (Wad_Get(newWad)->fileNames[i])
                         free(Wad_Get(newWad)->fileNames[i]);
-                    free(Wad_Get(newWad)->fileNames);
                 }
+                free(Wad_Get(newWad)->fileNames);
             }
             fclose(f);
             return WAD_ERROR;
@@ -147,14 +147,14 @@ S32 Wad_Load(char* fName)
     Wad_Get(newWad)->wadEntries = (WadEntry*) malloc(sizeof(WadEntry) * Wad_Get(newWad)->numFiles);
     if (!Wad_Get(newWad)->wadEntries)
     {
-        if (Wad_Get(newWad)->fileNames)
+        if (Wad_Get(newWad)->wadNames)
         {
             for (i = 0; i < Wad_Get(newWad)->numFiles; i++)
             {
                 if (Wad_Get(newWad)->wadNames[i])
                     free(Wad_Get(newWad)->wadNames[i]);
-                free(Wad_Get(newWad)->wadNames);
             }
+            free(Wad_Get(newWad)->wadNames);
         }
         if (Wad_Get(newWad)->fileNames)
         {
@@ -162,8 +162,8 @@ S32 Wad_Load(char* fName)
             {
                 if (Wad_Get(newWad)->fileNames[i])
                     free(Wad_Get(newWad)->fileNames[i]);
-                free(Wad_Get(newWad)->fileNames);
             }
+            free(Wad_Get(newWad)->fileNames);
         }
 
         fclose(f);
@@ -172,14 +172,14 @@ S32 Wad_Load(char* fName)
 
     if (fread(Wad_Get(newWad)->wadEntries, 1, sizeof(WadEntry) * Wad_Get(newWad)->numFiles, f) != (S32)(sizeof(WadEntry) * Wad_Get(newWad)->numFiles))
     {
-        if (Wad_Get(newWad)->fileNames)
+        if (Wad_Get(newWad)->wadNames)
         {
             for (i = 0; i < Wad_Get(newWad)->numFiles; i++)
             {
                 if (Wad_Get(newWad)->wadNames[i])
                     free(Wad_Get(newWad)->wadNames[i]);
-                free(Wad_Get(newWad)->wadNames);
             }
+            free(Wad_Get(newWad)->wadNames);
         }
         if (Wad_Get(newWad)->fileNames)
         {
@@ -187,8 +187,8 @@ S32 Wad_Load(char* fName)
             {
                 if (Wad_Get(newWad)->fileNames[i])
                     free(Wad_Get(newWad)->fileNames[i]);
-                free(Wad_Get(newWad)->fileNames);
             }
+            free(Wad_Get(newWad)->fileNames);
         }
 
         if (Wad_Get(newWad)->wadEntries)
