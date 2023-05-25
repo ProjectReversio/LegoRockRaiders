@@ -89,3 +89,19 @@ void Front_PlayMovie(Movie_t* mov, B32 skippable)
             Movie_Update(mov, 1.0f, &rect));
     }
 }
+
+void Front_Initialize(lpConfig config)
+{
+    // TODO: Implement Front_Initialize
+}
+
+void Front_RunScreenMenuType(Menu_ScreenType screenType)
+{
+    // TODO: Implement Front_RunScreenMenuType
+}
+
+B32 Front_IsTriggerAppQuit()
+{
+    // TODO: Implement Front_IsTriggerAppQuit
+    return FALSE;
+}

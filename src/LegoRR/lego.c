@@ -126,6 +126,28 @@ B32 Lego_Initialize()
 
     // TODO: Implement Lego_Initialize
 
+    if (Front_IsFrontEndEnabled())
+        Front_Initialize(legoGlobs.config);
+
+    // TODO: Implement Lego_Initialize
+
+    if (Main_ProgrammerMode() < PROGRAMMER_MODE_3)
+    {
+        // TODO: Implement Lego_Initialize
+
+        Loader_Display_Loading_Bar(NULL);
+
+        Front_RunScreenMenuType(Menu_Screen_Title);
+        if (Front_IsTriggerAppQuit())
+            return FALSE;
+
+        // TODO: Implement Lego_Initialize
+    } else {
+        // TODO: Implement Lego_Initialize
+    }
+
+    // TODO: Implement Lego_Initialize
+
     return TRUE;
 }
 
