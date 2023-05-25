@@ -16,7 +16,7 @@ void BMP_Parse(void* data, U32 size, LPD3DRMIMAGE istruct)
 
         pal = Mem_Alloc(sizeof(D3DRMPALETTEENTRY) * 256); // Always create a table 256 long.
         memset(pal, 0, sizeof(D3DRMPALETTEENTRY) * 256);
-        memcpy(pal, ((U8*)data) + sizeof(BMP_Header), colourCount + sizeof(D3DRMPALETTEENTRY));
+        memcpy(pal, ((U8*)data) + sizeof(BMP_Header), colourCount * sizeof(D3DRMPALETTEENTRY));
 
         istruct->rgb = FALSE;
         istruct->red_mask = 0xfc;

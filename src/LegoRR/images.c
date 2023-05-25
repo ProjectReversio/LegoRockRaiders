@@ -484,7 +484,7 @@ U32 Image_DDColorMatch(LPDIRECTDRAWSURFACE4 pdds, U32 rgb)
 
     Image_CR2RGB(rgb, &r, &g, &b);
 
-    if (pdds->lpVtbl->Lock(pdds, NULL, &ddsd, DDLOCK_WAIT, NULL))
+    if (pdds->lpVtbl->Lock(pdds, NULL, &ddsd, DDLOCK_WAIT, NULL) == DD_OK)
     {
         U32 rMask, gMask, bMask;
         U32 rBitCount, gBitCount, bBitCount;
