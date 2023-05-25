@@ -1,5 +1,6 @@
 #include <string.h>
 #include "utils.h"
+#include "mem.h"
 
 const char* Util_StrIStr(const char* str1, const char* str2)
 {
@@ -63,3 +64,19 @@ U32 Util_Tokenize(const char* string, char** argv, const char* sep)
     }
     return count;
 }
+
+#ifdef _DEBUG
+char* Util_StrCpyDebug(const char* string, const char* file, U32 line)
+{
+    char* newString = Mem_AllocDebug(strlen(string) + 1, line, file);
+    strcpy(newString, string);
+    return newString;
+}
+#else
+char* Util_StrCpy(const char* string)
+{
+    char* newString = Mem_Alloc(strlen(string) + 1);
+    strcpy(newString, string);
+    return newString;
+}
+#endif

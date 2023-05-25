@@ -555,3 +555,70 @@ void* File_Load(const char*  filename, U32* sizeptr, B32 binary)
     }
     return NULL;
 }
+
+void File_SetLoadCallback(void (*callback)(const char* filename, U32 filesize, void* data), void* data)
+{
+    fileGlobs.loadCallback = callback;
+    fileGlobs.loadCallbackData = data;
+}
+
+S32 File_GetC(lpFile f)
+{
+    FileSys fs = _File_GetSystem(f);
+    S32 len;
+    switch (fs)
+    {
+        case FileSys_Standard:
+            return fgetc(StdFile(f));
+            break;
+        case FileSys_Wad:
+            len = Wad_hLength(WadFile(f)->hFile);
+            if (WadFile(f)->streamPos >= len - 1)
+                return EOF;
+            else
+            {
+                S32 c = *((int*)((char*)Wad_hData(WadFile(f)->hFile) + WadFile(f)->streamPos));
+                WadFile(f)->streamPos++;
+                return c;
+            }
+            break;
+        case FileSys_Error:
+        default:
+            File_Error("%s(%i) : Unknown file system in call to %s", __FILE__, __LINE__, "File_GetC");
+            break;
+    }
+    return 0;
+}
+
+char* File_InternalFGetS(char* fgetsBuffer, S32 num, lpFile f)
+{
+    S32 pos = 0;
+    while ((fgetsBuffer[pos] = (char)File_GetC(f)) != 0 && fgetsBuffer[pos] != '\n' && fgetsBuffer[pos] != EOF && pos != num)
+    {
+        pos++;
+    }
+    fgetsBuffer[pos + 1] = 0;
+    if (pos == 0)
+        return 0;
+    else
+        return fgetsBuffer;
+}
+
+char* File_GetS(char* fgetsBuffer, S32 num, lpFile f)
+{
+    FileSys fs = _File_GetSystem(f);
+    switch (fs)
+    {
+        case FileSys_Standard:
+            return fgets(fgetsBuffer, num, StdFile(f));
+            break;
+        case FileSys_Wad:
+            return File_InternalFGetS(fgetsBuffer, num, f);
+            break;
+        case FileSys_Error:
+        default:
+            File_Error("%s(%i) : Unknown file system in call to %s", __FILE__, __LINE__, "File_GetS");
+            break;
+    }
+    return NULL;
+}

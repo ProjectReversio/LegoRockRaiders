@@ -100,6 +100,12 @@ extern S32 File_Flush(lpFile file);
 extern void* File_LoadBinary(const char* filename, U32* sizeptr);
 extern void* File_LoadASCII(const char* filename, U32* sizeptr);
 extern void* File_Load(const char*  filename, U32* sizeptr, B32 binary);
+
+extern void File_SetLoadCallback(void (*callback)(const char* filename, U32 filesize, void* data), void* data);
+
+extern char* File_GetS(char* fgetsBuffer, S32 num, lpFile f);
+extern S32 File_GetC(lpFile f);
+
 #ifdef __cplusplus
 }
 #endif
