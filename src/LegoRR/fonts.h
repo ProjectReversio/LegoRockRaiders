@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include "types.h"
 #include "images.h"
+#include "error.h"
 
 #define FONT_MAXLISTS 32
 
@@ -10,6 +11,20 @@
 
 #define FONT_GRIDWIDTH 10
 #define FONT_GRIDHEIGHT 19
+
+#ifdef _DEBUG
+#define Font_CheckInit() if (!(fontGlobs.flags & FONT_FLAG_INITIALIZED)) { Error_Fatal(TRUE, "Error: Font_Initialize() Has Not Been Called"); }
+#else
+#define Font_CheckInit()
+#endif
+
+typedef enum FontFlags
+{
+    FONT_FLAG_NONE = 0,
+    FONT_FLAG_INITIALIZED = 0x1,
+    FONT_FLAG_WINDOWSET = 0x2,
+    FONT_FLAG_WINDOWWRAPPED = 0x4,
+} FontFlags;
 
 typedef struct Font
 {
