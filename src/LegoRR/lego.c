@@ -39,6 +39,16 @@ B32 Lego_Initialize()
 
     // TODO: Implement Lego_Initialize
 
+    legoGlobs.bmpFONT5_HI = Font_Load("Interface\\Fonts\\FONT5_HI.bmp");
+    legoGlobs.bmpToolTipFont = Font_Load("Interface\\Fonts\\ToolTipFont.bmp");
+    legoGlobs.bmpDesktopFont = Font_Load("Interface\\Fonts\\DeskTopFont.bmp");
+    legoGlobs.bmpfont5_HI = Font_Load("Interface\\Fonts\\font5_HI.bmp");
+    legoGlobs.bmpMbriefFONT = Font_Load("Interface\\Fonts\\MbriefFONT.bmp");
+    legoGlobs.bmpMbriefFONT2 = Font_Load("Interface\\Fonts\\MbriefFONT2.bmp");
+    legoGlobs.bmpRSFont = Font_Load("Interface\\Fonts\\RSFont.bmp");
+
+    // TODO: Implement Lego_Initialize
+
     legoGlobs.rootCont = Container_Initialize(legoGlobs.gameName);
     if (legoGlobs.rootCont == NULL)
     {
