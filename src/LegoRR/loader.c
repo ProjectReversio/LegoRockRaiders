@@ -160,10 +160,26 @@ void Loader_FileLoadCallback(const char* filename, U32 fileSize, void* data)
 
     if (loaderGlobs.loadingText)
     {
+#ifdef _DEBUG
+        U32 progressNum = (U32)(progress * 100.0f);
+        if (filename)
+        {
+            Font_PrintF(loaderGlobs.font, (loaderGlobs.progressWindow.width * 0.5f + loaderGlobs.progressWindow.x) - (loaderGlobs.loadingWidth >> 1),
+                        loaderGlobs.progressWindow.y - 1,
+                        "%s[%d%%]: %s",
+                        loaderGlobs.loadingText, progressNum, filename);
+        } else {
+            Font_PrintF(loaderGlobs.font, (loaderGlobs.progressWindow.width * 0.5f + loaderGlobs.progressWindow.x) - (loaderGlobs.loadingWidth >> 1),
+                        loaderGlobs.progressWindow.y - 1,
+                        "%s[%d%%]",
+                        loaderGlobs.loadingText, progressNum);
+        }
+#else
         Font_PrintF(loaderGlobs.font, (loaderGlobs.progressWindow.width * 0.5f + loaderGlobs.progressWindow.x) - (loaderGlobs.loadingWidth >> 1),
                     loaderGlobs.progressWindow.y - 1,
                     "%s",
                     loaderGlobs.loadingText);
+#endif
     }
 
     Main_LoopUpdate(FALSE);
