@@ -516,6 +516,11 @@ U32 Image_DDColorMatch(LPDIRECTDRAWSURFACE4 pdds, U32 rgb)
     return dw;
 }
 
+void Image_SetupTrans(lpImage image, F32 lowr, F32 lowg, F32 lowb, F32 highr, F32 highg, F32 highb)
+{
+    // TODO: Implement Image_SetupTrans
+}
+
 void* Image_LockSurface(lpImage image, U32* pitch, U32* bpp)
 {
     DDSURFACEDESC2 desc;

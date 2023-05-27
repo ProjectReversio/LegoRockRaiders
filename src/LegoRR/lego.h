@@ -61,6 +61,44 @@ typedef struct Lego_Globs
 
     // TODO: Implement Lego_Globs
 
+    F32 InitialSlugTime;
+    Point2F NextButtonPos;
+    Point2F BackButtonPos;
+    lpImage NextButtonImage;
+    lpImage BackButtonImage;
+    lpImage BackArrowImage;
+    F32 FogRate;
+    F32 timerGame_e3c;
+    F32 elapsedAbs;
+    F32 DrainTime;
+    U32 ReinforceHits;
+    U32 CDStartTrack;
+    U32 CDTracks;
+    U32 FallinMultiplier;
+    B32 hasFallins;
+    Point2F menuNextPoint;
+    Point2F menuPrevPoint;
+
+    // TODO: Implement Lego_Globs
+
+    lpImage DialogImage;
+    lpImage DialogContrastOverlay;
+    lpTextWindow DialogTextWndTitle;
+    lpTextWindow DialogTextWndMessage;
+    lpTextWindow DialogTextWndOK;
+    lpTextWindow DialogTextWndCancel;
+    const char* CreditsTextFile;
+    const char* CreditsBackAVI;
+    const char* lanUpgradeLevel_name[16];
+    S32 BuildingUpgradeCostOre;
+    S32 BuildingUpgradeCostStuds;
+    const char* renameInput;
+    Point2F renamePosition;
+    const char* RenameReplace;
+    const char* EndGameAVI1;
+    const char* EndGameAVI2;
+    Point2I mouseBlockPos;
+
 } Lego_Globs, *lpLego_Globs;
 
 extern Lego_Globs legoGlobs;

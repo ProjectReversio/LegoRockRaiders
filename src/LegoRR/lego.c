@@ -1,5 +1,6 @@
 #include "lego.h"
 #include <string.h>
+#include <stdio.h>
 #include "types.h"
 #include "main.h"
 #include "front.h"
@@ -82,7 +83,7 @@ B32 Lego_Initialize()
     const char* progressBar = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ProgressBar", 0));
     const char* loadScreen = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "LoadScreen", 0));
     const char* shutdownScreen = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ShutdownScreen", 0));
-    const char* progressWindow = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ProgressWindow", 0));
+    const char* progressWindow = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ProgressWindow", 0));
     const char* loadingText = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "LoadingText", 0));
 
     Direction progressBarDirection;
@@ -123,8 +124,7 @@ B32 Lego_Initialize()
         }
     }
 
-    // TODO: This is in the original code, but it crashes here. Figure this out.
-    //Mem_Free(progressWindow);
+    Mem_Free(progressWindow);
 
     const char* loaderProfile_filename;
     if (Sound_IsInitialized())
@@ -141,6 +141,47 @@ B32 Lego_Initialize()
     if (sharedTextureDir)
         Container_SetSharedTextureDirectory(sharedTextureDir);
     Mesh_Initialize(sharedTextureDir);
+
+    char buttonBuffer[128];
+    sprintf(buttonBuffer, "NextButton%ix%i", appWidth(), appHeight());
+    const char* nextButton = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", buttonBuffer, 0));
+    if (nextButton && (legoGlobs.NextButtonImage = Image_LoadBMP(nextButton)))
+    {
+        Image_SetupTrans(legoGlobs.NextButtonImage, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        sprintf(buttonBuffer, "NextButtonPos%ix%i", appWidth(), appHeight());
+        const char* nextButtonPos = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", buttonBuffer, 0));
+        if (nextButtonPos)
+        {
+            char* nextButtonPos_stringParts[10];
+            U32 count = Util_Tokenize(nextButtonPos, nextButtonPos_stringParts, ",");
+            if (count == 2)
+            {
+                legoGlobs.NextButtonPos.x = atof(nextButtonPos_stringParts[0]);
+                legoGlobs.NextButtonPos.y = atof(nextButtonPos_stringParts[1]);
+            }
+            Mem_Free(nextButtonPos);
+        }
+    }
+
+    sprintf(buttonBuffer, "BackButton%ix%i", appWidth(), appHeight());
+    const char* backButton = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", buttonBuffer, 0));
+    if (backButton && (legoGlobs.BackButtonImage = Image_LoadBMP(nextButton)))
+    {
+        Image_SetupTrans(legoGlobs.BackButtonImage, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        sprintf(buttonBuffer, "BackButtonPos%ix%i", appWidth(), appHeight());
+        const char* backButtonPos = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", buttonBuffer, 0));
+        if (backButtonPos)
+        {
+            char* backButtonPos_stringParts[10];
+            U32 count = Util_Tokenize(backButtonPos, backButtonPos_stringParts, ",");
+            if (count == 2)
+            {
+                legoGlobs.BackButtonPos.x = atof(backButtonPos_stringParts[0]);
+                legoGlobs.BackButtonPos.y = atof(backButtonPos_stringParts[1]);
+            }
+            Mem_Free(backButtonPos);
+        }
+    }
 
     // TODO: Implement Lego_Initialize
 

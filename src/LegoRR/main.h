@@ -139,3 +139,5 @@ inline ProgrammerMode Main_ProgrammerMode() { return mainGlobs.programmerLevel; 
 inline LPDIRECT3DRM3 lpD3DRM() { return mainGlobs.lpD3DRM; }
 inline LPDIRECT3DRMDEVICE3 lpDevice() { return mainGlobs.device; }
 inline LPDIRECT3DDEVICE3 lpIMDevice() { return mainGlobs.imDevice; }
+inline S32 appWidth() { return mainGlobs.appWidth; }
+inline S32 appHeight() { return mainGlobs.appHeight; }
