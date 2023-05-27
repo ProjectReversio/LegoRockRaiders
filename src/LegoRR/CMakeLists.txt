@@ -37,6 +37,7 @@ set(MAIN_SRC
     sfx.c
     common.c
     loader.c
+    mesh.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -75,6 +76,7 @@ set(MAIN_SRC
     sfx.h
     common.h
     loader.h
+    mesh.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

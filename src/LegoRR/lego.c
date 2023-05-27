@@ -11,6 +11,7 @@
 #include "sound.h"
 #include "loader.h"
 #include "utils.h"
+#include "mesh.h"
 
 Lego_Globs legoGlobs;
 
@@ -133,6 +134,13 @@ B32 Lego_Initialize()
 
     Loader_Initialize(loadScreen, shutdownScreen, legoGlobs.bmpFONT5_HI, loaderProfile_filename, progressBarDirection, progressBar, &progressWindow_rect, loadingText);
     Loader_Display_Loading_Bar("Game Data");
+
+    // TODO: Implement Lego_Initialize
+
+    const char* sharedTextureDir = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "SharedTextures", 0));
+    if (sharedTextureDir)
+        Container_SetSharedTextureDirectory(sharedTextureDir);
+    Mesh_Initialize(sharedTextureDir);
 
     // TODO: Implement Lego_Initialize
 

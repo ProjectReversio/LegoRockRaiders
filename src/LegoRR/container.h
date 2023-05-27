@@ -121,3 +121,5 @@ extern void Container_Remove2(lpContainer dead, B32 kill);
 extern void Container_AddList();
 
 extern void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer owner, lpAnimClone animClone, const char* asfname, U32* frameCount, const char* frameName, F32* currTime, F32* transCo, const char* actSample, void* soundRecord, U32* trigger);
+
+extern void Container_SetSharedTextureDirectory(const char* path);

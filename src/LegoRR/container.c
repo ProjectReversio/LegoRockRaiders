@@ -155,3 +155,8 @@ void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer owner, lpA
 {
     // TODO: Implement Container_Frame_SetAppData
 }
+
+void Container_SetSharedTextureDirectory(const char* path)
+{
+    // TODO: Implement Container_SetSharedTextureDirectory
+}
