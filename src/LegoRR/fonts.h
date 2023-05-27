@@ -11,9 +11,14 @@
 
 #define FONT_GRIDWIDTH 10
 #define FONT_GRIDHEIGHT 19
+#define FONT_MAXSTRINGLEN 1024
 
 #ifdef _DEBUG
-#define Font_CheckInit() if (!(fontGlobs.flags & FONT_FLAG_INITIALIZED)) { Error_Fatal(TRUE, "Error: Font_Initialize() Has Not Been Called"); }
+// TODO: in the original code, they never called Font_Initialize,
+//  so we need to do the same, but this would cause this error to come up.
+//  so for now we'll just disable it
+#define Font_CheckInit()
+//#define Font_CheckInit() if (!(fontGlobs.flags & FONT_FLAG_INITIALIZED)) { Error_Fatal(TRUE, "Error: Font_Initialize() Has Not Been Called"); }
 #else
 #define Font_CheckInit()
 #endif
@@ -59,6 +64,10 @@ extern void Font_AddList();
 extern void Font_Remove(lpFont dead);
 
 extern U32 Font_PrintF(lpFont font, S32 x, S32 y, const char* msg, ...);
+extern U32 Font_VPrintF(lpFont font, S32 x, S32 y, const char* msg, va_list args);
+extern U32 Font_VPrintF2(lpFont font, S32 x, S32 y, B32 render, U32* lineCount, const char* msg, va_list args);
+
+extern U32 Font_OutputChar(lpFont font, S32 x, S32 y, U8 c, B32 render);
 
 extern void Font_VGetStringInfo(lpFont font, U32* width, U32* lineCount, const char* msg, va_list args);
 

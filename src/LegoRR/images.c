@@ -515,3 +515,77 @@ U32 Image_DDColorMatch(LPDIRECTDRAWSURFACE4 pdds, U32 rgb)
     }
     return dw;
 }
+
+void* Image_LockSurface(lpImage image, U32* pitch, U32* bpp)
+{
+    DDSURFACEDESC2 desc;
+
+    memset(&desc, 0, sizeof(DDSURFACEDESC2));
+    desc.dwSize = sizeof(DDSURFACEDESC2);
+    if (image->surface->lpVtbl->Lock(image->surface, NULL, &desc, DDLOCK_WAIT, NULL) == DD_OK)
+    {
+        *pitch = desc.lPitch;
+        *bpp = desc.ddpfPixelFormat.dwRGBBitCount;
+        return desc.lpSurface;
+    }
+
+    return NULL;
+}
+
+void Image_UnlockSurface(lpImage image)
+{
+    image->surface->lpVtbl->Unlock(image->surface, NULL);
+}
+
+U32 Image_GetPen255(lpImage image)
+{
+    DDPIXELFORMAT pf;
+    U32 pen = 0;
+    U8* s, *t;
+
+    memset(&pf, 0, sizeof(DDPIXELFORMAT));
+    pf.dwSize = sizeof(DDPIXELFORMAT);
+
+    if (image->surface->lpVtbl->GetPixelFormat(image->surface, &pf) == DD_OK)
+    {
+        s = (U8*) &pen;
+        t = (U8*) &image->pen255;
+
+        s[0] = t[3];
+        s[1] = t[2];
+        s[2] = t[1];
+        s[3] = t[0];
+
+        return pen;
+    }
+
+    return 0;
+}
+
+void Image_SetPenZeroTrans(lpImage image)
+{
+    DDCOLORKEY ColourKey;
+
+    Error_Fatal(!image, "NULL passed as image to Image_SetupTrans()");
+
+    ColourKey.dwColorSpaceLowValue = image->penZero;
+    ColourKey.dwColorSpaceHighValue = image->penZero;
+
+    image->surface->lpVtbl->SetColorKey(image->surface, DDCKEY_SRCBLT, &ColourKey);
+    image->flags |= IMAGE_FLAG_TRANS;
+}
+
+U32 Image_GetPixelMask(lpImage image)
+{
+    DDPIXELFORMAT pf;
+
+    memset(&pf, 0, sizeof(DDPIXELFORMAT));
+    pf.dwSize = sizeof(DDPIXELFORMAT);
+
+    if (image->surface->lpVtbl->GetPixelFormat(image->surface, &pf) == DD_OK)
+    {
+        return 0xffffffff << (32 - pf.dwRGBBitCount);
+    }
+
+    return 0;
+}

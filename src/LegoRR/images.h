@@ -87,3 +87,9 @@ extern U32 Image_CountMaskBitShift(U32 mask);
 extern COLORREF Image_RGB2CR(U8 r, U8 g, U8 b);
 extern void Image_CR2RGB(COLORREF cr, U8* r, U8* g, U8* b);
 extern U32 Image_DDColorMatch(LPDIRECTDRAWSURFACE4 pdds, U32 rgb);
+
+extern void* Image_LockSurface(lpImage image, U32* pitch, U32* bpp);
+extern void Image_UnlockSurface(lpImage image);
+extern U32 Image_GetPen255(lpImage image);
+extern void Image_SetPenZeroTrans(lpImage image);
+extern U32 Image_GetPixelMask(lpImage image);
