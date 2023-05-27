@@ -13,6 +13,7 @@
 #include "loader.h"
 #include "utils.h"
 #include "mesh.h"
+#include "nerps.h"
 
 Lego_Globs legoGlobs;
 
@@ -182,6 +183,13 @@ B32 Lego_Initialize()
             Mem_Free(backButtonPos);
         }
     }
+
+    const char* backArrow = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "BackArrow", 0));
+    if (backArrow && (legoGlobs.BackArrowImage = Image_LoadBMP(backArrow)))
+    {
+        Image_SetupTrans(legoGlobs.BackArrowImage, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    }
+    NERPs_SetHasNextButton(legoGlobs.NextButtonImage != NULL);
 
     // TODO: Implement Lego_Initialize
 

@@ -38,6 +38,7 @@ set(MAIN_SRC
     common.c
     loader.c
     mesh.c
+    nerps.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -77,6 +78,7 @@ set(MAIN_SRC
     common.h
     loader.h
     mesh.h
+    nerps.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h
