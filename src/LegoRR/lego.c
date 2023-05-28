@@ -148,15 +148,16 @@ B32 Lego_Initialize()
         legoGlobs.BuildingUpgradeCostStuds = 1;
 
     legoGlobs.RenameReplace = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "RenameReplace", 0));
+    char* renameReplace_str = legoGlobs.RenameReplace;
     if (legoGlobs.RenameReplace)
     {
         char* renameReplace_ptr;
-        while (renameReplace_ptr = legoGlobs.RenameReplace, *renameReplace_ptr != '\0')
+        while (renameReplace_ptr = renameReplace_str, *renameReplace_ptr != '\0')
         {
             if (*renameReplace_ptr == '_')
                 *renameReplace_ptr = ' ';
 
-            legoGlobs.RenameReplace = renameReplace_ptr + 1;
+            renameReplace_str = renameReplace_ptr + 1;
         }
     }
 
