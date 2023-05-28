@@ -82,3 +82,5 @@ extern lpConfig Config_Create(lpConfig prev);
 extern void Config_Remove(lpConfig dead);
 
 extern void Config_AddList();
+
+extern void Config_Free(lpConfig root);

@@ -198,24 +198,33 @@ B32 Lego_Initialize()
 
     // TODO: Implement Lego_Initialize
 
-    if (Main_ProgrammerMode() < PROGRAMMER_MODE_3)
+    const char* startLevelName = NULL;
+    if (Main_ProgrammerMode() < PROGRAMMER_MODE_3 &&
+        Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "FrontEnd", 0)) == TRUE)
     {
-        // TODO: Implement Lego_Initialize
-
         Loader_Display_Loading_Bar(NULL);
 
         Front_RunScreenMenuType(Menu_Screen_Title);
         if (Front_IsTriggerAppQuit())
             return FALSE;
 
-        // TODO: Implement Lego_Initialize
+        startLevelName = Front_GetSelectedLevel();
     } else {
-        // TODO: Implement Lego_Initialize
+        startLevelName = Main_GetStartLevel();
+        if (!startLevelName)
+            startLevelName = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "startlevel", 0));
     }
 
-    // TODO: Implement Lego_Initialize
+    Front_LoadOptionParameters(TRUE, FALSE);
+    if (Lego_LoadLevel(startLevelName))
+    {
+        SFX_Random_Play_OrAddToQueue(SFX_AmbientLoop, TRUE);
+        return TRUE;
+    }
 
-    return TRUE;
+    Config_Free(legoGlobs.config);
+    Container_Shutdown();
+    return FALSE;
 }
 
 B32 Lego_Shutdown_Full()
@@ -239,5 +248,11 @@ B32 Lego_MainLoop(F32 time)
 {
     // TODO: Implement Lego_MainLoop
 
+    return TRUE;
+}
+
+B32 Lego_LoadLevel(const char* levelName)
+{
+    // TODO: Implement Lego_LoadLevel
     return TRUE;
 }

@@ -109,3 +109,5 @@ extern B32 Lego_Initialize();
 extern B32 Lego_Shutdown_Full();
 extern B32 Lego_Shutdown_Quick();
 extern B32 Lego_MainLoop(F32 time);
+
+extern B32 Lego_LoadLevel(const char* levelName);

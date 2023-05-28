@@ -28,3 +28,6 @@ extern void Front_Initialize(lpConfig config);
 
 extern void Front_RunScreenMenuType(Menu_ScreenType screenType);
 extern B32 Front_IsTriggerAppQuit();
+
+extern const char* Front_GetSelectedLevel();
+extern void Front_LoadOptionParameters(B32 loadOptions, B32 resetFront);

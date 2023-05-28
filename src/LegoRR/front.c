@@ -105,3 +105,14 @@ B32 Front_IsTriggerAppQuit()
     // TODO: Implement Front_IsTriggerAppQuit
     return FALSE;
 }
+
+const char* Front_GetSelectedLevel()
+{
+    // TODO: Implement Front_GetSelectedLevel
+    return NULL;
+}
+
+void Front_LoadOptionParameters(B32 loadOptions, B32 resetFront)
+{
+    // TODO: Implement Front_LoadOptionParameters
+}

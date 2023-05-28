@@ -387,3 +387,18 @@ void Config_AddList()
         Error_Fatal(TRUE, Error_Format("Unable to allocate %d bytes of memory for new list.\n", sizeof(Config) * count));
     }
 }
+
+void Config_Free(lpConfig root)
+{
+    lpConfig next;
+
+    Error_Fatal(root->fileData == NULL, "Only pass the root (loaded) config structure to Config_Free()");
+
+    Mem_Free(root->fileData);
+    while (root)
+    {
+        next = root->linkNext;
+        Config_Remove(root);
+        root = next;
+    }
+}
