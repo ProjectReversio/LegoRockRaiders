@@ -201,7 +201,7 @@ B32 Lego_Initialize()
     Advisor_InitViewport(200.0f);
     Advisor_LoadAnims(legoGlobs.config, legoGlobs.gameName);
 
-    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DisplayAdvisor", 0)) == TRUE)
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DisplayAdvisor", 0)) == BOOL3_TRUE)
         Advisor_LoadPositions(legoGlobs.config, legoGlobs.gameName, appWidth(), appHeight());
 
     if ((legoGlobs.flags1 & GAME1_USESFX) != GAME1_NONE)
@@ -211,7 +211,7 @@ B32 Lego_Initialize()
 
     const char* startLevelName = NULL;
     if (Main_ProgrammerMode() < PROGRAMMER_MODE_3 &&
-        Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "FrontEnd", 0)) == TRUE)
+        Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "FrontEnd", 0)) == BOOL3_TRUE)
     {
         Loader_Display_Loading_Bar(NULL);
 

@@ -69,7 +69,7 @@ extern const char* Config_GetStringValue(lpConfig root, const char* stringID);
 
 
 extern const char* Config_BuildStringID(const char* s, ...);
-extern U32 Config_GetBoolValue(lpConfig root, const char* stringID);
+extern Bool3 Config_GetBoolValue(lpConfig root, const char* stringID);
 extern const char* Config_GetTempStringValue(lpConfig root, const char* stringID);
 
 #ifdef _DEBUG

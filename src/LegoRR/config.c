@@ -198,10 +198,10 @@ const char* Config_BuildStringID(const char* s, ...)
     return string;
 }
 
-U32 Config_GetBoolValue(lpConfig root, const char* stringID)
+Bool3 Config_GetBoolValue(lpConfig root, const char* stringID)
 {
     const char* string;
-    U32 res = 2;
+    U32 res = BOOL3_ERROR;
 
     if ((string = Config_GetStringValue(root, stringID)))
     {

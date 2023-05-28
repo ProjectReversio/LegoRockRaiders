@@ -22,3 +22,10 @@ typedef U32         B32;
 
 #define TRUE 1
 #define FALSE 0
+
+typedef enum Bool3
+{
+    BOOL3_FALSE = 0,
+    BOOL3_TRUE = 1,
+    BOOL3_ERROR = 2,
+} Bool3;

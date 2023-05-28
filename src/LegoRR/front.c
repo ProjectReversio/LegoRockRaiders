@@ -8,16 +8,16 @@
 
 B32 Front_IsFrontEndEnabled()
 {
-    B32 result = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "FrontEnd", 0));
+    Bool3 result = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "FrontEnd", 0));
 
-    return result == 1 && Main_ProgrammerMode() < PROGRAMMER_MODE_3;
+    return result == BOOL3_TRUE && Main_ProgrammerMode() < PROGRAMMER_MODE_3;
 }
 
 B32 Front_IsIntrosEnabled()
 {
-    B32 result = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DontPlayAvis", 0));
+    Bool3 result = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DontPlayAvis", 0));
 
-    return result != 1 && Main_ProgrammerMode() < PROGRAMMER_MODE_3;
+    return result != BOOL3_TRUE && Main_ProgrammerMode() < PROGRAMMER_MODE_3;
 }
 
 void Front_PlayIntroMovie(const char* aviKey, B32 skippable)
