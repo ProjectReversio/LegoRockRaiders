@@ -25,6 +25,7 @@
 #include "aitask.h"
 #include "radarmap.h"
 #include "panels.h"
+#include "tooltip.h"
 
 Lego_Globs legoGlobs;
 
@@ -121,6 +122,50 @@ B32 Lego_Initialize()
         Error_Warn(TRUE, "Failed to load config file 'Lego.cfg'");
         Container_Shutdown();
         return FALSE;
+    }
+
+    F32 tooltipRed;
+    F32 tooltipGreen;
+    F32 tooltipBlue;
+    if (!Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ToolTipRGB", 0), &tooltipRed, &tooltipGreen, &tooltipBlue))
+    {
+        tooltipRed = 0.3254902f;
+        tooltipGreen = 0.3254902f;
+        tooltipBlue = 0.3254902f;
+    }
+
+    ToolTip_Initialize(legoGlobs.bmpToolTipFont, 2, 1, 1.0f, appWidth(), appHeight(), 32, tooltipRed, tooltipGreen, tooltipBlue);
+
+    legoGlobs.CreditsTextFile = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "CreditsTextFile", 0));
+    legoGlobs.CreditsBackAVI = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "CreditsBackAVI", 0));
+
+    legoGlobs.BuildingUpgradeCostOre = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "BuildingUpgradeCostOre", 0));
+    if (legoGlobs.BuildingUpgradeCostOre == 0)
+        legoGlobs.BuildingUpgradeCostOre = 5;
+
+    legoGlobs.BuildingUpgradeCostStuds = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "BuildingUpgradeCostStuds", 0));
+    if (legoGlobs.BuildingUpgradeCostStuds == 0)
+        legoGlobs.BuildingUpgradeCostStuds = 1;
+
+    legoGlobs.RenameReplace = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "RenameReplace", 0));
+    if (legoGlobs.RenameReplace)
+    {
+        char* renameReplace_ptr;
+        while (renameReplace_ptr = legoGlobs.RenameReplace, *renameReplace_ptr != '\0')
+        {
+            if (*renameReplace_ptr == '_')
+                *renameReplace_ptr = ' ';
+
+            legoGlobs.RenameReplace = renameReplace_ptr + 1;
+        }
+    }
+
+    U32 videoMemTotal, videoMemFree;
+    if (DirectDraw_GetAvailTextureMem(&videoMemTotal, &videoMemFree))
+    {
+        U32 textureUsage = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "TextureUsage", 0));
+        if (textureUsage != 0 && (DirectDraw_AdjustTextureUsage(&textureUsage), textureUsage <= videoMemFree))
+            Main_DisableTextureManagement();
     }
 
     // TODO: Implement Lego_Initialize

@@ -224,6 +224,32 @@ const char* Config_GetTempStringValue(lpConfig root, const char* stringID)
     return NULL;
 }
 
+B32 Config_GetRGBValue(lpConfig root, const char* stringID, F32* r, F32* g, F32* b)
+{
+    const char* argv[100];
+    const char* string;
+    B32 res = FALSE;
+
+    if ((string = Config_GetStringValue(root, stringID)))
+    {
+        if (Util_Tokenize(string, argv, ":") == 3)
+        {
+            *r = atoi(argv[0]) / 255.0f;
+            *g = atoi(argv[1]) / 255.0f;
+            *b = atoi(argv[2]) / 255.0f;
+
+            res = TRUE;
+        } else
+        {
+            Error_Warn(TRUE, Error_Format("Invalid RGB entry '%s'", Config_GetTempStringValue(root, stringID)));
+        }
+
+        Mem_Free(string);
+    }
+
+    return res;
+}
+
 #ifdef _DEBUG
 const char* Config_Debug_GetLastFind()
 {

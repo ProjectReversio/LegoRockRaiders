@@ -107,6 +107,9 @@ extern B32 DirectDraw_CreateClipper(B32 fullscreen, U32 width, U32 height);
 extern void DirectDraw_Flip();
 extern void DirectDraw_Clear(Area2F* window, U32 colour);
 
+extern B32 DirectDraw_GetAvailTextureMem(U32* total, U32* avail);
+extern void DirectDraw_AdjustTextureUsage(U32* textureUsage);
+
 inline LPDIRECTDRAW4 DirectDraw() { return directDrawGlobs.lpDirectDraw; }
 inline LPDIRECTDRAWSURFACE4 DirectDraw_fSurf() { return directDrawGlobs.fSurf; }
 inline LPDIRECTDRAWSURFACE4 DirectDraw_bSurf() { return directDrawGlobs.bSurf; }

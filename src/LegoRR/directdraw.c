@@ -457,3 +457,38 @@ void DirectDraw_Clear(Area2F* window, U32 colour)
 {
     // TODO: Implement DirectDraw_Clear
 }
+
+B32 DirectDraw_GetAvailTextureMem(U32* total, U32* avail)
+{
+    DDSCAPS2 ddsc;
+
+    memset(&ddsc, 0, sizeof(ddsc));
+    ddsc.dwCaps = DDSCAPS_TEXTURE;
+    *total = 0;
+    *avail = 0;
+    if (directDrawGlobs.lpDirectDraw->lpVtbl->GetAvailableVidMem(directDrawGlobs.lpDirectDraw, &ddsc, total, avail) == DD_OK)
+        return TRUE;
+    else
+        Error_Warn(TRUE, "Cannot get available video memory");
+
+    return FALSE;
+}
+
+void DirectDraw_AdjustTextureUsage(U32* textureUsage)
+{
+    // Adjust the texture usage for cards that don't like 8 bit textures...
+
+    DDPIXELFORMAT pixelFormat;
+
+    memset(&pixelFormat, 0, sizeof(pixelFormat));
+    pixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+
+    if (lpDevice()->lpVtbl->FindPreferredTextureFormat(lpDevice(), DDBD_8, D3DRMFPTF_PALETTIZED, &pixelFormat) != D3DRM_OK)
+    {
+        memset(&pixelFormat, 0, sizeof(pixelFormat));
+        pixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+
+        if (lpDevice()->lpVtbl->FindPreferredTextureFormat(lpDevice(), DDBD_16, 0, &pixelFormat) == D3DRM_OK)
+            *textureUsage *= (pixelFormat.dwRGBBitCount / 8);
+    }
+}

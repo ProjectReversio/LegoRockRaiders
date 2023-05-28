@@ -132,6 +132,8 @@ extern B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRE
 extern void Main_ChangeRenderState(D3DRENDERSTATETYPE dwRenderStateType, U32 dwRenderState);
 extern void Main_RestoreStates(B32 force);
 
+extern void Main_DisableTextureManagement();
+
 inline HWND Main_hWnd() { return mainGlobs.hWnd; }
 inline HINSTANCE Main_hInst() { return mainGlobs.hInst; }
 inline void Main_SetFogMethod(U32 m) { mainGlobs.fogMethod = m; }

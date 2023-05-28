@@ -718,3 +718,9 @@ void Main_RestoreStates(B32 force)
         }
     }
 }
+
+void Main_DisableTextureManagement()
+{
+    if (!(mainGlobs.flags & MAIN_FLAG_FORCETEXTUREMANAGEMENT))
+        mainGlobs.flags |= MAIN_FLAG_DONTMANAGETEXTURES;
+}

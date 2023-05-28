@@ -50,6 +50,7 @@ set(MAIN_SRC
     aitask.c
     radarmap.c
     panels.c
+    tooltip.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -101,6 +102,7 @@ set(MAIN_SRC
     aitask.h
     radarmap.h
     panels.h
+    tooltip.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h
