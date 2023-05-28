@@ -14,6 +14,7 @@
 #include "utils.h"
 #include "mesh.h"
 #include "nerps.h"
+#include "advisor.h"
 
 Lego_Globs legoGlobs;
 
@@ -196,7 +197,17 @@ B32 Lego_Initialize()
     if (Front_IsFrontEndEnabled())
         Front_Initialize(legoGlobs.config);
 
-    // TODO: Implement Lego_Initialize
+    Advisor_Initialize(legoGlobs.gameName, legoGlobs.cameraMain, legoGlobs.viewMain);
+    Advisor_InitViewport(200.0f);
+    Advisor_LoadAnims(legoGlobs.config, legoGlobs.gameName);
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DisplayAdvisor", 0)) == TRUE)
+        Advisor_LoadPositions(legoGlobs.config, legoGlobs.gameName, appWidth(), appHeight());
+
+    if ((legoGlobs.flags1 & GAME1_USESFX) != GAME1_NONE)
+    {
+        Lego_SetSoundOn(TRUE);
+    }
 
     const char* startLevelName = NULL;
     if (Main_ProgrammerMode() < PROGRAMMER_MODE_3 &&
@@ -255,4 +266,9 @@ B32 Lego_LoadLevel(const char* levelName)
 {
     // TODO: Implement Lego_LoadLevel
     return TRUE;
+}
+
+void Lego_SetSoundOn(B32 isSoundOn)
+{
+    // TODO: Implement Lego_SetSoundOn
 }

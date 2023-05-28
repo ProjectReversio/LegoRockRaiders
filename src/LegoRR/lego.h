@@ -17,6 +17,81 @@ typedef struct Lego_Level
     // TODO: Implement Lego_Level
 } Lego_Level, *lpLego_Level;
 
+typedef enum GameFlags1
+{
+    GAME1_NONE                  = 0,
+    GAME1_RADARON               = 0x2,
+    GAME1_LEVELSTART            = 0x4,
+    GAME1_USEMUSIC              = 0x8,
+    GAME1_USESFX                = 0x10,
+    GAME1_USEDETAIL             = 0x20,
+    GAME1_SHOWFPS               = 0x40,
+    GAME1_SHOWMEMORY            = 0x80,
+    GAME1_MULTISELECT           = 0x100,
+    GAME1_UNK_200               = 0x200,
+    GAME1_DDRAWCLEAR            = 0x400,
+    GAME1_RENDERPANELS          = 0x800,
+    GAME1_RADAR_MAPVIEW         = 0x1000,
+    GAME1_RADAR_TRACKOBJECTVIEW = 0x2000,
+    GAME1_RADAR_UNK_4000        = 0x4000,
+    GAME1_FOGCOLOURRGB          = 0x8000,
+    GAME1_HIGHFOGCOLOURRGB      = 0x10000,
+    GAME1_RADAR_NOTRACKOBJECT   = 0x20000,
+    GAME1_VERTEXMODE            = 0x40000,
+    GAME1_DYNAMICPM             = 0x80000,
+    GAME1_FREEZEINTERFACE       = 0x100000,
+    GAME1_CAMERAGOTO            = 0x200000,
+    GAME1_ONLYBUILDONPATHS      = 0x400000,
+    GAME1_ALWAYSROCKFALL        = 0x800000,
+    GAME1_DEBUG_NONERPS         = 0x1000000,
+    GAME1_PAUSED                = 0x2000000,
+    GAME1_STREAMNERPSSPEACH     = 0x4000000,
+    GAME1_LEVELENDING           = 0x8000000,
+    GAME1_LASERTRACKER          = 0x10000000,
+    GAME1_DEBUG_SHOWVERTEXMODE  = 0x20000000,
+    GAME1_DEBUG_NOCLIP_FPS      = 0x40000000,
+    GAME1_UNK_80000000          = 0x80000000,
+} GameFlags1;
+
+typedef enum GameFlags2
+{
+    GAME2_NONE                 = 0,
+    GAME2_CALLTOARMS           = 0x1,
+    GAME2_UNK_2                = 0x2,
+    GAME2_ATTACKDEFER          = 0x4,
+    GAME2_SHOWDEBUGTOOLTIPS    = 0x8,
+    GAME2_ALLOWDEBUGKEYS       = 0x10,
+    GAME2_ALLOWEDITMODE        = 0x20,
+    GAME2_UNK_40               = 0x40,
+    GAME2_UNK_80               = 0x80,
+    GAME2_INOPTIONSMENU        = 0x100,
+    GAME2_CAMERAMOVING         = 0x200,
+    GAME2_MOUSE_INSIDEGAMEVIEW = 0x400,
+    GAME2_MUSICON              = 0x800,
+    GAME2_INMENU               = 0x1000,
+    GAME2_NOMULTISELECT        = 0x2000,
+    GAME2_MENU_HASNEXT         = 0x4000,
+    GAME2_MENU_HASPREVIOUS     = 0x8000,
+    GAME2_ALLOWRENAME          = 0x20000,
+    GAME2_RECALLOLOBJECTS      = 0x40000,
+    GAME2_GENERATESPIDERS      = 0x80000,
+    GAME2_DISABLETOOLTIPSOUND  = 0x100000,
+    GAME2_NOAUTOEAT            = 0x200000,
+} GameFlags2;
+
+typedef enum GameFlags3
+{
+    GAME3_NONE          = 0,
+    GAME3_UNK_1         = 0x1,
+    GAME3_UNK_2         = 0x2,
+    GAME3_UNK_4         = 0x4,
+    GAME3_PICKUPOBJECT  = 0x8,
+    GAME3_LOADVEHICLE   = 0x10,
+    GAME3_UNK_20        = 0x20,
+    GAME3_UNK_40        = 0x40,
+    GAME3_PLACEBUILDING = 0x80,
+} GameFlags3;
+
 typedef struct Lego_Globs
 {
     lpConfig config;
@@ -60,6 +135,10 @@ typedef struct Lego_Globs
     lpLegoObject objectFP;
 
     // TODO: Implement Lego_Globs
+
+    GameFlags1 flags1;
+    GameFlags2 flags2;
+    GameFlags3 flags3; // only first byte is used(?)
 
     F32 InitialSlugTime;
     Point2F NextButtonPos;
@@ -111,3 +190,5 @@ extern B32 Lego_Shutdown_Quick();
 extern B32 Lego_MainLoop(F32 time);
 
 extern B32 Lego_LoadLevel(const char* levelName);
+
+extern void Lego_SetSoundOn(B32 isSoundOn);
