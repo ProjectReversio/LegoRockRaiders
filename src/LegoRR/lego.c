@@ -26,6 +26,7 @@
 #include "radarmap.h"
 #include "panels.h"
 #include "tooltip.h"
+#include "text.h"
 
 Lego_Globs legoGlobs;
 
@@ -169,7 +170,52 @@ B32 Lego_Initialize()
             Main_DisableTextureManagement();
     }
 
-    // TODO: Implement Lego_Initialize
+    Area2F fontRender80_rect;
+    fontRender80_rect.x = 55.0f;
+    fontRender80_rect.y = 435.0f;
+    fontRender80_rect.width = 325.0f;
+    fontRender80_rect.height = 42.0f;
+    legoGlobs.textWnd_80 = TextWindow_Create(legoGlobs.bmpfont5_HI, &fontRender80_rect, 1024);
+
+    Area2F fontRender84_rect;
+    fontRender84_rect.x = 55.0f;
+    fontRender84_rect.y = 435.0f;
+    fontRender84_rect.width = 260.0f;
+    fontRender84_rect.height = 42.0f;
+    legoGlobs.textWnd_84 = TextWindow_Create(legoGlobs.bmpfont5_HI, &fontRender84_rect, 1024);
+
+    F32 textPauseTime = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "TextPauseTime", 0));
+    Text_Load(legoGlobs.textWnd_80, legoGlobs.textWnd_84, 316, 425, textPauseTime * 25.0f);
+
+    Area2F MsgPanel_rect1;
+    MsgPanel_rect1.x = 55.0f;
+    MsgPanel_rect1.y = 435.0f;
+    MsgPanel_rect1.width = 325.0f;
+    MsgPanel_rect1.height = 42.0f;
+
+    Area2F MsgPanel_rect2;
+    MsgPanel_rect2.x = 55.0f;
+    MsgPanel_rect2.y = 363.0f;
+    MsgPanel_rect2.width = 325.0f;
+    MsgPanel_rect2.height = 140.0f;
+
+    Text_Initialize("Interface\\MessagePanel\\MsgPanel.bmp", 42, 409, 338, &MsgPanel_rect1, &MsgPanel_rect2, 20.0f);
+    if ((mainGlobs.flags & MAIN_FLAG_SHOWVERSION) != MAIN_FLAG_NONE)
+    {
+        const char* startMessage = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "StartMessage", 0));
+        const char* version = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "Version", 0));
+
+        if (startMessage)
+        {
+            startMessage = Front_Util_StringReplaceChar(startMessage, '_', ' ');
+            if (version)
+                TextWindow_PrintF(legoGlobs.textWnd_80, "\n%s (%s)", startMessage, version);
+            else
+                TextWindow_PrintF(legoGlobs.textWnd_80, "\n%s", startMessage);
+
+            Mem_Free(startMessage);
+        }
+    }
 
     if(Front_IsFrontEndEnabled() && Front_IsIntrosEnabled())
     {

@@ -116,3 +116,15 @@ void Front_LoadOptionParameters(B32 loadOptions, B32 resetFront)
 {
     // TODO: Implement Front_LoadOptionParameters
 }
+
+const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar)
+{
+    char* curr = str;
+    for (char i = *str; i; curr++ )
+    {
+        if ( i == origChar )
+            *curr = newChar;
+        i = curr[1];
+    }
+    return str;
+}
