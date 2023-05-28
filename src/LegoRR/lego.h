@@ -10,6 +10,7 @@
 #include "fonts.h"
 #include "text_window.h"
 #include "lego_object.h"
+#include "sfx.h"
 
 typedef struct Lego_Level
 {
@@ -92,6 +93,29 @@ typedef enum GameFlags3
     GAME3_PLACEBUILDING = 0x80,
 } GameFlags3;
 
+typedef enum Lego_SurfaceType
+{
+    Lego_SurfaceType_Tunnel,
+    Lego_SurfaceType_Immovable,
+    Lego_SurfaceType_Hard,
+    Lego_SurfaceType_Medium,
+    Lego_SurfaceType_Loose,
+    Lego_SurfaceType_Soil,
+    Lego_SurfaceType_Lava,
+    Lego_SurfaceType_Water,
+    Lego_SurfaceType_OreSeam,
+    Lego_SurfaceType_Lake,
+    Lego_SurfaceType_CrystalSeam,
+    Lego_SurfaceType_RechargeSeam,
+    Lego_SurfaceType_Rubble,
+    Lego_SurfaceType_Reinforcement,
+    Lego_SurfaceType_Path,
+    Lego_SurfaceType_SlugHole,
+    Lego_SurfaceType_Undiscovered,
+    Lego_SurfaceType_Cavern,
+    Lego_SurfaceType_Count,
+} Lego_SurfaceType;
+
 typedef struct Lego_Globs
 {
     lpConfig config;
@@ -136,6 +160,12 @@ typedef struct Lego_Globs
 
     // TODO: Implement Lego_Globs
 
+    const char* surfaceName[Lego_SurfaceType_Count];
+    const char* langSurface_name[Lego_SurfaceType_Count];
+    SFX_ID langSurface_sound[Lego_SurfaceType_Count];
+
+    // TODO: Implement Lego_Globs
+
     GameFlags1 flags1;
     GameFlags2 flags2;
     GameFlags3 flags3; // only first byte is used(?)
@@ -157,9 +187,7 @@ typedef struct Lego_Globs
     B32 hasFallins;
     Point2F menuNextPoint;
     Point2F menuPrevPoint;
-
-    // TODO: Implement Lego_Globs
-
+    ColourRGBF DragBoxRGB;
     lpImage DialogImage;
     lpImage DialogContrastOverlay;
     lpTextWindow DialogTextWndTitle;
@@ -192,3 +220,5 @@ extern B32 Lego_MainLoop(F32 time);
 extern B32 Lego_LoadLevel(const char* levelName);
 
 extern void Lego_SetSoundOn(B32 isSoundOn);
+
+extern void Lego_SetGameSpeed(F32 newGameSpeed);

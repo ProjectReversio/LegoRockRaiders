@@ -40,6 +40,16 @@ set(MAIN_SRC
     mesh.c
     nerps.c
     advisor.c
+    keys.c
+    info.c
+    interface.c
+    bubble.c
+    pointer.c
+    smoke.c
+    message.c
+    aitask.c
+    radarmap.c
+    panels.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -81,6 +91,16 @@ set(MAIN_SRC
     mesh.h
     nerps.h
     advisor.h
+    keys.h
+    info.h
+    interface.h
+    bubble.h
+    pointer.h
+    smoke.h
+    message.h
+    aitask.h
+    radarmap.h
+    panels.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

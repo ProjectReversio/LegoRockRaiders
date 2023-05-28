@@ -160,3 +160,9 @@ void Container_SetSharedTextureDirectory(const char* path)
 {
     // TODO: Implement Container_SetSharedTextureDirectory
 }
+
+void Container_SetTriggerFrameCallback(void (*Callback)(lpContainer cont, void* data), void* data)
+{
+    containerGlobs.triggerFrameCallback = Callback;
+    containerGlobs.triggerFrameData;
+}

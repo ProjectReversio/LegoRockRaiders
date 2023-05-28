@@ -15,6 +15,16 @@
 #include "mesh.h"
 #include "nerps.h"
 #include "advisor.h"
+#include "keys.h"
+#include "info.h"
+#include "interface.h"
+#include "bubble.h"
+#include "pointer.h"
+#include "smoke.h"
+#include "message.h"
+#include "aitask.h"
+#include "radarmap.h"
+#include "panels.h"
 
 Lego_Globs legoGlobs;
 
@@ -35,13 +45,55 @@ B32 Gods_Go(const char* programName)
     return Main_SetState(&mainState);
 }
 
+#define Lego_Surface_RegisterName(n) legoGlobs.surfaceName[n] = #n
+
 B32 Lego_Initialize()
 {
-    // TODO: Implement Lego_Initialize
+    legoGlobs.DragBoxRGB.red = 0.2f;
+    legoGlobs.DragBoxRGB.green = 0.7f;
+    legoGlobs.DragBoxRGB.blue = 1.0f;
 
+    Lego_Surface_RegisterName(Lego_SurfaceType_Tunnel);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Immovable);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Hard);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Medium);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Loose);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Soil);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Lava);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Water);
+    Lego_Surface_RegisterName(Lego_SurfaceType_OreSeam);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Lake);
+    Lego_Surface_RegisterName(Lego_SurfaceType_CrystalSeam);
+    Lego_Surface_RegisterName(Lego_SurfaceType_RechargeSeam);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Rubble);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Reinforcement);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Path);
+    Lego_Surface_RegisterName(Lego_SurfaceType_SlugHole);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Undiscovered);
+    Lego_Surface_RegisterName(Lego_SurfaceType_Cavern);
+
+    for (U32 surfaceId = 0; surfaceId < Lego_SurfaceType_Count; surfaceId++)
+    {
+        // TODO: This for loop is in the original code with no contents.
+        //  It's very odd as it should have been optimized out by the compiler.
+        //  Either it's a bad decompilation, or it's something that got removed.
+        //  Potentially something only in debug mode.
+    }
+
+    Lego_SetGameSpeed(1.0f);
+
+    Keys_Initialize();
+    Viewport_Initialize();
+    LegoObject_Initialize();
     Image_Initialize();
-
-    // TODO: Implement Lego_Initialize
+    //Unknown_Initialize(); // TODO: Figure out what function this should be. It's empty in the decompile, so likely debug builds only.
+    RadarMap_Initialize();
+    Panel_Initialize();
+    AITask_Initialize();
+    Message_Initialize();
+    Smoke_Initialize();
+    Pointer_Initialize();
+    Bubble_Initialize();
 
     legoGlobs.bmpFONT5_HI = Font_Load("Interface\\Fonts\\FONT5_HI.bmp");
     legoGlobs.bmpToolTipFont = Font_Load("Interface\\Fonts\\ToolTipFont.bmp");
@@ -51,7 +103,8 @@ B32 Lego_Initialize()
     legoGlobs.bmpMbriefFONT2 = Font_Load("Interface\\Fonts\\MbriefFONT2.bmp");
     legoGlobs.bmpRSFont = Font_Load("Interface\\Fonts\\RSFont.bmp");
 
-    // TODO: Implement Lego_Initialize
+    Info_Initialize(legoGlobs.bmpFONT5_HI);
+    Interface_Initialize(565, 18, legoGlobs.bmpToolTipFont);
 
     legoGlobs.rootCont = Container_Initialize(legoGlobs.gameName);
     if (legoGlobs.rootCont == NULL)
@@ -60,7 +113,7 @@ B32 Lego_Initialize()
         return FALSE;
     }
 
-    // TODO: Implement Lego_Initialize
+    Container_SetTriggerFrameCallback(LegoObject_TriggerFrameCallback, NULL);
 
     legoGlobs.config = Config_Load("Lego.cfg");
     if (legoGlobs.config == NULL)
@@ -271,4 +324,9 @@ B32 Lego_LoadLevel(const char* levelName)
 void Lego_SetSoundOn(B32 isSoundOn)
 {
     // TODO: Implement Lego_SetSoundOn
+}
+
+void Lego_SetGameSpeed(F32 newGameSpeed)
+{
+    // TODO: Implement Lego_SetGameSpeed
 }

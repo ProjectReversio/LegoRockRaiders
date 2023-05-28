@@ -29,3 +29,10 @@ typedef enum Bool3
     BOOL3_TRUE = 1,
     BOOL3_ERROR = 2,
 } Bool3;
+
+typedef struct ColourRGBF
+{
+    F32 red;
+    F32 green;
+    F32 blue;
+} ColourRGBF;
