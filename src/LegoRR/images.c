@@ -518,7 +518,19 @@ U32 Image_DDColorMatch(LPDIRECTDRAWSURFACE4 pdds, U32 rgb)
 
 void Image_SetupTrans(lpImage image, F32 lowr, F32 lowg, F32 lowb, F32 highr, F32 highg, F32 highb)
 {
-    // TODO: Implement Image_SetupTrans
+    DDCOLORKEY ColourKey;
+    COLORREF low, high;
+
+    Error_Fatal(!image, "NULL passed as image to Image_SetupTrans()");
+
+    low = Image_RGB2CR((U8) (lowr * 255.0f), (U8) (lowg * 255.0f), (U8) (lowb * 255.0f));
+    high = Image_RGB2CR((U8) (highr * 255.0f), (U8) (highg * 255.0f), (U8) (highb * 255.0f));
+
+    ColourKey.dwColorSpaceLowValue = Image_DDColorMatch(image->surface, low);
+    ColourKey.dwColorSpaceHighValue = Image_DDColorMatch(image->surface, high);
+
+    image->surface->lpVtbl->SetColorKey(image->surface, DDCKEY_SRCBLT, &ColourKey);
+    image->flags |= IMAGE_FLAG_TRANS;
 }
 
 void* Image_LockSurface(lpImage image, U32* pitch, U32* bpp)
