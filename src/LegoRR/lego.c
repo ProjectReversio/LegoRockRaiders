@@ -20,7 +20,7 @@ Lego_Globs legoGlobs;
 
 B32 Gods_Go(const char* programName)
 {
-    memset(&legoGlobs, NULL, sizeof(legoGlobs));
+    memset(&legoGlobs, 0, sizeof(legoGlobs));
     legoGlobs.gameName = programName;
     Main_SetTitle(programName);
 
