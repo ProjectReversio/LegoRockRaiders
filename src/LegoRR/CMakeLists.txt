@@ -52,6 +52,8 @@ set(MAIN_SRC
     panels.c
     tooltip.c
     text.c
+    priorities.c
+    lws.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -105,6 +107,8 @@ set(MAIN_SRC
     panels.h
     tooltip.h
     text.h
+    priorities.h
+    lws.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

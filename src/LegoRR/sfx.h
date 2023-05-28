@@ -1,6 +1,9 @@
 #pragma once
 
 #include "types.h"
+#include "maths.h"
+#include "container.h"
+#include <d3drm.h>
 
 typedef enum SFX_ID
 {
@@ -56,3 +59,6 @@ typedef enum SFX_ID
 extern void SFX_Initialize();
 
 extern S32 SFX_Random_Play_OrAddToQueue(SFX_ID sfxID, B32 loop);
+extern S32 SFX_Random_Play_OrInitSoundUnk(lpContainer cont, SFX_ID sfxID, B32 loop, B32 sound3D, Point3F* wPos);
+extern B32 SFX_GetType(const char* sfxName, SFX_ID *sfxID);
+extern B32 SFX_IsSoundOn();

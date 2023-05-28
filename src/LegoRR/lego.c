@@ -27,6 +27,8 @@
 #include "panels.h"
 #include "tooltip.h"
 #include "text.h"
+#include "priorities.h"
+#include "lws.h"
 
 Lego_Globs legoGlobs;
 
@@ -282,7 +284,46 @@ B32 Lego_Initialize()
     Loader_Initialize(loadScreen, shutdownScreen, legoGlobs.bmpFONT5_HI, loaderProfile_filename, progressBarDirection, progressBar, &progressWindow_rect, loadingText);
     Loader_Display_Loading_Bar("Game Data");
 
-    // TODO: Implement Lego_Initialize
+    if (!(legoGlobs.cameraMain = Camera_Create(legoGlobs.rootCont, LegoCamera_Top)) ||
+        !(legoGlobs.cameraFP = Camera_Create(legoGlobs.rootCont, LegoCamera_FP)) ||
+        !(legoGlobs.cameraTrack = Camera_Create(legoGlobs.rootCont, LegoCamera_Radar)) ||
+        !(legoGlobs.viewMain = Viewport_Create(0.0f, 0.0f, 1.0f, 1.0f, legoGlobs.cameraMain->contCam)) ||
+        !(legoGlobs.viewTrack = Viewport_CreatePixel(16, 13, 151, 151, legoGlobs.cameraTrack->contCam)))
+    {
+        Error_Warn(TRUE, "Unable to create cameras and viewports");
+        Container_Shutdown();
+        return FALSE;
+    }
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "StreamNERPSSpeach", 0)) == BOOL3_TRUE)
+        legoGlobs.flags1 |= GAME1_STREAMNERPSSPEACH;
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ShowDebugToolTips", 0)) == BOOL3_TRUE)
+        legoGlobs.flags2 |= GAME2_SHOWDEBUGTOOLTIPS;
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "AllowDebugKeys", 0)) == BOOL3_TRUE)
+        legoGlobs.flags2 |= GAME2_ALLOWDEBUGKEYS;
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "AllowEditMode", 0)) == BOOL3_TRUE)
+        legoGlobs.flags2 |= GAME2_ALLOWEDITMODE;
+
+    Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "PowerCrystalRGB", 0), &legoGlobs.PowerCrystalRGB.red, &legoGlobs.PowerCrystalRGB.green, &legoGlobs.PowerCrystalRGB.blue);
+    Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "UnpoweredCrystalRGB", 0), &legoGlobs.UnpoweredCrystalRGB.red, &legoGlobs.UnpoweredCrystalRGB.green, &legoGlobs.UnpoweredCrystalRGB.blue);
+
+    Lego_LoadSamples(legoGlobs.config, (mainGlobs.flags & MAIN_FLAG_REDUCESAMPLES) == MAIN_FLAG_NONE);
+    Lego_LoadSurfaceTypeDescriptions_sound(legoGlobs.config, legoGlobs.gameName);
+
+    Priorities_LoadPositions(legoGlobs.config, legoGlobs.gameName);
+    Priorities_LoadImages(legoGlobs.config, legoGlobs.gameName);
+
+    Lego_LoadToolTipInfos(legoGlobs.config, legoGlobs.gameName);
+
+    Object_LoadToolNames(legoGlobs.config, legoGlobs.gameName);
+
+    Panel_RotationControl_Initialize(legoGlobs.config, legoGlobs.gameName);
+
+    const char* sharedObjects = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "SharedObjects", 0));
+    Lws_Initialize(sharedObjects, SFX_GetType, SFX_Random_Play_OrInitSoundUnk, SFX_IsSoundOn);
 
     const char* sharedTextureDir = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "SharedTextures", 0));
     if (sharedTextureDir)
@@ -421,4 +462,24 @@ void Lego_SetSoundOn(B32 isSoundOn)
 void Lego_SetGameSpeed(F32 newGameSpeed)
 {
     // TODO: Implement Lego_SetGameSpeed
+}
+
+void Lego_LoadSamples(lpConfig config, B32 noReduceSamples)
+{
+    // TODO: Implement Lego_LoadSamples
+}
+
+void Lego_LoadSurfaceTypeDescriptions_sound(lpConfig config, const char* gameName)
+{
+    // TODO: Implement Lego_LoadSurfaceTypeDescriptions_sound
+}
+
+void Lego_LoadToolTipInfos(lpConfig config, const char* gameName)
+{
+    // TODO: Implement Lego_LoadToolTipInfos
+}
+
+void Object_LoadToolNames(lpConfig config, const char* gameName)
+{
+    // TODO: Implement Object_LoadToolNames
 }

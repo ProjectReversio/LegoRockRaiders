@@ -166,6 +166,11 @@ typedef struct Lego_Globs
 
     // TODO: Implement Lego_Globs
 
+    ColourRGBF PowerCrystalRGB;
+    ColourRGBF UnpoweredCrystalRGB;
+
+    // TODO: Implement Lego_Globs
+
     GameFlags1 flags1;
     GameFlags2 flags2;
     GameFlags3 flags3; // only first byte is used(?)
@@ -222,3 +227,10 @@ extern B32 Lego_LoadLevel(const char* levelName);
 extern void Lego_SetSoundOn(B32 isSoundOn);
 
 extern void Lego_SetGameSpeed(F32 newGameSpeed);
+
+extern void Lego_LoadSamples(lpConfig config, B32 noReduceSamples);
+extern void Lego_LoadSurfaceTypeDescriptions_sound(lpConfig config, const char* gameName);
+extern void Lego_LoadToolTipInfos(lpConfig config, const char* gameName);
+
+// TODO: Maybe this should go in lego_object.h?
+extern void Object_LoadToolNames(lpConfig config, const char* gameName);
