@@ -341,6 +341,8 @@ B32 Lego_Initialize()
             {
                 legoGlobs.NextButtonPos.x = atof(nextButtonPos_stringParts[0]);
                 legoGlobs.NextButtonPos.y = atof(nextButtonPos_stringParts[1]);
+            } else {
+                Error_Fatal(TRUE, "Unable to parse NextButtonPos");
             }
             Mem_Free(nextButtonPos);
         }
@@ -361,6 +363,8 @@ B32 Lego_Initialize()
             {
                 legoGlobs.BackButtonPos.x = atof(backButtonPos_stringParts[0]);
                 legoGlobs.BackButtonPos.y = atof(backButtonPos_stringParts[1]);
+            } else {
+                Error_Fatal(TRUE, "Unable to parse BackButtonPos");
             }
             Mem_Free(backButtonPos);
         }
