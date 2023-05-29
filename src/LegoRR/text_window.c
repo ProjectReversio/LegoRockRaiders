@@ -1,5 +1,10 @@
 #include "text_window.h"
 
+void TextWindow_Initialize()
+{
+    // Empty in original source
+}
+
 lpTextWindow TextWindow_Create(lpFont font, Area2F* area, U32 size)
 {
     // TODO: Implement TextWindow_Create

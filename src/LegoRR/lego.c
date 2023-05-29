@@ -77,12 +77,7 @@ B32 Lego_Initialize()
     Lego_Surface_RegisterName(Lego_SurfaceType_Cavern);
 
     for (U32 surfaceId = 0; surfaceId < Lego_SurfaceType_Count; surfaceId++)
-    {
-        // TODO: This for loop is in the original code with no contents.
-        //  It's very odd as it should have been optimized out by the compiler.
-        //  Either it's a bad decompilation, or it's something that got removed.
-        //  Potentially something only in debug mode.
-    }
+        Error_Fatal(legoGlobs.surfaceName[surfaceId] == NULL, Error_Format("Lego_Initialize: Surface name not registered for id: %d", surfaceId));
 
     Lego_SetGameSpeed(1.0f);
 
@@ -90,7 +85,7 @@ B32 Lego_Initialize()
     Viewport_Initialize();
     LegoObject_Initialize();
     Image_Initialize();
-    //Unknown_Initialize(); // TODO: Figure out what function this should be. It's empty in the decompile, so likely debug builds only.
+    TextWindow_Initialize();
     RadarMap_Initialize();
     Panel_Initialize();
     AITask_Initialize();
