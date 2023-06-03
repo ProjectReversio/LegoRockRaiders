@@ -250,6 +250,31 @@ B32 Config_GetRGBValue(lpConfig root, const char* stringID, F32* r, F32* g, F32*
     return res;
 }
 
+F32 Config_GetAngle(lpConfig root, const char* stringID)
+{
+    F32 degrees;
+
+    if ((degrees = Config_GetFloatValue(root, stringID)))
+    {
+        return (degrees / 360.0f) * (2.0f * M_PI);
+    }
+
+    return 0.0f;
+}
+
+lpConfig Config_FindArray(lpConfig root, const char* name)
+{
+    lpConfig conf;
+
+    if ((conf = Config_FindItem(root, name)))
+    {
+        if (conf->depth < conf->linkNext->depth)
+            return conf->linkNext;
+    }
+
+    return NULL;
+}
+
 #ifdef _DEBUG
 const char* Config_Debug_GetLastFind()
 {

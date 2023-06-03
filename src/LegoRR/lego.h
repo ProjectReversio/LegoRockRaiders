@@ -11,6 +11,12 @@
 #include "text_window.h"
 #include "lego_object.h"
 #include "sfx.h"
+#include "common.h"
+#include "select_place.h"
+#include "vehicle.h"
+#include "creature.h"
+#include "building.h"
+#include "upgrade.h"
 
 typedef struct Lego_Level
 {
@@ -116,6 +122,12 @@ typedef enum Lego_SurfaceType
     Lego_SurfaceType_Count,
 } Lego_SurfaceType;
 
+typedef enum ViewMode
+{
+    ViewMode_FP  = 0,
+    ViewMode_Top = 1,
+} ViewMode;
+
 typedef struct Lego_Globs
 {
     lpConfig config;
@@ -158,18 +170,154 @@ typedef struct Lego_Globs
     F32 gameSpeed;
     lpLegoObject objectFP;
 
-    // TODO: Implement Lego_Globs
+    Point3F vectorDragStartUnk_a4;
+    F32 float_b0;
+    F32 float_b4;
+    F32 float_b8;
+    F32 float_bc;
+    Point2I pointi_c0;
+    B32 bool_c8;
+
+    const char* langPowerCrystal_name;
+    const char* langOre_name;
+    const char* langProcessedOre_name;
+    const char* langDynamite_name;
+    const char* langBarrier_name;
+    const char* langElectricFence_name;
+    const char* langSpiderWeb_name;
+    const char* langOohScary_name;
+    const char* langPath_name;
+
+    const char* langPowerCrystal_theName;
+    const char* langOre_theName;
+    const char* langProcessedOre_theName;
+    const char* langDynamite_theName;
+    const char* langBarrier_theName;
+    const char* langElectricFence_theName;
+    const char* langSpiderWeb_theName;
+    const char* langOohScary_theName;
+    const char* langPath_theName;
+
+    lpVehicleModel vehicleData;
+    lpCreatureModel miniFigureData;
+    lpCreatureModel rockMonsterData;
+    lpBuildingModel buildingData;
+    lpUpgrade_PartModel upgradeData;
+
+    const char** vehicleName;
+    const char** miniFigureName;
+    const char** rockMonsterName;
+    const char** buildingName;
+    const char** upgradeName;
+
+    const char* toolName[11]; // TODO: Maybe use a define or enum for the length?
+    const char* langTool_name[11]; // TODO: Maybe use a define or enum for the length?
+
+    const char** langVehicle_name;
+    const char** langMiniFigure_name;
+    const char** langRockMonster_name;
+    const char** langBuilding_name;
+    const char** langUpgrade_name;
+
+    const char** langVehicle_theName;
+    const char** langMiniFigure_theName;
+    const char** langRockMonster_theName;
+    const char** langBuilding_theName;
+    const char** langUpgrade_theName;
+
+    U32 vehicleCount;
+    U32 miniFigureCount;
+    U32 rockMonsterCount;
+    U32 buildingCount;
+    U32 upgradeCount;
 
     const char* surfaceName[Lego_SurfaceType_Count];
     const char* langSurface_name[Lego_SurfaceType_Count];
     SFX_ID langSurface_sound[Lego_SurfaceType_Count];
 
-    // TODO: Implement Lego_Globs
+    lpContainer contBoulder;
+    lpContainer contBoulderExplode;
+    lpContainer contBoulderExplodeIce;
+    lpContainer contCrystal;
+    lpContainer contDynamite;
+    lpContainer contOresTable[2]; // TODO: Maybe use a define or enum for the length?
+    lpContainer contOohScary;
+    lpContainer contBarrier;
+    lpContainer contElectricFence;
+    lpContainer contSpiderWeb;
+    lpContainer contRechargeSparkle;
+    lpContainer contMiniTeleportUp;
+    lpContainer contElectricFenceStud;
+    lpContainer contPusher;
+    lpContainer contFreezer;
+    lpContainer contIceCube;
+    lpContainer contSmashPath;
+    lpContainer contLaserShot;
+
+    lpSelectPlace selectPlace;
+
+    lpLegoObject recordObjs[10]; // TODO: Maybe use a define or enum for the length?
+    U32 recordObjsCount;
+
+    Area2F radarScreenRect;
+    F32 tvTiltOrZoom_334;
+    Point2F tvFaceDirection_338;
+    F32 MedPolyRange;
+    F32 HighPolyRange;
+    S32 HPBlocks;
+    ColourRGBF FogColourRGB;
+    ColourRGBF HighFogColourRGB;
+    F32 float_364; // level-related?
 
     ColourRGBF PowerCrystalRGB;
     ColourRGBF UnpoweredCrystalRGB;
 
-    // TODO: Implement Lego_Globs
+    LegoObject_Type placeObjType;
+    LegoObject_ID placeObjID;
+    Direction placeObjDirection;
+    lpLegoObject placeDestSmallTeleporter;
+    lpLegoObject placeDestBigTeleporter;
+    lpLegoObject placeDestWaterTeleporter;
+    F32 MinEnergyForEat;
+    lpImage TutorialIcon;
+
+    U32 field_3a0; // unknown
+
+    F32 DynamiteDamageRadius;
+    F32 DynamiteMaxDamage;
+    F32 DynamiteWakeRadius;
+    F32 BirdScarerRadius;
+
+    LegoObject_Type objTeleportQueueTypes_TABLE[LegoObject_Type_Count];
+    LegoObject_ID objTeleportQueueIDs_TABLE[LegoObject_Type_Count];
+    U32 objTeleportQueue_COUNT;
+
+    F32 MiniFigureRunAway;
+
+    Point3F mouseWorldPos;
+
+    Point2I powerDrainBlocks[100]; // Temporary list used during power-grid calculation.
+    U32 powerDrainCount;
+    Point2I points2x100_78c[2][100]; // Related to power grid calculation.
+    U32 pointsCount2_dcc[2];
+
+    U32 MaxReturnedCrystals;
+    S32 MouseScrollBorder;
+
+    const char* langHealth_toolTip;
+    const char* langEnergy_toolTip;
+    const char* langCrystals_toolTip;
+    const char* langOre_toolTip;
+    const char* langStuds_toolTip;
+    const char* langTools_toolTip;
+    const char* langCarryObject_toolTip;
+    const char* langDrivenBy_toolTip;
+    const char* langOreRequired_toolTip;
+
+    B32 IsFallinsEnabled;
+    F32 MinDistFor3DSoundsOnTopView;
+
+    ViewMode viewMode; // FirstPerson or TopDown
 
     GameFlags1 flags1;
     GameFlags2 flags2;
@@ -232,5 +380,21 @@ extern void Lego_LoadSamples(lpConfig config, B32 noReduceSamples);
 extern void Lego_LoadSurfaceTypeDescriptions_sound(lpConfig config, const char* gameName);
 extern void Lego_LoadToolTipInfos(lpConfig config, const char* gameName);
 
-// TODO: Maybe this should go in lego_object.h?
-extern void Object_LoadToolNames(lpConfig config, const char* gameName);
+extern B32 Lego_LoadLighting();
+extern B32 Lego_LoadGraphicsSettings();
+extern B32 Lego_LoadUpgradeTypes();
+extern B32 Lego_LoadVehicleTypes();
+extern B32 Lego_LoadMiniFigureTypes();
+extern B32 Lego_LoadRockMonsterTypes();
+extern B32 Lego_LoadBuildingTypes();
+
+extern void Lego_LoadObjectNames(lpConfig config);
+extern void Lego_LoadObjectTheNames(lpConfig config);
+extern void Lego_LoadMiscObjects(lpConfig config);
+extern void Lego_LoadToolTips(lpConfig config);
+extern void Lego_LoadUpgradeNames(lpConfig config);
+extern void Lego_LoadInfoMessages(lpConfig config);
+extern void Lego_LoadTextMessages(lpConfig config);
+extern void Lego_LoadPanels(lpConfig config, U32 screenWidth, U32 screenHeight);
+extern void Lego_LoadPanelButtons(lpConfig config, U32 screenWidth, U32 screenHeight);
+extern void Lego_LoadTutorialIcon(lpConfig config);

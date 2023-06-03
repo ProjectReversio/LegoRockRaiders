@@ -29,6 +29,18 @@
 #include "text.h"
 #include "priorities.h"
 #include "lws.h"
+#include "damage_font.h"
+#include "detail.h"
+#include "rewards.h"
+#include "effects.h"
+#include "3DSound.h"
+#include "help_window.h"
+#include "obj_info.h"
+#include "weapons.h"
+#include "light_effects.h"
+#include "stats.h"
+#include "dependencies.h"
+#include "encyclopedia.h"
 
 Lego_Globs legoGlobs;
 
@@ -377,7 +389,270 @@ B32 Lego_Initialize()
     }
     NERPs_SetHasNextButton(legoGlobs.NextButtonImage != NULL);
 
-    // TODO: Implement Lego_Initialize
+    if (!Lego_LoadLighting() || !Lego_LoadGraphicsSettings() || !Lego_LoadUpgradeTypes() ||
+        !Lego_LoadVehicleTypes() || !Lego_LoadMiniFigureTypes() || !Lego_LoadRockMonsterTypes() ||
+        !Lego_LoadBuildingTypes())
+    {
+        Error_Fatal(TRUE, "Unable to load game data");
+        Config_Free(legoGlobs.config);
+        Container_Shutdown();
+        return FALSE;
+    }
+
+    F32 cameraSpeed = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "CameraSpeed", 0));
+    F32 cameraDropOff = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "CameraDropOff", 0));
+    F32 cameraAcceleration = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "CameraAcceleration", 0));
+    U32 mouseScrollIndent = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "MouseScrollIndent", 0));
+
+    Camera_InitCameraMovements(cameraSpeed, cameraDropOff, cameraAcceleration, mouseScrollIndent);
+
+    legoGlobs.MinDistFor3DSoundsOnTopView = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "MinDistFor3DSoundsOnTopView", 0));
+    if (legoGlobs.MinDistFor3DSoundsOnTopView == 0.0f)
+        legoGlobs.MinDistFor3DSoundsOnTopView = 150.0f;
+
+    F32 maxDistFor3DSounds = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "MaxDistFor3DSounds", 0));
+    if (maxDistFor3DSounds != 0.0f)
+        Sound3D_SetMaxDist(maxDistFor3DSounds);
+
+    Sound3D_SetRollOffFactor(1.0f);
+
+    F32 rollOffFor3DSounds = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "RollOffFor3DSounds", 0));
+    if (rollOffFor3DSounds != 0.0f)
+        Sound3D_SetRollOffFactor(rollOffFor3DSounds);
+
+    legoGlobs.selectPlace = SelectPlace_Create(legoGlobs.rootCont, 5.0f);
+    SelectPlace_Hide(legoGlobs.selectPlace, TRUE);
+
+    legoGlobs.MaxReturnedCrystals = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "MaxReturnedCrystals", 0));
+    if (legoGlobs.MaxReturnedCrystals == 0)
+        legoGlobs.MaxReturnedCrystals = 10;
+
+    legoGlobs.MouseScrollBorder = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "MouseScrollBorder", 0));
+    if (legoGlobs.MouseScrollBorder == 0)
+        legoGlobs.MouseScrollBorder = 5;
+
+    Lego_LoadObjectNames(legoGlobs.config);
+    Lego_LoadObjectTheNames(legoGlobs.config);
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "HelpWindowOn", 0)) == BOOL3_TRUE)
+    {
+        HelpWindow_SetFont(legoGlobs.bmpMbriefFONT2);
+        HelpWindow_Initialize(legoGlobs.config, legoGlobs.gameName);
+    }
+
+    ObjInfo_Initialize(legoGlobs.config, legoGlobs.gameName);
+    LightEffects_Load(legoGlobs.config, legoGlobs.gameName);
+    Stats_Initialize(legoGlobs.config, legoGlobs.gameName);
+    Dependencies_Initialize(legoGlobs.config, legoGlobs.gameName);
+    Bubble_LoadBubbles(legoGlobs.config);
+    Encyclopedia_Initialize(legoGlobs.config, legoGlobs.gameName);
+    LegoObject_LoadObjTtsSFX(legoGlobs.config, legoGlobs.gameName);
+    Weapon_Initialize(legoGlobs.config, legoGlobs.gameName);
+    legoGlobs.viewMode = ViewMode_Top;
+    Sound3D_MakeListener(legoGlobs.cameraMain->contListener->masterFrame);
+    Sound3D_SetMinDistForAtten(legoGlobs.MinDistFor3DSoundsOnTopView);
+
+    F32 minDist = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "mindist", 0));
+    F32 maxDist = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "maxdist", 0));
+
+    F32 minTilt = Config_GetAngle(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "mintilt", 0));
+    F32 maxTilt = Config_GetAngle(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "maxtilt", 0));
+
+    Camera_SetZoomRange(legoGlobs.cameraMain, minDist, maxDist);
+    Camera_SetTiltRange(legoGlobs.cameraMain, minTilt, maxTilt);
+
+    legoGlobs.TVClipDist = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "tvclipdist", 0));
+    Viewport_SetBackClip(legoGlobs.viewMain, legoGlobs.TVClipDist);
+    Viewport_SetBackClip(legoGlobs.viewTrack, legoGlobs.TVClipDist);
+
+    legoGlobs.DynamiteDamageRadius = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DynamiteDamageRadius", 0));
+    legoGlobs.DynamiteMaxDamage = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DynamiteMaxDamage", 0));
+    legoGlobs.DynamiteWakeRadius = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DynamiteWakeRadius", 0));
+    legoGlobs.BirdScarerRadius = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "BirdScarerRadius", 0));
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "MusicOn", 0)) == BOOL3_TRUE)
+        legoGlobs.flags2 |= GAME2_MUSICON;
+
+    legoGlobs.CDStartTrack = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "CDStartTrack", 0));
+    if (legoGlobs.CDStartTrack == 0)
+        legoGlobs.CDStartTrack = 2;
+
+    legoGlobs.CDTracks = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "CDTracks", 0));
+    if (legoGlobs.CDTracks == 0)
+    {
+        legoGlobs.flags2 &= ~GAME2_MUSICON;
+        legoGlobs.CDTracks = 1;
+    }
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "SoundOn", 0)) == BOOL3_TRUE)
+        legoGlobs.flags1 |= GAME1_USESFX;
+
+    legoGlobs.flags1 |= (GAME1_USEDETAIL|GAME1_DDRAWCLEAR|GAME1_RENDERPANELS|GAME1_DYNAMICPM);
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "Clear", 0)) == BOOL3_FALSE)
+        legoGlobs.flags1 &= ~GAME1_DDRAWCLEAR;
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "Panels", 0)) == BOOL3_FALSE)
+        legoGlobs.flags1 &= ~GAME1_RENDERPANELS;
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "WallProMeshes", 0)) == BOOL3_FALSE)
+        legoGlobs.flags1 &= ~GAME1_USEDETAIL;
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DynamicPM", 0)) == BOOL3_FALSE)
+        legoGlobs.flags1 &= ~GAME1_DYNAMICPM;
+
+    legoGlobs.HPBlocks = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "HPBlocks", 0));
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "OnlyBuildOnPaths", 0)) == BOOL3_TRUE)
+        legoGlobs.flags1 |= GAME1_ONLYBUILDONPATHS;
+
+    if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "AlwaysRockFall", 0)) == BOOL3_TRUE)
+        legoGlobs.flags1 |= GAME1_ALWAYSROCKFALL;
+
+    legoGlobs.MiniFigureRunAway = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "MiniFigureRunAway", 0));
+    if (legoGlobs.MiniFigureRunAway == 0.0f)
+        legoGlobs.MiniFigureRunAway = 10.0f;
+
+    legoGlobs.DrainTime = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "DrainTime", 0));
+    if (legoGlobs.DrainTime == 0.0f)
+        legoGlobs.DrainTime = 10.0f;
+    legoGlobs.DrainTime *= 25.0f;
+
+    legoGlobs.ReinforceHits = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ReinforceHits", 0));
+    if (legoGlobs.ReinforceHits == 0)
+        legoGlobs.ReinforceHits = 4;
+
+    legoGlobs.MedPolyRange = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "MedPolyRange", 0));
+    legoGlobs.HighPolyRange = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "HighPolyRange", 0));
+
+    Error_Fatal(legoGlobs.MedPolyRange == 0.0f, "Lego_Init: MedPolyRange must not be 0");
+    Error_Fatal(legoGlobs.HighPolyRange == 0.0f, "Lego_Init: HighPolyRange must not be 0");
+
+    legoGlobs.MinEnergyForEat = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "MinEnergyForEat", 0));
+
+    Lego_LoadMiscObjects(legoGlobs.config);
+
+    lpConfig pointersArray = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "Pointers", 0));
+    Error_Fatal(pointersArray == NULL, "Lego_Init: Pointers array not found");
+    Pointer_LoadPointers(pointersArray);
+    Pointer_SetCurrent_IfTimerFinished(Pointer_Standard);
+
+    if ((legoGlobs.flags2 & GAME2_ALLOWDEBUGKEYS) != GAME2_NONE)
+    {
+        Message_Debug_RegisterSelectedUnitHotkey(KEY_ONE, Message_FirstPerson, NULL, FALSE, NULL);
+        Message_Debug_RegisterSelectedUnitHotkey(KEY_TWO, Message_FirstPerson, NULL, TRUE, NULL);
+        Message_Debug_RegisterSelectedUnitHotkey(KEY_FOUR, Message_TrackObject, NULL, FALSE, NULL);
+        Message_Debug_RegisterSelectedUnitHotkey(KEY_THREE, Message_TopView, NULL, FALSE, NULL);
+    }
+
+    Smoke_LoadTextures("MiscAnims\\Smoke", "Smoke", 3);
+    DamageFont_LoadFrames("Interface\\FONTS\\HealthFont", "a000_");
+
+    Point2F Dialog_center;
+    Dialog_center.x = 0.0f;
+    Dialog_center.y = 0.0f;
+
+    const char* dialogImage = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Dialog", "Image", 0));
+    if (dialogImage && (legoGlobs.DialogImage = Image_LoadBMP(dialogImage)))
+    {
+        Image_SetupTrans(legoGlobs.DialogImage, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+        Dialog_center.x = ((F32)appWidth() / 2.0f) - (F32)(legoGlobs.DialogImage->width >> 1);
+        Dialog_center.y = ((F32)appHeight() / 2.0f) - (F32)(legoGlobs.DialogImage->height >> 1);
+    }
+
+    char* Window_stringParts[4];
+    const char* dialogTitleWindow = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Dialog", "TitleWindow", 0));
+    if (dialogTitleWindow && Util_Tokenize(dialogTitleWindow, Window_stringParts, "|") == 4)
+    {
+        Area2F Window_rect;
+        Window_rect.x = (F32)atoi(Window_stringParts[0]) + Dialog_center.x;
+        Window_rect.y = (F32)atoi(Window_stringParts[1]) + Dialog_center.y;
+        Window_rect.width = (F32)atoi(Window_stringParts[2]);
+        Window_rect.height = (F32)atoi(Window_stringParts[3]);
+        legoGlobs.DialogTextWndTitle = TextWindow_Create(legoGlobs.bmpMbriefFONT2, &Window_rect, 1024);
+    }
+
+    const char* dialogTextWindow = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Dialog", "TextWindow", 0));
+    if (dialogTextWindow && Util_Tokenize(dialogTextWindow, Window_stringParts, "|") == 4)
+    {
+        Area2F Window_rect;
+        Window_rect.x = (F32)atoi(Window_stringParts[0]) + Dialog_center.x;
+        Window_rect.y = (F32)atoi(Window_stringParts[1]) + Dialog_center.y;
+        Window_rect.width = (F32)atoi(Window_stringParts[2]);
+        Window_rect.height = (F32)atoi(Window_stringParts[3]);
+        legoGlobs.DialogTextWndMessage = TextWindow_Create(legoGlobs.bmpMbriefFONT, &Window_rect, 1024);
+    }
+
+    const char* dialogOkWindow = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Dialog", "OkWindow", 0));
+    if (dialogOkWindow && Util_Tokenize(dialogOkWindow, Window_stringParts, "|") == 4)
+    {
+        Area2F Window_rect;
+        Window_rect.x = (F32)atoi(Window_stringParts[0]) + Dialog_center.x;
+        Window_rect.y = (F32)atoi(Window_stringParts[1]) + Dialog_center.y;
+        Window_rect.width = (F32)atoi(Window_stringParts[2]);
+        Window_rect.height = (F32)atoi(Window_stringParts[3]);
+        legoGlobs.DialogTextWndOK = TextWindow_Create(legoGlobs.bmpMbriefFONT, &Window_rect, 1024);
+    }
+
+    const char* dialogCancelWindow = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Dialog", "CancelWindow", 0));
+    if (dialogCancelWindow && Util_Tokenize(dialogCancelWindow, Window_stringParts, "|") == 4)
+    {
+        Area2F Window_rect;
+        Window_rect.x = (F32)atoi(Window_stringParts[0]) + Dialog_center.x;
+        Window_rect.y = (F32)atoi(Window_stringParts[1]) + Dialog_center.y;
+        Window_rect.width = (F32)atoi(Window_stringParts[2]);
+        Window_rect.height = (F32)atoi(Window_stringParts[3]);
+        legoGlobs.DialogTextWndCancel = TextWindow_Create(legoGlobs.bmpMbriefFONT, &Window_rect, 1024);
+    }
+
+    const char* contrastOverlay = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ContrastOverlay", 0));
+    if (contrastOverlay && (legoGlobs.DialogContrastOverlay = Image_LoadBMP(contrastOverlay)))
+        Image_SetupTrans(legoGlobs.DialogContrastOverlay, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+    legoGlobs.flags1 |= (GAME1_RADARON|GAME1_RADAR_TRACKOBJECTVIEW);
+
+    Dust_Setup(legoGlobs.rootCont, "animtex\\dirt");
+
+    legoGlobs.tvTiltOrZoom_334 = 15.0f;
+    legoGlobs.radarScreenRect.x = 16.0f;
+    legoGlobs.radarScreenRect.y = 13.0f;
+    legoGlobs.radarScreenRect.width = 151.0f;
+    legoGlobs.radarScreenRect.height = 151.0f;
+
+    Effect_Load_RockFallStylesAll(legoGlobs.config, legoGlobs.gameName, legoGlobs.rootCont);
+
+    Lego_LoadToolTips(legoGlobs.config);
+    Object_LoadToolTipIcons(legoGlobs.config);
+
+    Lego_LoadUpgradeNames(legoGlobs.config);
+    Lego_LoadInfoMessages(legoGlobs.config);
+
+    Info_SetOverFlowImageFile("Interface\\MessageTabs\\infoOverFlow.bmp");
+
+    Lego_LoadTextMessages(legoGlobs.config);
+
+    Lego_LoadPanels(legoGlobs.config, appWidth(), appHeight());
+
+    Panel_Crystals_Initialize("Interface\\RightPanel\\SmallCrystal.bmp", "Interface\\RightPanel\\UsedCrystal.bmp", "Interface\\RightPanel\\NoSmallCrystal.bmp");
+    Panel_AirMeter_Initialize("Interface\\AirMeter\\msgpanel_air_juice.bmp", 85, 6, 236, "Interface\\AirMeter\\msgpanel_noair.bmp", 32, 0);
+    Panel_CryOreSideBar_Initialize("Interface\\RightPanel\\crystalsidebar_ore.bmp", 615, 434, 423);
+
+    Lego_LoadPanelButtons(legoGlobs.config, appWidth(), appHeight());
+    Lego_LoadTutorialIcon(legoGlobs.config);
+
+    Interface_InitBuildItems();
+    Interface_LoadMenuItems(legoGlobs.config, legoGlobs.gameName);
+    Interface_LoadItemPanels(legoGlobs.config, legoGlobs.gameName);
+    Interface_LoadPlusMinusImages("Interface\\Dependencies\\+.bmp", "Interface\\Dependencies\\=.bmp");
+
+    Reward_LoadGraphics(legoGlobs.config, legoGlobs.gameName);
+    Reward_Initialize();
+
+    Panel_LoadInterfaceButtons_ScrollInfo();
+
+    Panel_Button_SetFlags_10(Panel_Radar, PanelButton_Radar_ZoomIn, TRUE);
+    Panel_Button_SetFlags_10(Panel_Radar, PanelButton_Radar_ZoomOut, TRUE);
+
+    Front_ResetSaveNumber();
 
     if (Front_IsFrontEndEnabled())
         Front_Initialize(legoGlobs.config);
@@ -478,7 +753,94 @@ void Lego_LoadToolTipInfos(lpConfig config, const char* gameName)
     // TODO: Implement Lego_LoadToolTipInfos
 }
 
-void Object_LoadToolNames(lpConfig config, const char* gameName)
+B32 Lego_LoadLighting()
 {
-    // TODO: Implement Object_LoadToolNames
+    // TODO: Implement Lego_LoadLighting
+    return TRUE;
+}
+
+B32 Lego_LoadGraphicsSettings()
+{
+    // TODO: Implement Lego_LoadGraphicsSettings
+    return TRUE;
+}
+
+B32 Lego_LoadUpgradeTypes()
+{
+    // TODO: Implement Lego_LoadUpgradeTypes
+    return TRUE;
+}
+
+B32 Lego_LoadVehicleTypes()
+{
+    // TODO: Implement Lego_LoadVehicleTypes
+    return TRUE;
+}
+
+B32 Lego_LoadMiniFigureTypes()
+{
+    // TODO: Implement Lego_LoadMiniFigureTypes
+    return TRUE;
+}
+
+B32 Lego_LoadRockMonsterTypes()
+{
+    // TODO: Implement Lego_LoadRockMonsterTypes
+    return TRUE;
+}
+
+B32 Lego_LoadBuildingTypes()
+{
+    // TODO: Implement Lego_LoadBuildingTypes
+    return TRUE;
+}
+
+void Lego_LoadObjectNames(lpConfig config)
+{
+    // TODO: Implement Lego_LoadObjectNames
+}
+
+void Lego_LoadObjectTheNames(lpConfig config)
+{
+    // TODO: Implement Lego_LoadObjectTheNames
+}
+
+void Lego_LoadMiscObjects(lpConfig config)
+{
+    // TODO: Implement Lego_LoadMiscObjects
+}
+
+void Lego_LoadToolTips(lpConfig config)
+{
+    // TODO: Implement Lego_LoadToolTips
+}
+
+void Lego_LoadUpgradeNames(lpConfig config)
+{
+    // TODO: Implement Lego_LoadUpgradeNames
+}
+
+void Lego_LoadInfoMessages(lpConfig config)
+{
+    // TODO: Implement Lego_LoadInfoMessages
+}
+
+void Lego_LoadTextMessages(lpConfig config)
+{
+    // TODO: Implement Lego_LoadTextMessages
+}
+
+void Lego_LoadPanels(lpConfig config, U32 screenWidth, U32 screenHeight)
+{
+    // TODO: Implement Lego_LoadPanels
+}
+
+void Lego_LoadPanelButtons(lpConfig config, U32 screenWidth, U32 screenHeight)
+{
+    // TODO: Implement Lego_LoadPanelButtons
+}
+
+void Lego_LoadTutorialIcon(lpConfig config)
+{
+    // TODO: Implement Lego_LoadTutorialIcon
 }

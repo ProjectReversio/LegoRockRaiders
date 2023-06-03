@@ -54,6 +54,23 @@ set(MAIN_SRC
     text.c
     priorities.c
     lws.c
+    damage_font.c
+    detail.c
+    rewards.c
+    effects.c
+    3DSound.c
+    select_place.c
+    vehicle.c
+    creature.c
+    building.c
+    upgrade.c
+    help_window.c
+    obj_info.c
+    weapons.c
+    light_effects.c
+    stats.c
+    dependencies.c
+    encyclopedia.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -109,6 +126,23 @@ set(MAIN_SRC
     text.h
     priorities.h
     lws.h
+    damage_font.h
+    detail.h
+    rewards.h
+    effects.h
+    3DSound.h
+    select_place.h
+    vehicle.h
+    creature.h
+    building.h
+    upgrade.h
+    help_window.h
+    obj_info.h
+    weapons.h
+    light_effects.h
+    stats.h
+    dependencies.h
+    encyclopedia.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

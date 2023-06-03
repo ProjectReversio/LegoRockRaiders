@@ -95,6 +95,11 @@ void Front_Initialize(lpConfig config)
     // TODO: Implement Front_Initialize
 }
 
+void Front_ResetSaveNumber()
+{
+    // TODO: Implement Front_ResetSaveNumber
+}
+
 void Front_RunScreenMenuType(Menu_ScreenType screenType)
 {
     // TODO: Implement Front_RunScreenMenuType

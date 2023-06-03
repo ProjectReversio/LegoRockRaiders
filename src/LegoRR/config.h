@@ -72,6 +72,9 @@ extern const char* Config_BuildStringID(const char* s, ...);
 extern Bool3 Config_GetBoolValue(lpConfig root, const char* stringID);
 extern const char* Config_GetTempStringValue(lpConfig root, const char* stringID);
 extern B32 Config_GetRGBValue(lpConfig root, const char* stringID, F32* r, F32* g, F32* b);
+extern F32 Config_GetAngle(lpConfig root, const char* stringID);
+
+extern lpConfig Config_FindArray(lpConfig root, const char* name);
 
 #ifdef _DEBUG
 extern const char* Config_Debug_GetLastFind();

@@ -2,6 +2,8 @@
 
 #include "types.h"
 
+#define M_PI 3.14159265358979323846f
+
 typedef struct Point2F
 {
     F32 x, y;

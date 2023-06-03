@@ -54,3 +54,8 @@ typedef struct LegoCamera
 } LegoCamera, *lpLegoCamera;
 
 extern lpLegoCamera Camera_Create(lpContainer root, LegoCamera_Type camType);
+
+extern void Camera_InitCameraMovements(F32 cameraSpeed, F32 cameraDropOff, F32 cameraAcceleration, S32 mouseScrollIndent);
+
+extern void Camera_SetZoomRange(lpLegoCamera cam, F32 minDist, F32 maxDist);
+extern void Camera_SetTiltRange(lpLegoCamera cam, F32 minTilt, F32 maxTilt);

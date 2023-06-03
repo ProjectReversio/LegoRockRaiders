@@ -19,6 +19,11 @@ lpViewport Viewport_Create(F32 xPos, F32 yPos, F32 width, F32 height, lpContaine
 
 lpViewport Viewport_CreatePixel(S32 xPos, S32 yPos, U32 width, U32 height, lpContainer camera)
 {
-    // TODO: implement Viewport_CreatePixel
+    // TODO: Implement Viewport_CreatePixel
     return Mem_Alloc(sizeof(Viewport));
+}
+
+void Viewport_SetBackClip(lpViewport viewport, F32 dist)
+{
+    // TODO: Implement Viewport_SetBackClip
 }
