@@ -531,7 +531,7 @@ B32 Lego_Initialize()
 
     Lego_LoadMiscObjects(legoGlobs.config);
 
-    lpConfig pointersArray = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "Pointers", 0));
+    lpConfig pointersArray = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Pointers", 0));
     Error_Fatal(pointersArray == NULL, "Lego_Init: Pointers array not found");
     Pointer_LoadPointers(pointersArray);
     Pointer_SetCurrent_IfTimerFinished(Pointer_Standard);
