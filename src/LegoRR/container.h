@@ -125,3 +125,9 @@ extern void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer own
 extern void Container_SetSharedTextureDirectory(const char* path);
 
 extern void Container_SetTriggerFrameCallback(void (*Callback)(lpContainer cont, void* data), void* data);
+
+extern void Container_GetFrames(lpContainer cont, lpContainer ref, LPDIRECT3DRMFRAME3 *contFrame, LPDIRECT3DRMFRAME3 *refFrame);
+
+extern void Container_SetPosition(lpContainer cont, lpContainer ref, F32 x, F32 y, F32 z);
+extern void Container_SetOrientation(lpContainer cont, lpContainer ref, F32 dirx, F32 diry, F32 dirz, F32 upx, F32 upy, F32 upz);
+extern void Container_SetParent(lpContainer child, lpContainer parent);

@@ -166,3 +166,37 @@ void Container_SetTriggerFrameCallback(void (*Callback)(lpContainer cont, void* 
     containerGlobs.triggerFrameCallback = Callback;
     containerGlobs.triggerFrameData;
 }
+
+void Container_GetFrames(lpContainer cont, lpContainer ref, LPDIRECT3DRMFRAME3 *contFrame, LPDIRECT3DRMFRAME3 *refFrame)
+{
+    Container_DebugCheckOK(cont);
+
+    *contFrame = cont->masterFrame;
+
+    Error_Fatal(!(*contFrame), "Container has no masterFrame");
+
+    if (ref == NULL)
+        *refFrame = containerGlobs.rootContainer->masterFrame;
+    else
+        *refFrame = ref->masterFrame;
+}
+
+void Container_SetPosition(lpContainer cont, lpContainer ref, F32 x, F32 y, F32 z)
+{
+    LPDIRECT3DRMFRAME3  refFrame, frame;
+    Container_GetFrames(cont, ref, &frame, &refFrame);
+    frame->lpVtbl->SetPosition(frame, refFrame, x, y, z);
+}
+
+void Container_SetOrientation(lpContainer cont, lpContainer ref, F32 dirx, F32 diry, F32 dirz, F32 upx, F32 upy, F32 upz)
+{
+    LPDIRECT3DRMFRAME3  refFrame, frame;
+    Container_GetFrames(cont, ref, &frame, &refFrame);
+    frame->lpVtbl->SetOrientation(frame, refFrame, dirx, diry, dirz, upx, upy, upz);
+}
+
+void Container_SetParent(lpContainer child, lpContainer parent)
+{
+    // TODO: Implement Container_SetParent
+}
+
