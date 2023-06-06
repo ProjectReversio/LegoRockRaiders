@@ -6,6 +6,8 @@
 #include "movie.h"
 #include "file.h"
 
+Front_Globs frontGlobs = { NULL };
+
 B32 Front_IsFrontEndEnabled()
 {
     Bool3 result = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "FrontEnd", 0));
