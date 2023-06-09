@@ -71,6 +71,8 @@ set(MAIN_SRC
     stats.c
     dependencies.c
     encyclopedia.c
+    save.c
+    flic.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -143,6 +145,8 @@ set(MAIN_SRC
     stats.h
     dependencies.h
     encyclopedia.h
+    save.h
+    flic.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

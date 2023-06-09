@@ -131,3 +131,8 @@ extern void Container_GetFrames(lpContainer cont, lpContainer ref, LPDIRECT3DRMF
 extern void Container_SetPosition(lpContainer cont, lpContainer ref, F32 x, F32 y, F32 z);
 extern void Container_SetOrientation(lpContainer cont, lpContainer ref, F32 dirx, F32 diry, F32 dirz, F32 upx, F32 upy, F32 upz);
 extern void Container_SetParent(lpContainer child, lpContainer parent);
+
+extern lpContainer Container_Load(lpContainer parent, const char* filename, const char* typestr, B32 looping);
+extern lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 b);
+
+extern void Container_Hide(lpContainer cont, B32 hide);

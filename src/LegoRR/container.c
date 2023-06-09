@@ -200,3 +200,19 @@ void Container_SetParent(lpContainer child, lpContainer parent)
     // TODO: Implement Container_SetParent
 }
 
+lpContainer Container_Load(lpContainer parent, const char* filename, const char* typestr, B32 looping)
+{
+    // TODO: Implement Container_Load
+    return NULL;
+}
+
+lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 b)
+{
+    // TODO: Implement Container_MakeLight
+    return NULL;
+}
+
+void Container_Hide(lpContainer cont, B32 hide)
+{
+    // TODO: Implement Container_Hide
+}

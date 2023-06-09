@@ -24,6 +24,11 @@ typedef struct Size2F
     F32 width, height;
 } Size2F, *lpSize2F;
 
+typedef struct Size2I
+{
+    S32 width, height;
+} Size2I, *lpSize2I;
+
 typedef struct Area2F
 {
     F32 x, y;

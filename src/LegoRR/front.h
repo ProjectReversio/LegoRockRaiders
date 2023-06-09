@@ -5,6 +5,9 @@
 #include "config.h"
 #include "fonts.h"
 #include "sfx.h"
+#include "text_window.h"
+#include "save.h"
+#include "flic.h"
 
 typedef enum Menu_ScreenType
 {
@@ -192,14 +195,116 @@ typedef struct MenuSet
     U32 menuCount;
 } MenuSet, *lpMenuSet;
 
+typedef struct LevelLink
+{
+    S32 setIndex;
+    struct LevelLink** linkLevels;
+    U32 linkCount;
+    U32 field_c;
+    B32 visited;
+} LevelLink, *lpLevelLink;
+
+typedef struct LevelSet
+{
+    S32 count;
+    char** idNames;
+    char** langNames;
+    LevelLink** levels;
+    B32* visitedList;
+} LevelSet, *lpLevelSet;
+
+typedef enum Front_RockWipeFlags
+{
+    ROCKWIPE_FLAG_NONE = 0,
+    ROCKWIPE_FLAG_UNK_1 = 0x1,
+    ROCKWIPE_FLAG_UNK_2 = 0x2,
+} Front_RockWipeFlags;
+
+typedef struct MenuTextWindow
+{
+    lpTextWindow textWindow;
+    lpImage PanelImage;
+    Area2F WindowArea;
+    Area2F PanelArea;
+    char LoadText[256];
+    char SaveText[256];
+    char SlotText[256];
+    char LoadSelText[256];
+    char SaveSelText[256];
+    char LevelText[256];
+    char TutorialText[256];
+} MenuTextWindow, *lpMenuTextWindow;
+
 typedef struct Front_Globs
 {
     lpMenuSet pausedMenuSet;
     lpMenuSet mainMenuSet;
     lpMenuSet optionsMenuSet;
     lpMenuSet saveMenuSet;
-
-    // TODO: Implement Front_Globs
+    LevelSet tutorialLevels;
+    LevelSet missionLevels;
+    lpLevelLink startMissionLink;
+    lpLevelLink startTutorialLink;
+    U64 reserved1a;
+    U64 reserved1b;
+    S32 triggerCredits;
+    U64 reserved2;
+    S32 triggerQuitApp;
+    S32 selectMissionIndex;
+    S32 selectTutorialIndex;
+    S32 selectLoadSaveIndex;
+    S32 triggerContinueMission;
+    S32 sliderGameSpeed;
+    S32 sliderSFXVolume;
+    S32 sliderMusicVolume;
+    S32 sliderBrightness;
+    S32 cycleHelpWindow;
+    S32 triggerReplayObjective;
+    S32 triggerQuitMission;
+    S32 triggerRestartMission;
+    S32 cycleWallDetail;
+    S32 cycleMusicOn;
+    S32 cycleSFXOn;
+    S32 cycleAutoGameSpeed;
+    S32 triggerBackSave;
+    Point2I overlayPosition;
+    lpFlic overlayImageOrFlic;
+    U32 overlayStartTime;
+    U32 overlayCurrTime;
+    lpFont versionFont;
+    const char* versionString;
+    SaveData saveData[6];
+    S32 saveNumber;
+    const char* strDefaultLevelBMPS;
+    U32 reserved3;
+    Point2I scrollOffset;
+    U32 reserved4[2];
+    lpContainer rockWipeAnim;
+    Front_RockWipeFlags rockWipeFlags;
+    F32 rockWipeSFXTimer;
+    F32 rockWipeSFXStartTime;
+    lpContainer rockWipeLight;
+    B32 saveBool_540;
+    B32 isLoadModeBool_544;
+    B32 saveBool_548;
+    Size2I saveImageBigSize;
+    char langLoadGame[64];
+    char langSaveGame[64];
+    lpMenuTextWindow saveTextWnd;
+    lpMenuTextWindow saveLevelWnd;
+    char langOverwriteTitle[128];
+    char langOverwriteMessage[256];
+    char langOverwriteOK[128];
+    char langOverwriteCancel[128];
+    B32 saveBool_85c;
+    U32 reserved5;
+    U32 unused_zero_864; // (init: 0) Set to 0 and never touched?
+    S32 maxLevelScreens;
+    U32 reserved6[2];
+    U32 levelSelectHoverNumber;
+    U32 levelSelectLastNumber;
+    B32 levelSelectSFXStopped;
+    F32 levelSelectSFXTimer;
 } Front_Globs;
 
 Front_Globs frontGlobs;
@@ -224,4 +329,30 @@ extern B32 Front_IsTriggerAppQuit();
 extern const char* Front_GetSelectedLevel();
 extern void Front_LoadOptionParameters(B32 loadOptions, B32 resetFront);
 
+extern void Front_LoadMenuTextWindow(lpConfig config, const char* gameName, lpMenuTextWindow menuWnd);
+
+extern lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, void* dst, void* callback, ...);
+extern B32 Front_LoadLevelSet(lpConfig config, lpLevelSet levelSet, const char* levelKey);
+
+extern void Front_LoadLevels(lpMenuSet mainMenuFull);
+
+extern void Front_Callback_TriggerPlayCredits();
+extern void Front_Callback_TriggerBackSave();
+extern void Front_Callback_SliderGameSpeed(S32 slider_0_5);
+extern void Front_Callback_SliderSoundVolume(S32 slider_0_10);
+extern void Front_Callback_SliderMusicVolume(S32 slider_0_10);
+extern void Front_Callback_SliderBrightness(S32 slider_0_10);
+extern void Front_Callback_CycleHelpWindow(S32 cycle_On_Off);
+extern void Front_Callback_TriggerReplayObjective();
+extern void Front_Callback_CycleWallDetail(S32 cycle_High_Low);
+extern void Front_Callback_CycleMusic(S32 cycle_On_Off);
+extern void Front_Callback_CycleSound(S32 cycle_On_Off);
+extern void Front_Callback_CycleAutoGameSpeed(S32 cycle_On_Off);
+
+extern S32 Front_CalcSliderGameSpeed();
+extern S32 Front_CalcSliderCDVolume();
+
+extern void Front_Save_SetBool_85c(B32 state);
+
 extern const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar);
+extern const char* Front_Util_ReplaceTextSpaces(const char* str);
