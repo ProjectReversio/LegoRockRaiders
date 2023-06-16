@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "front.h"
 #include "lego.h"
 #include "input.h"
@@ -274,16 +275,54 @@ void Front_LoadMenuTextWindow(lpConfig config, const char* gameName, lpMenuTextW
     // TODO: Implement Front_LoadMenuTextWindow
 }
 
-lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, void* dst, void* callback, ...)
+lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)
 {
+    char menuPathBuff[1024];
+    sprintf(menuPathBuff, "Menu::%s", menuName);
+
+    S32 menuCount = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, menuPathBuff, "MenuCount", 0));
+    lpMenuSet menuSet = Front_CreateMenuSet(menuCount);
+
+    S32 menuIndex = 0;
+    if (menuCount > 0) {
+        // TODO: Implement Front_LoadMenuSet
+    }
+
+    menuIndex = 0;
+    if (menuCount < 1)
+        return menuSet;
+
     // TODO: Implement Front_LoadMenuSet
-    return NULL;
+
+    va_list args;
+    va_start(args, menuName);
+
+    // TODO: Implement Front_LoadMenuSet
+
+    va_end(menuName);
+
+    return menuSet;
 }
 
 B32 Front_LoadLevelSet(lpConfig config, lpLevelSet levelSet, const char* levelKey)
 {
     // TODO: Implement Front_LoadLevelSet
     return FALSE;
+}
+
+lpMenuSet Front_CreateMenuSet(U32 menuCount)
+{
+    lpMenuSet menuSet = Mem_Alloc(sizeof(MenuSet));
+
+    // While not necessary, this is in the original code
+    menuSet->menus = NULL;
+    menuSet->menuCount = 0;
+
+    menuSet->menus = Mem_Alloc(menuCount * sizeof(lpMenu));
+    memset(menuSet->menus, 0, menuCount * sizeof(lpMenu));
+    menuSet->menuCount = menuCount;
+
+    return menuSet;
 }
 
 void Front_LoadLevels(lpMenuSet mainMenuFull)

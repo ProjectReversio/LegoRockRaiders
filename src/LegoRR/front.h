@@ -331,8 +331,10 @@ extern void Front_LoadOptionParameters(B32 loadOptions, B32 resetFront);
 
 extern void Front_LoadMenuTextWindow(lpConfig config, const char* gameName, lpMenuTextWindow menuWnd);
 
-extern lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, void* dst, void* callback, ...);
+extern lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...);
 extern B32 Front_LoadLevelSet(lpConfig config, lpLevelSet levelSet, const char* levelKey);
+
+extern lpMenuSet Front_CreateMenuSet(U32 menuCount);
 
 extern void Front_LoadLevels(lpMenuSet mainMenuFull);
 
