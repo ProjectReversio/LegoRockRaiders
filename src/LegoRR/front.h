@@ -235,6 +235,16 @@ typedef struct MenuTextWindow
     char TutorialText[256];
 } MenuTextWindow, *lpMenuTextWindow;
 
+typedef struct Front_Cache
+{
+    const char* path;
+    lpImage image;
+    lpFont font;
+    struct Front_Cache* next;
+} Front_Cache, *lpFront_Cache;
+
+extern lpFront_Cache g_ImageCache_NEXT;
+
 typedef struct Front_Globs
 {
     lpMenuSet pausedMenuSet;
@@ -336,6 +346,14 @@ extern B32 Front_LoadLevelSet(lpConfig config, lpLevelSet levelSet, const char* 
 
 extern lpMenuSet Front_CreateMenuSet(U32 menuCount);
 
+extern lpMenu Front_Menu_CreateMenu(const char* title, const char* fullName, lpFont menuFont, S32 positionX, S32 positionY, B32 autoCenter, B32 dislayTitle, S32 centerX, B32 canScroll, const char* anchored);
+
+extern B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light);
+
+extern MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName);
+
+extern lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverlay* linkedOverlay, S32 positionX, S32 positionY, SFX_ID sfxType);
+
 extern void Front_LoadLevels(lpMenuSet mainMenuFull);
 
 extern void Front_Callback_TriggerPlayCredits();
@@ -355,6 +373,10 @@ extern S32 Front_CalcSliderGameSpeed();
 extern S32 Front_CalcSliderCDVolume();
 
 extern void Front_Save_SetBool_85c(B32 state);
+
+extern lpFront_Cache Front_Cache_Create(const char* filename);
+extern lpFront_Cache Front_Cache_FindByName(const char* filename);
+extern lpFont Front_Cache_LoadFont(const char* filename);
 
 extern const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar);
 extern const char* Front_Util_ReplaceTextSpaces(const char* str);

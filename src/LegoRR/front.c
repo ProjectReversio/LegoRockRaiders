@@ -6,8 +6,11 @@
 #include "mem.h"
 #include "movie.h"
 #include "file.h"
+#include "utils.h"
 
 Front_Globs frontGlobs = { NULL };
+
+lpFront_Cache g_ImageCache_NEXT = NULL;
 
 B32 Front_IsFrontEndEnabled()
 {
@@ -277,6 +280,10 @@ void Front_LoadMenuTextWindow(lpConfig config, const char* gameName, lpMenuTextW
 
 lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)
 {
+    S32 menuNumber;
+    char submenuPathBuff[1024];
+    char *stringParts[100];
+
     char menuPathBuff[1024];
     sprintf(menuPathBuff, "Menu::%s", menuName);
 
@@ -285,19 +292,178 @@ lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)
 
     S32 menuIndex = 0;
     if (menuCount > 0) {
-        // TODO: Implement Front_LoadMenuSet
+        do
+        {
+            menuNumber = menuIndex + 1;
+
+            S32 local_dc8 = 0;
+            sprintf(submenuPathBuff, "%s::Menu%i", menuPathBuff, menuNumber);
+
+            const char* title = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "Title", 0));
+            const char* fullName = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "FullName", 0));
+            const char* position = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "Position", 0));
+            Util_Tokenize(position, stringParts, ":");
+            S32 x = atoi(stringParts[0]);
+            S32 y = atoi(stringParts[1]);
+            if (position)
+                Mem_Free(position);
+
+            const char* menuFontName = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "MenuFont", 0));
+            lpFont menuFont = Front_Cache_LoadFont(menuFontName);
+
+            B32 autoCenter = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "AutoCenter", 0)) == BOOL3_TRUE;
+            B32 displayTitle = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "DisplayTitle", 0)) != BOOL3_FALSE;
+
+            const char* anchored = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "Anchored", 0));
+
+            if (autoCenter && title != NULL && *title != '\0')
+                local_dc8 = -((S32)Font_GetStringWidth(menuFont, title) / 2);
+
+            B32 canScroll = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "CanScroll", 0)) == BOOL3_TRUE;
+
+            const char* fullName2 = Front_Util_StringReplaceChar(fullName, '_', ' ');
+            const char* title2 = Front_Util_StringReplaceChar(title, '_', ' ');
+
+            menuSet->menus[menuIndex] = Front_Menu_CreateMenu(title2, fullName2, menuFont, x, y, autoCenter, displayTitle, local_dc8, canScroll, anchored);
+
+            const char* menuImage = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "MenuImage", 0));
+            Front_Menu_LoadMenuImage(menuSet->menus[menuIndex], menuImage, TRUE);
+
+            const char* menuImageDark = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "MenuImageDark", 0));
+            Front_Menu_LoadMenuImage(menuSet->menus[menuIndex], menuImageDark, FALSE);
+
+            sprintf(menuSet->menus[menuIndex]->name, "%s", submenuPathBuff);
+
+            Bool3 playRandom = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "PlayRandom", 0));
+            menuSet->menus[menuIndex]->playRandom = playRandom;
+
+            Mem_Free(title);
+
+#ifndef LEGORR_KEEP_ORIGINAL_BUGS
+            // Not in original code, which causes a memory leak
+            Mem_Free(fullName);
+            if (anchored)
+                Mem_Free(anchored);
+#endif
+
+
+            menuIndex = menuNumber;
+        } while (menuNumber < menuCount);
     }
 
     menuIndex = 0;
     if (menuCount < 1)
         return menuSet;
 
-    // TODO: Implement Front_LoadMenuSet
-
     va_list args;
     va_start(args, menuName);
 
-    // TODO: Implement Front_LoadMenuSet
+    for (menuNumber = menuIndex + 1; menuNumber < menuCount; menuNumber++)
+    {
+        B32 autoCenter = menuSet->menus[menuIndex]->autoCenter;
+
+        sprintf(submenuPathBuff, "%s::Menu%i", menuPathBuff, menuNumber);
+
+        const char* loFontName = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "LoFont", 0));
+        lpFont loFont = Front_Cache_LoadFont(loFontName);
+
+        const char* hiFontName = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "HiFont", 0));
+        lpFont hiFont = Front_Cache_LoadFont(hiFontName);
+
+        S32 itemCount = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, "ItemCount", 0));
+
+        S32 overlayNumber = 1;
+        do
+        {
+            char overlayBuff[1024];
+            sprintf(overlayBuff, "Overlay%i", overlayNumber);
+
+            const char* overlayName = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, overlayBuff, 0));
+            if (overlayName == NULL)
+            {
+                if ((mainGlobs.flags & MAIN_FLAG_REDUCEFLICS) != MAIN_FLAG_NONE)
+                    break;
+
+                sprintf(overlayBuff, "!Overlay%i", overlayNumber);
+                overlayName = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, overlayBuff, 0));
+
+                if (overlayName == NULL)
+                    break;
+            }
+
+            Util_Tokenize(overlayName, stringParts, ":");
+
+            SFX_ID sfxType;
+            if(!SFX_GetType(stringParts[1], &sfxType))
+                sfxType = SFX_NULL;
+
+            S32 xPos = atoi(stringParts[2]);
+            S32 yPos = atoi(stringParts[3]);
+            Front_Menu_CreateOverlay(stringParts[0], &menuSet->menus[menuIndex]->overlays, xPos, yPos, sfxType);
+
+            if (overlayName != NULL)
+                Mem_Free(overlayName);
+
+            overlayNumber++;
+        } while (TRUE);
+
+        S32 itemNumber;
+        char* str = NULL;
+        if (itemCount > 0)
+        {
+            S32 iVar6 = 0;
+            do
+            {
+                itemNumber = iVar6 + 1;
+
+                char menuItemBuff[1024];
+                sprintf(menuItemBuff, "Item%i", itemNumber);
+
+                if (str != NULL)
+                    Mem_Free(str);
+
+                str = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, menuItemBuff, 0));
+                iVar6 = Util_Tokenize(str, stringParts, ":");
+                MenuItem_Type type = Front_MenuItem_ParseTypeString(stringParts[0]);
+
+                switch (type)
+                {
+                    case MenuItem_Type_Cycle:
+                    {
+                        // TODO: Implement Front_LoadMenuSet
+                        break;
+                    }
+                    case MenuItem_Type_Trigger:
+                    {
+                        // TODO: Implement Front_LoadMenuSet
+                        break;
+                    }
+                    case MenuItem_Type_Slider:
+                    {
+                        // TODO: Implement Front_LoadMenuSet
+                        break;
+                    }
+                    case MenuItem_Type_RealSlider:
+                    {
+                        // TODO: Implement Front_LoadMenuSet
+                        break;
+                    }
+                    case MenuItem_Type_Next:
+                    {
+                        // TODO: Implement Front_LoadMenuSet
+                        break;
+                    }
+                }
+
+                iVar6 = itemNumber;
+            } while (itemNumber < itemCount);
+        }
+
+        if (str != NULL)
+            Mem_Free(str);
+
+        menuIndex = menuNumber;
+    }
 
     va_end(menuName);
 
@@ -323,6 +489,35 @@ lpMenuSet Front_CreateMenuSet(U32 menuCount)
     menuSet->menuCount = menuCount;
 
     return menuSet;
+}
+
+lpMenu Front_Menu_CreateMenu(const char* title, const char* fullName, lpFont menuFont, S32 positionX, S32 positionY, B32 autoCenter, B32 dislayTitle, S32 centerX, B32 canScroll, const char* anchored)
+{
+    lpMenu menu = Mem_Alloc(sizeof(Menu));
+    if (!menu)
+        return NULL;
+
+    // TODO: Implement Front_Menu_CreateMenu
+
+    return menu;
+}
+
+B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light)
+{
+    // TODO: Implement Front_Menu_LoadMenuImage
+    return FALSE;
+}
+
+MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName)
+{
+    // TODO: Implement Front_MenuItem_ParseTypeString
+    return MenuItem_Type_Invalid;
+}
+
+lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverlay* linkedOverlay, S32 positionX, S32 positionY, SFX_ID sfxType)
+{
+    // TODO: Implement Front_Menu_CreateOverlay
+    return NULL;
 }
 
 void Front_LoadLevels(lpMenuSet mainMenuFull)
@@ -405,6 +600,71 @@ S32 Front_CalcSliderCDVolume()
 void Front_Save_SetBool_85c(B32 state)
 {
     frontGlobs.saveBool_85c = state;
+}
+
+lpFront_Cache Front_Cache_Create(const char* filename)
+{
+    if ((filename == NULL) || (*filename == '\0'))
+        return NULL;
+
+    lpFront_Cache cache = Front_Cache_FindByName(filename);
+    if (cache)
+        return cache;
+
+    cache = Mem_Alloc(sizeof(Front_Cache));
+
+    // While strdup could be used here,
+    // this code might have originally used the custom allocator,
+    // so it's best to do it this way for now.
+    // That way if the Mem_Free function is used and the custom allocator is used,
+    // there could be a problem.
+    char* fname = Mem_Alloc(strlen(filename) + 1);
+    cache->path = fname;
+    strcpy(fname, filename);
+
+    cache->image = NULL;
+    cache->next = g_ImageCache_NEXT;
+    cache->font = NULL;
+    g_ImageCache_NEXT = cache;
+
+    return cache;
+}
+
+lpFront_Cache Front_Cache_FindByName(const char* filename)
+{
+    S32 cmp;
+    lpFront_Cache cache;
+
+    cache = g_ImageCache_NEXT;
+    if (cache == NULL)
+        return NULL;
+
+    do
+    {
+        cmp = _stricmp(filename, cache->path);
+        if (cmp == 0)
+            return cache;
+        cache = cache->next;
+    } while (cache != NULL);
+    return NULL;
+}
+
+lpFont Front_Cache_LoadFont(const char* filename)
+{
+    lpFront_Cache cache;
+    lpFont font;
+
+    if ((filename != NULL) && (*filename != '\0'))
+    {
+        cache = Front_Cache_Create(filename);
+        if (cache->font == NULL)
+        {
+            font = Font_Load(filename);
+            cache->font = font;
+        }
+        return cache->font;
+    }
+    return NULL;
 }
 
 const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar)
