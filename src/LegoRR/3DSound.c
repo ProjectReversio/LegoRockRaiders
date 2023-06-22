@@ -20,3 +20,9 @@ void Sound3D_MakeListener(LPDIRECT3DRMFRAME3 frame)
 {
     // TODO: Implement Sound3D_MakeListener
 }
+
+B32 Sound3D_Stream_Stop(B32 looping)
+{
+    // TODO: Implement Sound3D_Stream_Stop
+    return TRUE;
+}

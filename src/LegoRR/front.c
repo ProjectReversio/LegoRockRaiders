@@ -7,6 +7,7 @@
 #include "movie.h"
 #include "file.h"
 #include "utils.h"
+#include "3DSound.h"
 
 Front_Globs frontGlobs = { NULL };
 
@@ -253,7 +254,79 @@ void Front_ResetSaveNumber()
 
 void Front_RunScreenMenuType(Menu_ScreenType screenType)
 {
-    // TODO: Implement Front_RunScreenMenuType
+    lpMenuSet menuSet;
+    U32 menuIndex;
+
+    menuSet = frontGlobs.mainMenuSet;
+    Front_PrepareScreenMenuType(screenType);
+    SFX_AddToQueue(SFX_AmbientMusicLoop, SoundMode_Loop);
+
+    switch (screenType)
+    {
+        case Menu_Screen_Title:
+        {
+            // MainMenuFull::Menu1 "Main"
+            menuIndex = 0;
+            break;
+        }
+        case Menu_Screen_Missions:
+        {
+            // MainMenuFull::Menu2 "Missions"
+            menuIndex = 1;
+            break;
+        }
+        case Menu_Screen_Training:
+        {
+            // MainMenuFull::Menu3 "Training_Missions"
+            menuIndex = 2;
+            break;
+        }
+        case Menu_Screen_Save:
+        {
+            // SaveMenu::Menu1 "Load_A_Saved_Game"  (save a game)
+            menuIndex = 0;
+            menuSet = frontGlobs.saveMenuSet;
+            break;
+        }
+        default:
+        {
+            Sound3D_Stream_Stop(TRUE);
+            Sound3D_Stream_Stop(FALSE);
+            return;
+        }
+    }
+
+    Front_RunScreenMenu(menuSet, menuIndex);
+    Sound3D_Stream_Stop(TRUE);
+    Sound3D_Stream_Stop(FALSE);
+}
+
+void Front_RunScreenMenu(lpMenuSet menuSet, U32 menuIndex)
+{
+    S32 i;
+    S32 i_next;
+
+    i = 0;
+    if (menuSet->menuCount > 0)
+    {
+        do
+        {
+            i_next = i + 1;
+            menuSet->menus[i]->closed = FALSE;
+            i = i_next;
+        } while (i_next < menuSet->menuCount);
+    }
+    Front_ScreenMenuLoop(menuSet->menus[menuIndex]);
+}
+
+void Front_PrepareScreenMenuType(Menu_ScreenType screenType)
+{
+    // TODO: Implement Front_PrepareScreenMenuType
+}
+
+void Front_ScreenMenuLoop(lpMenu menu)
+{
+    // TODO: Implement Front_ScreenMenuLoop
 }
 
 B32 Front_IsTriggerAppQuit()

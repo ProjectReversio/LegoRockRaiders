@@ -28,3 +28,8 @@ B32 SFX_IsSoundOn()
     // TODO: Implement SFX_IsSoundOn
     return FALSE;
 }
+
+void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode)
+{
+    // TODO: Implement SFX_AddToQueue
+}

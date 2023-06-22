@@ -334,6 +334,9 @@ extern void Front_Initialize(lpConfig config);
 extern void Front_ResetSaveNumber();
 
 extern void Front_RunScreenMenuType(Menu_ScreenType screenType);
+extern void Front_RunScreenMenu(lpMenuSet menuSet, U32 menuIndex);
+extern void Front_PrepareScreenMenuType(Menu_ScreenType screenType);
+extern void Front_ScreenMenuLoop(lpMenu menu);
 extern B32 Front_IsTriggerAppQuit();
 
 extern const char* Front_GetSelectedLevel();
