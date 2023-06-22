@@ -347,6 +347,7 @@ extern B32 Front_LoadLevelSet(lpConfig config, lpLevelSet levelSet, const char* 
 extern lpMenuSet Front_CreateMenuSet(U32 menuCount);
 
 extern lpMenu Front_Menu_CreateMenu(const char* title, const char* fullName, lpFont menuFont, S32 positionX, S32 positionY, B32 autoCenter, B32 dislayTitle, S32 centerX, B32 canScroll, const char* anchored);
+extern void Front_Menu_FreeMenu(lpMenu menu);
 
 extern B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light);
 
@@ -380,3 +381,4 @@ extern lpFont Front_Cache_LoadFont(const char* filename);
 
 extern const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar);
 extern const char* Front_Util_ReplaceTextSpaces(const char* str);
+extern const char* Front_Util_StrCpy(const char* str);

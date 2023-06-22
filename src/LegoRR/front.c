@@ -493,13 +493,60 @@ lpMenuSet Front_CreateMenuSet(U32 menuCount)
 
 lpMenu Front_Menu_CreateMenu(const char* title, const char* fullName, lpFont menuFont, S32 positionX, S32 positionY, B32 autoCenter, B32 dislayTitle, S32 centerX, B32 canScroll, const char* anchored)
 {
+    // TODO: This function doesn't free memory on error
+
     lpMenu menu = Mem_Alloc(sizeof(Menu));
     if (!menu)
         return NULL;
 
-    // TODO: Implement Front_Menu_CreateMenu
+    memset(menu, 0, sizeof(Menu));
+
+    menu->title = Front_Util_StrCpy(title);
+    menu->fullName = Front_Util_StrCpy(fullName);
+
+    if (!menu->title)
+        return NULL;
+
+    if (!menu->fullName)
+        return NULL;
+
+    menu->titleLength = strlen(menu->title);
+    menu->itemCapacity = 15;
+    menu->items = Mem_Alloc(menu->itemCapacity * sizeof(lpMenuItem));
+
+    if (menu->items == NULL)
+    {
+        Front_Menu_FreeMenu(menu);
+        return NULL;
+    }
+
+    menu->menuFont = menuFont;
+    menu->position.y = positionY;
+    menu->autoCenter = autoCenter;
+    menu->displayTitle = dislayTitle;
+    menu->position.x = positionX;
+    //menu->itemCapacity = 15; // moved above to use in items allocation
+    menu->itemCount = 0;
+    menu->itemFocus = 0;
+    menu->closed = FALSE;
+    menu->centerX = centerX;
+    menu->flags = canScroll ? MENU_FLAG_CANSCROLL : MENU_FLAG_NONE;
+
+    if (anchored != NULL)
+    {
+        menu->anchored = TRUE;
+        char* stringParts[100];
+        Util_Tokenize(anchored, stringParts, ":");
+        menu->anchoredPosition.x = atoi(stringParts[0]);
+        menu->anchoredPosition.y = atoi(stringParts[1]);
+    }
 
     return menu;
+}
+
+void Front_Menu_FreeMenu(lpMenu menu)
+{
+    // TODO: Implement Front_Menu_FreeMenu
 }
 
 B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light)
@@ -695,4 +742,15 @@ const char* Front_Util_ReplaceTextSpaces(const char* str)
     }
 
     return s_buffer;
+}
+
+const char* Front_Util_StrCpy(const char* str)
+{
+    if (!str)
+        return NULL;
+
+    char* buffer = Mem_Alloc(strlen(str) + 1);
+    if (buffer)
+        strcpy(buffer, str);
+    return buffer;
 }
