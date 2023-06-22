@@ -9,6 +9,7 @@
 #include "utils.h"
 #include "3DSound.h"
 #include "tooltip.h"
+#include "pointer.h"
 
 Front_Globs frontGlobs = { NULL };
 
@@ -418,6 +419,13 @@ void Front_ScreenMenuLoop(lpMenu menu)
 lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
 {
     // TODO: Implement Front_Menu_Update
+
+    Front_Menu_DrawMenuImage(menu, TRUE);
+
+    // TODO: Implement Front_Menu_Update
+    Pointer_DrawPointer(inputGlobs.msx, inputGlobs.msy);
+
+    // TODO: Implement Front_Menu_Update
     return menu;
 }
 
@@ -430,6 +438,35 @@ B32 Front_IsTriggerAppQuit()
 void Front_Menu_UpdateMousePosition(lpMenu menu)
 {
     // TODO: Implement Front_Menu_UpdateMousePosition
+}
+
+void Front_Menu_DrawMenuImage(lpMenu menu, B32 light)
+{
+    lpImage image = light ? menu->menuImage : menu->menuImageDark;
+
+    if (image != NULL)
+    {
+        if (menu->flags & MENU_FLAG_HASPOSITION)
+        {
+            Image_Display(image, &menu->currPosition);
+            return;
+        }
+
+        Point2F destPos;
+        Area2F srcArea;
+
+        srcArea.x = -(F32)frontGlobs.scrollOffset.x;
+        srcArea.y = -(F32)frontGlobs.scrollOffset.y;
+
+        // TODO: Hardcoded Screen Resolution
+        srcArea.width = 640.0f;
+        srcArea.height = 480.0f;
+
+        destPos.x = 0.0f;
+        destPos.y = 0.0f;
+
+        Image_DisplayScaled(image, &srcArea, &destPos, NULL);
+    }
 }
 
 void Front_RockWipe_Play()
@@ -731,8 +768,49 @@ void Front_Menu_FreeMenu(lpMenu menu)
 
 B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light)
 {
-    // TODO: Implement Front_Menu_LoadMenuImage
-    return FALSE;
+    if (filename == NULL)
+        return FALSE;
+
+    char buff[1024];
+    strcpy(buff, filename);
+
+    char* stringParts[4];
+    U32 numParts = Util_Tokenize(buff, stringParts, ":");
+    // cfg: filename.bmp[:xPos:yPos[:trans=0/1]]
+    if (numParts > 2)
+    {
+        menu->flags |= MENU_FLAG_HASPOSITION;
+        menu->currPosition.x = atof(stringParts[1]);
+        menu->currPosition.y = atof(stringParts[2]);
+    }
+
+    lpImage image;
+    B32 transBool;
+
+    if (light)
+    {
+        image = Front_Cache_LoadImage(stringParts[0]);
+        menu->menuImage = image;
+        if (image != NULL && numParts == 4)
+        {
+            transBool = atoi(stringParts[3]);
+            if (transBool)
+                Image_SetPenZeroTrans(menu->menuImage);
+
+            return menu->menuImage != NULL;
+        }
+    } else {
+        image = Front_Cache_LoadImage(stringParts[0]);
+        menu->menuImageDark = image;
+        if (image != NULL && numParts == 4)
+        {
+            transBool = atoi(stringParts[3]);
+            if (transBool)
+                Image_SetupTrans(menu->menuImage, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+            return menu->menuImageDark != NULL;
+        }
+    }
 }
 
 MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName)
@@ -895,6 +973,24 @@ lpFont Front_Cache_LoadFont(const char* filename)
             cache->font = font;
         }
         return cache->font;
+    }
+    return NULL;
+}
+
+lpImage Front_Cache_LoadImage(const char* filename)
+{
+    lpFront_Cache cache;
+    lpImage image;
+
+    if ((filename != NULL) && (*filename != '\0'))
+    {
+        cache = Front_Cache_Create(filename);
+        if (cache->image == NULL)
+        {
+            image = Image_LoadBMP(filename);
+            cache->image = image;
+        }
+        return cache->image;
     }
     return NULL;
 }

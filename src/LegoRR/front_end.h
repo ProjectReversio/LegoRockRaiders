@@ -342,6 +342,8 @@ extern B32 Front_IsTriggerAppQuit();
 
 extern void Front_Menu_UpdateMousePosition(lpMenu menu);
 
+extern void Front_Menu_DrawMenuImage(lpMenu menu, B32 light);
+
 extern void Front_RockWipe_Play();
 extern void Front_RockWipe_Stop();
 
@@ -389,6 +391,7 @@ extern void Front_Save_SetBool_85c(B32 state);
 extern lpFront_Cache Front_Cache_Create(const char* filename);
 extern lpFront_Cache Front_Cache_FindByName(const char* filename);
 extern lpFont Front_Cache_LoadFont(const char* filename);
+extern lpImage Front_Cache_LoadImage(const char* filename);
 
 extern void Front_LoadSaveSlotImages();
 extern void Front_FreeSaveSlotImages();
