@@ -9,3 +9,5 @@ typedef struct Flic
     // TODO: Implement Flic
 
 } Flic, *lpFlic;
+
+extern B32 Flic_Close(lpFlic fsp);

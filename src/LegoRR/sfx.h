@@ -65,3 +65,5 @@ extern B32 SFX_GetType(const char* sfxName, SFX_ID *sfxID);
 extern B32 SFX_IsSoundOn();
 
 extern void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode);
+
+extern void SFX_Update(F32 elapsed);

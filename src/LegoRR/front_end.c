@@ -8,6 +8,7 @@
 #include "file.h"
 #include "utils.h"
 #include "3DSound.h"
+#include "tooltip.h"
 
 Front_Globs frontGlobs = { NULL };
 
@@ -326,13 +327,119 @@ void Front_PrepareScreenMenuType(Menu_ScreenType screenType)
 
 void Front_ScreenMenuLoop(lpMenu menu)
 {
+    lpMenu nextMenu;
+
+    B8 menuChanged = FALSE;
+    B32 menuTransitioning = FALSE;
+    F32 timeStep = 1.0f;
+
+    Front_LoadSaveSlotImages();
+
     // TODO: Implement Front_ScreenMenuLoop
+
+    frontGlobs.saveMenuHasSaved = TRUE;
+    frontGlobs.saveMenuKeepOpen = TRUE;
+    frontGlobs.overlayImageOrFlic = NULL;
+
+    U32 previousTime = timeGetTime();
+    B32 menuClosed = menu->closed;
+    F32 elapsed = timeStep;
+
+    while (timeStep = elapsed, !menuClosed)
+    {
+        if (menuChanged)
+            Front_Menu_Update(elapsed, menu, &menuTransitioning);
+        else
+            nextMenu = Front_Menu_Update(elapsed, menu, NULL);
+
+        if (menu == frontGlobs.mainMenuSet->menus[0] && nextMenu != menu)
+        {
+            frontGlobs.selectLoadSaveIndex = -1;
+            Front_Callback_SelectLoadSave(elapsed, -1);
+        }
+
+        Front_Menu_UpdateMousePosition(menu);
+        ToolTip_Update(inputGlobs.msx, inputGlobs.msy, elapsed);
+        SFX_Update(elapsed);
+
+        Main_LoopUpdate(FALSE);
+
+        U32 newTime = timeGetTime();
+        timeStep = (F32)(U64)(newTime - previousTime) * 0.025f;
+        previousTime = newTime;
+
+        if (!menuChanged && nextMenu != menu)
+        {
+            Front_RockWipe_Play();
+            menuChanged = TRUE;
+            if (frontGlobs.rockWipeAnim == NULL)
+                menuTransitioning = TRUE;
+        }
+
+        if (menuChanged && menuTransitioning)
+        {
+            if (menu->menuImage != nextMenu->menuImage && frontGlobs.overlayImageOrFlic != NULL)
+            {
+                Flic_Close(frontGlobs.overlayImageOrFlic);
+                Mem_Free(frontGlobs.overlayImageOrFlic);
+                Sound3D_Stream_Stop(FALSE);
+                frontGlobs.overlayImageOrFlic = NULL;
+                frontGlobs.overlayStartTime = 0;
+                frontGlobs.overlayCurrTime = 0;
+            }
+
+            frontGlobs.scrollOffset.y = 0;
+            frontGlobs.scrollOffset.x = 0;
+            menuChanged = FALSE;
+            menuTransitioning = FALSE;
+            menu = nextMenu;
+        }
+
+        elapsed = timeStep;
+        menuClosed = menu->closed;
+    }
+    Front_FreeSaveSlotImages();
+
+    // TODO: Implement Front_ScreenMenuLoop
+
+    if (frontGlobs.overlayImageOrFlic != NULL)
+    {
+        Flic_Close(frontGlobs.overlayImageOrFlic);
+        Mem_Free(frontGlobs.overlayImageOrFlic);
+        Sound3D_Stream_Stop(FALSE);
+        frontGlobs.overlayImageOrFlic = NULL;
+        frontGlobs.overlayStartTime = 0;
+        frontGlobs.overlayCurrTime = 0;
+    }
+
+    Front_RockWipe_Stop();
+}
+
+lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
+{
+    // TODO: Implement Front_Menu_Update
+    return menu;
 }
 
 B32 Front_IsTriggerAppQuit()
 {
     // TODO: Implement Front_IsTriggerAppQuit
     return FALSE;
+}
+
+void Front_Menu_UpdateMousePosition(lpMenu menu)
+{
+    // TODO: Implement Front_Menu_UpdateMousePosition
+}
+
+void Front_RockWipe_Play()
+{
+    // TODO: Implement Front_RockWipe_Play
+}
+
+void Front_RockWipe_Stop()
+{
+    // TODO: Implement Front_RockWipe_Stop
 }
 
 const char* Front_GetSelectedLevel()
@@ -705,6 +812,11 @@ void Front_Callback_CycleAutoGameSpeed(S32 cycle_On_Off)
     // TODO: Implement Front_Callback_CycleAutoGameSpeed
 }
 
+void Front_Callback_SelectLoadSave(F32 elapsedAbs, S32 selectIndex)
+{
+    // TODO: Implement Front_Callback_SelectLoadSave
+}
+
 S32 Front_CalcSliderGameSpeed()
 {
     // TODO: Implement Front_CalcSliderGameSpeed
@@ -785,6 +897,16 @@ lpFont Front_Cache_LoadFont(const char* filename)
         return cache->font;
     }
     return NULL;
+}
+
+void Front_LoadSaveSlotImages()
+{
+    // TODO: Implement Front_LoadSaveSlotImages
+}
+
+void Front_FreeSaveSlotImages()
+{
+    // TODO: Implement Front_FreeSaveSlotImages
 }
 
 const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar)

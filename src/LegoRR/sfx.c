@@ -33,3 +33,8 @@ void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode)
 {
     // TODO: Implement SFX_AddToQueue
 }
+
+void SFX_Update(F32 elapsed)
+{
+    // TODO: Implement SFX_Update
+}

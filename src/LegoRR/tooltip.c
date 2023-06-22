@@ -4,3 +4,8 @@ void ToolTip_Initialize(lpFont font, S32 value2, S32 value1, F32 float1, U32 wid
 {
     // TODO: Implement ToolTip_Initialize
 }
+
+void ToolTip_Update(U32 mousex, U32 mousey, F32 elapsedAbs)
+{
+    // TODO: Implement ToolTip_Update
+}

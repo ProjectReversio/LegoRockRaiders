@@ -295,8 +295,8 @@ typedef struct Front_Globs
     F32 rockWipeSFXStartTime;
     lpContainer rockWipeLight;
     B32 saveBool_540;
-    B32 isLoadModeBool_544;
-    B32 saveBool_548;
+    B32 saveMenuHasSaved;
+    B32 saveMenuKeepOpen;
     Size2I saveImageBigSize;
     char langLoadGame[64];
     char langSaveGame[64];
@@ -337,7 +337,13 @@ extern void Front_RunScreenMenuType(Menu_ScreenType screenType);
 extern void Front_RunScreenMenu(lpMenuSet menuSet, U32 menuIndex);
 extern void Front_PrepareScreenMenuType(Menu_ScreenType screenType);
 extern void Front_ScreenMenuLoop(lpMenu menu);
+extern lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition);
 extern B32 Front_IsTriggerAppQuit();
+
+extern void Front_Menu_UpdateMousePosition(lpMenu menu);
+
+extern void Front_RockWipe_Play();
+extern void Front_RockWipe_Stop();
 
 extern const char* Front_GetSelectedLevel();
 extern void Front_LoadOptionParameters(B32 loadOptions, B32 resetFront);
@@ -373,6 +379,8 @@ extern void Front_Callback_CycleMusic(S32 cycle_On_Off);
 extern void Front_Callback_CycleSound(S32 cycle_On_Off);
 extern void Front_Callback_CycleAutoGameSpeed(S32 cycle_On_Off);
 
+extern void Front_Callback_SelectLoadSave(F32 elapsedAbs, S32 selectIndex);
+
 extern S32 Front_CalcSliderGameSpeed();
 extern S32 Front_CalcSliderCDVolume();
 
@@ -381,6 +389,9 @@ extern void Front_Save_SetBool_85c(B32 state);
 extern lpFront_Cache Front_Cache_Create(const char* filename);
 extern lpFront_Cache Front_Cache_FindByName(const char* filename);
 extern lpFont Front_Cache_LoadFont(const char* filename);
+
+extern void Front_LoadSaveSlotImages();
+extern void Front_FreeSaveSlotImages();
 
 extern const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar);
 extern const char* Front_Util_ReplaceTextSpaces(const char* str);
