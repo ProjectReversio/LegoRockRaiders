@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "front.h"
+#include "front_end.h"
 #include "lego.h"
 #include "input.h"
 #include "images.h"

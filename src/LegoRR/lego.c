@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "types.h"
 #include "main.h"
-#include "front.h"
+#include "front_end.h"
 #include "error.h"
 #include "images.h"
 #include "sfx.h"

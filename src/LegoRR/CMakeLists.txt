@@ -27,7 +27,7 @@ set(MAIN_SRC
     lego_object.c
     text_window.c
     viewport.c
-    front.c
+    front_end.c
     activities.c
     anim_clone.c
     utils.c
@@ -101,7 +101,7 @@ set(MAIN_SRC
     lego_object.h
     text_window.h
     viewport.h
-    front.h
+    front_end.h
     activities.h
     anim_clone.h
     utils.h
