@@ -10,6 +10,12 @@ void Pointer_LoadPointers(lpConfig config)
     // TODO: Implement Pointer_LoadPointers
 }
 
+Pointer_Type Pointer_GetCurrentType()
+{
+    // TODO: Implement Pointer_GetCurrentType
+    return Pointer_Standard;
+}
+
 void Pointer_SetCurrent_IfTimerFinished(Pointer_Type pointerType)
 {
     // TODO: Implement Pointer_SetCurrent_IfTimerFinished

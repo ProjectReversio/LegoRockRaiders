@@ -237,6 +237,7 @@ void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_i
 #ifdef LEGORR_FORCE_DEV_MODE
     mainGlobs.programmerLevel = PROGRAMMER_MODE_2;
 #endif
+
     // TODO: Implement Main_ParseCommandLine
 }
 

@@ -344,6 +344,8 @@ extern void Front_Menu_UpdateMousePosition(lpMenu menu);
 
 extern void Front_Menu_DrawMenuImage(lpMenu menu, B32 light);
 
+extern void Front_MenuItem_DrawSelectTextWindow(lpMenu* menu);
+
 extern void Front_RockWipe_Play();
 extern void Front_RockWipe_Stop();
 

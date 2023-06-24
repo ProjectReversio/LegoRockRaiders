@@ -12,6 +12,9 @@
 // Define me to force dev mode on.
 //#define LEGORR_FORCE_DEV_MODE
 
+// Define me to force display of the version number
+//#define LEGORR_FORCE_SHOW_VERSION
+
 // Define me to log file access.
 //#define LEGORR_LOG_FILE_ACCESS
 
@@ -31,6 +34,8 @@
     // Defaults for Debug Mode
     #define LEGORR_WINDOWED_DEFAULT // For convenience, default to windowed mode in debug builds
     #define LEGORR_FORCE_DEV_MODE
+
+    #define LEGORR_FORCE_SHOW_VERSION
 
     // Since we currently have a different name for the debug executable,
     // we need to specify LegoRR for the program name in order to load the right WAD files.

@@ -420,12 +420,54 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
 {
     // TODO: Implement Front_Menu_Update
 
+    Pointer_Type currPointer = Pointer_GetCurrentType();
+
+    // TODO: Implement Front_Menu_Update
+
     Front_Menu_DrawMenuImage(menu, TRUE);
 
     // TODO: Implement Front_Menu_Update
-    Pointer_DrawPointer(inputGlobs.msx, inputGlobs.msy);
+
+    if (menu->displayTitle)
+    {
+        U32 stringWidth = Font_GetStringWidth(menu->menuFont,
+                                              Front_Util_ReplaceTextSpaces(menu->fullName));
+
+        Font_PrintF(menu->menuFont,
+                    (S32)(((S32)mainGlobs.appWidth / 2) - (stringWidth >> 1)),
+                    menu->anchoredPosition.y + menu->position.y,
+                    Front_Util_ReplaceTextSpaces(menu->fullName));
+    }
 
     // TODO: Implement Front_Menu_Update
+
+
+    for (U32 i = 0; i < menu->itemCount; i++)
+    {
+        // TODO: Implement Front_Menu_Update
+    }
+
+    Front_MenuItem_DrawSelectTextWindow(&menu);
+
+    for (U32 i = 0; i < menu->itemCount; i++)
+    {
+        // TODO: Implement Front_Menu_Update
+    }
+
+#ifndef LEGORR_FORCE_SHOW_VERSION
+    if (((mainGlobs.flags & MAIN_FLAG_SHOWVERSION) != MAIN_FLAG_NONE) &&
+        frontGlobs.versionFont != NULL &&
+        frontGlobs.versionString != NULL &&
+        mainGlobs.programmerLevel == PROGRAMMER_OFF)
+#endif
+    {
+        Font_PrintF(frontGlobs.versionFont, 545, 450, frontGlobs.versionString);
+    }
+
+    // TODO: Implement Front_Menu_Update
+
+    Pointer_DrawPointer(inputGlobs.msx, inputGlobs.msy);
+    Pointer_SetCurrent_IfTimerFinished(currPointer);
     return menu;
 }
 
@@ -467,6 +509,11 @@ void Front_Menu_DrawMenuImage(lpMenu menu, B32 light)
 
         Image_DisplayScaled(image, &srcArea, &destPos, NULL);
     }
+}
+
+void Front_MenuItem_DrawSelectTextWindow(lpMenu* menu)
+{
+    // TODO: Implement Front_MenuItem_DrawSelectTextWindow
 }
 
 void Front_RockWipe_Play()
