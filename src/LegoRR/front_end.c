@@ -398,6 +398,14 @@ void Front_ScreenMenuLoop(lpMenu menu)
 
         elapsed = timeStep;
         menuClosed = menu->closed;
+
+#ifndef LEGORR_KEEP_ORIGINAL_BUGS
+        // Normally you can't close the game when your in a menu, this will fix that
+        // TODO: We may need to re-adjust how we do this later, once we decompile more of the game
+
+        if (mainGlobs.exit)
+            menuClosed = TRUE;
+#endif
     }
     Front_FreeSaveSlotImages();
 
