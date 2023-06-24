@@ -150,6 +150,7 @@ set(MAIN_SRC
     movie.h
     G98CMovie.hpp
     ../Shared/types.h
+    ../Shared/game_config.h
     ../Shared/platform.h
 
     # Resource
