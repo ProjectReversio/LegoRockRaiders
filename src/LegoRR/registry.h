@@ -1,7 +1,7 @@
 #pragma once
 
 #include <windows.h>
-#include "types.h"
+#include "platform.h"
 
 typedef enum RegistryType
 {

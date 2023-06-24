@@ -1,5 +1,5 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 
 extern void RadarMap_Initialize();

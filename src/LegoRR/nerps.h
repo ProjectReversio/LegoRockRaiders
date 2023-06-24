@@ -1,5 +1,5 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 
 extern void NERPs_SetHasNextButton(B32 hasNextButton);

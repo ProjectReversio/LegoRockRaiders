@@ -1,7 +1,7 @@
 #include "lego.h"
 #include <string.h>
 #include <stdio.h>
-#include "types.h"
+#include "platform.h"
 #include "main.h"
 #include "front_end.h"
 #include "error.h"

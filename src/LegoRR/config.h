@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 
 #define CONFIG_MAXLISTS 32
 #define CONFIG_MAXDEPTH 100

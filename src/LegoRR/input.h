@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include <dinput.h>
 
 typedef struct DIcallbackData

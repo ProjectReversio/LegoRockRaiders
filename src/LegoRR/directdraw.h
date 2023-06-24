@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include "maths.h"
 #include <windows.h>
 #include <ddraw.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include "config.h"
 
 extern void Bubble_Initialize();

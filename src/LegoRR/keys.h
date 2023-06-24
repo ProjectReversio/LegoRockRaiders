@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 
 #define		KEY_ESCAPE			0x001
 #define		KEY_ONE				0x002	// 1

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include "lego_camera.h"
 #include "viewport.h"
 #include "config.h"

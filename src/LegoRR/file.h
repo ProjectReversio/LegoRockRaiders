@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 
 #define FILE_DATADIRNAME "Data"
 #define FILE_KEYFILENAME "cd.key"

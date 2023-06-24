@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include <d3drm.h>
 
 #pragma pack(push)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdarg.h>
-#include "types.h"
+#include "platform.h"
 #include "images.h"
 #include "error.h"
 

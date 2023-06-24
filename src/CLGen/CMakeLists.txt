@@ -12,6 +12,7 @@ set(MAIN_SRC
     resource/Resource.h
     resource/targetver.h
     ../Shared/types.h
+    ../Shared/platform.h
     registry.h
     util.h
 

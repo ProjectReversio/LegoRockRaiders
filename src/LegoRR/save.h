@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include "rewards.h"
 
 typedef enum SaveRewardFlags

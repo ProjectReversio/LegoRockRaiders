@@ -1,7 +1,7 @@
 #pragma once
 
 #include <windows.h>
-#include "types.h"
+#include "platform.h"
 #include <d3d.h>
 #include <d3drm.h>
 #include "directdraw.h"

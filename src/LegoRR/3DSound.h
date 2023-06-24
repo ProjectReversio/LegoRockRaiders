@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include <d3drm.h>
 
 extern void Sound3D_SetMaxDist(F32 dist);

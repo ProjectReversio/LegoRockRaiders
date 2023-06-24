@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include <malloc.h>
 
 #define MEMORY_MAXHANDLES 2000

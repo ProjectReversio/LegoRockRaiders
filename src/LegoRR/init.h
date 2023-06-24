@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include "directdraw.h"
 
 typedef struct Init_Globs

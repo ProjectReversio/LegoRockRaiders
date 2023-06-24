@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include "movie.h"
 #include "config.h"
 #include "fonts.h"

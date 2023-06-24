@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 
 #define RNC_COMPRESS_BEST 1
 #define RNC_COMPRESS_FAST 2

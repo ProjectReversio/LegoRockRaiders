@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include "text_window.h"
 
 extern void Text_Initialize(const char* filename, U32 param2, U32 param3, U32 unusedInt, Area2F* param5, Area2F* unusedRect, F32 param7);

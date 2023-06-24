@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include "maths.h"
 #include "container.h"
 #include "lego_object.h"

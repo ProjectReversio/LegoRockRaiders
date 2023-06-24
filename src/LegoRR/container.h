@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 #include "anim_clone.h"
 #include <d3drm.h>
 

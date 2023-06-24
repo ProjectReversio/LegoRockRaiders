@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.h"
+#include "platform.h"
 
 // TODO: Implement these
 #define CHKRM(hres)
