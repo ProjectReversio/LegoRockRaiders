@@ -96,11 +96,13 @@ void File_Error(char* msg, ...)
     vsprintf(buff, msg, args);
     OutputDebugString(buff);
 
+#ifdef LEGORR_FIX_CLION_CONSOLE_OUTPUT
     // TEMP: Not in original source, but needed for CLion console output
     {
         setvbuf(stdout, NULL, _IONBF, 0);
         printf("%s", buff);
     }
+#endif
 
     va_end(args);
 }

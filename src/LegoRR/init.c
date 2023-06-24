@@ -227,7 +227,7 @@ B32 Init_Initialize(B32 setup, B32 debug, B32 best, B32 window, const char* noHA
     initGlobs.selDriver = NULL;
     initGlobs.selDevice = NULL;
     initGlobs.selMode = NULL;
-#ifdef _DEBUG // For convenience, default to windowed mode in debug builds
+#ifdef LEGORR_WINDOWED_DEFAULT
     initGlobs.selFullScreen = initGlobs.wasFullScreen = FALSE;
 #else
     initGlobs.selFullScreen = initGlobs.wasFullScreen = TRUE;

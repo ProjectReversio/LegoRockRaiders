@@ -103,11 +103,13 @@ void Error_Out(B32 errFatal, const char* lpOutputString, ...)
         OutputDebugStringA(achBuffer);
 #endif
 #endif
+#ifdef LEGORR_FIX_CLION_CONSOLE_OUTPUT
         // TEMP: Not in original source, but needed for CLion console output
         {
             setvbuf(stdout, NULL, _IONBF, 0);
             printf("%s", achBuffer);
         }
+#endif
 
         // TODO: Finish Implementing Error_Out
 

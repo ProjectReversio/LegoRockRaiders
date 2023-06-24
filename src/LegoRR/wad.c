@@ -412,7 +412,7 @@ void Wad_Error(char *msg, ...)
     vsprintf(buffer, msg, arg);
     va_end(arg);
     OutputDebugString(buffer);
-//#ifdef _DEBUG
+//#ifdef LEGORR_FIX_CLION_CONSOLE_OUTPUT
 //    // TEMP: Not in original source, but needed for CLion console output
 //    {
 //        setvbuf(stdout, NULL, _IONBF, 0);

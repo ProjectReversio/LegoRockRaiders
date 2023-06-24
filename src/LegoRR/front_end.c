@@ -556,7 +556,7 @@ lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)
 
             Mem_Free(title);
 
-#ifndef LEGORR_KEEP_ORIGINAL_BUGS
+#ifdef LEGORR_FIX_MEMORY_LEAKS
             // Not in original code, which causes a memory leak
             Mem_Free(fullName);
             if (anchored)

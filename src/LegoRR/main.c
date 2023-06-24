@@ -80,11 +80,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
             *v12 = 0;
     }
 
-//#ifdef _DEBUG
-//    // Since we currently have a different name for the debug executable,
-//    // we need to specify LegoRR for the program name in order to load things correctly.
-//    strcpy(mainGlobs.programName, "LegoRR");
-//#endif
+#ifdef LEGORR_FORCE_PROGRAM_NAME_GLOBAL
+    // Since we currently have a different name for the debug executable,
+    // we need to specify LegoRR for the program name in order to load things correctly.
+    strcpy(mainGlobs.programName, LEGORR_FORCED_PROGRAM_NAME);
+#endif
 
     mainGlobs.className = mainGlobs.programName;
     mainGlobs.active = FALSE;
@@ -111,15 +111,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     Error_Initialize();
     Mem_Initialize();
 
-//#ifdef _DEBUG
-//    // Log file access in debug mode
-//    File_LogFileAccess(TRUE);
-//#endif
+#ifdef LEGORR_LOG_FILE_ACCESS
+    // Log file access
+    File_LogFileAccess(TRUE);
+#endif
 
-#ifdef _DEBUG
-    // Since we currently have a different name for the debug executable,
-    // we need to specify LegoRR for the program name in order to load the right WAD files.
-    File_Initialize("LegoRR", insistOnCD, "SOFTWARE\\\\LEGO Media\\\\Games\\\\Rock Raiders");
+#if defined(LEGORR_FORCE_PROGRAM_NAME_WAD_ONLY) || defined(LEGORR_FORCE_PROGRAM_NAME_GLOBAL)
+    File_Initialize(LEGORR_FORCED_PROGRAM_NAME, insistOnCD, "SOFTWARE\\\\LEGO Media\\\\Games\\\\Rock Raiders");
 #else
     File_Initialize(mainGlobs.programName, insistOnCD, "SOFTWARE\\\\LEGO Media\\\\Games\\\\Rock Raiders");
 #endif
@@ -236,7 +234,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_insistOnCD)
 {
-#ifdef _DEBUG // TEMP
+#ifdef LEGORR_FORCE_DEV_MODE
     mainGlobs.programmerLevel = PROGRAMMER_MODE_2;
 #endif
     // TODO: Implement Main_ParseCommandLine
@@ -573,7 +571,7 @@ void Main_LoopUpdate(B32 clear)
         DirectDraw_Clear(NULL, 0);
     mainGlobs.flags &= ~MAIN_FLAG_UPDATED;
 
-#ifndef LEGORR_KEEP_ORIGINAL_BUGS
+#ifdef LEGORR_FIX_CLOSE_DOESNT_EXIT
     // Normally you can't close the game when your in a menu or cutscene, this will fix that
     // TODO: We should adjust this so that it cleans up properly, for example menus have stuff to clean up
 
