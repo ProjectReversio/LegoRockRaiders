@@ -537,6 +537,11 @@ B32 Main_InitApp(HINSTANCE hInstance)
     return TRUE;
 }
 
+__declspec(noreturn) void Main_Exit()
+{
+    exit(0);
+}
+
 B32 Main_SetState(Main_State* state)
 {
     if (state != NULL)
@@ -567,6 +572,14 @@ void Main_LoopUpdate(B32 clear)
     if (clear)
         DirectDraw_Clear(NULL, 0);
     mainGlobs.flags &= ~MAIN_FLAG_UPDATED;
+
+#ifndef LEGORR_KEEP_ORIGINAL_BUGS
+    // Normally you can't close the game when your in a menu or cutscene, this will fix that
+    // TODO: We should adjust this so that it cleans up properly, for example menus have stuff to clean up
+
+    if (mainGlobs.exit)
+        Main_Exit();
+#endif
 }
 
 U32 Main_GetWindowsBitDepth()

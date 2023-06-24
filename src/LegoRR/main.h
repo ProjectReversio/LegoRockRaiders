@@ -119,6 +119,8 @@ extern Main_Globs mainGlobs;
 extern void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_insistOnCD);
 extern B32 Main_InitApp(HINSTANCE hInstance);
 
+extern __declspec(noreturn) void Main_Exit();
+
 extern B32 Main_SetState(Main_State* state);
 extern void Main_SetTitle(const char* title);
 
