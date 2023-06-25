@@ -153,6 +153,7 @@ typedef struct MenuItem
         MenuItem_RealSliderData* realSlider;
         MenuItem_SelectData* select;
         struct Menu* next;
+        void* data;
     } itemData;
     MenuItem_Type itemType;
     S32 x1, y1;
@@ -344,7 +345,12 @@ extern void Front_Menu_UpdateMousePosition(lpMenu menu);
 
 extern void Front_Menu_DrawMenuImage(lpMenu menu, B32 light);
 
+extern B32 Front_Menu_AddMenuItem(lpMenu menu, lpMenuItem menuItem);
+
 extern void Front_MenuItem_DrawSelectTextWindow(lpMenu* menu);
+extern B32 Front_MenuItem_CheckNotInTutoAnyTutorialFlags(lpMenuItem menuItem);
+extern MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName);
+extern lpMenuItem Front_MenuItem_CreateBannerItem(const char* banner, lpFont loFont, lpFont hiFont, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, void* itemData, B32 notInTutorial);
 
 extern void Front_RockWipe_Play();
 extern void Front_RockWipe_Stop();
@@ -363,8 +369,6 @@ extern lpMenu Front_Menu_CreateMenu(const char* title, const char* fullName, lpF
 extern void Front_Menu_FreeMenu(lpMenu menu);
 
 extern B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light);
-
-extern MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName);
 
 extern lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverlay* linkedOverlay, S32 positionX, S32 positionY, SFX_ID sfxType);
 
@@ -401,3 +405,5 @@ extern void Front_FreeSaveSlotImages();
 extern const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar);
 extern const char* Front_Util_ReplaceTextSpaces(const char* str);
 extern const char* Front_Util_StrCpy(const char* str);
+
+extern B32 g_saveMenuOverwriteShowing;

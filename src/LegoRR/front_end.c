@@ -15,6 +15,8 @@ Front_Globs frontGlobs = { NULL };
 
 lpFront_Cache g_ImageCache_NEXT = NULL;
 
+B32 g_saveMenuOverwriteShowing = FALSE;
+
 B32 Front_IsFrontEndEnabled()
 {
     Bool3 result = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "FrontEnd", 0));
@@ -442,9 +444,102 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
     // TODO: Implement Front_Menu_Update
 
 
+    B32 BVar14;
     for (U32 i = 0; i < menu->itemCount; i++)
     {
-        // TODO: Implement Front_Menu_Update
+        if ((menu->itemFocus == i &&
+            !g_saveMenuOverwriteShowing) &&
+            (BVar14 = Front_MenuItem_CheckNotInTutoAnyTutorialFlags(menu->items[i]), BVar14 == 0))
+        {
+            // Current item is focused
+
+            lpMenuItem item = menu->items[i];
+
+            if (item->fontHi != NULL)
+            {
+                Font_PrintF(item->fontHi,
+                            item->centerOffHi + item->x1 + menu->position.x,
+                            item->y1 + menu->position.y,
+                            "%s",
+                            Front_Util_ReplaceTextSpaces(item->banner));
+            }
+
+            switch (item->itemType)
+            {
+                case MenuItem_Type_Cycle:
+                {
+                    // TODO: Implement Front_Menu_Update
+                    break;
+                }
+                case MenuItem_Type_TextInput:
+                {
+                    // TODO: Implement Front_Menu_Update
+                    break;
+                }
+                case MenuItem_Type_Slider:
+                {
+                    // TODO: Implement Front_Menu_Update
+                    break;
+                }
+                case MenuItem_Type_RealSlider:
+                {
+                    // TODO: Implement Front_Menu_Update
+                    break;
+                }
+                case MenuItem_Type_Select:
+                {
+                    // TODO: Implement Front_Menu_Update
+                    break;
+                }
+                default:
+                    break;
+            }
+
+        } else {
+            // Current item is unfocused
+
+            lpMenuItem item = menu->items[i];
+
+            if (item->fontLo != NULL)
+            {
+                Font_PrintF(item->fontLo,
+                            item->centerOffLo + item->x1 + menu->position.x,
+                            item->y1 + menu->position.y,
+                            "%s",
+                            Front_Util_ReplaceTextSpaces(item->banner));
+            }
+
+            switch (item->itemType)
+            {
+                case MenuItem_Type_Cycle:
+                {
+                    // TODO: Implement Front_Menu_Update
+                    break;
+                }
+                case MenuItem_Type_TextInput:
+                {
+                    // TODO: Implement Front_Menu_Update
+                    break;
+                }
+                case MenuItem_Type_Slider:
+                {
+                    // TODO: Implement Front_Menu_Update
+                    break;
+                }
+                case MenuItem_Type_RealSlider:
+                {
+                    // TODO: Implement Front_Menu_Update
+                    break;
+                }
+                case MenuItem_Type_Select:
+                {
+                    // TODO: Implement Front_Menu_Update
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
     }
 
     Front_MenuItem_DrawSelectTextWindow(&menu);
@@ -511,9 +606,112 @@ void Front_Menu_DrawMenuImage(lpMenu menu, B32 light)
     }
 }
 
+B32 Front_Menu_AddMenuItem(lpMenu menu, lpMenuItem menuItem)
+{
+    lpMenuItem* newMenuItems;
+    S32 capacity;
+
+    if (menuItem == NULL || menu == NULL)
+        return FALSE;
+
+    capacity = menu->itemCapacity;
+    if (menu->itemCount == capacity)
+    {
+        if (menu->items == NULL)
+        {
+            newMenuItems = Mem_Alloc(sizeof(lpMenuItem) * (capacity + 15));
+        } else {
+            newMenuItems = Mem_ReAlloc(menu->items, sizeof(lpMenuItem) * (capacity + 15));
+        }
+
+        if (newMenuItems == NULL)
+            return FALSE;
+
+        menu->items = newMenuItems;
+        menu->itemCapacity = menu->itemCapacity + 15;
+    }
+
+    menu->items[menu->itemCount] = menuItem;
+    menu->itemCount++;
+    return TRUE;
+}
+
 void Front_MenuItem_DrawSelectTextWindow(lpMenu* menu)
 {
     // TODO: Implement Front_MenuItem_DrawSelectTextWindow
+}
+
+B32 Front_MenuItem_CheckNotInTutoAnyTutorialFlags(lpMenuItem menuItem)
+{
+    // TODO: Implement Front_MenuItem_CheckNotInTutoAnyTutorialFlags
+    return FALSE;
+}
+
+MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName)
+{
+    S32 cmp;
+
+    cmp = _stricmp(itemTypeName, "cycle");
+    if (cmp == 0)
+        return MenuItem_Type_Cycle;
+
+    cmp = _stricmp(itemTypeName, "trigger");
+    if (cmp == 0)
+        return MenuItem_Type_Trigger;
+
+    cmp = _stricmp(itemTypeName, "textinput");
+    if (cmp == 0)
+        return MenuItem_Type_TextInput;
+
+    cmp = _stricmp(itemTypeName, "slider");
+    if (cmp == 0)
+        return MenuItem_Type_Slider;
+
+    cmp = _stricmp(itemTypeName, "realslider");
+    if (cmp == 0)
+        return MenuItem_Type_RealSlider;
+
+    cmp = _stricmp(itemTypeName, "next");
+    if (cmp == 0)
+        return MenuItem_Type_Next;
+
+    return MenuItem_Type_Invalid;
+}
+
+lpMenuItem Front_MenuItem_CreateBannerItem(const char* banner, lpFont loFont, lpFont hiFont, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, void* itemData, B32 notInTutorial)
+{
+    if (banner == NULL)
+        return NULL;
+
+    lpMenuItem menuItem = Mem_Alloc(sizeof(MenuItem));
+    if (menuItem == NULL)
+        return NULL;
+
+    memset(menuItem, 0, sizeof(MenuItem));
+
+    menuItem->length = strlen(banner);
+    menuItem->banner = Front_Util_StrCpy(banner);
+    menuItem->fontLo = loFont;
+    menuItem->fontHi = hiFont;
+
+    menuItem->x1 = x1;
+    menuItem->y1 = y1;
+
+    menuItem->itemData.data = itemData; // Typeless void* assignment for union
+    menuItem->itemType = itemType;
+
+    menuItem->notInTuto = notInTutorial;
+
+    if (centered && loFont != NULL && hiFont != NULL)
+    {
+        menuItem->centerOffLo = -((S32)Font_GetStringWidth(loFont, banner) / 2);
+        menuItem->centerOffHi = -((S32)Font_GetStringWidth(hiFont, banner) / 2);
+    } else {
+        menuItem->centerOffLo = 0;
+        menuItem->centerOffHi = 0;
+    }
+
+    return menuItem;
 }
 
 void Front_RockWipe_Play()
@@ -687,7 +885,7 @@ lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)
                     Mem_Free(str);
 
                 str = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, submenuPathBuff, menuItemBuff, 0));
-                iVar6 = Util_Tokenize(str, stringParts, ":");
+                S32 stringPartCount = Util_Tokenize(str, stringParts, ":");
                 MenuItem_Type type = Front_MenuItem_ParseTypeString(stringParts[0]);
 
                 switch (type)
@@ -714,7 +912,41 @@ lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)
                     }
                     case MenuItem_Type_Next:
                     {
-                        // TODO: Implement Front_LoadMenuSet
+                        if (stringPartCount == 8)
+                        {
+                            // TODO: Implement Front_LoadMenuSet
+                        } else
+                        {
+                            S32 nextMenuNumber;
+                            B32 notInTutorial;
+                            lpMenu nextMenu;
+                            if (stringPartCount == 6)
+                            {
+                                nextMenuNumber = atoi(stringParts[4] + 4);
+                                nextMenu = menuSet->menus[nextMenuNumber - 1];
+                                notInTutorial = TRUE;
+                            } else
+                            {
+                                if (stringParts[4][0] == '\0')
+                                {
+                                    notInTutorial = FALSE;
+                                    nextMenu = NULL;
+                                } else
+                                {
+                                    nextMenuNumber = atoi(stringParts[4] + 4);
+                                    nextMenu = menuSet->menus[nextMenuNumber - 1];
+                                    notInTutorial = FALSE;
+                                }
+                            }
+
+                            S32 x1 = atoi(stringParts[1]);
+                            S32 y1 = atoi(stringParts[2]);
+
+                            const char* banner = Front_Util_StringReplaceChar(stringParts[3], '_', ' ');
+
+                            lpMenuItem menuItem = Front_MenuItem_CreateBannerItem(banner, loFont, hiFont, x1, y1, MenuItem_Type_Next, menuSet->menus[menuIndex]->autoCenter, nextMenu, notInTutorial);
+                            Front_Menu_AddMenuItem(menuSet->menus[menuIndex], menuItem);
+                        }
                         break;
                     }
                 }
@@ -858,12 +1090,6 @@ B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light)
             return menu->menuImageDark != NULL;
         }
     }
-}
-
-MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName)
-{
-    // TODO: Implement Front_MenuItem_ParseTypeString
-    return MenuItem_Type_Invalid;
 }
 
 lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverlay* linkedOverlay, S32 positionX, S32 positionY, SFX_ID sfxType)
