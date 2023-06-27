@@ -574,7 +574,36 @@ B32 Front_IsTriggerAppQuit()
 
 void Front_Menu_UpdateMousePosition(lpMenu menu)
 {
-    // TODO: Implement Front_Menu_UpdateMousePosition
+    if (menu->menuImage == NULL || !(menu->flags & MENU_FLAG_CANSCROLL))
+    {
+        frontGlobs.scrollOffset.x = 0;
+        frontGlobs.scrollOffset.y = 0;
+        return;
+    }
+
+    F32 mouseY = (F32)inputGlobs.msy;
+
+    // If mouseY is between 200 and 280, don't scroll
+    if (mouseY >= 200.0f && mouseY <= 280.0f)
+        return;
+
+    S32 imageHeight = Image_GetHeight(menu->menuImage);
+    if (mouseY < 480.0f && !inputGlobs.mslb && !inputGlobs.msrb)
+    {
+        F32 fVar3 = (F32)inputGlobs.msy * (100.0f / 480.0f) - 50.0f;
+        fVar3 *= fVar3 * 0.02f; // squared * 0.02f
+        if (mouseY < (480.0f / 2.0f))
+            fVar3 = -fVar3;
+
+        fVar3 *= -(STANDARD_FRAMERATE / 100.0f);
+        frontGlobs.scrollOffset.y += (S32)fVar3;
+    }
+
+    if (frontGlobs.scrollOffset.y > 0)
+        frontGlobs.scrollOffset.y = 0;
+
+    if (frontGlobs.scrollOffset.y < 480 - imageHeight)
+        frontGlobs.scrollOffset.y = 480 - imageHeight;
 }
 
 void Front_Menu_DrawMenuImage(lpMenu menu, B32 light)

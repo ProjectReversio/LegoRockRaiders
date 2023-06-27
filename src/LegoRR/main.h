@@ -7,6 +7,8 @@
 #include "directdraw.h"
 #include <ddraw.h>
 
+#define STANDARD_FRAMERATE 25.0f
+
 #define MAIN_MAXRENDERSTATES 200
 
 typedef B32 (*MainStateInitialize)();

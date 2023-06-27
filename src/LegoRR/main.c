@@ -16,8 +16,6 @@
 
 Main_Globs mainGlobs = { NULL };
 
-#define STANDARD_FRAMERATE 25.0f
-
 void Main_HandleIO();
 void Main_Finalize3D();
 
