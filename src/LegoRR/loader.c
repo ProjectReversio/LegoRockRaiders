@@ -160,7 +160,7 @@ void Loader_FileLoadCallback(const char* filename, U32 fileSize, void* data)
 
     if (loaderGlobs.loadingText)
     {
-#ifdef _DEBUG
+#ifdef LEGORR_DEBUG_LOADER
         F32 progressNum = ((F32)loaderGlobs.current->currentSize / (F32)loaderGlobs.current->totalSize) * 100.0f;
         /*U32 progressNum = (U32)(progress * 100.0f);
         if (filename)

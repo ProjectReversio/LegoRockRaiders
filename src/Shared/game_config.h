@@ -30,6 +30,9 @@
 // Define me to fix the console output in CLion.
 //#define LEGORR_FIX_CLION_CONSOLE_OUTPUT
 
+// Define me to display debug info in the loader
+//#define LEGORR_DEBUG_LOADER
+
 #ifdef _DEBUG
     // Defaults for Debug Mode
     #define LEGORR_WINDOWED_DEFAULT // For convenience, default to windowed mode in debug builds
@@ -42,6 +45,8 @@
     #define LEGORR_FORCE_PROGRAM_NAME_WAD_ONLY
 
     #define LEGORR_FIX_CLION_CONSOLE_OUTPUT
+
+    #define LEGORR_DEBUG_LOADER
 
 #else
     // Defaults for Release Mode
