@@ -310,3 +310,8 @@ void Font_RunThroughLists(void (*Callback)(lpFont font, void* data), void* data)
         }
     }
 }
+
+U32 Font_GetHeight(lpFont font)
+{
+    return font->fontHeight;
+}

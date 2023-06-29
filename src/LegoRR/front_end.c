@@ -615,7 +615,29 @@ B32 Front_IsTriggerAppQuit()
 
 lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu)
 {
+    lpMenuItem menuItem = NULL; // Focused item
+    if (menu->itemFocus >= 0)
+        menuItem = menu->items[menu->itemFocus];
+
+    if (frontGlobs.rockWipeFlags & ROCKWIPE_FLAG_NOINPUT)
+        return menu;
+
+    if (menuItem == NULL && menu->itemFocus >= 0)
+        menu->closed = TRUE;
+
+    S32 findIndex = -1;
+    if (Front_Menu_FindItemUnderMouse(menu, &findIndex))
+    {
+        // New focused item
+        menu->itemFocus = findIndex;
+        menuItem = menu->items[findIndex];
+    }
+
+    if (Front_MenuItem_CheckNotInTutoAnyTutorialFlags(menuItem))
+        return menu;
+
     // TODO: Implement Front_Menu_UpdateMenuItemsInput
+
     return menu;
 }
 
@@ -710,6 +732,96 @@ B32 Front_Menu_AddMenuItem(lpMenu menu, lpMenuItem menuItem)
     menu->items[menu->itemCount] = menuItem;
     menu->itemCount++;
     return TRUE;
+}
+
+B32 Front_Menu_FindItemUnderMouse(lpMenu menu, S32* itemIndex)
+{
+    S32 index = 0;
+    S32 rcX = 0;
+    S32 rcY = 0;
+    S32 rcWidth = 0;
+    S32 rcHeight = 0;
+    B32 levelUnderMouse = FALSE;
+    while (TRUE)
+    {
+        if (!Front_Menu_GetItemBounds(menu, index, &rcX, &rcY, &rcWidth, &rcHeight))
+        {
+            levelUnderMouse = Front_Menu_IsLevelItemUnderMouse(menu, index);
+            if (!levelUnderMouse)
+                return FALSE;
+        }
+
+        if (levelUnderMouse)
+            break;
+
+        if (Front_Maths_IsPointInsideRect(inputGlobs.msx, inputGlobs.msy, rcX, rcY, rcWidth, rcHeight))
+            break;
+
+        index++;
+    }
+
+    if (itemIndex != NULL)
+        *itemIndex = index;
+
+    return TRUE;
+}
+
+B32 Front_Menu_GetItemBounds(lpMenu menu, S32 itemIndex, S32* rcX, S32* rcY, S32* rcWidth, S32* rcHeight)
+{
+    if (menu->itemCount <= itemIndex)
+        return FALSE;
+
+    lpMenuItem item = menu->items[itemIndex];
+    if (item->itemType == MenuItem_Type_Slider)
+    {
+        // TODO: Implement Front_Menu_GetItemBounds
+    }
+
+    if (item->itemType == MenuItem_Type_Select)
+        return FALSE;
+
+    *rcX = item->centerOffHi + menu->position.x + item->x1;
+    *rcY = menu->items[itemIndex]->y1 + menu->position.y;
+
+    if (item->isImageItem)
+    {
+        if (menu->itemFocus == itemIndex)
+            *rcWidth = item->imageHi->width;
+        else
+            *rcWidth = item->imageLo->width;
+
+        if (menu->itemFocus == itemIndex)
+        {
+            *rcHeight = item->imageHi->height;
+            return TRUE;
+        }
+
+        *rcHeight = item->imageLo->height;
+        return TRUE;
+    }
+
+    lpFont font;
+    if (menu->itemFocus == itemIndex)
+        font = item->fontHi;
+    else
+        font = item->fontLo;
+
+    *rcWidth = Font_GetStringWidth(font, item->banner);
+    if (menu->itemFocus == itemIndex)
+    {
+        *rcHeight = Font_GetHeight(menu->items[itemIndex]->fontHi);
+        return TRUE;
+    }
+
+    *rcHeight = Font_GetHeight(menu->items[itemIndex]->fontLo);
+
+    return TRUE;
+}
+
+B32 Front_Menu_IsLevelItemUnderMouse(lpMenu menu, S32 itemIndex)
+{
+    // TODO: Implement Front_Menu_IsLevelItemUnderMouse
+    return FALSE;
 }
 
 void Front_MenuItem_DrawSelectTextWindow(lpMenu* menu)
@@ -1399,4 +1511,15 @@ const char* Front_Util_StrCpy(const char* str)
     if (buffer)
         strcpy(buffer, str);
     return buffer;
+}
+
+B32 Front_Maths_IsPointInsideRect(S32 ptX, S32 ptY, S32 rcX, S32 rcY, S32 rcWidth, S32 rcHeight)
+{
+    if (rcX <= ptX && ptX <= rcWidth + rcX)
+    {
+        if (rcY <= ptY && ptY <= rcHeight + rcY)
+            return TRUE;
+    }
+
+    return FALSE;
 }

@@ -217,8 +217,8 @@ typedef struct LevelSet
 typedef enum Front_RockWipeFlags
 {
     ROCKWIPE_FLAG_NONE = 0,
-    ROCKWIPE_FLAG_UNK_1 = 0x1,
-    ROCKWIPE_FLAG_UNK_2 = 0x2,
+    ROCKWIPE_FLAG_ANIMATING = 0x1,
+    ROCKWIPE_FLAG_NOINPUT = 0x2,
 } Front_RockWipeFlags;
 
 typedef struct MenuTextWindow
@@ -348,6 +348,10 @@ extern void Front_Menu_DrawMenuImage(lpMenu menu, B32 light);
 
 extern B32 Front_Menu_AddMenuItem(lpMenu menu, lpMenuItem menuItem);
 
+extern B32 Front_Menu_FindItemUnderMouse(lpMenu menu, S32* itemIndex);
+extern B32 Front_Menu_GetItemBounds(lpMenu menu, S32 itemIndex, S32* rcX, S32* rcY, S32* rcWidth, S32* rcHeight);
+extern B32 Front_Menu_IsLevelItemUnderMouse(lpMenu menu, S32 itemIndex);
+
 extern void Front_MenuItem_DrawSelectTextWindow(lpMenu* menu);
 extern B32 Front_MenuItem_CheckNotInTutoAnyTutorialFlags(lpMenuItem menuItem);
 extern MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName);
@@ -408,6 +412,8 @@ extern lpSaveData Front_Save_GetCurrentSaveData();
 extern const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar);
 extern const char* Front_Util_ReplaceTextSpaces(const char* str);
 extern const char* Front_Util_StrCpy(const char* str);
+
+extern B32 Front_Maths_IsPointInsideRect(S32 ptX, S32 ptY, S32 rcX, S32 rcY, S32 rcWidth, S32 rcHeight);
 
 extern B32 g_saveMenuOverwriteShowing;
 extern lpMenu g_saveMenu_UnkNextMenu;
