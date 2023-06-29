@@ -2,6 +2,7 @@
 
 #include "platform.h"
 #include "config.h"
+#include "images.h"
 
 typedef enum Pointer_Type
 {
@@ -64,6 +65,20 @@ typedef enum Pointer_Type
     Pointer_Type_Count               = 56,
 } Pointer_Type;
 
+#define Pointer_RegisterName(p) (pointerGlobs.pointerName[p]=#p)
+
+typedef struct Pointer_Globs
+{
+    Pointer_Type currentType;
+    lpImage pointerImages[Pointer_Type_Count]; // (each item is either an ImageBMP or ImageFlic)
+    B32 pointerIsFlic[Pointer_Type_Count];
+    Point2I pointerFlicPositions[Pointer_Type_Count];
+    char* pointerName[Pointer_Type_Count];
+    F32 timer;
+} Pointer_Globs;
+
+Pointer_Globs pointerGlobs;
+
 extern void Pointer_Initialize();
 
 /* Load all Pointers in the CFG block (prop is the first child in the block)
@@ -77,3 +92,5 @@ extern Pointer_Type Pointer_GetCurrentType();
 extern void Pointer_SetCurrent_IfTimerFinished(Pointer_Type pointerType);
 
 extern void Pointer_DrawPointer(U32 mouseX, U32 mouseY);
+
+extern B32 Pointer_GetType(const char* name, Pointer_Type* pointerType);

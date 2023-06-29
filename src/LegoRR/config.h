@@ -76,6 +76,8 @@ extern F32 Config_GetAngle(lpConfig root, const char* stringID);
 
 extern lpConfig Config_FindArray(lpConfig root, const char* name);
 
+extern lpConfig Config_GetNextItem(lpConfig start);
+
 #ifdef _DEBUG
 extern const char* Config_Debug_GetLastFind();
 #endif // _DEBUG

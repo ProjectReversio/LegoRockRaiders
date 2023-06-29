@@ -275,6 +275,24 @@ lpConfig Config_FindArray(lpConfig root, const char* name)
     return NULL;
 }
 
+lpConfig Config_GetNextItem(lpConfig start)
+{
+    U32 level = start->depth;
+    lpConfig conf = start;
+
+    while (conf)
+    {
+        if (conf->depth < level)
+            return NULL;
+
+        conf = conf->linkNext;
+
+        if (conf->depth == level)
+            return conf;
+    }
+    return NULL;
+}
+
 #ifdef _DEBUG
 const char* Config_Debug_GetLastFind()
 {
