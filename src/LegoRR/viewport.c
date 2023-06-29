@@ -27,3 +27,9 @@ void Viewport_SetBackClip(lpViewport viewport, F32 dist)
 {
     // TODO: Implement Viewport_SetBackClip
 }
+
+lpContainer Viewport_GetCamera(lpViewport view)
+{
+    // TODO: Implement Viewport_GetCamera
+    return NULL;
+}

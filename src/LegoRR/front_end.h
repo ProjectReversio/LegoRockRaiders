@@ -341,6 +341,7 @@ extern void Front_ScreenMenuLoop(lpMenu menu);
 extern lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition);
 extern B32 Front_IsTriggerAppQuit();
 
+extern lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu);
 extern void Front_Menu_UpdateMousePosition(lpMenu menu);
 
 extern void Front_Menu_DrawMenuImage(lpMenu menu, B32 light);
@@ -402,8 +403,18 @@ extern lpImage Front_Cache_LoadImage(const char* filename);
 extern void Front_LoadSaveSlotImages();
 extern void Front_FreeSaveSlotImages();
 
+extern lpSaveData Front_Save_GetCurrentSaveData();
+
 extern const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar);
 extern const char* Front_Util_ReplaceTextSpaces(const char* str);
 extern const char* Front_Util_StrCpy(const char* str);
 
 extern B32 g_saveMenuOverwriteShowing;
+extern lpMenu g_saveMenu_UnkNextMenu;
+extern S32 g_saveMenuSelectedIndex;
+extern S32 g_saveMenuOverwriteResult;
+extern S32 g_saveMenuOverlayState;
+extern S32 g_saveMenuSelectingIndex;
+extern S32 g_saveMenuOutputSelectedIndex;
+extern B32 g_saveMenuOverlayPlaying;
+extern B32 g_levelSelectPrinting;

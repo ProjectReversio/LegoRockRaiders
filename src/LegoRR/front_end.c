@@ -16,6 +16,14 @@ Front_Globs frontGlobs = { NULL };
 lpFront_Cache g_ImageCache_NEXT = NULL;
 
 B32 g_saveMenuOverwriteShowing = FALSE;
+lpMenu g_saveMenu_UnkNextMenu;
+S32 g_saveMenuSelectedIndex = -1;
+S32 g_saveMenuOverwriteResult = -1;
+S32 g_saveMenuOverlayState = -1;
+S32 g_saveMenuSelectingIndex = -1;
+S32 g_saveMenuOutputSelectedIndex = -1;
+B32 g_saveMenuOverlayPlaying;
+B32 g_levelSelectPrinting;
 
 B32 Front_IsFrontEndEnabled()
 {
@@ -338,7 +346,15 @@ void Front_ScreenMenuLoop(lpMenu menu)
 
     Front_LoadSaveSlotImages();
 
-    // TODO: Implement Front_ScreenMenuLoop
+    g_saveMenu_UnkNextMenu = NULL;
+    g_saveMenuOverlayState = -1;
+    g_saveMenuSelectedIndex = -1;
+    g_saveMenuSelectingIndex = -1;
+    g_saveMenuOverwriteResult = -1;
+    g_saveMenuOutputSelectedIndex = -1;
+    g_saveMenuOverlayPlaying = FALSE;
+    g_saveMenuOverwriteShowing = FALSE;
+    g_levelSelectPrinting = FALSE;
 
     frontGlobs.saveMenuHasSaved = TRUE;
     frontGlobs.saveMenuKeepOpen = TRUE;
@@ -420,9 +436,34 @@ void Front_ScreenMenuLoop(lpMenu menu)
 
 lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
 {
-    // TODO: Implement Front_Menu_Update
-
+    Front_Save_GetCurrentSaveData();
     Pointer_Type currPointer = Pointer_GetCurrentType();
+    lpViewport view = legoGlobs.viewMain;
+    lpContainer camera = Viewport_GetCamera(view);
+
+    g_saveMenuSelectedIndex = -1;
+    menu->itemFocus = -1;
+    if (menuTransition)
+        *menuTransition = FALSE;
+    Pointer_SetCurrent_IfTimerFinished(Pointer_Standard);
+
+    lpMenu currMenu = menu;
+    lpMenu nextMenu = menu;
+    if (!g_saveMenuOverwriteShowing && g_saveMenu_UnkNextMenu == NULL)
+    {
+        currMenu = Front_Menu_UpdateMenuItemsInput(elapsed, menu);
+    }
+
+    // Are we in the Save Game menu?
+    if (menu == frontGlobs.saveMenuSet->menus[0] && g_saveMenuSelectedIndex >= 0 && g_saveMenuOverwriteResult < 0)
+    {
+        menu->closed = FALSE;
+        currMenu->closed = FALSE;
+    }
+    if (g_saveMenuOverlayState >= 0)
+    {
+        currMenu = nextMenu;
+    }
 
     // TODO: Implement Front_Menu_Update
 
@@ -563,13 +604,19 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
 
     Pointer_DrawPointer(inputGlobs.msx, inputGlobs.msy);
     Pointer_SetCurrent_IfTimerFinished(currPointer);
-    return menu;
+    return currMenu;
 }
 
 B32 Front_IsTriggerAppQuit()
 {
     // TODO: Implement Front_IsTriggerAppQuit
     return FALSE;
+}
+
+lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu)
+{
+    // TODO: Implement Front_Menu_UpdateMenuItemsInput
+    return menu;
 }
 
 void Front_Menu_UpdateMousePosition(lpMenu menu)
@@ -1305,6 +1352,12 @@ void Front_LoadSaveSlotImages()
 void Front_FreeSaveSlotImages()
 {
     // TODO: Implement Front_FreeSaveSlotImages
+}
+
+lpSaveData Front_Save_GetCurrentSaveData()
+{
+    // TODO: Implement Front_Save_GetCurrentSaveData
+    return NULL;
 }
 
 const char* Front_Util_StringReplaceChar(const char* str, char origChar, char newChar)
