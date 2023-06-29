@@ -415,6 +415,8 @@ extern const char* Front_Util_StrCpy(const char* str);
 
 extern B32 Front_Maths_IsPointInsideRect(S32 ptX, S32 ptY, S32 rcX, S32 rcY, S32 rcWidth, S32 rcHeight);
 
+extern B32 Front_GetMousePressedState();
+
 extern B32 g_saveMenuOverwriteShowing;
 extern lpMenu g_saveMenu_UnkNextMenu;
 extern S32 g_saveMenuSelectedIndex;

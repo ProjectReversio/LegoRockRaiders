@@ -615,6 +615,8 @@ B32 Front_IsTriggerAppQuit()
 
 lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu)
 {
+    B32 isHandled = FALSE;
+
     lpMenuItem menuItem = NULL; // Focused item
     if (menu->itemFocus >= 0)
         menuItem = menu->items[menu->itemFocus];
@@ -622,6 +624,7 @@ lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu)
     if (frontGlobs.rockWipeFlags & ROCKWIPE_FLAG_NOINPUT)
         return menu;
 
+    B32 isPressed = TRUE;
     if (menuItem == NULL && menu->itemFocus >= 0)
         menu->closed = TRUE;
 
@@ -636,7 +639,33 @@ lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu)
     if (Front_MenuItem_CheckNotInTutoAnyTutorialFlags(menuItem))
         return menu;
 
+    if (!Front_GetMousePressedState() || !Front_Menu_FindItemUnderMouse(menu, &findIndex))
+        isPressed = FALSE;
+
+    if (menuItem == NULL && menu->itemFocus < 0)
+        return menu;
+
     // TODO: Implement Front_Menu_UpdateMenuItemsInput
+
+    if (isPressed && !isHandled)
+    {
+        MenuItem_Type type = menuItem->itemType;
+        if (type == MenuItem_Type_Cycle)
+        {
+            // TODO: Implement Front_Menu_UpdateMenuItemsInput
+        } else if (type == MenuItem_Type_Trigger)
+        {
+            // TODO: Implement Front_Menu_UpdateMenuItemsInput
+        } else if (type == MenuItem_Type_Next)
+        {
+            return menuItem->itemData.next;
+        }
+    }
+
+    if (menuItem->itemType == MenuItem_Type_TextInput)
+    {
+        // TODO: Implement Front_Menu_UpdateMenuItemsInput
+    }
 
     return menu;
 }
@@ -1522,4 +1551,15 @@ B32 Front_Maths_IsPointInsideRect(S32 ptX, S32 ptY, S32 rcX, S32 rcY, S32 rcWidt
     }
 
     return FALSE;
+}
+
+B32 Front_GetMousePressedState()
+{
+    static B32 s_frontMousePressedState = FALSE;
+
+    B32 result = !inputGlobs.mslb && s_frontMousePressedState;
+
+    s_frontMousePressedState = inputGlobs.mslb;
+
+    return result;
 }
