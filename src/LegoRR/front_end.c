@@ -628,8 +628,7 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
 
 B32 Front_IsTriggerAppQuit()
 {
-    // TODO: Implement Front_IsTriggerAppQuit
-    return FALSE;
+    return frontGlobs.triggerQuitApp;
 }
 
 lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu)
@@ -674,7 +673,14 @@ lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu)
             // TODO: Implement Front_Menu_UpdateMenuItemsInput
         } else if (type == MenuItem_Type_Trigger)
         {
-            // TODO: Implement Front_Menu_UpdateMenuItemsInput
+            lpMenuItem_TriggerData triggerData = menuItem->itemData.trigger;
+            if (triggerData->callback != NULL)
+                triggerData->callback();
+            if (triggerData->end)
+            {
+                menu->closed = TRUE;
+                *triggerData->valuePtr = TRUE;
+            }
         } else if (type == MenuItem_Type_Next)
         {
             return menuItem->itemData.next;
