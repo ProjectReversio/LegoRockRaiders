@@ -10,6 +10,7 @@
 #include "3DSound.h"
 #include "tooltip.h"
 #include "pointer.h"
+#include "credits.h"
 
 Front_Globs frontGlobs = { NULL };
 
@@ -1475,7 +1476,7 @@ void Front_LoadLevels(lpMenuSet mainMenuFull)
 
 void Front_Callback_TriggerPlayCredits()
 {
-    // TODO: Implement Front_Callback_TriggerPlayCredits
+    Credits_Play(legoGlobs.CreditsTextFile, legoGlobs.bmpRSFont, legoGlobs.CreditsBackAVI);
 }
 
 void Front_Callback_TriggerBackSave()

@@ -73,6 +73,7 @@ set(MAIN_SRC
     encyclopedia.c
     save.c
     flic.c
+    credits.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -147,6 +148,7 @@ set(MAIN_SRC
     encyclopedia.h
     save.h
     flic.h
+    credits.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h
