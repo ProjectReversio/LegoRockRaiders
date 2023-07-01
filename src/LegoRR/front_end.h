@@ -356,6 +356,7 @@ extern void Front_MenuItem_DrawSelectTextWindow(lpMenu* menu);
 extern B32 Front_MenuItem_CheckNotInTutoAnyTutorialFlags(lpMenuItem menuItem);
 extern MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName);
 extern lpMenuItem Front_MenuItem_CreateBannerItem(const char* banner, lpFont loFont, lpFont hiFont, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, void* itemData, B32 notInTutorial);
+extern lpMenuItem Front_MenuItem_CreateImageItem(const char* banner, lpFont loFont, lpFont hiFont, const char* loImageName, const char* hiImageName, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, const char* toolTipName, void* itemData);
 
 extern void Front_RockWipe_Play();
 extern void Front_RockWipe_Stop();

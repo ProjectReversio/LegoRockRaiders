@@ -9,3 +9,14 @@ void ToolTip_Update(U32 mousex, U32 mousey, F32 elapsedAbs)
 {
     // TODO: Implement ToolTip_Update
 }
+
+void ToolTip_AddFlag4(ToolTip_Type toolTipType)
+{
+    // TODO: Implement ToolTip_AddFlag4
+}
+
+B32 ToolTip_GetType(const char* toolTipName, ToolTip_Type* toolTipType)
+{
+    // TODO: Implement ToolTip_GetType
+    return FALSE;
+}

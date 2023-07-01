@@ -587,7 +587,26 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
 
     for (U32 i = 0; i < menu->itemCount; i++)
     {
-        // TODO: Implement Front_Menu_Update
+        lpMenuItem item = menu->items[i];
+        if (item->isImageItem)
+        {
+            if (menu->itemFocus == i)
+            {
+                if (item->imageHi != NULL)
+                {
+                    Point2F pos;
+                    pos.x = (F32)(item->x1 + menu->position.x);
+                    pos.y = (F32)(item->y1 + menu->position.y);
+                    Image_Display(item->imageHi, &pos);
+                }
+                ToolTip_AddFlag4(item->toolTipType);
+            } else if (item->imageLo != NULL) {
+                Point2F pos;
+                pos.x = (F32)(item->x1 + menu->position.x);
+                pos.y = (F32)(item->y1 + menu->position.y);
+                Image_Display(item->imageLo, &pos);
+            }
+        }
     }
 
 #ifndef LEGORR_FORCE_SHOW_VERSION
@@ -931,6 +950,55 @@ lpMenuItem Front_MenuItem_CreateBannerItem(const char* banner, lpFont loFont, lp
     return menuItem;
 }
 
+lpMenuItem Front_MenuItem_CreateImageItem(const char* banner, lpFont loFont, lpFont hiFont, const char* loImageName, const char* hiImageName, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, const char* toolTipName, void* itemData)
+{
+    if (banner == NULL)
+        return NULL;
+
+    lpMenuItem menuItem = Mem_Alloc(sizeof(MenuItem));
+    if (menuItem == NULL)
+        return NULL;
+
+    memset(menuItem, 0, sizeof(MenuItem));
+
+    menuItem->length = strlen(banner);
+    menuItem->banner = Front_Util_StrCpy(banner);
+    menuItem->fontHi = hiFont;
+    menuItem->fontLo = loFont;
+
+    menuItem->imageLo = Image_LoadBMP(loImageName);
+    if (menuItem->imageLo == NULL)
+    {
+#ifdef LEGORR_FIX_MEMORY_LEAKS
+        Mem_Free(menuItem);
+#endif
+        return NULL;
+    }
+
+    menuItem->imageHi = Image_LoadBMP(hiImageName);
+    if (menuItem->imageHi != NULL)
+        menuItem->isImageItem = TRUE;
+
+    menuItem->itemData.data = itemData; // Typeless void* assignment for union
+    menuItem->itemType = itemType;
+    menuItem->x1 = x1;
+    menuItem->y1 = y1;
+
+    if (!ToolTip_GetType(toolTipName, &menuItem->toolTipType))
+        menuItem->toolTipType = ToolTip_Null;
+
+    if (centered && menuItem->imageLo != NULL && menuItem->imageHi != NULL)
+    {
+        menuItem->centerOffLo = -((S32)Image_GetWidth(menuItem->imageLo) / 2);
+        menuItem->centerOffHi = -((S32)Image_GetWidth(menuItem->imageHi) / 2);
+    } else {
+        menuItem->centerOffLo = 0;
+        menuItem->centerOffHi = 0;
+    }
+
+    return menuItem;
+}
+
 void Front_RockWipe_Play()
 {
     // TODO: Implement Front_RockWipe_Play
@@ -1131,7 +1199,30 @@ lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)
                     {
                         if (stringPartCount == 8)
                         {
-                            // TODO: Implement Front_LoadMenuSet
+                            S32 nextMenuNumber = atoi(stringParts[7] + 4);
+
+                            lpMenu nextMenu = menuSet->menus[nextMenuNumber - 1];
+
+                            const char* loImageName = stringParts[3];
+                            const char* hiImageName = stringParts[4];
+                            // Image path at stringParts[5] seems to be unused.
+                            const char* toolTipName = stringParts[6];
+                            S32 x1 = atoi(stringParts[1]);
+                            S32 y1 = atoi(stringParts[2]);
+
+                            lpMenuItem menuItem = Front_MenuItem_CreateImageItem("",
+                                                                                 loFont,
+                                                                                 hiFont,
+                                                                                 loImageName,
+                                                                                 hiImageName,
+                                                                                 x1,
+                                                                                 y1,
+                                                                                 MenuItem_Type_Next,
+                                                                                 autoCenter,
+                                                                                 toolTipName,
+                                                                                 nextMenu);
+
+                            Front_Menu_AddMenuItem(menuSet->menus[menuIndex], menuItem);
                         } else
                         {
                             S32 nextMenuNumber;
