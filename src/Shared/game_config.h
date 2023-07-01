@@ -6,6 +6,9 @@
 // Define me to fix the bug from the original game where you can't exit while in menus or cutscenes.
 #define LEGORR_FIX_CLOSE_DOESNT_EXIT
 
+// Define me to center window on launch.
+#define LEGORR_CENTER_WINDOW
+
 // Define me to make windowed mode the default.
 //#define LEGORR_WINDOWED_DEFAULT
 

@@ -267,6 +267,14 @@ B32 DirectDraw_Setup(B32 fullscreen, lpGraphics_Driver driver, lpGraphics_Device
     else
         guid = &driver->guid;
 
+#ifdef LEGORR_CENTER_WINDOW
+    if (!fullscreen)
+    {
+        xPos = (GetSystemMetrics(SM_CXSCREEN) - width) / 2;
+        yPos = (GetSystemMetrics(SM_CYSCREEN) - height) / 2;
+    }
+#endif
+
     Main_SetupDisplay(fullscreen, xPos, yPos, width, height);
 
     LPDIRECTDRAW ddraw1;
