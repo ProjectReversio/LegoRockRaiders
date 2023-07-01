@@ -1105,7 +1105,7 @@ lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)
     va_list args;
     va_start(args, menuName);
 
-    for (menuNumber = menuIndex + 1; menuNumber < menuCount; menuNumber++)
+    for (menuNumber = menuIndex + 1; menuNumber <= menuCount; menuNumber++)
     {
         B32 autoCenter = menuSet->menus[menuIndex]->autoCenter;
 
