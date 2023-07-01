@@ -999,6 +999,21 @@ lpMenuItem Front_MenuItem_CreateImageItem(const char* banner, lpFont loFont, lpF
     return menuItem;
 }
 
+lpMenuItem_TriggerData Front_MenuItem_CreateTrigger(B32* valuePtr, B32 end, MenuItem_TriggerCallback callback)
+{
+    lpMenuItem_TriggerData triggerData;
+
+    triggerData = Mem_Alloc(sizeof(MenuItem_TriggerData));
+    if (triggerData == NULL)
+        return NULL;
+
+    triggerData->valuePtr = valuePtr;
+    triggerData->end = end;
+    triggerData->callback = callback;
+
+    return triggerData;
+}
+
 void Front_RockWipe_Play()
 {
     // TODO: Implement Front_RockWipe_Play
@@ -1182,7 +1197,48 @@ lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)
                     }
                     case MenuItem_Type_Trigger:
                     {
-                        // TODO: Implement Front_LoadMenuSet
+                        if (stringPartCount == 8) // Trigger:x1:y1:loImage:hiImage:unusedImage:toolTip:end
+                        {
+                            B32* valuePtr = va_arg(args, B32*);
+                            MenuItem_TriggerCallback callback = va_arg(args, MenuItem_TriggerCallback);
+
+                            // TODO: Is this ACTUALLY a Bool3?
+                            B32 end = atoi(stringParts[7]) == BOOL3_TRUE; // Numeric boolean
+                            lpMenuItem_TriggerData trigger = Front_MenuItem_CreateTrigger(valuePtr, end, callback);
+
+                            const char* loImageName = stringParts[3];
+                            const char* hiImageName = stringParts[4];
+                            const char* unusedImageName = stringParts[5];
+                            const char* toolTipName = stringParts[6];
+
+                            S32 x1 = atoi(stringParts[1]);
+                            S32 y1 = atoi(stringParts[2]);
+
+                            lpMenuItem menuItem = Front_MenuItem_CreateImageItem("",
+                                                                                 loFont, hiFont,
+                                                                                 loImageName, hiImageName,
+                                                                                 x1, y1,
+                                                                                 MenuItem_Type_Trigger,
+                                                                                 autoCenter, toolTipName, trigger);
+
+                            Front_Menu_AddMenuItem(menuSet->menus[menuIndex], menuItem);
+                        } else if (stringPartCount == 5) // Trigger:x1:y1:banner:end
+                        {
+                            B32* valuePtr = va_arg(args, B32*);
+                            MenuItem_TriggerCallback callback = va_arg(args, MenuItem_TriggerCallback);
+
+                            // TODO: Is this ACTUALLY a Bool3?
+                            B32 end = atoi(stringParts[4]) == BOOL3_TRUE; // Numeric boolean
+                            lpMenuItem_TriggerData trigger = Front_MenuItem_CreateTrigger(valuePtr, end, callback);
+
+                            S32 x1 = atoi(stringParts[1]);
+                            S32 y1 = atoi(stringParts[2]);
+
+                            const char* banner = Front_Util_StringReplaceChar(stringParts[3], '_', ' ');
+
+                            lpMenuItem menuItem = Front_MenuItem_CreateBannerItem(banner, loFont, hiFont, x1, y1, MenuItem_Type_Trigger, autoCenter, trigger, FALSE);
+                            Front_Menu_AddMenuItem(menuSet->menus[menuIndex], menuItem);
+                        }
                         break;
                     }
                     case MenuItem_Type_Slider:

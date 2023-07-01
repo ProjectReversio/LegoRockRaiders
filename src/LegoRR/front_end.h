@@ -108,37 +108,40 @@ typedef struct MenuItem_CycleData
 {
     void* temp;
     // TODO: Implement MenuItem_CycleData
-} MenuItem_CycleData;
+} MenuItem_CycleData, *lpMenuItem_CycleData;
+
+typedef void (*MenuItem_TriggerCallback)();
 
 typedef struct MenuItem_TriggerData
 {
-    void* temp;
-    // TODO: Implement MenuItem_TriggerData
-} MenuItem_TriggerData;
+    B32* valuePtr;
+    B32 end; // (cfg: Trigger:[4]) End/close the current MenuSet
+    MenuItem_TriggerCallback callback;
+} MenuItem_TriggerData, *lpMenuItem_TriggerData;
 
 typedef struct MenuItem_TextInputData
 {
     void* temp;
     // TODO: Implement MenuItem_TextInputData
-} MenuItem_TextInputData;
+} MenuItem_TextInputData, *lpMenuItem_TextInputData;
 
 typedef struct MenuItem_SliderData
 {
     void* temp;
     // TODO: Implement MenuItem_SliderData
-} MenuItem_SliderData;
+} MenuItem_SliderData, *lpMenuItem_SliderData;
 
 typedef struct MenuItem_RealSliderData
 {
     void* temp;
     // TODO: Implement MenuItem_RealSliderData
-} MenuItem_RealSliderData;
+} MenuItem_RealSliderData, *lpMenuItem_RealSliderData;
 
 typedef struct MenuItem_SelectData
 {
     void* temp;
     // TODO: Implement MenuItem_SelectData
-} MenuItem_SelectData;
+} MenuItem_SelectData, *lpMenuItem_SelectData;
 
 typedef struct MenuItem
 {
@@ -357,6 +360,7 @@ extern B32 Front_MenuItem_CheckNotInTutoAnyTutorialFlags(lpMenuItem menuItem);
 extern MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName);
 extern lpMenuItem Front_MenuItem_CreateBannerItem(const char* banner, lpFont loFont, lpFont hiFont, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, void* itemData, B32 notInTutorial);
 extern lpMenuItem Front_MenuItem_CreateImageItem(const char* banner, lpFont loFont, lpFont hiFont, const char* loImageName, const char* hiImageName, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, const char* toolTipName, void* itemData);
+extern lpMenuItem_TriggerData Front_MenuItem_CreateTrigger(B32* valuePtr, B32 end, MenuItem_TriggerCallback callback);
 
 extern void Front_RockWipe_Play();
 extern void Front_RockWipe_Stop();
