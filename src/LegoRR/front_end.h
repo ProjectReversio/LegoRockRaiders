@@ -347,7 +347,10 @@ extern B32 Front_IsTriggerAppQuit();
 extern lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu);
 extern void Front_Menu_UpdateMousePosition(lpMenu menu);
 
+extern void Front_Menu_UpdateOverlays(lpMenu menu);
+
 extern void Front_Menu_DrawMenuImage(lpMenu menu, B32 light);
+extern void Front_Menu_DrawLoadSaveText(lpMenu* pMenu, lpMenu* currMenu, lpMenu* nextMenu);
 
 extern B32 Front_Menu_AddMenuItem(lpMenu menu, lpMenuItem menuItem);
 
@@ -383,6 +386,8 @@ extern B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light
 extern lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverlay* linkedOverlay, S32 positionX, S32 positionY, SFX_ID sfxType);
 
 extern void Front_LoadLevels(lpMenuSet mainMenuFull);
+
+extern void Front_LevelSelect_LevelNamePrintF(lpFont font, S32 x, S32 y, const char* msg, ...);
 
 extern void Front_Callback_TriggerPlayCredits();
 extern void Front_Callback_TriggerBackSave();

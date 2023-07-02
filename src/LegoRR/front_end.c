@@ -470,7 +470,10 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
 
     Front_Menu_DrawMenuImage(menu, TRUE);
 
-    // TODO: Implement Front_Menu_Update
+    if (menu != frontGlobs.saveMenuSet->menus[0])
+        Front_Menu_UpdateOverlays(menu);
+
+    Front_Menu_DrawLoadSaveText(&menu, &currMenu, &nextMenu);
 
     if (menu->displayTitle)
     {
@@ -484,7 +487,6 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
     }
 
     // TODO: Implement Front_Menu_Update
-
 
     B32 BVar14;
     for (U32 i = 0; i < menu->itemCount; i++)
@@ -620,6 +622,13 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
         Font_PrintF(frontGlobs.versionFont, 545, 450, frontGlobs.versionString);
     }
 
+    Front_LevelSelect_LevelNamePrintF(NULL, 0, 0, NULL);
+
+    if (menu == frontGlobs.saveMenuSet->menus[0] && g_saveMenuOverwriteShowing)
+    {
+        // TODO: Implement Front_Menu_Update
+    }
+
     // TODO: Implement Front_Menu_Update
 
     Pointer_DrawPointer(inputGlobs.msx, inputGlobs.msy);
@@ -730,6 +739,11 @@ void Front_Menu_UpdateMousePosition(lpMenu menu)
         frontGlobs.scrollOffset.y = 480 - imageHeight;
 }
 
+void Front_Menu_UpdateOverlays(lpMenu menu)
+{
+    // TODO: Implement Front_Menu_UpdateOverlays
+}
+
 void Front_Menu_DrawMenuImage(lpMenu menu, B32 light)
 {
     lpImage image = light ? menu->menuImage : menu->menuImageDark;
@@ -757,6 +771,11 @@ void Front_Menu_DrawMenuImage(lpMenu menu, B32 light)
 
         Image_DisplayScaled(image, &srcArea, &destPos, NULL);
     }
+}
+
+void Front_Menu_DrawLoadSaveText(lpMenu* pMenu, lpMenu* currMenu, lpMenu* nextMenu)
+{
+    // TODO: Implement Front_Menu_DrawLoadSaveText
 }
 
 B32 Front_Menu_AddMenuItem(lpMenu menu, lpMenuItem menuItem)
@@ -1641,6 +1660,11 @@ lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverlay* link
 void Front_LoadLevels(lpMenuSet mainMenuFull)
 {
     // TODO: Implement Front_LoadLevels
+}
+
+void Front_LevelSelect_LevelNamePrintF(lpFont font, S32 x, S32 y, const char* msg, ...)
+{
+    // TODO: Implement Front_LevelSelect_LevelNamePrintF
 }
 
 void Front_Callback_TriggerPlayCredits()
