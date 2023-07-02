@@ -315,3 +315,8 @@ U32 Font_GetHeight(lpFont font)
 {
     return font->fontHeight;
 }
+
+U32 Font_GetCharWidth(lpFont font, U8 c)
+{
+    return Font_OutputChar(font, 0, 0, c, FALSE);
+}

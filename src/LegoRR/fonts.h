@@ -75,6 +75,7 @@ extern void Font_RemoveCallback(lpFont font, void* data);
 extern void Font_RunThroughLists(void (*Callback)(lpFont font, void* data), void* data);
 
 extern U32 Font_GetHeight(lpFont font);
+extern U32 Font_GetCharWidth(lpFont font, U8 c);
 
 inline U32 Font_GetStringWidth(lpFont font, const char* msg, ...) { U32 width; va_list args; va_start(args, msg); Font_VGetStringInfo(font, &width, NULL, msg, args); va_end(args); return width; }
 inline U32 Font_GetLineCount(lpFont font, const char* msg, ...) { U32 lineCount; va_list args; va_start(args, msg); Font_VGetStringInfo(font, NULL, &lineCount, msg, args); va_end(args); return lineCount; }

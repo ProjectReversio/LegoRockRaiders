@@ -33,6 +33,7 @@ extern lpTextWindow TextWindow_Create(lpFont font, Area2F* size, U32 bufferSize)
 extern void TextWindow_EnableCentering(lpTextWindow window, BOOL enable);
 
 extern B32 TextWindow_Update(lpTextWindow window, U32 posFromEnd, F32 time, S32* lpLowestPoint);
+extern B32 TextWindow_UpdateOverlay(lpTextWindow window, F32 time, S32* lpLowestPoint);
 
 extern void TextWindow_Clear(lpTextWindow window);
 extern void TextWindow_PrintF(lpTextWindow window, const char* msg, ...);
