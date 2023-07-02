@@ -1457,7 +1457,58 @@ lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)
 
 B32 Front_LoadLevelSet(lpConfig config, lpLevelSet levelSet, const char* levelKey)
 {
-    // TODO: Implement Front_LoadLevelSet
+#ifdef LEGORR_FIX_MEMORY_LEAKS
+    const char* nextName = Config_GetTempStringValue(config, Config_BuildStringID(legoGlobs.gameName, "Main", levelKey, 0));
+#else
+    const char* nextName = Config_GetStringValue(config, Config_BuildStringID(legoGlobs.gameName, "Main", levelKey, 0));
+#endif
+    if (nextName == NULL)
+        return FALSE;
+
+    S32 count = 0;
+    do
+    {
+        count++;
+#ifdef LEGORR_FIX_MEMORY_LEAKS
+        nextName = Config_GetTempStringValue(config, Config_BuildStringID(legoGlobs.gameName, nextName, "NextLevel", 0));
+#else
+        nextName = Config_GetStringValue(config, Config_BuildStringID(legoGlobs.gameName, nextName, "NextLevel", 0));
+#endif
+    } while (nextName != NULL);
+
+    levelSet->count = count;
+    levelSet->idNames = Mem_Alloc(count * sizeof(char*));
+    levelSet->langNames = Mem_Alloc(count * sizeof(char*));
+    levelSet->levels = Mem_Alloc(count * sizeof(lpLevelLink));
+    levelSet->visitedList = Mem_Alloc(count * sizeof(B32));
+
+    memset(levelSet->levels, 0, count * sizeof(lpLevelLink));
+    memset(levelSet->visitedList, 0, count * sizeof(B32));
+
+    if (levelSet->idNames != NULL && levelSet->langNames != NULL)
+    {
+        char* nextNameStr = Config_GetStringValue(config, Config_BuildStringID(legoGlobs.gameName, "Main", levelKey, 0));
+        for (S32 i = 0; i < levelSet->count; i++)
+        {
+            levelSet->idNames[i] = nextNameStr;
+
+            levelSet->langNames[i] = Config_GetStringValue(config, Config_BuildStringID(legoGlobs.gameName, nextNameStr, "FullName", 0));
+
+            if (levelSet->langNames[i] == NULL)
+            {
+                // Just use the id name as the language name.
+                levelSet->langNames[i] = Front_Util_StrCpy(levelSet->idNames[i]);
+            } else {
+                // Don't use Front_Util_ReplaceTextSpaces because that returns a temporary buffer.
+                Front_Util_StringReplaceChar(levelSet->langNames[i], '_', ' ');
+            }
+
+            nextNameStr = Config_GetStringValue(config, Config_BuildStringID(legoGlobs.gameName, nextNameStr, "NextLevel", 0));
+        }
+
+        return TRUE;
+    }
+
     return FALSE;
 }
 
