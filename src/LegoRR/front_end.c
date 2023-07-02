@@ -881,7 +881,46 @@ B32 Front_Menu_IsLevelItemUnderMouse(lpMenu menu, S32 itemIndex)
 
 void Front_MenuItem_DrawSelectTextWindow(lpMenu* menu)
 {
-    // TODO: Implement Front_MenuItem_DrawSelectTextWindow
+    Size2F destSize;
+    Point2F destPos;
+    lpMenuTextWindow menuWnd;
+
+    menuWnd = frontGlobs.saveLevelWnd;
+    // For the missions and training missions menus
+    if (*menu != frontGlobs.mainMenuSet->menus[1] && *menu != frontGlobs.mainMenuSet->menus[2])
+        return;
+
+    if (frontGlobs.saveLevelWnd->PanelImage != NULL)
+    {
+        destPos.x = frontGlobs.saveLevelWnd->PanelArea.x;
+        destPos.y = frontGlobs.saveLevelWnd->PanelArea.y;
+        destSize.width = frontGlobs.saveLevelWnd->PanelArea.width;
+        destSize.height = frontGlobs.saveLevelWnd->PanelArea.height;
+        Image_DisplayScaled(frontGlobs.saveLevelWnd->PanelImage, NULL, &destPos, &destSize);
+    }
+
+    if (menuWnd->textWindow != NULL)
+    {
+        TextWindow_Update(menuWnd->textWindow, 0, 1.0f, NULL);
+        TextWindow_Clear(menuWnd->textWindow);
+        TextWindow_PrintF(menuWnd->textWindow, "\n");
+
+        // Missions menu
+        if (*menu == frontGlobs.mainMenuSet->menus[1] && menuWnd->LevelText != NULL)
+        {
+            TextWindow_PrintF(menuWnd->textWindow, menuWnd->LevelText);
+            TextWindow_PrintF(menuWnd->textWindow, "\n");
+        }
+
+        // Training missions menu
+        if (*menu == frontGlobs.mainMenuSet->menus[2] && menuWnd->TutorialText != NULL)
+        {
+            TextWindow_PrintF(menuWnd->textWindow, menuWnd->TutorialText);
+            TextWindow_PrintF(menuWnd->textWindow, "\n");
+        }
+
+        g_levelSelectPrinting = TRUE;
+    }
 }
 
 B32 Front_MenuItem_CheckNotInTutoAnyTutorialFlags(lpMenuItem menuItem)
@@ -1042,9 +1081,88 @@ void Front_LoadOptionParameters(B32 loadOptions, B32 resetFront)
     // TODO: Implement Front_LoadOptionParameters
 }
 
-void Front_LoadMenuTextWindow(lpConfig config, const char* gameName, lpMenuTextWindow menuWnd)
+void Front_LoadMenuTextWindow(lpConfig config, const char* configPath, lpMenuTextWindow menuWnd)
 {
-    // TODO: Implement Front_LoadMenuTextWindow
+    const char* str;
+
+    str = Config_GetTempStringValue(config, Config_BuildStringID(legoGlobs.gameName, configPath, "Load", 0));
+    if (str != NULL)
+        strcpy(menuWnd->LoadText, Front_Util_ReplaceTextSpaces(str));
+
+    str = Config_GetTempStringValue(config, Config_BuildStringID(legoGlobs.gameName, configPath, "Save", 0));
+    if (str != NULL)
+        strcpy(menuWnd->SaveText, Front_Util_ReplaceTextSpaces(str));
+
+    str = Config_GetTempStringValue(config, Config_BuildStringID(legoGlobs.gameName, configPath, "Slot", 0));
+    if (str != NULL)
+        strcpy(menuWnd->SlotText, Front_Util_ReplaceTextSpaces(str));
+
+    str = Config_GetTempStringValue(config, Config_BuildStringID(legoGlobs.gameName, configPath, "SaveSel", 0));
+    if (str != NULL)
+        strcpy(menuWnd->SaveSelText, Front_Util_ReplaceTextSpaces(str));
+
+    str = Config_GetTempStringValue(config, Config_BuildStringID(legoGlobs.gameName, configPath, "LoadSel", 0));
+    if (str != NULL)
+        strcpy(menuWnd->LoadSelText, Front_Util_ReplaceTextSpaces(str));
+
+    str = Config_GetTempStringValue(config, Config_BuildStringID(legoGlobs.gameName, configPath, "Level", 0));
+    if (str != NULL)
+        strcpy(menuWnd->LevelText, Front_Util_ReplaceTextSpaces(str));
+
+    str = Config_GetTempStringValue(config, Config_BuildStringID(legoGlobs.gameName, configPath, "Tutorial", 0));
+    if (str != NULL)
+        strcpy(menuWnd->TutorialText, Front_Util_ReplaceTextSpaces(str));
+
+    char* value;
+
+    value = Config_GetStringValue(config, Config_BuildStringID(legoGlobs.gameName, configPath, "Window", 0));
+    if (value != NULL)
+    {
+        char* stringParts[5];
+        U32 numParts = Util_Tokenize(value, stringParts, "|");
+        if (numParts == 4)
+        {
+            Area2F windowArea;
+            windowArea.x = (F32)atoi(stringParts[0]);
+            windowArea.y = (F32)atoi(stringParts[1]);
+            windowArea.width = (F32)atoi(stringParts[2]);
+            windowArea.height = (F32)atoi(stringParts[3]);
+            menuWnd->WindowArea = windowArea;
+
+            menuWnd->textWindow = TextWindow_Create(legoGlobs.bmpFONT5_HI, &menuWnd->WindowArea, 512);
+        }
+
+#ifdef LEGORR_FIX_MEMORY_LEAKS
+        Mem_Free(value);
+#endif
+    }
+
+    value = Config_GetStringValue(config, Config_BuildStringID(legoGlobs.gameName, configPath, "Panel", 0));
+    if (value != NULL)
+    {
+        char* stringParts[6];
+        U32 numParts = Util_Tokenize(value, stringParts, "|");
+        if (numParts == 5 && stringParts[0] != NULL)
+        {
+            menuWnd->PanelImage = Image_LoadBMP(stringParts[0]);
+            if (menuWnd->PanelImage != NULL)
+            {
+                Area2F panelArea;
+                panelArea.x = (F32)atoi(stringParts[1]);
+                panelArea.y = (F32)atoi(stringParts[2]);
+                panelArea.width = (F32)atoi(stringParts[3]);
+                panelArea.height = (F32)atoi(stringParts[4]);
+
+                menuWnd->PanelArea = panelArea;
+
+                Image_SetupTrans(menuWnd->PanelImage, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+            }
+        }
+
+#ifdef LEGORR_FIX_MEMORY_LEAKS
+        Mem_Free(value);
+#endif
+    }
 }
 
 lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...)

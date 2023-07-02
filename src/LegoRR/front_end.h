@@ -368,7 +368,7 @@ extern void Front_RockWipe_Stop();
 extern const char* Front_GetSelectedLevel();
 extern void Front_LoadOptionParameters(B32 loadOptions, B32 resetFront);
 
-extern void Front_LoadMenuTextWindow(lpConfig config, const char* gameName, lpMenuTextWindow menuWnd);
+extern void Front_LoadMenuTextWindow(lpConfig config, const char* configPath, lpMenuTextWindow menuWnd);
 
 extern lpMenuSet Front_LoadMenuSet(lpConfig config, const char* menuName, ...);
 extern B32 Front_LoadLevelSet(lpConfig config, lpLevelSet levelSet, const char* levelKey);
