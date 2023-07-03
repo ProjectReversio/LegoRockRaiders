@@ -1756,8 +1756,21 @@ void Front_Levels_ResetVisited()
 
 S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name)
 {
-    // TODO: Implement Front_GetMenuIDByName
-    return 0;
+    S32 cmp;
+    S32 i;
+
+    i = 0;
+    if (menuSet->menuCount < 1)
+        return -1;
+
+    while ((menuSet->menus[i] == NULL || (cmp = _stricmp(menuSet->menus[i]->title, name), cmp != 0)))
+    {
+        i++;
+        if (menuSet->menuCount <= i)
+            return -1;
+    }
+
+    return i;
 }
 
 void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu menu58, void* callback)
