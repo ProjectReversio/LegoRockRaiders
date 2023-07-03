@@ -1079,6 +1079,19 @@ lpMenuItem_TriggerData Front_MenuItem_CreateTrigger(B32* valuePtr, B32 end, Menu
     return triggerData;
 }
 
+lpMenuItem_SelectData Front_MenuItem_CreateSelect(S32* valuePtr, const char* string1, const char* string2, S32 x1, S32 y1, S32 width1, S32 height1, S32 x2, S32 y2, S32 width2, S32 height2, S32 field50, MenuItem_SelectCallback callback, lpMenu nextMenu)
+{
+    // TODO: Implement Front_MenuItem_CreateSelect
+    return NULL;
+}
+
+// To create a banner item, pass a string to bannerOrBMPName that does NOT contain
+// ".bmp" (case-insensitive), font must also be non-NULL for banner items.
+void Front_MenuItem_AddSelectItem(lpMenuItem_SelectData selectData, const char* bannerOrBMPName, B32 enabled, lpFont hiFont, S32 frontEndX, S32 frontEndY, B32 frontEndOpen)
+{
+    // TODO: Implement Front_MenuItem_AddSelectItem
+}
+
 void Front_RockWipe_Play()
 {
     // TODO: Implement Front_RockWipe_Play
@@ -1659,7 +1672,74 @@ lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverlay* link
 
 void Front_LoadLevels(lpMenuSet mainMenuFull)
 {
-    // TODO: Implement Front_LoadLevels
+    frontGlobs.startMissionLink = Front_LevelSet_LoadLevelLinks(&frontGlobs.missionLevels, frontGlobs.missionLevels.idNames[0]);
+    frontGlobs.startTutorialLink = Front_LevelSet_LoadLevelLinks(&frontGlobs.tutorialLevels, frontGlobs.tutorialLevels.idNames[0]);
+
+    Front_Levels_ResetVisited();
+
+    S32 menuIDLevels = Front_GetMenuIDByName(frontGlobs.mainMenuSet, "Levels");
+    S32 menuIDTutorials = Front_GetMenuIDByName(frontGlobs.mainMenuSet, "Tutorials");
+    S32 menuIDLoadSave = Front_GetMenuIDByName(frontGlobs.mainMenuSet, "Load Level Save");
+
+    // Create menu item for Load Game menu selection.
+    lpMenuItem_SelectData loadSelectData = Front_MenuItem_CreateSelect(&frontGlobs.selectLoadSaveIndex, "", "", -200, -100, 60, 5, -20, 200, -20, -40, 0,
+                                                                       Front_Callback_SelectLoadSave, frontGlobs.mainMenuSet->menus[menuIDLevels]);
+    lpMenuItem menuLoadSave = frontGlobs.mainMenuSet->menus[menuIDLoadSave]->items[0];
+    lpMenuItem loadSelectItem = Front_MenuItem_CreateBannerItem("", menuLoadSave->fontLo, menuLoadSave->fontHi, 0, 0, MenuItem_Type_Select, TRUE, loadSelectData, FALSE);
+    Front_Menu_AddMenuItem(frontGlobs.mainMenuSet->menus[menuIDLoadSave], loadSelectItem);
+
+    // Create menu item for Save Game menu selection.
+    lpMenuItem_SelectData saveSelectData = Front_MenuItem_CreateSelect(&frontGlobs.selectLoadSaveIndex, "", "", -200, -100, 60, 5, -20, 200, -20, -40, 0,
+                                                                       Front_Callback_SelectLoadSave, NULL);
+
+    lpMenuItem saveSelectItem = Front_MenuItem_CreateBannerItem("", menuLoadSave->fontLo, menuLoadSave->fontHi, 0, 0, MenuItem_Type_Select, TRUE, saveSelectData, FALSE);
+    Front_Menu_AddMenuItem(frontGlobs.saveMenuSet->menus[0], saveSelectItem);
+
+    char buff[100];
+
+    // NOTE: This DOES NOT loop through the last index [5] in the array.
+    for (U32 i = 0; i < 5; i++)
+    {
+        const char* saveGameText = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Menu", "Save_Game", 0));
+        sprintf(buff, "%s %i", saveGameText, (i + 1));
+        Front_Util_StringReplaceChar(buff, '_', ' ');
+        Front_Save_GetLevelCompleteWithPoints(&frontGlobs.saveData[i], buff);
+
+        // Add save item for Load Game menu selection.
+        Front_MenuItem_AddSelectItem(loadSelectData, buff, TRUE,
+                                     frontGlobs.mainMenuSet->menus[menuIDLoadSave]->items[0]->fontHi, 0, 0, FALSE);
+
+        // Add save item for Save Game menu selection.
+        Front_MenuItem_AddSelectItem(saveSelectData, buff, TRUE,
+                                     frontGlobs.mainMenuSet->menus[menuIDLoadSave]->items[0]->fontHi, 0, 0, FALSE);
+    }
+
+    Front_Save_LoadAllSaveFiles();
+
+    MainMenuFull_AddMissionsDisplay(4, frontGlobs.startMissionLink, &frontGlobs.missionLevels, frontGlobs.mainMenuSet->menus[menuIDLevels], Front_Save_GetCurrentSaveData(), NULL, Front_Callback_SelectMissionItem);
+    MainMenuFull_AddMissionsDisplay(5, frontGlobs.startTutorialLink, &frontGlobs.tutorialLevels, frontGlobs.mainMenuSet->menus[menuIDTutorials], Front_Save_GetCurrentSaveData(), NULL, Front_Callback_SelectTutorialItem);
+}
+
+lpLevelLink Front_LevelSet_LoadLevelLinks(lpLevelSet levelSet, const char* levelName)
+{
+    // TODO: Implement Front_LevelSet_LoadLevelLinks
+    return NULL;
+}
+
+void Front_Levels_ResetVisited()
+{
+    // TODO: Implement Front_Levels_ResetVisited
+}
+
+S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name)
+{
+    // TODO: Implement Front_GetMenuIDByName
+    return 0;
+}
+
+void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu menu58, void* callback)
+{
+    // TODO: Implement MainMenuFull_AddMissionsDisplay
 }
 
 void Front_LevelSelect_LevelNamePrintF(lpFont font, S32 x, S32 y, const char* msg, ...)
@@ -1727,6 +1807,16 @@ void Front_Callback_CycleAutoGameSpeed(S32 cycle_On_Off)
     // TODO: Implement Front_Callback_CycleAutoGameSpeed
 }
 
+void Front_Callback_SelectMissionItem(F32 elapsedAbs, S32 selectIndex)
+{
+    // TODO: Implement Front_Callback_SelectMissionItem
+}
+
+void Front_Callback_SelectTutorialItem(F32 elapsedAbs, S32 selectIndex)
+{
+    // TODO: Implement Front_Callback_SelectTutorialItem
+}
+
 void Front_Callback_SelectLoadSave(F32 elapsedAbs, S32 selectIndex)
 {
     // TODO: Implement Front_Callback_SelectLoadSave
@@ -1747,6 +1837,17 @@ S32 Front_CalcSliderCDVolume()
 void Front_Save_SetBool_85c(B32 state)
 {
     frontGlobs.saveBool_85c = state;
+}
+
+void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer)
+{
+    // TODO: Implement Front_Save_GetLevelCompleteWithPoints
+    sprintf(buffer, "temp"); // TEMP
+}
+
+void Front_Save_LoadAllSaveFiles()
+{
+    // TODO: Implement Front_Save_LoadAllSaveFiles
 }
 
 lpFront_Cache Front_Cache_Create(const char* filename)

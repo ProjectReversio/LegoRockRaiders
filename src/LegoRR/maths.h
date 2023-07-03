@@ -35,6 +35,12 @@ typedef struct Area2F
     F32 width, height;
 } Area2F, *lpArea2F;
 
+typedef struct Area2I
+{
+    S32 x, y;
+    S32 width, height;
+} Area2I, *lpArea2I;
+
 typedef struct Range2F
 {
     F32 min, max;

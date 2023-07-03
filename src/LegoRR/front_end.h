@@ -137,10 +137,41 @@ typedef struct MenuItem_RealSliderData
     // TODO: Implement MenuItem_RealSliderData
 } MenuItem_RealSliderData, *lpMenuItem_RealSliderData;
 
+typedef void (*MenuItem_SelectCallback)(F32 elapsedAbs, S32 selectIndex);
+
+typedef enum MenuItem_SelectItemFlags
+{
+    SELECTITEM_FLAG_NONE        = 0,
+    SELECTITEM_FLAG_HASBANNER   = 0x1,
+    SELECTITEM_FLAG_HASIMAGE    = 0x2,
+    SELECTITEM_FLAG_ENABLED     = 0x4,
+} MenuItem_SelectItemFlags;
+
+typedef struct MenuItem_SelectItem
+{
+    MenuItem_SelectItemFlags flags;
+    char* banner;
+    lpImage images[3];
+    S32 frontEndX;
+    S32 frontEndY;
+    B32 frontEndOpen;
+} MenuItem_SelectItem, *lpMenuItem_SelectItem;
+
 typedef struct MenuItem_SelectData
 {
-    void* temp;
-    // TODO: Implement MenuItem_SelectData
+    lpMenuItem_SelectItem selItemList;
+    U32* widths[3]; // image (Hi, Lo, Locked) widths
+    U32* heights[3]; // image (Hi, Lo, Locked) heights
+    U32 selItemCount;
+    char* string1;
+    char* string2;
+    S32* valuePtr;
+    Area2I rect1;
+    Area2I rect2;
+    S32 int_4c;
+    U32 field_50;
+    MenuItem_SelectCallback callback;
+    struct Menu* nextMenu;
 } MenuItem_SelectData, *lpMenuItem_SelectData;
 
 typedef struct MenuItem
@@ -364,6 +395,11 @@ extern MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName);
 extern lpMenuItem Front_MenuItem_CreateBannerItem(const char* banner, lpFont loFont, lpFont hiFont, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, void* itemData, B32 notInTutorial);
 extern lpMenuItem Front_MenuItem_CreateImageItem(const char* banner, lpFont loFont, lpFont hiFont, const char* loImageName, const char* hiImageName, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, const char* toolTipName, void* itemData);
 extern lpMenuItem_TriggerData Front_MenuItem_CreateTrigger(B32* valuePtr, B32 end, MenuItem_TriggerCallback callback);
+extern lpMenuItem_SelectData Front_MenuItem_CreateSelect(S32* valuePtr, const char* string1, const char* string2, S32 x1, S32 y1, S32 width1, S32 height1, S32 x2, S32 y2, S32 width2, S32 height2, S32 field50, MenuItem_SelectCallback callback, lpMenu nextMenu);
+
+// To create a banner item, pass a string to bannerOrBMPName that does NOT contain
+// ".bmp" (case-insensitive), font must also be non-NULL for banner items.
+extern void Front_MenuItem_AddSelectItem(lpMenuItem_SelectData selectData, const char* bannerOrBMPName, B32 enabled, lpFont hiFont, S32 frontEndX, S32 frontEndY, B32 frontEndOpen);
 
 extern void Front_RockWipe_Play();
 extern void Front_RockWipe_Stop();
@@ -386,6 +422,11 @@ extern B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light
 extern lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverlay* linkedOverlay, S32 positionX, S32 positionY, SFX_ID sfxType);
 
 extern void Front_LoadLevels(lpMenuSet mainMenuFull);
+extern lpLevelLink Front_LevelSet_LoadLevelLinks(lpLevelSet levelSet, const char* levelName);
+extern void Front_Levels_ResetVisited();
+extern S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name);
+
+extern void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu menu58, void* callback);
 
 extern void Front_LevelSelect_LevelNamePrintF(lpFont font, S32 x, S32 y, const char* msg, ...);
 
@@ -401,6 +442,8 @@ extern void Front_Callback_CycleWallDetail(S32 cycle_High_Low);
 extern void Front_Callback_CycleMusic(S32 cycle_On_Off);
 extern void Front_Callback_CycleSound(S32 cycle_On_Off);
 extern void Front_Callback_CycleAutoGameSpeed(S32 cycle_On_Off);
+extern void Front_Callback_SelectMissionItem(F32 elapsedAbs, S32 selectIndex);
+extern void Front_Callback_SelectTutorialItem(F32 elapsedAbs, S32 selectIndex);
 
 extern void Front_Callback_SelectLoadSave(F32 elapsedAbs, S32 selectIndex);
 
@@ -408,6 +451,8 @@ extern S32 Front_CalcSliderGameSpeed();
 extern S32 Front_CalcSliderCDVolume();
 
 extern void Front_Save_SetBool_85c(B32 state);
+extern void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer);
+extern void Front_Save_LoadAllSaveFiles();
 
 extern lpFront_Cache Front_Cache_Create(const char* filename);
 extern lpFront_Cache Front_Cache_FindByName(const char* filename);
