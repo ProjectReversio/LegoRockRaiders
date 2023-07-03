@@ -163,8 +163,8 @@ typedef struct MenuItem_SelectData
     U32* widths[3]; // image (Hi, Lo, Locked) widths
     U32* heights[3]; // image (Hi, Lo, Locked) heights
     U32 selItemCount;
-    char* string1;
-    char* string2;
+    const char* string1;
+    const char* string2;
     S32* valuePtr;
     Area2I rect1;
     Area2I rect2;

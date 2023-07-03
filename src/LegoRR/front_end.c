@@ -1081,8 +1081,31 @@ lpMenuItem_TriggerData Front_MenuItem_CreateTrigger(B32* valuePtr, B32 end, Menu
 
 lpMenuItem_SelectData Front_MenuItem_CreateSelect(S32* valuePtr, const char* string1, const char* string2, S32 x1, S32 y1, S32 width1, S32 height1, S32 x2, S32 y2, S32 width2, S32 height2, S32 field50, MenuItem_SelectCallback callback, lpMenu nextMenu)
 {
-    // TODO: Implement Front_MenuItem_CreateSelect
-    return NULL;
+    lpMenuItem_SelectData selectData = Mem_Alloc(sizeof(MenuItem_SelectData));
+    memset(selectData, 0, sizeof(MenuItem_SelectData));
+
+    selectData->string1 = Front_Util_StrCpy(string1);
+    selectData->string2 = Front_Util_StrCpy(string2);
+
+    selectData->valuePtr = valuePtr;
+
+    selectData->rect1.x = x1;
+    selectData->rect1.y = y1;
+    selectData->rect1.height = height1;
+    selectData->rect1.width = width1;
+
+    selectData->rect2.x = x2;
+    selectData->rect2.width = width2;
+    selectData->rect2.y = y2;
+    selectData->rect2.height = height2;
+
+    selectData->callback = callback;
+
+    selectData->field_50 = field50;
+    selectData->int_4c = 0;
+    selectData->nextMenu = nextMenu;
+
+    return selectData;
 }
 
 // To create a banner item, pass a string to bannerOrBMPName that does NOT contain
