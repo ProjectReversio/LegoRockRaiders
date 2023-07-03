@@ -1751,7 +1751,36 @@ lpLevelLink Front_LevelSet_LoadLevelLinks(lpLevelSet levelSet, const char* level
 
 void Front_Levels_ResetVisited()
 {
-    // TODO: Implement Front_Levels_ResetVisited
+    S32 i;
+
+    i = 0;
+    if (frontGlobs.missionLevels.count > 0)
+    {
+        do
+        {
+            if (frontGlobs.missionLevels.levels[i] != NULL)
+            {
+                frontGlobs.missionLevels.levels[i]->visited = FALSE;
+                frontGlobs.missionLevels.visitedList[i] = FALSE;
+            }
+            i++;
+        } while (i < frontGlobs.missionLevels.count);
+    }
+
+    i = 0;
+
+    if (frontGlobs.tutorialLevels.count > 0)
+    {
+        do
+        {
+            if (frontGlobs.tutorialLevels.levels[i] != NULL)
+            {
+                frontGlobs.tutorialLevels.levels[i]->visited = FALSE;
+                frontGlobs.tutorialLevels.visitedList[i] = FALSE;
+            }
+            i++;
+        } while (i < frontGlobs.tutorialLevels.count);
+    }
 }
 
 S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name)
