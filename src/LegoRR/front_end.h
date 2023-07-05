@@ -239,6 +239,8 @@ typedef struct LevelLink
     B32 visited;
 } LevelLink, *lpLevelLink;
 
+typedef B32 (* LevelLink_RunThroughLinksCallback)(lpLevelLink link, void* data);
+
 typedef struct LevelSet
 {
     S32 count;
@@ -292,7 +294,7 @@ typedef struct Front_Globs
     lpLevelLink startTutorialLink;
     U64 reserved1a;
     U64 reserved1b;
-    S32 triggerCredits;
+    S32 triggerCredits; // TODO: likely was an array in the original source.
     U64 reserved2;
     S32 triggerQuitApp;
     S32 selectMissionIndex;
@@ -429,9 +431,10 @@ extern lpLevelLink Front_LevelSet_GetLevelLink(lpLevelSet levelSet, const char* 
 extern void Front_LevelSet_SetLevelLink(lpLevelSet levelSet, const char* levelName, lpLevelLink link);
 extern S32 Front_LevelSet_IndexOf(lpLevelSet levelSet, const char* levelName);
 extern void Front_Levels_ResetVisited();
-extern S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name);
+extern B32 Front_LevelLink_RunThroughLinks(lpLevelLink startLink, LevelLink_RunThroughLinksCallback callback, void* data);
+extern void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu nextMenu, void* callback);
 
-extern void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu menu58, void* callback);
+extern S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name);
 
 extern void Front_LevelSelect_LevelNamePrintF(lpFont font, S32 x, S32 y, const char* msg, ...);
 
@@ -451,6 +454,9 @@ extern void Front_Callback_SelectMissionItem(F32 elapsedAbs, S32 selectIndex);
 extern void Front_Callback_SelectTutorialItem(F32 elapsedAbs, S32 selectIndex);
 
 extern void Front_Callback_SelectLoadSave(F32 elapsedAbs, S32 selectIndex);
+
+extern B32 Front_LevelLink_Callback_IncCount(lpLevelLink link, void* pCount);
+extern B32 Front_LevelInfo_Callback_AddItem(lpLevelLink link, void* data);
 
 extern S32 Front_CalcSliderGameSpeed();
 extern S32 Front_CalcSliderCDVolume();

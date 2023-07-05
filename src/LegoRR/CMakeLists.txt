@@ -74,6 +74,7 @@ set(MAIN_SRC
     save.c
     flic.c
     credits.c
+    search.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -149,6 +150,7 @@ set(MAIN_SRC
     save.h
     flic.h
     credits.h
+    search.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

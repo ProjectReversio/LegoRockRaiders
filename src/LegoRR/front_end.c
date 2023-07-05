@@ -11,6 +11,7 @@
 #include "tooltip.h"
 #include "pointer.h"
 #include "credits.h"
+#include "search.h"
 
 Front_Globs frontGlobs = { NULL };
 
@@ -1905,6 +1906,40 @@ void Front_Levels_ResetVisited()
     }
 }
 
+B32 Front_LevelLink_RunThroughLinks(lpLevelLink startLink, LevelLink_RunThroughLinksCallback callback, void* data)
+{
+    // TODO: Implement Front_LevelLink_RunThroughLinks
+    return FALSE;
+}
+
+void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu nextMenu, void* callback)
+{
+    U32 count = 0;
+
+    Front_LevelLink_RunThroughLinks(startLink, Front_LevelLink_Callback_IncCount, &count);
+    Front_Levels_ResetVisited();
+
+    // &frontGlobs.triggerCredits + 4 -> &frontGlobs.selectMissionIndex
+    // &frontGlobs.triggerCredits + 5 -> &frontGlobs.selectTutorialIndex
+    // The way these values were originally stored in frontGlobs was probably an array of values.
+    /// TODO: Do something about the ugly valueOffset assignment and maybe switch to passing a value directly in the future.
+    S32* selItemPtr = &((S32*)&frontGlobs.triggerCredits)[valueOffset];
+
+    lpMenuItem_SelectData select = Front_MenuItem_CreateSelect(selItemPtr, "", "", 0, 0, 0, count, 0, 0, 0, 0, 0, callback, nextMenu);
+    lpMenuItem menuItem = Front_MenuItem_CreateBannerItem("Levels!!!", NULL, NULL, 0, 0, MenuItem_Type_Select, TRUE, select, FALSE);
+    Front_Menu_AddMenuItem(menu, menuItem);
+
+    SearchLevelSelectAdd search;
+    search.levelSet = levelSet;
+    search.menu_4 = menu;
+    search.itemData = NULL;
+    search.currSave = saveData;
+    search.itemData = select;
+
+    Front_LevelLink_RunThroughLinks(startLink, Front_LevelInfo_Callback_AddItem, &search);
+    Front_Levels_ResetVisited();
+}
+
 S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name)
 {
     S32 cmp;
@@ -1922,11 +1957,6 @@ S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name)
     }
 
     return i;
-}
-
-void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu menu58, void* callback)
-{
-    // TODO: Implement MainMenuFull_AddMissionsDisplay
 }
 
 void Front_LevelSelect_LevelNamePrintF(lpFont font, S32 x, S32 y, const char* msg, ...)
@@ -2007,6 +2037,19 @@ void Front_Callback_SelectTutorialItem(F32 elapsedAbs, S32 selectIndex)
 void Front_Callback_SelectLoadSave(F32 elapsedAbs, S32 selectIndex)
 {
     // TODO: Implement Front_Callback_SelectLoadSave
+}
+
+B32 Front_LevelLink_Callback_IncCount(lpLevelLink link, void* pCount)
+{
+    (*(S32*)pCount)++;
+    return FALSE;
+}
+
+B32 Front_LevelInfo_Callback_AddItem(lpLevelLink link, void* data)
+{
+    lpSearchLevelSelectAdd search = (lpSearchLevelSelectAdd)data;
+    // TODO: Implement Front_LevelInfo_Callback_AddItem
+    return FALSE;
 }
 
 S32 Front_CalcSliderGameSpeed()
