@@ -1745,8 +1745,115 @@ void Front_LoadLevels(lpMenuSet mainMenuFull)
 
 lpLevelLink Front_LevelSet_LoadLevelLinks(lpLevelSet levelSet, const char* levelName)
 {
-    // TODO: Implement Front_LevelSet_LoadLevelLinks
+    B32 isLinked;;
+    lpLevelLink info;
+    S32 setIndex;
+    char* linkNames;
+    U32 numParts;
+    lpLevelLink* levelLinks;
+    lpLevelLink linkInfo;
+    U32 i;
+    char* stringParts[15]; // Maximum of 15 linked levels
+
+    if (levelName == NULL)
+        return NULL;
+
+    isLinked = Front_LevelSet_IsLinkVisited(levelSet, levelName);
+    if (isLinked)
+    {
+        linkInfo = Front_LevelSet_GetLevelLink(levelSet, levelName);
+        return linkInfo;
+    }
+
+    info = Mem_Alloc(sizeof(LevelLink));
+
+    Front_LevelSet_SetLinkVisited(levelSet, levelName, TRUE);
+    Front_LevelSet_SetLevelLink(levelSet, levelName, info);
+
+    if (info == NULL)
+        return NULL;
+
+    setIndex = Front_LevelSet_IndexOf(levelSet, levelName);
+
+    if (setIndex != -1)
+    {
+        linkNames = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "LevelLinks", 0));
+
+        info->setIndex = setIndex;
+
+        i = 0;
+        if (linkNames == NULL)
+        {
+            info->linkLevels = NULL;
+        } else {
+            numParts = Util_Tokenize(linkNames, stringParts, ",");
+            if (numParts == 0)
+            {
+#ifdef LEGORR_FIX_MEMORY_LEAKS
+                Mem_Free(linkNames);
+#endif
+                Mem_Free(info);
+                return NULL;
+            }
+
+            levelLinks = Mem_Alloc(numParts * 4);
+            info->linkLevels = levelLinks;
+
+            if (numParts != 0)
+            {
+                do
+                {
+                    linkInfo = Front_LevelSet_LoadLevelLinks(levelSet, stringParts[i]);
+                    info->linkLevels[i] = linkInfo;
+                    i++;
+                } while(i < numParts);
+
+#ifdef LEGORR_FIX_MEMORY_LEAKS
+                Mem_Free(linkNames);
+#endif
+                info->linkCount = i;
+                return info;
+            }
+
+#ifdef LEGORR_FIX_MEMORY_LEAKS
+            Mem_Free(linkNames);
+#endif
+        }
+
+        info->linkCount = 0;
+        return info;
+    }
+
+    Mem_Free(info);
     return NULL;
+}
+
+B32 Front_LevelSet_IsLinkVisited(lpLevelSet levelSet, const char* levelName)
+{
+    // TODO: Implement Front_LevelSet_IsLinkVisited
+    return FALSE;
+}
+
+void Front_LevelSet_SetLinkVisited(lpLevelSet levelSet, const char* levelName, B32 visited)
+{
+    // TODO: Implement Front_LevelSet_SetLinkVisited
+}
+
+lpLevelLink Front_LevelSet_GetLevelLink(lpLevelSet levelSet, const char* levelName)
+{
+    // TODO: Implement Front_LevelSet_GetLevelLink
+    return NULL;
+}
+
+void Front_LevelSet_SetLevelLink(lpLevelSet levelSet, const char* levelName, lpLevelLink link)
+{
+    // TODO: Implement Front_LevelSet_SetLevelLink
+}
+
+S32 Front_LevelSet_IndexOf(lpLevelSet levelSet, const char* levelName)
+{
+    // TODO: Implement Front_LevelSet_IndexOf
+    return -1;
 }
 
 void Front_Levels_ResetVisited()

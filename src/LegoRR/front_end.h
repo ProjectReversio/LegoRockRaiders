@@ -423,6 +423,11 @@ extern lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverla
 
 extern void Front_LoadLevels(lpMenuSet mainMenuFull);
 extern lpLevelLink Front_LevelSet_LoadLevelLinks(lpLevelSet levelSet, const char* levelName);
+extern B32 Front_LevelSet_IsLinkVisited(lpLevelSet levelSet, const char* levelName);
+extern void Front_LevelSet_SetLinkVisited(lpLevelSet levelSet, const char* levelName, B32 visited);
+extern lpLevelLink Front_LevelSet_GetLevelLink(lpLevelSet levelSet, const char* levelName);
+extern void Front_LevelSet_SetLevelLink(lpLevelSet levelSet, const char* levelName, lpLevelLink link);
+extern S32 Front_LevelSet_IndexOf(lpLevelSet levelSet, const char* levelName);
 extern void Front_Levels_ResetVisited();
 extern S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name);
 
