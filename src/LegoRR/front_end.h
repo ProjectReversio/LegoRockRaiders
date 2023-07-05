@@ -168,15 +168,18 @@ typedef struct MenuItem_SelectItem
 typedef struct MenuItem_SelectData
 {
     lpMenuItem_SelectItem selItemList;
-    U32* widths[3]; // image (Hi, Lo, Locked) widths
-    U32* heights[3]; // image (Hi, Lo, Locked) heights
+    U32* widths[MenuItem_SelectImage_Count]; // image (Hi, Lo, Locked) widths
+    U32* heights[MenuItem_SelectImage_Count]; // image (Hi, Lo, Locked) heights
     U32 selItemCount;
     const char* string1;
     const char* string2;
     S32* valuePtr;
-    Area2I rect1;
-    Area2I rect2;
-    S32 int_4c;
+    S32 x2, y2;
+    S32 selItemHeight;
+    S32 scrollCount; // Max number of select items visible in scroll area.
+    S32 xString1, yString1;
+    S32 xString2, yString2;
+    S32 scrollStart; // Index offset of visible scroll area
     U32 field_50;
     MenuItem_SelectCallback callback;
     struct Menu* nextMenu;
@@ -405,11 +408,16 @@ extern MenuItem_Type Front_MenuItem_ParseTypeString(const char* itemTypeName);
 extern lpMenuItem Front_MenuItem_CreateBannerItem(const char* banner, lpFont loFont, lpFont hiFont, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, void* itemData, B32 notInTutorial);
 extern lpMenuItem Front_MenuItem_CreateImageItem(const char* banner, lpFont loFont, lpFont hiFont, const char* loImageName, const char* hiImageName, S32 x1, S32 y1, MenuItem_Type itemType, B32 centered, const char* toolTipName, void* itemData);
 extern lpMenuItem_TriggerData Front_MenuItem_CreateTrigger(B32* valuePtr, B32 end, MenuItem_TriggerCallback callback);
-extern lpMenuItem_SelectData Front_MenuItem_CreateSelect(S32* valuePtr, const char* string1, const char* string2, S32 x1, S32 y1, S32 width1, S32 height1, S32 x2, S32 y2, S32 width2, S32 height2, S32 field50, MenuItem_SelectCallback callback, lpMenu nextMenu);
+extern lpMenuItem_SelectData Front_MenuItem_CreateSelect(S32* valuePtr, const char* string1, const char* string2, S32 x2, S32 y2, S32 selItemHeight, S32 scrollCount, S32 xString1, S32 yString1, S32 xString2, S32 yString2, S32 field50, MenuItem_SelectCallback callback, lpMenu nextMenu);
 
 // To create a banner item, pass a string to bannerOrBMPName that does NOT contain
 // ".bmp" (case-insensitive), font must also be non-NULL for banner items.
 extern void Front_MenuItem_AddSelectItem(lpMenuItem_SelectData selectData, const char* bannerOrBMPName, B32 enabled, lpFont hiFont, S32 frontEndX, S32 frontEndY, B32 frontEndOpen);
+
+extern S32 Front_MenuItem_Select_TestStringCollision(lpMenu menu, lpMenuItem menuItem, lpMenuItem_SelectData selectData);
+
+extern void Front_MenuItem_DrawSaveImage(lpMenu menu, S32 selIndex, lpMenuItem_SelectData selectData, B32 bigSize);
+extern void Front_MenuItem_DrawSelectItem(S32 x, S32 y, lpFont font, lpMenuItem_SelectData selectData, U32 selIndex, MenuItem_SelectImageType imageType);
 
 extern void Front_RockWipe_Play();
 extern void Front_RockWipe_Stop();
@@ -491,6 +499,7 @@ extern B32 Front_Maths_IsPointInsideRect(S32 ptX, S32 ptY, S32 rcX, S32 rcY, S32
 
 extern B32 Front_GetMousePressedState();
 
+extern S32 g_frontSelectHoverIndex;
 extern B32 g_saveMenuOverwriteShowing;
 extern lpMenu g_saveMenu_UnkNextMenu;
 extern S32 g_saveMenuSelectedIndex;

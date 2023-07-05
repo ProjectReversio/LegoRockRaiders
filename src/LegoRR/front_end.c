@@ -17,6 +17,7 @@ Front_Globs frontGlobs = { NULL };
 
 lpFront_Cache g_ImageCache_NEXT = NULL;
 
+S32 g_frontSelectHoverIndex = -1;
 B32 g_saveMenuOverwriteShowing = FALSE;
 lpMenu g_saveMenu_UnkNextMenu;
 S32 g_saveMenuSelectedIndex = -1;
@@ -487,7 +488,7 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
                     Front_Util_ReplaceTextSpaces(menu->fullName));
     }
 
-    // TODO: Implement Front_Menu_Update
+    g_frontSelectHoverIndex = -1;
 
     B32 BVar14;
     for (U32 i = 0; i < menu->itemCount; i++)
@@ -533,7 +534,70 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
                 }
                 case MenuItem_Type_Select:
                 {
-                    // TODO: Implement Front_Menu_Update
+                    lpMenuItem_SelectData select = item->itemData.select;
+
+                    U32 selIndex = Front_MenuItem_Select_TestStringCollision(menu, item, select);
+                    g_frontSelectHoverIndex = selIndex;
+
+                    for (S32 i = 0; i < select->scrollCount; i++)
+                    {
+                        S32 currIndex = select->scrollStart + i;
+                        if ((S32)currIndex >= (S32)select->selItemCount)
+                            break;
+
+                        lpMenuItem_SelectItem selectItem = &select->selItemList[currIndex];
+                        B32 isSelected = (currIndex == selIndex);
+
+                        MenuItem_SelectImageType imageType = MenuItem_SelectImage_Light;
+                        if (!(selectItem->flags & SELECTITEM_FLAG_ENABLED))
+                            imageType = MenuItem_SelectImage_Locked;
+                        else if (!isSelected)
+                            imageType = MenuItem_SelectImage_Dark;
+
+                        S32 centerOff = 0;
+                        if (menu->autoCenter)
+                            centerOff = -((S32)select->widths[MenuItem_SelectImage_Light][currIndex] / 2);
+
+                        S32 selItemX = select->x2 + item->x1 + menu->position.x + centerOff +
+                            selectItem->frontEndX + frontGlobs.scrollOffset.x;
+                        S32 selItemY = select->y2 + item->y1 + menu->position.y + (select->selItemHeight * i) +
+                            selectItem->frontEndY + frontGlobs.scrollOffset.y;
+
+                        if (isSelected)
+                        {
+                            Front_MenuItem_DrawSelectItem(selItemX, selItemY, item->fontHi, select, currIndex, imageType);
+
+                            if (select->callback != NULL)
+                                select->callback(elapsed, selIndex);
+                        }
+                        else
+                            Front_MenuItem_DrawSelectItem(selItemX, selItemY, item->fontLo, select, currIndex, imageType);
+                        Front_MenuItem_DrawSaveImage(menu, currIndex, select, isSelected);
+                    }
+
+                    if (select->scrollStart < (S32)(select->selItemCount - select->scrollCount))
+                    {
+                        lpFont font = ((selIndex == -2) ? item->fontHi : item->fontLo);
+                        if (font != NULL)
+                        {
+                            Font_PrintF(font,
+                                        select->xString1 + menu->position.x,
+                                        select->yString1 + menu->position.y,
+                                        select->string1);
+                        }
+                    }
+
+                    if (select->scrollStart > 0)
+                    {
+                        lpFont font = ((selIndex == -3) ? item->fontHi : item->fontLo);
+                        if (font != NULL)
+                        {
+                            Font_PrintF(font,
+                                        select->xString2 + menu->position.x,
+                                        select->yString2 + menu->position.y,
+                                        select->string2);
+                        }
+                    }
                     break;
                 }
                 default:
@@ -578,7 +642,56 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
                 }
                 case MenuItem_Type_Select:
                 {
-                    // TODO: Implement Front_Menu_Update
+                    lpMenuItem_SelectData select = item->itemData.select;
+
+                    for (S32 i = 0; i < select->scrollCount; i++)
+                    {
+                        S32 currIndex = select->scrollStart + i;
+                        if ((S32)currIndex >= (S32)select->selItemCount)
+                            break;
+
+                        lpMenuItem_SelectItem selectItem = &select->selItemList[currIndex];
+
+                        MenuItem_SelectImageType imageType = MenuItem_SelectImage_Dark;
+                        if (!(selectItem->flags & SELECTITEM_FLAG_ENABLED))
+                            imageType = MenuItem_SelectImage_Locked;
+
+                        S32 centerOff = 0;
+                        if (menu->autoCenter)
+                            centerOff = -((S32)select->widths[MenuItem_SelectImage_Light][currIndex] / 2);
+
+                        S32 selItemX = select->x2 + item->x1 + menu->position.x + centerOff +
+                            selectItem->frontEndX + frontGlobs.scrollOffset.x;
+                        S32 selItemY = select->y2 + item->y1 + menu->position.y + (select->selItemHeight * i) +
+                            selectItem->frontEndY + frontGlobs.scrollOffset.y;
+
+                        Front_MenuItem_DrawSelectItem(selItemX, selItemY, item->fontLo, select, currIndex, imageType);
+
+                        Front_MenuItem_DrawSaveImage(menu, currIndex, select, FALSE);
+                    }
+
+                    if (select->scrollStart < (S32)(select->selItemCount - select->scrollCount))
+                    {
+                        if (item->fontLo != NULL)
+                        {
+                            Font_PrintF(item->fontLo,
+                                        select->xString1 + menu->position.x,
+                                        select->yString1 + menu->position.y,
+                                        select->string1);
+                        }
+                    }
+
+                    if (select->scrollStart > 0)
+                    {
+                        if (item->fontLo != NULL)
+                        {
+                            Font_PrintF(item->fontLo,
+                                        select->xString2 + menu->position.x,
+                                        select->yString2 + menu->position.y,
+                                        select->string2);
+                        }
+                    }
+
                     break;
                 }
                 default:
@@ -1080,7 +1193,7 @@ lpMenuItem_TriggerData Front_MenuItem_CreateTrigger(B32* valuePtr, B32 end, Menu
     return triggerData;
 }
 
-lpMenuItem_SelectData Front_MenuItem_CreateSelect(S32* valuePtr, const char* string1, const char* string2, S32 x1, S32 y1, S32 width1, S32 height1, S32 x2, S32 y2, S32 width2, S32 height2, S32 field50, MenuItem_SelectCallback callback, lpMenu nextMenu)
+lpMenuItem_SelectData Front_MenuItem_CreateSelect(S32* valuePtr, const char* string1, const char* string2, S32 x2, S32 y2, S32 selItemHeight, S32 scrollCount, S32 xString1, S32 yString1, S32 xString2, S32 yString2, S32 field50, MenuItem_SelectCallback callback, lpMenu nextMenu)
 {
     lpMenuItem_SelectData selectData = Mem_Alloc(sizeof(MenuItem_SelectData));
     memset(selectData, 0, sizeof(MenuItem_SelectData));
@@ -1090,20 +1203,20 @@ lpMenuItem_SelectData Front_MenuItem_CreateSelect(S32* valuePtr, const char* str
 
     selectData->valuePtr = valuePtr;
 
-    selectData->rect1.x = x1;
-    selectData->rect1.y = y1;
-    selectData->rect1.height = height1;
-    selectData->rect1.width = width1;
+    selectData->x2 = x2;
+    selectData->y2 = y2;
 
-    selectData->rect2.x = x2;
-    selectData->rect2.width = width2;
-    selectData->rect2.y = y2;
-    selectData->rect2.height = height2;
+    selectData->xString1 = xString1;
+    selectData->yString1 = yString1;
+    selectData->xString2 = xString2;
+    selectData->yString2 = yString2;
+
+    selectData->selItemHeight = selItemHeight;
+    selectData->scrollCount = scrollCount;
+    selectData->scrollStart = 0;
 
     selectData->callback = callback;
-
     selectData->field_50 = field50;
-    selectData->int_4c = 0;
     selectData->nextMenu = nextMenu;
 
     return selectData;
@@ -1197,6 +1310,41 @@ void Front_MenuItem_AddSelectItem(lpMenuItem_SelectData selectData, const char* 
     }
 
     selectData->selItemCount++;
+}
+
+S32 Front_MenuItem_Select_TestStringCollision(lpMenu menu, lpMenuItem menuItem, lpMenuItem_SelectData selectData)
+{
+    // TODO: Implement Front_MenuItem_Select_TestStringCollision
+    return -1;
+}
+
+void Front_MenuItem_DrawSaveImage(lpMenu menu, S32 selIndex, lpMenuItem_SelectData selectData, B32 bigSize)
+{
+    // TODO: Implement Front_MenuItem_DrawSaveImage
+}
+
+void Front_MenuItem_DrawSelectItem(S32 x, S32 y, lpFont font, lpMenuItem_SelectData selectData, U32 selIndex, MenuItem_SelectImageType imageType)
+{
+    if (selectData->selItemList[selIndex].flags & SELECTITEM_FLAG_HASBANNER)
+    {
+        Font_PrintF(font, x, y, selectData->selItemList[selIndex].banner);
+    } else {
+        lpImage image = selectData->selItemList[selIndex].images[imageType];
+
+        // TODO: Hardcoded screen resolution
+
+        // NOTE: > 0 used here since we're adding width/height (0 would mean everything is off-screen).
+        if (image &&
+            ((x + Image_GetWidth(image)) > 0 && x < 640) &&
+            ((y + Image_GetHeight(image)) > 0 && y < 480))
+        {
+            Point2F destPos;
+            destPos.x = (F32)x;
+            destPos.y = (F32)y;
+
+            Image_Display(image, &destPos);
+        }
+    }
 }
 
 void Front_RockWipe_Play()
