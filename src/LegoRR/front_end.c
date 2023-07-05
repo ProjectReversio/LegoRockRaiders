@@ -1925,7 +1925,23 @@ void Front_Levels_ResetVisited()
 
 B32 Front_LevelLink_RunThroughLinks(lpLevelLink startLink, LevelLink_RunThroughLinksCallback callback, void* data)
 {
-    // TODO: Implement Front_LevelLink_RunThroughLinks
+    if (startLink != NULL && !startLink->visited)
+    {
+        startLink->visited = TRUE;
+
+        if (callback(startLink, data))
+            return TRUE;
+
+        // linkLevels is null if there are no links.
+        if (startLink->linkLevels)
+        {
+            for (U32 i = 0; i < startLink->linkCount; i++)
+            {
+                if (Front_LevelLink_RunThroughLinks(startLink->linkLevels[i], callback, data))
+                    return TRUE;
+            }
+        }
+    }
     return FALSE;
 }
 
