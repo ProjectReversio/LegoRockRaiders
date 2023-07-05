@@ -1852,7 +1852,22 @@ void Front_LevelSet_SetLevelLink(lpLevelSet levelSet, const char* levelName, lpL
 
 S32 Front_LevelSet_IndexOf(lpLevelSet levelSet, const char* levelName)
 {
-    // TODO: Implement Front_LevelSet_IndexOf
+    S32 cmp;
+    S32 i;
+
+    i = 0;
+    if (levelSet->count < 1)
+        return -1;
+
+    do
+    {
+        cmp = _stricmp(levelName, levelSet->idNames[i]);
+        if (cmp == 0)
+            return i;
+
+        i++;
+    } while (i < levelSet->count);
+
     return -1;
 }
 
