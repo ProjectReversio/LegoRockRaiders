@@ -1831,24 +1831,41 @@ lpLevelLink Front_LevelSet_LoadLevelLinks(lpLevelSet levelSet, const char* level
 
 B32 Front_LevelSet_IsLinkVisited(lpLevelSet levelSet, const char* levelName)
 {
-    // TODO: Implement Front_LevelSet_IsLinkVisited
+    for (S32 i = 0; i < levelSet->count; i++)
+    {
+        if (strcmp(levelSet->idNames[i], levelName) == 0)
+            return levelSet->visitedList[i];
+    }
     return FALSE;
 }
 
 void Front_LevelSet_SetLinkVisited(lpLevelSet levelSet, const char* levelName, B32 visited)
 {
-    // TODO: Implement Front_LevelSet_SetLinkVisited
+    for (S32 i = 0; i < levelSet->count; i++)
+    {
+        if (strcmp(levelSet->idNames[i], levelName) == 0)
+            levelSet->visitedList[i] = visited;
+    }
 }
 
 lpLevelLink Front_LevelSet_GetLevelLink(lpLevelSet levelSet, const char* levelName)
 {
-    // TODO: Implement Front_LevelSet_GetLevelLink
+    for (S32 i = 0; i < levelSet->count; i++)
+    {
+        if (strcmp(levelSet->idNames[i], levelName) == 0)
+            return levelSet->levels[i];
+    }
+
     return NULL;
 }
 
 void Front_LevelSet_SetLevelLink(lpLevelSet levelSet, const char* levelName, lpLevelLink link)
 {
-    // TODO: Implement Front_LevelSet_SetLevelLink
+    for (S32 i = 0; i < levelSet->count; i++)
+    {
+        if (strcmp(levelSet->idNames[i], levelName) == 0)
+            levelSet->levels[i] = link;
+    }
 }
 
 S32 Front_LevelSet_IndexOf(lpLevelSet levelSet, const char* levelName)
