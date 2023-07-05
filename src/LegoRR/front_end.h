@@ -147,6 +147,14 @@ typedef enum MenuItem_SelectItemFlags
     SELECTITEM_FLAG_ENABLED     = 0x4,
 } MenuItem_SelectItemFlags;
 
+typedef enum MenuItem_SelectImageType
+{
+    MenuItem_SelectImage_Light  = 0,
+    MenuItem_SelectImage_Dark   = 1,
+    MenuItem_SelectImage_Locked = 2,
+    MenuItem_SelectImage_Count  = 3,
+} MenuItem_SelectImageType;
+
 typedef struct MenuItem_SelectItem
 {
     MenuItem_SelectItemFlags flags;

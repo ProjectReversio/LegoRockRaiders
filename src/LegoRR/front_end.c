@@ -1113,7 +1113,90 @@ lpMenuItem_SelectData Front_MenuItem_CreateSelect(S32* valuePtr, const char* str
 // ".bmp" (case-insensitive), font must also be non-NULL for banner items.
 void Front_MenuItem_AddSelectItem(lpMenuItem_SelectData selectData, const char* bannerOrBMPName, B32 enabled, lpFont hiFont, S32 frontEndX, S32 frontEndY, B32 frontEndOpen)
 {
-    // TODO: Implement Front_MenuItem_AddSelectItem
+    // TODO: Original malloc-null-checks here are faulty. LRR checks if newSelItems is non-null.
+    //       But it doesn't check newWidths/newHeights... and worse, it uses realloc, so failure can be fatal.
+
+    lpMenuItem_SelectItem newSelItems;
+    U32* newWidths[MenuItem_SelectImage_Count];
+    U32* newHeights[MenuItem_SelectImage_Count];
+
+    if (selectData->selItemList == NULL)
+    {
+        newSelItems = (lpMenuItem_SelectItem)Mem_Alloc((selectData->selItemCount + 1) * sizeof(MenuItem_SelectItem));
+        for (U32 i = 0; i < MenuItem_SelectImage_Count; i++)
+        {
+            newWidths[i] = (U32*)Mem_Alloc((selectData->selItemCount + 1) * sizeof(U32));
+            newHeights[i] = (U32*)Mem_Alloc((selectData->selItemCount + 1) * sizeof(U32));
+        }
+    } else {
+        newSelItems = (lpMenuItem_SelectItem)Mem_ReAlloc(selectData->selItemList, (selectData->selItemCount + 1) * sizeof(MenuItem_SelectItem));
+        for (U32 i = 0; i < MenuItem_SelectImage_Count; i++)
+        {
+            newWidths[i] = (U32*)Mem_ReAlloc(selectData->widths[i], (selectData->selItemCount + 1) * sizeof(U32));
+            newHeights[i] = (U32*)Mem_ReAlloc(selectData->heights[i], (selectData->selItemCount + 1) * sizeof(U32));
+        }
+    }
+
+    if (newSelItems == NULL)
+        return;
+
+    selectData->selItemList = newSelItems;
+    for (U32 i = 0; i < MenuItem_SelectImage_Count; i++)
+    {
+        selectData->widths[i] = newWidths[i];
+        selectData->heights[i] = newHeights[i];
+    }
+
+    lpMenuItem_SelectItem selItem = &selectData->selItemList[selectData->selItemCount];
+
+    // NOTE: images are NOT nulled out when item is treated as banner.
+    //memset(&selectData->selItemList[selectData->selItemCount], 0, sizeof(MenuItem_SelectItem));
+
+    selItem->banner = NULL;
+    selItem->flags = (enabled ? SELECTITEM_FLAG_ENABLED : SELECTITEM_FLAG_NONE);
+    selItem->frontEndX = frontEndX;
+    selItem->frontEndY = frontEndY;
+    selItem->frontEndOpen = frontEndOpen;
+
+    // Only the hackiest of the hackiest solutions...
+    // If this parameter contains ".bmp" (case-insensitive), then it's an image filename.
+    // Otherwise it's a banner string.
+    if (bannerOrBMPName != NULL && Util_StrIStr(bannerOrBMPName, ".bmp"))
+    {
+        selItem->flags |= SELECTITEM_FLAG_HASIMAGE;
+
+        char* stringParts[3];
+        U32 numParts = Util_Tokenize(bannerOrBMPName, stringParts, ",");
+        Error_Fatal(numParts != 3, "Must have exactly 3 comma-separated bmp images for select item");
+
+        for (U32 i = 0; i < MenuItem_SelectImage_Count; i++)
+        {
+            lpImage image = Front_Cache_LoadImage(stringParts[i]);
+
+            // This null-check here is pointless, we'll still crash on GetWidth, GetHeight
+            if (image != NULL)
+                Image_SetPenZeroTrans(image);
+
+            selItem->images[i] = image;
+
+            selectData->widths[i][selectData->selItemCount] = Image_GetWidth(image);
+            selectData->heights[i][selectData->selItemCount] = Image_GetHeight(image);
+        }
+    } else {
+        selItem->flags |= SELECTITEM_FLAG_HASBANNER;
+
+        selItem->banner = Front_Util_StrCpy(bannerOrBMPName);
+
+        selectData->widths[0][selectData->selItemCount] = Font_GetStringWidth(hiFont, bannerOrBMPName);
+        selectData->heights[0][selectData->selItemCount] = Font_GetHeight(hiFont);
+        for (U32 i = 1; i < MenuItem_SelectImage_Count; i++)
+        {
+            selectData->widths[i][selectData->selItemCount] = selectData->widths[i - 1][selectData->selItemCount];
+            selectData->heights[i][selectData->selItemCount] = selectData->heights[i - 1][selectData->selItemCount];
+        }
+    }
+
+    selectData->selItemCount++;
 }
 
 void Front_RockWipe_Play()
@@ -2081,7 +2164,26 @@ B32 Front_LevelLink_Callback_IncCount(lpLevelLink link, void* pCount)
 B32 Front_LevelInfo_Callback_AddItem(lpLevelLink link, void* data)
 {
     lpSearchLevelSelectAdd search = (lpSearchLevelSelectAdd)data;
-    // TODO: Implement Front_LevelInfo_Callback_AddItem
+
+    const char* levelName = search->levelSet->idNames[link->setIndex];
+
+    S32 frontEndX = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "FrontEndX", 0));
+    S32 frontEndY = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "FrontEndY", 0));
+    Bool3 frontEndOpen_ = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "FrontEndOpen", 0));
+    B32 frontEndOpen = (frontEndOpen_ == BOOL3_ERROR) ? FALSE : frontEndOpen_;
+
+    const char* menuBMP = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "MenuBMP", 0));
+    if (menuBMP != NULL)
+    {
+        Front_MenuItem_AddSelectItem(search->itemData, menuBMP, FALSE, NULL, frontEndX, frontEndY, frontEndOpen);
+        Mem_Free(menuBMP);
+        return FALSE;
+    }
+
+    char buff[1024];
+    strcpy(buff, frontGlobs.strDefaultLevelBMPS);
+    Front_MenuItem_AddSelectItem(search->itemData, buff, FALSE, NULL, frontEndX, frontEndY, frontEndOpen);
+
     return FALSE;
 }
 
