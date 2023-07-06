@@ -430,6 +430,8 @@ extern void Front_RockWipe_Play();
 extern void Front_RockWipe_Stop();
 
 extern const char* Front_GetSelectedLevel();
+extern B32 Front_IsMissionSelected();
+extern B32 Front_IsTutorialSelected();
 extern void Front_LoadOptionParameters(B32 loadOptions, B32 resetFront);
 
 extern void Front_LoadMenuTextWindow(lpConfig config, const char* configPath, lpMenuTextWindow menuWnd);
@@ -455,6 +457,8 @@ extern void Front_LevelSet_SetLevelLink(lpLevelSet levelSet, const char* levelNa
 extern S32 Front_LevelSet_IndexOf(lpLevelSet levelSet, const char* levelName);
 extern void Front_Levels_ResetVisited();
 extern B32 Front_LevelLink_RunThroughLinks(lpLevelLink startLink, LevelLink_RunThroughLinksCallback callback, void* data);
+extern S32 Front_LevelLink_FindSetIndexOf(lpLevelLink startLink, S32 linkIndex);
+extern lpLevelLink Front_LevelLink_FindByLinkIndex(lpLevelLink startLink, S32 linkIndex);
 extern void Front_Levels_UpdateAvailable(lpLevelLink startLink, lpSaveReward saveReward, lpLevelSet levelSet, lpMenuItem_SelectData selectData, B32 keepLocked);
 struct SearchLevelSelectInfo_14;
 extern void Front_Levels_UpdateAvailable_Recursive(lpLevelLink link, struct SearchLevelSelectInfo_14* search, B32 unlocked);
@@ -483,6 +487,8 @@ extern void Front_Callback_SelectLoadSave(F32 elapsedAbs, S32 selectIndex);
 
 extern B32 Front_LevelLink_Callback_IncCount(lpLevelLink link, void* pCount);
 extern B32 Front_LevelInfo_Callback_AddItem(lpLevelLink link, void* data);
+
+extern B32 Front_LevelLink_Callback_FindByLinkIndex(lpLevelLink link, void* data);
 
 extern S32 Front_CalcSliderGameSpeed();
 extern S32 Front_CalcSliderCDVolume();

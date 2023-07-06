@@ -1555,8 +1555,28 @@ void Front_RockWipe_Stop()
 
 const char* Front_GetSelectedLevel()
 {
-    // TODO: Implement Front_GetSelectedLevel
+    if (Front_IsMissionSelected())
+    {
+        S32 setIndex = Front_LevelLink_FindSetIndexOf(frontGlobs.startMissionLink, frontGlobs.menuVars[MENUVAR_SELECT_MISSION_INDEX]);
+        if (setIndex != -1)
+            return frontGlobs.missionLevels.idNames[setIndex];
+    } else if (Front_IsTutorialSelected())
+    {
+        S32 setIndex = Front_LevelLink_FindSetIndexOf(frontGlobs.startTutorialLink, frontGlobs.menuVars[MENUVAR_SELECT_TUTORIAL_INDEX]);
+        if (setIndex != -1)
+            return frontGlobs.tutorialLevels.idNames[setIndex];
+    }
     return NULL;
+}
+
+B32 Front_IsMissionSelected()
+{
+    return frontGlobs.menuVars[MENUVAR_SELECT_MISSION_INDEX] != -1;
+}
+
+B32 Front_IsTutorialSelected()
+{
+    return frontGlobs.menuVars[MENUVAR_SELECT_TUTORIAL_INDEX] != -1;
 }
 
 void Front_LoadOptionParameters(B32 loadOptions, B32 resetFront)
@@ -2372,6 +2392,34 @@ B32 Front_LevelLink_RunThroughLinks(lpLevelLink startLink, LevelLink_RunThroughL
     return FALSE;
 }
 
+S32 Front_LevelLink_FindSetIndexOf(lpLevelLink startLink, S32 linkIndex)
+{
+    lpLevelLink info = Front_LevelLink_FindByLinkIndex(startLink, linkIndex);
+    if (info != NULL)
+        return info->setIndex;
+
+    return -1;
+}
+
+lpLevelLink Front_LevelLink_FindByLinkIndex(lpLevelLink startLink, S32 linkIndex)
+{
+    SearchLevelLinkFindIndex_10 search;
+
+    search.resultLink = NULL;
+    search.currentIndex = 0;
+    search.resultIndex = 0;
+    search.searchIndex = linkIndex;
+
+    if (Front_LevelLink_RunThroughLinks(startLink, Front_LevelLink_Callback_FindByLinkIndex, &search))
+    {
+        Front_Levels_ResetVisited();
+        return search.resultLink;
+    }
+
+    Front_Levels_ResetVisited();
+    return NULL;
+}
+
 void Front_Levels_UpdateAvailable(lpLevelLink startLink, lpSaveReward saveReward, lpLevelSet levelSet, lpMenuItem_SelectData selectData, B32 keepLocked)
 {
     SearchLevelSelectInfo_14 search;
@@ -2584,6 +2632,22 @@ B32 Front_LevelInfo_Callback_AddItem(lpLevelLink link, void* data)
     strcpy(buff, frontGlobs.strDefaultLevelBMPS);
     Front_MenuItem_AddSelectItem(search->itemData, buff, FALSE, NULL, frontEndX, frontEndY, frontEndOpen);
 
+    return FALSE;
+}
+
+B32 Front_LevelLink_Callback_FindByLinkIndex(lpLevelLink link, void* data)
+{
+    lpSearchLevelLinkFindIndex_10 search = (lpSearchLevelLinkFindIndex_10)data;
+
+    S32 linkIndex = search->currentIndex;
+    if (search->searchIndex == linkIndex)
+    {
+        search->resultIndex = linkIndex;
+        search->resultLink = link;
+        return TRUE;
+    }
+
+    search->currentIndex = linkIndex + 1;
     return FALSE;
 }
 
