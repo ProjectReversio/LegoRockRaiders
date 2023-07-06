@@ -162,27 +162,27 @@ void Image_DisplayScaled(lpImage image, Area2F* src, Point2F* destPos, Size2F* d
 
     if (src)
     {
-        r_src.left = (U32) src->x;
-        r_src.top = (U32) src->y;
-        r_src.right = (U32) (src->x + src->width);
-        r_src.bottom = (U32) (src->y + src->height);
+        r_src.left = (S32) src->x;
+        r_src.top = (S32) src->y;
+        r_src.right = (S32) (src->x + src->width);
+        r_src.bottom = (S32) (src->y + src->height);
     }
 
     if (destPos)
     {
-        r_dst.left = (U32) destPos->x;
-        r_dst.top = (U32) destPos->y;
+        r_dst.left = (S32) destPos->x;
+        r_dst.top = (S32) destPos->y;
         if (destSize)
         {
-            r_dst.right = (U32) (destPos->x + destSize->width);
-            r_dst.bottom = (U32) (destPos->y + destSize->height);
+            r_dst.right = (S32) (destPos->x + destSize->width);
+            r_dst.bottom = (S32) (destPos->y + destSize->height);
         } else if (src)
         {
-            r_dst.right = (U32) (destPos->x + src->width);
-            r_dst.bottom = (U32) (destPos->y + src->height);
+            r_dst.right = (S32) (destPos->x + src->width);
+            r_dst.bottom = (S32) (destPos->y + src->height);
         } else {
-            r_dst.right = (U32) (destPos->x + image->width);
-            r_dst.bottom = (U32) (destPos->y + image->height);
+            r_dst.right = (S32) (destPos->x + image->width);
+            r_dst.bottom = (S32) (destPos->y + image->height);
         }
     }
 
