@@ -29,7 +29,7 @@ typedef struct Input_Globs
     DIcallbackData cbd;
     char Input_KeyTemp;
     U8 padding1[3];
-    B8 Key_Ma[256];
+    B8 Key_Map[256];
 
 } Input_Globs, *lpInput_Globs;
 
@@ -42,3 +42,16 @@ extern void Input_ReadKeys();
 extern void Input_ReadMouse2();
 
 extern U32 Input_AnyKeyPressed();
+
+#define Input_IsKeyDown(k) ((B32)inputGlobs.Key_Map[(k)])
+#define Input_IsKeyUp(k) (!inputGlobs.Key_Map[(k)])
+#define Input_IsPrevKeyDown(k) ((B32)inputGlobs.prevKey_Map[(k)])
+#define Input_IsPrevKeyUp(k) (!inputGlobs.prevKey_Map[(k)])
+#define Input_IsKeyPressed(k) (Input_IsKeyDown((k)) && Input_IsPrevKeyUp((k)))
+#define Input_IsKeyReleased(k) (Input_IsKeyUp((k)) && Input_IsPrevKeyDown((k)))
+#define Input_IsKeyChanged(k) (Input_IsKeyDown((k)) != Input_IsPrevKeyDown((k)))
+#define Input_IsKeyHeld(k) (Input_IsKeyDown((k)) && Input_IsPrevKeyDown((k)))
+#define Input_IsKeyUntouched(k) (Input_IsKeyUp((k)) && Input_IsPrevKeyUp((k)))
+
+#define Input_ClearKey(k) (inputGlobs.Key_Map[(k)] = FALSE)
+#define Input_ClearAllKeys() memset(inputGlobs.Key_Map, 0, sizeof(inputGlobs.Key_Map))

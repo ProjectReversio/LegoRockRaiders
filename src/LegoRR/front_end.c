@@ -12,6 +12,7 @@
 #include "pointer.h"
 #include "credits.h"
 #include "search.h"
+#include "keys.h"
 
 Front_Globs frontGlobs = { NULL };
 
@@ -833,7 +834,93 @@ lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu)
     if (menuItem == NULL && menu->itemFocus < 0)
         return menu;
 
-    // TODO: Implement Front_Menu_UpdateMenuItemsInput
+    if (isPressed || Input_IsKeyPressed(KEY_CURSORRIGHT))
+    {
+        SFX_Random_Play_OrAddToQueue(SFX_Okay, FALSE);
+
+        switch(menuItem->itemType)
+        {
+            case MenuItem_Type_Cycle:
+            {
+                // TODO: Implement Front_Menu_UpdateMenuItemsInput
+                break;
+            }
+            case MenuItem_Type_TextInput:
+            {
+                // TODO: Implement Front_Menu_UpdateMenuItemsInput
+                break;
+            }
+            case MenuItem_Type_Slider:
+            {
+                // TODO: Implement Front_Menu_UpdateMenuItemsInput
+                break;
+            }
+            case MenuItem_Type_RealSlider:
+            {
+                // TODO: Implement Front_Menu_UpdateMenuItemsInput
+                break;
+            }
+            case MenuItem_Type_Select:
+            {
+                lpMenuItem_SelectData select = menuItem->itemData.select;
+
+                S32 selIndex = Front_MenuItem_Select_TestStringCollision(menu, menuItem, select);
+
+                if (isPressed)
+                {
+                    if (selIndex == -3)
+                    {
+                        // string2 is selected
+                        if (select->scrollStart > 0)
+                        {
+                            select->scrollStart--;
+                        }
+                    }
+                    else if (selIndex == -2)
+                    {
+                        // string1 is selected
+                        if (select->scrollStart < (S32)(select->selItemCount - select->scrollCount))
+                        {
+                            select->scrollStart++;
+                        }
+                    }
+                    else if (selIndex != -1)
+                    {
+                        // selectItem is selected
+
+                        *select->valuePtr = selIndex;
+                        if (select->callback != NULL)
+                        {
+                            select->callback(elapsed, selIndex);
+                        }
+
+                        // Are we in the load/save menu?
+                        if (menu == frontGlobs.mainMenuSet->menus[3] ||
+                            menu == frontGlobs.mainMenuSet->menus[0])
+                        {
+                            g_saveMenuSelectedIndex = selIndex;
+                            g_saveMenuOutputSelectedIndex = selIndex;
+                        }
+
+                        if (select->nextMenu == NULL)
+                            menu->closed = TRUE;
+                        else
+                        {
+                            // Goto next menu
+                            return select->nextMenu;
+                        }
+                    }
+                }
+
+                break;
+            }
+        }
+    }
+
+    if (Input_IsKeyPressed(KEY_CURSORLEFT))
+    {
+        // TODO: Implement Front_Menu_UpdateMenuItemsInput
+    }
 
     if (isPressed && !isHandled)
     {
@@ -1054,7 +1141,15 @@ B32 Front_Menu_GetItemBounds(lpMenu menu, S32 itemIndex, S32* rcX, S32* rcY, S32
 
 B32 Front_Menu_IsLevelItemUnderMouse(lpMenu menu, S32 itemIndex)
 {
-    // TODO: Implement Front_Menu_IsLevelItemUnderMouse
+    lpMenuItem menuItem;
+    S32 index;
+
+    if (itemIndex < menu->itemCount && (menuItem = menu->items[itemIndex], menuItem->itemType == MenuItem_Type_Select))
+    {
+        index = Front_MenuItem_Select_TestStringCollision(menu, menuItem, menuItem->itemData.select);
+        return (U32)(index != -1);
+    }
+
     return FALSE;
 }
 
@@ -1360,8 +1455,63 @@ void Front_MenuItem_AddSelectItem(lpMenuItem_SelectData selectData, const char* 
 
 S32 Front_MenuItem_Select_TestStringCollision(lpMenu menu, lpMenuItem menuItem, lpMenuItem_SelectData selectData)
 {
-    // TODO: Implement Front_MenuItem_Select_TestStringCollision
-    return -1;
+    U32 rcWidth = 0;
+    U32 rcHeight = 0;
+
+    if (menuItem->fontHi != NULL)
+    {
+        rcWidth = Font_GetStringWidth(menuItem->fontHi, selectData->string1);
+        rcHeight = Font_GetHeight(menuItem->fontHi);
+    }
+
+    if (Front_Maths_IsPointInsideRectCentered(inputGlobs.msx, inputGlobs.msy,
+                                              selectData->xString1 + menu->position.x,
+                                              selectData->yString1 + menu->position.y,
+                                              rcWidth, rcHeight, FALSE))
+    {
+        return -2; // Over string1.
+    }
+
+    if (menuItem->fontHi == NULL)
+        rcWidth = 0;
+    else
+        rcWidth = Font_GetStringWidth(menuItem->fontHi, selectData->string2);
+
+    if (Front_Maths_IsPointInsideRectCentered(inputGlobs.msx, inputGlobs.msy,
+                                              selectData->xString2 + menu->position.x,
+                                              selectData->yString2 + menu->position.y,
+                                              rcWidth, rcHeight, FALSE))
+    {
+        return -3; // Over string2.
+    }
+
+    for (S32 i = 0; i < selectData->scrollCount; i++)
+    {
+        S32 currIndex = selectData->scrollStart + i;
+        if ((S32)currIndex >= (S32)selectData->selItemCount)
+            break;
+
+        lpMenuItem_SelectItem selectItem = &selectData->selItemList[currIndex];
+
+        if (selectItem->flags & SELECTITEM_FLAG_ENABLED)
+        {
+            S32 selItemX = selectData->x2 + menuItem->x1 + menu->position.x +
+                selectItem->frontEndX + frontGlobs.scrollOffset.x;
+            S32 selItemY = selectData->y2 + menuItem->y1 + menu->position.y +
+                (selectData->selItemHeight * i) + selectItem->frontEndY + frontGlobs.scrollOffset.y;
+            S32 selItemWidth = (S32)selectData->widths[MenuItem_SelectImage_Light][currIndex];
+            S32 selItemHeight = (S32)selectData->heights[MenuItem_SelectImage_Light][currIndex];
+
+            if (Front_Maths_IsPointInsideRectCentered(inputGlobs.msx, inputGlobs.msy,
+                                                      selItemX, selItemY,
+                                                      selItemWidth, selItemHeight, menu->autoCenter))
+            {
+                return currIndex; // Over selectItem.
+            }
+        }
+    }
+
+    return -1; // Over nothing.
 }
 
 void Front_MenuItem_DrawSaveImage(lpMenu menu, S32 selIndex, lpMenuItem_SelectData selectData, B32 bigSize)
@@ -2620,6 +2770,17 @@ B32 Front_Maths_IsPointInsideRect(S32 ptX, S32 ptY, S32 rcX, S32 rcY, S32 rcWidt
     }
 
     return FALSE;
+}
+
+B32 Front_Maths_IsPointInsideRectCentered(S32 ptX, S32 ptY, S32 rcX, S32 rcY, S32 rcWidth, S32 rcHeight, B32 shouldCenterX)
+{
+    S32 xOffset;
+    if (shouldCenterX)
+        xOffset = -(rcWidth / 2);
+    else
+        xOffset = 0;
+
+    return Front_Maths_IsPointInsideRect(ptX, ptY, xOffset + rcX, rcY, rcWidth, rcHeight);
 }
 
 B32 Front_GetMousePressedState()

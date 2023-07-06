@@ -303,10 +303,9 @@ typedef struct Front_Globs
     LevelSet missionLevels;
     lpLevelLink startMissionLink;
     lpLevelLink startTutorialLink;
-    U64 reserved1a;
-    U64 reserved1b;
+    U32 reserved1[4];
     S32 triggerCredits; // TODO: likely was an array in the original source.
-    U64 reserved2;
+    U32 reserved2[2];
     S32 triggerQuitApp;
     S32 selectMissionIndex;
     S32 selectTutorialIndex;
@@ -499,6 +498,7 @@ extern const char* Front_Util_ReplaceTextSpaces(const char* str);
 extern const char* Front_Util_StrCpy(const char* str);
 
 extern B32 Front_Maths_IsPointInsideRect(S32 ptX, S32 ptY, S32 rcX, S32 rcY, S32 rcWidth, S32 rcHeight);
+extern B32 Front_Maths_IsPointInsideRectCentered(S32 ptX, S32 ptY, S32 rcX, S32 rcY, S32 rcWidth, S32 rcHeight, B32 shouldCenterX);
 
 extern B32 Front_GetMousePressedState();
 
