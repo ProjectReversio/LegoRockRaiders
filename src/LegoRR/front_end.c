@@ -197,11 +197,11 @@ void Front_Initialize(lpConfig config)
     Container_Hide(frontGlobs.rockWipeLight, TRUE);
 
     frontGlobs.mainMenuSet = Front_LoadMenuSet(config, "MainMenuFull",
-                                               &frontGlobs.triggerCredits, Front_Callback_TriggerPlayCredits, // "Main" Trigger "Credits"
-                                               &frontGlobs.triggerQuitApp, NULL, // "ARE_YOU_SURE?" Trigger "Yes"
+                                               &frontGlobs.menuVars[MENUVAR_TRIGGER_CREDITS], Front_Callback_TriggerPlayCredits, // "Main" Trigger "Credits"
+                                               &frontGlobs.menuVars[MENUVAR_TRIGGER_QUITAPP], NULL, // "ARE_YOU_SURE?" Trigger "Yes"
                                                -1); // end
     frontGlobs.saveMenuSet = Front_LoadMenuSet(config, "SaveMenu",
-                                               &frontGlobs.triggerBackSave, Front_Callback_TriggerBackSave, // "Load_Level_Save" Trigger "Back"
+                                               &frontGlobs.menuVars[MENUVAR_TRIGGER_BACKSAVE], Front_Callback_TriggerBackSave, // "Load_Level_Save" Trigger "Back"
                                                -1); // end
 
     Front_LoadLevelSet(legoGlobs.config, &frontGlobs.missionLevels, "StartLevel");
@@ -212,38 +212,38 @@ void Front_Initialize(lpConfig config)
     Front_LoadLevels(frontGlobs.mainMenuSet);
 
     frontGlobs.pausedMenuSet = Front_LoadMenuSet(config, "PausedMenu",
-                                                 &frontGlobs.triggerContinueMission, NULL, // "Paused" Trigger "Continue_Game"
-                                                 &frontGlobs.sliderGameSpeed, Front_Callback_SliderGameSpeed, // "Options" Trigger "Game_Speed"
-                                                 &frontGlobs.sliderSFXVolume, Front_Callback_SliderSoundVolume, // "Options" Trigger "SFX_Volume"
-                                                 &frontGlobs.sliderMusicVolume, Front_Callback_SliderMusicVolume, // "Options" Trigger "Music_Volume"
-                                                 &frontGlobs.sliderBrightness, Front_Callback_SliderBrightness, // "Options" Trigger "Brightness"
-                                                 &frontGlobs.cycleHelpWindow, Front_Callback_CycleHelpWindow, // "Options" Cycle "Help_Window"
-                                                 &frontGlobs.triggerReplayObjective, Front_Callback_TriggerReplayObjective, // "Options" Trigger "Replay_Objective"
-                                                 &frontGlobs.triggerQuitMission, NULL, // "Quit?" Trigger "Yes_-_Quit"
-                                                 &frontGlobs.triggerRestartMission, NULL, // "Restart_Mission?" Trigger "Yes_-_Restart_Mission"
-                                                 &frontGlobs.cycleWallDetail, Front_Callback_CycleWallDetail, // "Advanced_Options" Cycle "Wall_Detail"
-                                                 &frontGlobs.cycleMusicOn, Front_Callback_CycleMusic, // "Advanced_Options" Cycle "Music"
-                                                 &frontGlobs.cycleSFXOn, Front_Callback_CycleSound, // "Advanced_Options" Cycle "SFX"
-                                                 &frontGlobs.cycleAutoGameSpeed, Front_Callback_CycleAutoGameSpeed, // "Advanced_Options" Cycle "Automatic_Game_Speed"
+                                                 &frontGlobs.menuVars[MENUVAR_TRIGGER_CONTINUE_MISSION], NULL, // "Paused" Trigger "Continue_Game"
+                                                 &frontGlobs.menuVars[MENUVAR_SLIDER_GAMESPEED], Front_Callback_SliderGameSpeed, // "Options" Trigger "Game_Speed"
+                                                 &frontGlobs.menuVars[MENUVAR_SLIDER_SFXVOLUME], Front_Callback_SliderSoundVolume, // "Options" Trigger "SFX_Volume"
+                                                 &frontGlobs.menuVars[MENUVAR_SLIDER_MUSICVOLUME], Front_Callback_SliderMusicVolume, // "Options" Trigger "Music_Volume"
+                                                 &frontGlobs.menuVars[MENUVAR_SLIDER_BRIGHTNESS], Front_Callback_SliderBrightness, // "Options" Trigger "Brightness"
+                                                 &frontGlobs.menuVars[MENUVAR_CYCLE_HELPWINDOW], Front_Callback_CycleHelpWindow, // "Options" Cycle "Help_Window"
+                                                 &frontGlobs.menuVars[MENUVAR_TRIGGER_REPLAYOBJECTIVE], Front_Callback_TriggerReplayObjective, // "Options" Trigger "Replay_Objective"
+                                                 &frontGlobs.menuVars[MENUVAR_TRIGGER_QUITMISSION], NULL, // "Quit?" Trigger "Yes_-_Quit"
+                                                 &frontGlobs.menuVars[MENUVAR_TRIGGER_RESTARTMISSION], NULL, // "Restart_Mission?" Trigger "Yes_-_Restart_Mission"
+                                                 &frontGlobs.menuVars[MENUVAR_CYCLE_WALLDETAIL], Front_Callback_CycleWallDetail, // "Advanced_Options" Cycle "Wall_Detail"
+                                                 &frontGlobs.menuVars[MENUVAR_CYCLE_MUSICON], Front_Callback_CycleMusic, // "Advanced_Options" Cycle "Music"
+                                                 &frontGlobs.menuVars[MENUVAR_CYCLE_SFXON], Front_Callback_CycleSound, // "Advanced_Options" Cycle "SFX"
+                                                 &frontGlobs.menuVars[MENUVAR_CYCLE_AUTOGAMESPEED], Front_Callback_CycleAutoGameSpeed, // "Advanced_Options" Cycle "Automatic_Game_Speed"
                                                  -1); // end
 
     frontGlobs.optionsMenuSet = Front_LoadMenuSet(config, "OptionsMenu",
-                                                  &frontGlobs.sliderGameSpeed, Front_Callback_SliderGameSpeed, // "Options" Slider "Game_Speed"
-                                                  &frontGlobs.sliderSFXVolume, Front_Callback_SliderSoundVolume, // "Options" Slider "SFX_Volume"
-                                                  &frontGlobs.sliderMusicVolume, Front_Callback_SliderMusicVolume, // "Options" Slider "Music_Volume"
-                                                  &frontGlobs.sliderBrightness, Front_Callback_SliderBrightness, // "Options" Slider "Brightness"
-                                                  &frontGlobs.cycleHelpWindow, Front_Callback_CycleHelpWindow, // "Options" Cycle "Help_Window"
-                                                  &frontGlobs.triggerReplayObjective, Front_Callback_TriggerReplayObjective, // "Options" Trigger "Replay_Objective"
-                                                  &frontGlobs.triggerContinueMission, NULL, // "Options" Trigger "Continue_Game"
+                                                  &frontGlobs.menuVars[MENUVAR_SLIDER_GAMESPEED], Front_Callback_SliderGameSpeed, // "Options" Slider "Game_Speed"
+                                                  &frontGlobs.menuVars[MENUVAR_SLIDER_SFXVOLUME], Front_Callback_SliderSoundVolume, // "Options" Slider "SFX_Volume"
+                                                  &frontGlobs.menuVars[MENUVAR_SLIDER_MUSICVOLUME], Front_Callback_SliderMusicVolume, // "Options" Slider "Music_Volume"
+                                                  &frontGlobs.menuVars[MENUVAR_SLIDER_BRIGHTNESS], Front_Callback_SliderBrightness, // "Options" Slider "Brightness"
+                                                  &frontGlobs.menuVars[MENUVAR_CYCLE_HELPWINDOW], Front_Callback_CycleHelpWindow, // "Options" Cycle "Help_Window"
+                                                  &frontGlobs.menuVars[MENUVAR_TRIGGER_REPLAYOBJECTIVE], Front_Callback_TriggerReplayObjective, // "Options" Trigger "Replay_Objective"
+                                                  &frontGlobs.menuVars[MENUVAR_TRIGGER_CONTINUE_MISSION], NULL, // "Options" Trigger "Continue_Game"
                                                   -1); // end
 
-    frontGlobs.sliderSFXVolume = 8;
-    frontGlobs.triggerContinueMission = 0;
-    frontGlobs.sliderBrightness = 5;
-    frontGlobs.cycleHelpWindow = 1;
-    frontGlobs.triggerReplayObjective = 0;
-    frontGlobs.sliderGameSpeed = Front_CalcSliderGameSpeed();
-    frontGlobs.sliderMusicVolume = Front_CalcSliderCDVolume();
+    frontGlobs.menuVars[MENUVAR_SLIDER_SFXVOLUME] = 8;
+    frontGlobs.menuVars[MENUVAR_TRIGGER_CONTINUE_MISSION] = 0;
+    frontGlobs.menuVars[MENUVAR_SLIDER_BRIGHTNESS] = 5;
+    frontGlobs.menuVars[MENUVAR_CYCLE_HELPWINDOW] = 1;
+    frontGlobs.menuVars[MENUVAR_TRIGGER_REPLAYOBJECTIVE] = 0;
+    frontGlobs.menuVars[MENUVAR_SLIDER_GAMESPEED] = Front_CalcSliderGameSpeed();
+    frontGlobs.menuVars[MENUVAR_SLIDER_MUSICVOLUME] = Front_CalcSliderCDVolume();
     frontGlobs.saveMenuHasNoData = FALSE;
 
     frontGlobs.maxLevelScreens = Config_GetIntValue(config, Config_BuildStringID(legoGlobs.gameName, "Menu", "MaxLevelScreens", 0));
@@ -340,7 +340,7 @@ void Front_PrepareScreenMenuType(Menu_ScreenType screenType)
     switch (screenType)
     {
         case Menu_Screen_Title:
-            frontGlobs.selectLoadSaveIndex = -1;
+            frontGlobs.menuVars[MENUVAR_SELECT_LOADSAVE_INDEX] = -1;
             Front_LoadOptionParameters(TRUE, TRUE);
             break;
 
@@ -423,7 +423,7 @@ void Front_ScreenMenuLoop(lpMenu menu)
 
         if (menu == frontGlobs.mainMenuSet->menus[0] && nextMenu != menu)
         {
-            frontGlobs.selectLoadSaveIndex = -1;
+            frontGlobs.menuVars[MENUVAR_SELECT_LOADSAVE_INDEX] = -1;
             Front_Callback_SelectLoadSave(elapsed, -1);
         }
 
@@ -799,7 +799,7 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
 
 B32 Front_IsTriggerAppQuit()
 {
-    return frontGlobs.triggerQuitApp;
+    return frontGlobs.menuVars[MENUVAR_TRIGGER_QUITAPP];
 }
 
 lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu)
@@ -2133,14 +2133,14 @@ void Front_LoadLevels(lpMenuSet mainMenuFull)
     S32 menuIDLoadSave = Front_GetMenuIDByName(frontGlobs.mainMenuSet, "Load Level Save");
 
     // Create menu item for Load Game menu selection.
-    lpMenuItem_SelectData loadSelectData = Front_MenuItem_CreateSelect(&frontGlobs.selectLoadSaveIndex, "", "", -200, -100, 60, 5, -20, 200, -20, -40, 0,
+    lpMenuItem_SelectData loadSelectData = Front_MenuItem_CreateSelect(&frontGlobs.menuVars[MENUVAR_SELECT_LOADSAVE_INDEX], "", "", -200, -100, 60, 5, -20, 200, -20, -40, 0,
                                                                        Front_Callback_SelectLoadSave, frontGlobs.mainMenuSet->menus[menuIDLevels]);
     lpMenuItem menuLoadSave = frontGlobs.mainMenuSet->menus[menuIDLoadSave]->items[0];
     lpMenuItem loadSelectItem = Front_MenuItem_CreateBannerItem("", menuLoadSave->fontLo, menuLoadSave->fontHi, 0, 0, MenuItem_Type_Select, TRUE, loadSelectData, FALSE);
     Front_Menu_AddMenuItem(frontGlobs.mainMenuSet->menus[menuIDLoadSave], loadSelectItem);
 
     // Create menu item for Save Game menu selection.
-    lpMenuItem_SelectData saveSelectData = Front_MenuItem_CreateSelect(&frontGlobs.selectLoadSaveIndex, "", "", -200, -100, 60, 5, -20, 200, -20, -40, 0,
+    lpMenuItem_SelectData saveSelectData = Front_MenuItem_CreateSelect(&frontGlobs.menuVars[MENUVAR_SELECT_LOADSAVE_INDEX], "", "", -200, -100, 60, 5, -20, 200, -20, -40, 0,
                                                                        Front_Callback_SelectLoadSave, NULL);
 
     lpMenuItem saveSelectItem = Front_MenuItem_CreateBannerItem("", menuLoadSave->fontLo, menuLoadSave->fontHi, 0, 0, MenuItem_Type_Select, TRUE, saveSelectData, FALSE);
@@ -2167,8 +2167,8 @@ void Front_LoadLevels(lpMenuSet mainMenuFull)
 
     Front_Save_LoadAllSaveFiles();
 
-    MainMenuFull_AddMissionsDisplay(4, frontGlobs.startMissionLink, &frontGlobs.missionLevels, frontGlobs.mainMenuSet->menus[menuIDLevels], Front_Save_GetCurrentSaveData(), NULL, Front_Callback_SelectMissionItem);
-    MainMenuFull_AddMissionsDisplay(5, frontGlobs.startTutorialLink, &frontGlobs.tutorialLevels, frontGlobs.mainMenuSet->menus[menuIDTutorials], Front_Save_GetCurrentSaveData(), NULL, Front_Callback_SelectTutorialItem);
+    MainMenuFull_AddMissionsDisplay(MENUVAR_SELECT_MISSION_INDEX, frontGlobs.startMissionLink, &frontGlobs.missionLevels, frontGlobs.mainMenuSet->menus[menuIDLevels], Front_Save_GetCurrentSaveData(), NULL, Front_Callback_SelectMissionItem);
+    MainMenuFull_AddMissionsDisplay(MENUVAR_SELECT_TUTORIAL_INDEX, frontGlobs.startTutorialLink, &frontGlobs.tutorialLevels, frontGlobs.mainMenuSet->menus[menuIDTutorials], Front_Save_GetCurrentSaveData(), NULL, Front_Callback_SelectTutorialItem);
 }
 
 lpLevelLink Front_LevelSet_LoadLevelLinks(lpLevelSet levelSet, const char* levelName)
@@ -2434,20 +2434,14 @@ void Front_Levels_UpdateAvailable_Recursive(lpLevelLink link, lpSearchLevelSelec
     }
 }
 
-void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu nextMenu, void* callback)
+void MainMenuFull_AddMissionsDisplay(Front_MenuVars menuVar, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu nextMenu, void* callback)
 {
     U32 count = 0;
 
     Front_LevelLink_RunThroughLinks(startLink, Front_LevelLink_Callback_IncCount, &count);
     Front_Levels_ResetVisited();
 
-    // &frontGlobs.triggerCredits + 4 -> &frontGlobs.selectMissionIndex
-    // &frontGlobs.triggerCredits + 5 -> &frontGlobs.selectTutorialIndex
-    // The way these values were originally stored in frontGlobs was probably an array of values.
-    /// TODO: Do something about the ugly valueOffset assignment and maybe switch to passing a value directly in the future.
-    S32* selItemPtr = &((S32*)&frontGlobs.triggerCredits)[valueOffset];
-
-    lpMenuItem_SelectData select = Front_MenuItem_CreateSelect(selItemPtr, "", "", 0, 0, 0, count, 0, 0, 0, 0, 0, callback, nextMenu);
+    lpMenuItem_SelectData select = Front_MenuItem_CreateSelect(&frontGlobs.menuVars[menuVar], "", "", 0, 0, 0, count, 0, 0, 0, 0, 0, callback, nextMenu);
     lpMenuItem menuItem = Front_MenuItem_CreateBannerItem("Levels!!!", NULL, NULL, 0, 0, MenuItem_Type_Select, TRUE, select, FALSE);
     Front_Menu_AddMenuItem(menu, menuItem);
 

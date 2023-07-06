@@ -293,6 +293,33 @@ typedef struct Front_Cache
 
 extern lpFront_Cache g_ImageCache_NEXT;
 
+typedef enum Front_MenuVars
+{
+    MENUVAR_TRIGGER_CREDITS = 0,
+    MENUVAR_UNKNOWN1 = 1,
+    MENUVAR_UNKNOWN2 = 2,
+    MENUVAR_TRIGGER_QUITAPP = 3,
+    MENUVAR_SELECT_MISSION_INDEX = 4,
+    MENUVAR_SELECT_TUTORIAL_INDEX = 5,
+    MENUVAR_SELECT_LOADSAVE_INDEX = 6,
+    MENUVAR_TRIGGER_CONTINUE_MISSION = 7,
+    MENUVAR_SLIDER_GAMESPEED = 8,
+    MENUVAR_SLIDER_SFXVOLUME = 9,
+    MENUVAR_SLIDER_MUSICVOLUME = 10,
+    MENUVAR_SLIDER_BRIGHTNESS = 11,
+    MENUVAR_CYCLE_HELPWINDOW = 12,
+    MENUVAR_TRIGGER_REPLAYOBJECTIVE = 13,
+    MENUVAR_TRIGGER_QUITMISSION = 14,
+    MENUVAR_TRIGGER_RESTARTMISSION = 15,
+    MENUVAR_CYCLE_WALLDETAIL = 16,
+    MENUVAR_CYCLE_MUSICON = 17,
+    MENUVAR_CYCLE_SFXON = 18,
+    MENUVAR_CYCLE_AUTOGAMESPEED = 19,
+    MENUVAR_TRIGGER_BACKSAVE = 20,
+
+    MENUVAR_COUNT = 21,
+} Front_MenuVars;
+
 typedef struct Front_Globs
 {
     lpMenuSet pausedMenuSet;
@@ -304,26 +331,7 @@ typedef struct Front_Globs
     lpLevelLink startMissionLink;
     lpLevelLink startTutorialLink;
     U32 reserved1[4];
-    S32 triggerCredits; // TODO: likely was an array in the original source.
-    U32 reserved2[2];
-    S32 triggerQuitApp;
-    S32 selectMissionIndex;
-    S32 selectTutorialIndex;
-    S32 selectLoadSaveIndex;
-    S32 triggerContinueMission;
-    S32 sliderGameSpeed;
-    S32 sliderSFXVolume;
-    S32 sliderMusicVolume;
-    S32 sliderBrightness;
-    S32 cycleHelpWindow;
-    S32 triggerReplayObjective;
-    S32 triggerQuitMission;
-    S32 triggerRestartMission;
-    S32 cycleWallDetail;
-    S32 cycleMusicOn;
-    S32 cycleSFXOn;
-    S32 cycleAutoGameSpeed;
-    S32 triggerBackSave;
+    S32 menuVars[MENUVAR_COUNT];
     Point2I overlayPosition;
     lpFlic overlayImageOrFlic;
     U32 overlayStartTime;
@@ -450,7 +458,7 @@ extern B32 Front_LevelLink_RunThroughLinks(lpLevelLink startLink, LevelLink_RunT
 extern void Front_Levels_UpdateAvailable(lpLevelLink startLink, lpSaveReward saveReward, lpLevelSet levelSet, lpMenuItem_SelectData selectData, B32 keepLocked);
 struct SearchLevelSelectInfo_14;
 extern void Front_Levels_UpdateAvailable_Recursive(lpLevelLink link, struct SearchLevelSelectInfo_14* search, B32 unlocked);
-extern void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu nextMenu, void* callback);
+extern void MainMenuFull_AddMissionsDisplay(Front_MenuVars menuVar, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu nextMenu, void* callback);
 
 extern S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name);
 
