@@ -11,3 +11,12 @@ typedef struct SearchLevelSelectAdd
     lpMenuItem_SelectData itemData;
     lpSaveData currSave;
 } SearchLevelSelectAdd, *lpSearchLevelSelectAdd;
+
+typedef struct SearchLevelSelectInfo_14
+{
+    lpSaveReward saveReward;
+    lpLevelSet levelSet;
+    lpMenuItem_SelectData selectData;
+    U32 index;
+    B32 keepLocked;
+} SearchLevelSelectInfo_14, *lpSearchLevelSelectInfo_14;

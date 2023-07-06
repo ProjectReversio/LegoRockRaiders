@@ -243,7 +243,7 @@ void Front_Initialize(lpConfig config)
     frontGlobs.triggerReplayObjective = 0;
     frontGlobs.sliderGameSpeed = Front_CalcSliderGameSpeed();
     frontGlobs.sliderMusicVolume = Front_CalcSliderCDVolume();
-    frontGlobs.saveBool_540 = FALSE;
+    frontGlobs.saveMenuHasNoData = FALSE;
 
     frontGlobs.maxLevelScreens = Config_GetIntValue(config, Config_BuildStringID(legoGlobs.gameName, "Menu", "MaxLevelScreens", 0));
     if (frontGlobs.maxLevelScreens == 0)
@@ -259,7 +259,7 @@ void Front_Initialize(lpConfig config)
     if (frontGlobs.saveImageBigSize.height == 0)
         frontGlobs.saveImageBigSize.height = 60;
 
-    Front_Save_SetBool_85c(TRUE);
+    Front_Save_SetShouldClearUnlockedLevels(TRUE);
 }
 
 void Front_ResetSaveNumber()
@@ -336,7 +336,53 @@ void Front_RunScreenMenu(lpMenuSet menuSet, U32 menuIndex)
 
 void Front_PrepareScreenMenuType(Menu_ScreenType screenType)
 {
-    // TODO: Implement Front_PrepareScreenMenuType
+    switch (screenType)
+    {
+        case Menu_Screen_Title:
+            frontGlobs.selectLoadSaveIndex = -1;
+            Front_LoadOptionParameters(TRUE, TRUE);
+            break;
+
+        case Menu_Screen_Missions:
+        case Menu_Screen_Training:
+            Front_LoadOptionParameters(TRUE, TRUE);
+            break;
+
+        case Menu_Screen_Load_unused:
+            Front_LoadOptionParameters(FALSE, TRUE);
+            Front_Save_SetShouldClearUnlockedLevels(TRUE);
+            return; // Skip logic after switch statement.
+
+        case Menu_Screen_Save:
+            Front_LoadOptionParameters(FALSE, TRUE);
+            break;
+
+        default:
+            Front_Save_SetShouldClearUnlockedLevels(TRUE);
+            return; // Skip logic after switch statement.
+    }
+
+    lpMenuItem_SelectData missionSelect = frontGlobs.mainMenuSet->menus[1]->items[1]->itemData.select;
+    lpMenuItem_SelectData tutorialSelect = frontGlobs.mainMenuSet->menus[2]->items[1]->itemData.select;
+
+    lpSaveData currSave = Front_Save_GetCurrentSaveData();
+    if (currSave != NULL)
+        Front_Levels_UpdateAvailable(frontGlobs.startMissionLink, currSave->missionsTable, &frontGlobs.missionLevels, missionSelect, FALSE);
+    else if (frontGlobs.shouldClearUnlockedLevels)
+    {
+        // No active save, so reset all levels to their default locked state.
+        Front_Levels_UpdateAvailable(frontGlobs.startMissionLink, NULL, &frontGlobs.missionLevels, missionSelect, TRUE);
+
+        if (screenType == Menu_Screen_Save)
+        {
+            // We have no active save data. So if a save is selected, an empty save file will be written for it.
+            frontGlobs.saveMenuHasNoData = TRUE;
+        }
+    }
+
+    Front_Levels_UpdateAvailable(frontGlobs.startTutorialLink, NULL, &frontGlobs.tutorialLevels, tutorialSelect, FALSE);
+
+    Front_Save_SetShouldClearUnlockedLevels(TRUE);
 }
 
 void Front_ScreenMenuLoop(lpMenu menu)
@@ -2176,6 +2222,68 @@ B32 Front_LevelLink_RunThroughLinks(lpLevelLink startLink, LevelLink_RunThroughL
     return FALSE;
 }
 
+void Front_Levels_UpdateAvailable(lpLevelLink startLink, lpSaveReward saveReward, lpLevelSet levelSet, lpMenuItem_SelectData selectData, B32 keepLocked)
+{
+    SearchLevelSelectInfo_14 search;
+    search.levelSet = levelSet;
+    search.selectData = selectData;
+    search.saveReward = saveReward;
+    search.index = 0;
+    search.keepLocked = keepLocked;
+
+    Front_Levels_UpdateAvailable_Recursive(startLink, &search, TRUE);
+    Front_Levels_ResetVisited();
+}
+
+void Front_Levels_UpdateAvailable_Recursive(lpLevelLink link, lpSearchLevelSelectInfo_14 search, B32 unlocked)
+{
+    lpMenuItem_SelectItem levelData;
+    MenuItem_SelectItemFlags lflags;
+    SaveRewardFlags completed;
+    U32 i;
+    lpMenuItem_SelectItem levelsList;
+
+    i = 0;
+
+    if (link == NULL || link->visited != 0)
+        return;
+
+    if (mainGlobs.programmerLevel > PROGRAMMER_MODE_1 || (mainGlobs.flags & MAIN_FLAG_LEVELSOPEN) != MAIN_FLAG_NONE)
+        search->keepLocked = FALSE;
+
+    link->visited = TRUE;
+
+    if (search->saveReward == NULL ||
+        mainGlobs.programmerLevel > PROGRAMMER_MODE_1 ||
+        (mainGlobs.flags & MAIN_FLAG_LEVELSOPEN) != MAIN_FLAG_NONE)
+    {
+        completed = (SaveRewardFlags)(search->keepLocked == 0);
+    } else {
+        completed = search->saveReward[link->setIndex].flags & SAVEREWARD_FLAG_COMPLETED;
+    }
+
+    if (completed == SAVEREWARD_FLAG_NONE && unlocked == 0 && (levelsList = search->selectData->selItemList, levelData = levelsList + search->index, levelsList[search->index].frontEndOpen == 0))
+    {
+        lflags = levelData->flags & ~SELECTITEM_FLAG_ENABLED;
+    } else {
+        levelsList = search->selectData->selItemList;
+        levelData = levelsList + search->index;
+        lflags = levelsList[search->index].flags | SELECTITEM_FLAG_ENABLED;
+    }
+
+    levelData->flags = lflags;
+    search->index++;
+
+    if (link->linkCount != 0)
+    {
+        do
+        {
+            Front_Levels_UpdateAvailable_Recursive(link->linkLevels[i], search, completed);
+            i++;
+        } while (i < link->linkCount);
+    }
+}
+
 void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu nextMenu, void* callback)
 {
     U32 count = 0;
@@ -2347,9 +2455,9 @@ S32 Front_CalcSliderCDVolume()
     return 0;
 }
 
-void Front_Save_SetBool_85c(B32 state)
+void Front_Save_SetShouldClearUnlockedLevels(B32 state)
 {
-    frontGlobs.saveBool_85c = state;
+    frontGlobs.shouldClearUnlockedLevels = state;
 }
 
 void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer)

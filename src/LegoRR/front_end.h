@@ -342,7 +342,7 @@ typedef struct Front_Globs
     F32 rockWipeSFXTimer;
     F32 rockWipeSFXStartTime;
     lpContainer rockWipeLight;
-    B32 saveBool_540;
+    B32 saveMenuHasNoData;
     B32 saveMenuHasSaved;
     B32 saveMenuKeepOpen;
     Size2I saveImageBigSize;
@@ -354,7 +354,7 @@ typedef struct Front_Globs
     char langOverwriteMessage[256];
     char langOverwriteOK[128];
     char langOverwriteCancel[128];
-    B32 saveBool_85c;
+    B32 shouldClearUnlockedLevels;
     U32 reserved5;
     U32 unused_zero_864; // (init: 0) Set to 0 and never touched?
     S32 maxLevelScreens;
@@ -448,6 +448,9 @@ extern void Front_LevelSet_SetLevelLink(lpLevelSet levelSet, const char* levelNa
 extern S32 Front_LevelSet_IndexOf(lpLevelSet levelSet, const char* levelName);
 extern void Front_Levels_ResetVisited();
 extern B32 Front_LevelLink_RunThroughLinks(lpLevelLink startLink, LevelLink_RunThroughLinksCallback callback, void* data);
+extern void Front_Levels_UpdateAvailable(lpLevelLink startLink, lpSaveReward saveReward, lpLevelSet levelSet, lpMenuItem_SelectData selectData, B32 keepLocked);
+struct SearchLevelSelectInfo_14;
+extern void Front_Levels_UpdateAvailable_Recursive(lpLevelLink link, struct SearchLevelSelectInfo_14* search, B32 unlocked);
 extern void MainMenuFull_AddMissionsDisplay(S32 valueOffset, lpLevelLink startLink, lpLevelSet levelSet, lpMenu menu, lpSaveData saveData, lpMenu nextMenu, void* callback);
 
 extern S32 Front_GetMenuIDByName(lpMenuSet menuSet, const char* name);
@@ -477,7 +480,7 @@ extern B32 Front_LevelInfo_Callback_AddItem(lpLevelLink link, void* data);
 extern S32 Front_CalcSliderGameSpeed();
 extern S32 Front_CalcSliderCDVolume();
 
-extern void Front_Save_SetBool_85c(B32 state);
+extern void Front_Save_SetShouldClearUnlockedLevels(B32 state);
 extern void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer);
 extern void Front_Save_LoadAllSaveFiles();
 
