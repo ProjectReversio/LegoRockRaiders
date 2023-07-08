@@ -349,9 +349,38 @@ B32 Image_8BitSourceCopy(LPDDSURFACEDESC2 desc, LPD3DRMIMAGE image)
     } else if (desc->ddpfPixelFormat.dwRGBBitCount == 32)
     {
 #ifdef LEGORR_32BITCOLOR
-        // TODO: 32 bit color support
-        Error_Warn(TRUE, "32 bit color not supported yet");
-        return FALSE;
+        U32 bmpLineLength = image->bytes_per_line;
+        U8* bmpPtr;
+        U8* surfPtr;
+        LPD3DRMPALETTEENTRY pal = image->palette;
+        S32 h, w;
+
+        bmpPtr = (U8*) image->buffer1;
+        surfPtr = (U8*) desc->lpSurface;
+
+        for (h = 0; h < image->height; h++)
+        {
+            for (w = 0; w < image->width; w++)
+            {
+                U8 r, g, b, a;
+
+                r = pal[*bmpPtr].red;
+                g = pal[*bmpPtr].green;
+                b = pal[*(bmpPtr++)].blue;
+                a = 0x00;
+
+                // TODO: This code assumes that the surface will always be BGRA, we should check
+                *(surfPtr++) = b;
+                *(surfPtr++) = g;
+                *(surfPtr++) = r;
+                *(surfPtr++) = a;
+            }
+
+            // Do the pitch thing
+            bmpPtr += bmpLineLength - image->width;
+        }
+
+        Image_FlipSurface(desc);
 #else
         Error_Warn(TRUE, "Why have I got a 32 bit surface");
         return FALSE;
@@ -428,9 +457,37 @@ B32 Image_24BitSourceCopy(LPDDSURFACEDESC2 desc, LPD3DRMIMAGE image)
     } else if (desc->ddpfPixelFormat.dwRGBBitCount == 32)
     {
 #ifdef LEGORR_32BITCOLOR
-        // TODO: 32 bit color support
-        Error_Warn(TRUE, "32 bit color not supported yet");
-        return FALSE;
+        U32 bmpLineLength = image->bytes_per_line;
+        U8* bmpPtr;
+        U8* surfPtr;
+        S32 h, w;
+
+        bmpPtr = (U8*) image->buffer1;
+        surfPtr = (U8*) desc->lpSurface;
+
+        for (h = 0; h < image->height; h++)
+        {
+            for (w = 0; w < image->width; w++)
+            {
+                U8 r, g, b, a;
+
+                b = *bmpPtr; bmpPtr++;
+                g = *bmpPtr; bmpPtr++;
+                r = *bmpPtr; bmpPtr++;
+                a = 0x00;
+
+                // TODO: This code assumes that the surface will always be BGRA, we should check
+                *(surfPtr++) = b;
+                *(surfPtr++) = g;
+                *(surfPtr++) = r;
+                *(surfPtr++) = a;
+            }
+
+            // Do the pitch thing
+            bmpPtr += bmpLineLength - (image->width * 3);
+        }
+
+        Image_FlipSurface(desc);
 #else
         Error_Warn(TRUE, "Why have I got a 32 bit surface");
         return FALSE;
