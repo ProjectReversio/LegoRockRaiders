@@ -49,7 +49,7 @@
 
     #define LEGORR_FIX_CLION_CONSOLE_OUTPUT
 
-    #define LEGORR_DEBUG_LOADER
+    //#define LEGORR_DEBUG_LOADER
 
 #else
     // Defaults for Release Mode
