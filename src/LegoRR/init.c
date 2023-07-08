@@ -235,10 +235,17 @@ B32 Init_Initialize(B32 setup, B32 debug, B32 best, B32 window, const char* noHA
     initGlobs.validModeCount = 0;
 
     Init_AddValidMode(640, 480, 16);
+#ifdef LEGORR_32BITCOLOR
+    Init_AddValidMode(640, 480, 32);
+#endif
     if (debug)
     {
         Init_AddValidMode(800, 600, 16);
         Init_AddValidMode(1024, 768, 16);
+#ifdef LEGORR_32BITCOLOR
+        Init_AddValidMode(800, 600, 32);
+        Init_AddValidMode(1024, 768, 32);
+#endif
     }
     DirectDraw_EnumDrivers(initGlobs.drivers, &initGlobs.driverCount);
 

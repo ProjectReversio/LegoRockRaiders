@@ -348,8 +348,14 @@ B32 Image_8BitSourceCopy(LPDDSURFACEDESC2 desc, LPD3DRMIMAGE image)
         return FALSE;
     } else if (desc->ddpfPixelFormat.dwRGBBitCount == 32)
     {
+#ifdef LEGORR_32BITCOLOR
+        // TODO: 32 bit color support
+        Error_Warn(TRUE, "32 bit color not supported yet");
+        return FALSE;
+#else
         Error_Warn(TRUE, "Why have I got a 32 bit surface");
         return FALSE;
+#endif
     }
 
     return TRUE;
@@ -421,8 +427,14 @@ B32 Image_24BitSourceCopy(LPDDSURFACEDESC2 desc, LPD3DRMIMAGE image)
         return FALSE;
     } else if (desc->ddpfPixelFormat.dwRGBBitCount == 32)
     {
+#ifdef LEGORR_32BITCOLOR
+        // TODO: 32 bit color support
+        Error_Warn(TRUE, "32 bit color not supported yet");
+        return FALSE;
+#else
         Error_Warn(TRUE, "Why have I got a 32 bit surface");
         return FALSE;
+#endif
     }
 
     return TRUE;

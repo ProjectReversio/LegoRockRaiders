@@ -9,6 +9,9 @@
 // Define me to center window on launch.
 #define LEGORR_CENTER_WINDOW
 
+// Define me to enable 32 bit color mode.
+//#define LEGORR_32BITCOLOR
+
 // Define me to make windowed mode the default.
 //#define LEGORR_WINDOWED_DEFAULT
 
@@ -50,6 +53,8 @@
     #define LEGORR_FIX_CLION_CONSOLE_OUTPUT
 
     //#define LEGORR_DEBUG_LOADER
+
+    #define LEGORR_32BITCOLOR
 
 #else
     // Defaults for Release Mode
