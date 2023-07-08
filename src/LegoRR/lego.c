@@ -691,7 +691,7 @@ B32 Lego_Initialize()
     Front_LoadOptionParameters(TRUE, FALSE);
     if (Lego_LoadLevel(startLevelName))
     {
-        SFX_Random_Play_OrAddToQueue(SFX_AmbientLoop, TRUE);
+        SFX_Random_PlaySoundNormal(SFX_AmbientLoop, TRUE);
         return TRUE;
     }
 

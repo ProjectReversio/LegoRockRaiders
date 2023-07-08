@@ -836,7 +836,7 @@ lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu)
 
     if (isPressed || Input_IsKeyPressed(KEY_CURSORRIGHT))
     {
-        SFX_Random_Play_OrAddToQueue(SFX_Okay, FALSE);
+        SFX_Random_PlaySoundNormal(SFX_Okay, FALSE);
 
         switch(menuItem->itemType)
         {
