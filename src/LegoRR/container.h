@@ -2,6 +2,7 @@
 
 #include "platform.h"
 #include "anim_clone.h"
+#include "3DSound.h"
 #include <d3drm.h>
 
 #define CONTAINER_MAXLISTS 20
@@ -82,6 +83,23 @@ typedef struct Container_CloneData
     U32 cloneCount, cloneNumber; // Total number of clones made and clone's number in the list.
     B32 used;
 } Container_CloneData, *lpContainer_CloneData;
+
+typedef struct Container_AppData
+{
+    lpContainer ownerContainer;
+
+    char* animSetFileName; // For the dodgy Animation Set clone stuff...
+    char* frameName; // For freeing the allocation for SetName...
+
+    U32 frameCount;
+    F32 currTime;
+    F32 transCo; // Standard translation during amimset loop.
+    char* activitySample; // Sample to play when activity is called...
+    lpAnimClone animClone;
+    U32 trigger;
+
+    lpSound3D_SoundFrameRecord soundList;
+} Container_AppData, *lpContainer_AppData;
 
 typedef struct Container_Globs
 {
