@@ -22,3 +22,20 @@ B32 Sound_IsInitialized()
 {
     return (soundGlobs.initialized && Sound3D_Initialized());
 }
+
+S32 WaveCloseReadFile(HMMIO* phmmio, WAVEFORMATEX **ppwfxSrc)
+{
+    if (*ppwfxSrc != NULL)
+    {
+        GlobalFree(*ppwfxSrc);
+        *ppwfxSrc = NULL;
+    }
+
+    if (*phmmio != NULL)
+    {
+        mmioClose(*phmmio, 0);
+        *phmmio = NULL;
+    }
+
+    return 0;
+}

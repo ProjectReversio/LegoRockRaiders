@@ -1,6 +1,7 @@
 #pragma once
 
 #include "platform.h"
+#include <dsound.h>
 
 #define MAX_SAMPLES 100
 
@@ -33,3 +34,5 @@ extern Sound_Globs soundGlobs;
 
 extern B32 Sound_Initialize(B32 nosound);
 extern B32 Sound_IsInitialized();
+
+extern S32 WaveCloseReadFile(HMMIO* phmmio, WAVEFORMATEX **ppwfxSrc);
