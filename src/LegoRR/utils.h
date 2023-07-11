@@ -12,3 +12,5 @@ extern char* Util_StrCpyDebug(const char* string, const char* file, U32 line);
 #else
 extern char* Util_StrCpy(const char* string);
 #endif
+
+extern U32 Util_HashString(const char* str, B32 bIgnoreBlanks, B32 upperCase);

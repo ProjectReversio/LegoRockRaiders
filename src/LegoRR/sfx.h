@@ -6,6 +6,11 @@
 #include "sound.h"
 #include <d3drm.h>
 
+#define SFX_MAXSAMPLES 495
+#define SFX_MAXSAMPLEGROUPS 200
+
+#define SFX_RegisterName(n) (sfxGlobs.hashNameList[n] = Util_HashString(#n, FALSE, TRUE))
+
 typedef enum SFX_ID
 {
     SFX_NULL                    = 0,
@@ -57,13 +62,69 @@ typedef enum SFX_ID
     SFX_ID_Invalid              = -1,
 } SFX_ID;
 
+typedef enum SFX_InstanceFlags
+{
+    SFX_INSTANCE_FLAG_NONE    = 0,
+    SFX_INSTANCE_FLAG_UNK_1   = 0x1,
+    SFX_INSTANCE_FLAG_LOOPING = 0x2,
+    SFX_INSTANCE_FLAG_SOUND3D = 0x3,
+} SFX_InstanceFlags;
+
+typedef enum SFX_GlobFlags
+{
+    SFX_GLOB_FLAG_NONE         = 0,
+    SFX_GLOB_FLAG_SOUNDON      = 0x1,
+    SFX_GLOB_FLAG_POPULATEMODE = 0x2,
+    SFX_GLOB_FLAG_QUEUEMODE    = 0x8,
+} SFX_GlobFlags;
+
+typedef struct SFX_Instance
+{
+    S32 sampleIndex;
+    LPDIRECT3DRMFRAME3 frame; // what happened to hiding D3DRM behind Containers and 3DSound?
+    Point3F position;
+    SFX_InstanceFlags flags;
+} SFX_Instance, *lpSFX_Instance;
+
+typedef struct SFX_Property
+{
+    S32 sound3DHandle;
+    struct SFX_Property* next; // next group property
+} SFX_Property, *lpSFX_Property;
+
+typedef struct SFX_Globs
+{
+    SFX_Property samplePropTable[SFX_MAXSAMPLES];
+    SFX_Property sampleGroupTable[SFX_MAXSAMPLEGROUPS];
+    U32* hashNameList;
+    U32 hashNameCount;
+    U32 sampleGroupCount;
+    SFX_GlobFlags flags;
+    SFX_Instance sfxInstanceTable[10];
+    U32 sfxInstanceCount;
+    F32 globalSampleDuration;
+    Sound globalSampleSoundHandle;
+    SFX_ID globalSampleSFXType;
+    SFX_ID soundQueueSFXTable_1[10];
+    SoundMode soundQueueModesTable_1[10];
+    SFX_ID soundQueueSFXTable_2[10];
+    SoundMode soundQueueModesTable_2[10];
+    U32 soundQueueCount_1;
+    U32 soundQueueCount_2;
+} SFX_Globs;
+
+extern SFX_Globs sfxGlobs;
+
 extern void SFX_Initialize();
 
 extern S32 SFX_Random_PlaySoundNormal(SFX_ID sfxID, B32 loop);
-extern S32 SFX_Random_Play_OrInitSoundUnk(lpContainer cont, SFX_ID sfxID, B32 loop, B32 sound3D, Point3F* wPos);
+extern S32 SFX_Random_PlaySound3DOnFrame(lpContainer cont, SFX_ID sfxID, B32 loop, B32 sound3D, Point3F* wPos);
+extern S32 SFX_Random_PlaySound3DOnContainer(lpContainer cont, SFX_ID sfxID, B32 loop, B32 onCont, lpPoint3F wPos);
 extern B32 SFX_GetType(const char* sfxName, SFX_ID *sfxID);
 extern B32 SFX_IsSoundOn();
 
 extern void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode);
 
 extern void SFX_Update(F32 elapsed);
+
+extern void SFX_Container_SoundTriggerCallback(const char* sfxName, lpContainer cont, void* data);

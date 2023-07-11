@@ -332,7 +332,7 @@ B32 Lego_Initialize()
     Panel_RotationControl_Initialize(legoGlobs.config, legoGlobs.gameName);
 
     const char* sharedObjects = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "SharedObjects", 0));
-    Lws_Initialize(sharedObjects, SFX_GetType, SFX_Random_Play_OrInitSoundUnk, SFX_IsSoundOn);
+    Lws_Initialize(sharedObjects, SFX_GetType, SFX_Random_PlaySound3DOnFrame, SFX_IsSoundOn);
 
     const char* sharedTextureDir = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "SharedTextures", 0));
     if (sharedTextureDir)

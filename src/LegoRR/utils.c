@@ -1,6 +1,9 @@
 #include <string.h>
+#include <ctype.h>
 #include "utils.h"
 #include "mem.h"
+
+#define UTIL_HASHSTRING_LARGENUMBER 6293815
 
 const char* Util_StrIStr(const char* str1, const char* str2)
 {
@@ -80,3 +83,25 @@ char* Util_StrCpy(const char* string)
     return newString;
 }
 #endif
+
+U32 Util_HashString(const char* str, B32 bIgnoreBlanks, B32 upperCase)
+{
+    U32 sum = 0;
+    U32 multiple = UTIL_HASHSTRING_LARGENUMBER;
+    U32 index = 1;
+
+    while (*str != '\0')
+    {
+        if (bIgnoreBlanks)
+            while(isspace((U8)*str)) str++;
+
+        U8 uc = (U8)(*str++);
+        if (upperCase)
+            uc = toupper(uc);
+
+        sum += multiple * index++ * uc;
+        multiple *= UTIL_HASHSTRING_LARGENUMBER;
+    }
+
+    return sum;
+}

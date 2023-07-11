@@ -101,6 +101,9 @@ typedef struct Container_AppData
     lpSound3D_SoundFrameRecord soundList;
 } Container_AppData, *lpContainer_AppData;
 
+typedef void (*ContainerSoundTriggerCallback)(const char* sampleName, lpContainer cont, void* data);
+typedef void (*ContainerTriggerFrameCallback)(lpContainer cont, void* data);
+
 typedef struct Container_Globs
 {
     lpContainer listSet[CONTAINER_MAXLISTS];
@@ -115,10 +118,10 @@ typedef struct Container_Globs
     Container_TextureRef textureSet[CONTAINER_MAXTEXTURES];
     U32 textureCount;
 
-    void (*soundTriggerCallback)(const char* sampleName, lpContainer cont, void* data);
+    ContainerSoundTriggerCallback soundTriggerCallback;
     void* soundTriggerData;
 
-    void (*triggerFrameCallback)(lpContainer cont, void* data);
+    ContainerTriggerFrameCallback triggerFrameCallback;
     void *triggerFrameData;
 
     const char* sharedDir;
@@ -154,3 +157,5 @@ extern lpContainer Container_Load(lpContainer parent, const char* filename, cons
 extern lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 b);
 
 extern void Container_Hide(lpContainer cont, B32 hide);
+
+extern void Container_SetSoundTriggerCallback(ContainerSoundTriggerCallback callback, void* data);

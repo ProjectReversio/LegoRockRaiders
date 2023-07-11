@@ -216,3 +216,10 @@ void Container_Hide(lpContainer cont, B32 hide)
 {
     // TODO: Implement Container_Hide
 }
+
+void Container_SetSoundTriggerCallback(ContainerSoundTriggerCallback callback, void* data)
+{
+    containerGlobs.soundTriggerCallback = callback;
+    containerGlobs.soundTriggerData = data;
+    containerGlobs.flags |= CONTAINER_GLOB_FLAG_TRIGGERENABLED;
+}
