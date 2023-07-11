@@ -83,13 +83,17 @@ B32 SFX_GetType(const char* sfxName, SFX_ID *sfxID)
 
 B32 SFX_IsSoundOn()
 {
-    // TODO: Implement SFX_IsSoundOn
-    return FALSE;
+    return sfxGlobs.flags & SFX_GLOB_FLAG_SOUNDON;
 }
 
 void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode)
 {
-    // TODO: Implement SFX_AddToQueue
+    if (sfxGlobs.soundQueueCount_1 < 10)
+    {
+        sfxGlobs.soundQueueSFXTable_1[sfxGlobs.soundQueueCount_1] = sfxId;
+        sfxGlobs.soundQueueModesTable_1[sfxGlobs.soundQueueCount_1] = mode;
+        sfxGlobs.soundQueueCount_1++;
+    }
 }
 
 void SFX_Update(F32 elapsed)
