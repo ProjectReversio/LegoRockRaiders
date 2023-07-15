@@ -128,7 +128,52 @@ void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode)
 
 void SFX_Update(F32 elapsed)
 {
-    // TODO: Implement SFX_Update
+    B32 origQueueMode = SFX_IsQueueMode();
+    sfxGlobs.globalSampleDuration -= elapsed;
+    SFX_SetQueueMode(FALSE, FALSE);
+    U32 i = 0;
+    if (sfxGlobs.soundQueueCount_2 != 0)
+    {
+        SFX_ID* it = sfxGlobs.soundQueueSFXTable_2;
+        do
+        {
+            SFX_Random_PlaySoundNormal(*it, it[10]);
+            i++;
+            it++;
+        } while (i < sfxGlobs.soundQueueCount_2);
+    }
+
+    if (origQueueMode)
+        SFX_SetQueueMode_AndFlush(TRUE);
+
+    memcpy(sfxGlobs.soundQueueSFXTable_2, sfxGlobs.soundQueueSFXTable_1, sizeof(SFX_ID) * sfxGlobs.soundQueueCount_1);
+    sfxGlobs.soundQueueCount_2 = sfxGlobs.soundQueueCount_1;
+
+    memcpy(sfxGlobs.soundQueueModesTable_2, sfxGlobs.soundQueueModesTable_1, sizeof(SoundMode) * sfxGlobs.soundQueueCount_1);
+
+    sfxGlobs.soundQueueCount_1 = 0;
+
+    SFX_Sound3D_Update();
+}
+
+void SFX_Sound3D_Update()
+{
+    Sound3D_Update();
+}
+
+B32 SFX_IsQueueMode()
+{
+    return sfxGlobs.flags & SFX_GLOB_FLAG_QUEUEMODE;
+}
+
+void SFX_SetQueueMode(B32 on, B32 flushQueued)
+{
+    // TODO: Implement SFX_SetQueueMode
+}
+
+void SFX_SetQueueMode_AndFlush(B32 on)
+{
+    SFX_SetQueueMode(on, TRUE);
 }
 
 void SFX_Container_SoundTriggerCallback(const char* sfxName, lpContainer cont, void* data)

@@ -126,5 +126,10 @@ extern B32 SFX_IsSoundOn();
 extern void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode);
 
 extern void SFX_Update(F32 elapsed);
+extern void SFX_Sound3D_Update();
+
+extern B32 SFX_IsQueueMode();
+extern void SFX_SetQueueMode(B32 on, B32 flushQueued);
+extern void SFX_SetQueueMode_AndFlush(B32 on);
 
 extern void SFX_Container_SoundTriggerCallback(const char* sfxName, lpContainer cont, void* data);

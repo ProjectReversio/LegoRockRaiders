@@ -136,3 +136,5 @@ extern void Sound3D_SetVolumeToDefault();
 extern void Sound3D_MakeListener(LPDIRECT3DRMFRAME3 frame);
 
 extern B32 Sound3D_Stream_Stop(B32 looping);
+
+extern void Sound3D_Update();

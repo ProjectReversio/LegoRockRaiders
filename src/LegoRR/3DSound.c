@@ -181,3 +181,8 @@ B32 Sound3D_Stream_Stop(B32 looping)
     }
     return TRUE;
 }
+
+void Sound3D_Update()
+{
+    // TODO: Implement Sound3D_Update
+}
