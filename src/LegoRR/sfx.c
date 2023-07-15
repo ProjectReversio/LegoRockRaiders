@@ -77,7 +77,37 @@ S32 SFX_Random_PlaySound3DOnContainer(lpContainer cont, SFX_ID sfxID, B32 loop, 
 
 B32 SFX_GetType(const char* sfxName, SFX_ID *sfxID)
 {
-    // TODO: Implement SFX_GetType
+    if (sfxName == NULL)
+        return FALSE;
+
+    U32 hash = Util_HashString(sfxName, FALSE, TRUE);
+    SFX_ID sfxID1 = SFX_NULL;
+    SFX_ID sfxID2 = sfxGlobs.hashNameCount + SFX_Preload_Count;
+    U32* it = sfxGlobs.hashNameList;
+    if (sfxID2 != SFX_NULL)
+    {
+        do
+        {
+            if (*it == hash)
+            {
+                *sfxID = sfxID1;
+                return TRUE;
+            }
+            sfxID1++;
+            it++;
+        } while (sfxID1 < sfxID2);
+    }
+
+    // This flag presumably states the SFX table is still being built
+    if ((sfxGlobs.flags & SFX_GLOB_FLAG_POPULATEMODE) != 0)
+    {
+        *sfxID = sfxID2;
+        hash = Util_HashString(sfxName, FALSE, TRUE);
+        sfxGlobs.hashNameList[sfxID2] = hash;
+        sfxGlobs.hashNameCount++;
+        return TRUE;
+    }
+
     return FALSE;
 }
 
