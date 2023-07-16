@@ -59,8 +59,34 @@ void SFX_Initialize()
 
 S32 SFX_Random_PlaySoundNormal(SFX_ID sfxID, B32 loop)
 {
-    // TODO: Implement SFX_Random_PlaySoundNormal
-    return 0;
+    // TODO: See here for OpenLRR implementation which fixes a bug from the original game:
+    //  https://github.com/trigger-segfault/OpenLRR/blob/9ec34ee254d3c1846cc41a348e160dc4fcfb966f/src/openlrr/game/audio/SFX.cpp#L311
+
+    SFX_ID result;
+    U32 instCount;
+    lpSFX_Instance instance;
+
+    instCount = sfxGlobs.sfxInstanceCount;
+    if ((sfxGlobs.flags & SFX_GLOB_FLAG_QUEUEMODE) == 0)
+    {
+        result = sfxID;
+        if (sfxID != SFX_NULL && (sfxGlobs.flags & SFX_GLOB_FLAG_SOUNDON) != 0)
+        {
+            result = SFX_Random_GetSound3DHandle(sfxID);
+            if (result != SFX_NULL)
+                result = Sound3D_Play2(Sound3D_Play_Normal, NULL, result, loop, NULL);
+        }
+    } else if (sfxGlobs.sfxInstanceCount < 10)
+    {
+        instance = &sfxGlobs.sfxInstanceTable[sfxGlobs.sfxInstanceCount];
+        sfxGlobs.sfxInstanceCount++;
+        instance->sampleIndex = sfxID;
+        sfxGlobs.sfxInstanceTable[instCount].flags &= 0xFFFFFFFE;
+        return (S32)instance;
+
+    }
+
+    return result;
 }
 
 S32 SFX_Random_PlaySound3DOnFrame(lpContainer cont, SFX_ID sfxID, B32 loop, B32 sound3D, Point3F* wPos)
@@ -174,6 +200,12 @@ void SFX_SetQueueMode(B32 on, B32 flushQueued)
 void SFX_SetQueueMode_AndFlush(B32 on)
 {
     SFX_SetQueueMode(on, TRUE);
+}
+
+S32 SFX_Random_GetSound3DHandle(SFX_ID sfxID)
+{
+    // TODO: Implement SFX_Random_GetSound3DHandle
+    return -1;
 }
 
 void SFX_Container_SoundTriggerCallback(const char* sfxName, lpContainer cont, void* data)

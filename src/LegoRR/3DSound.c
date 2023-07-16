@@ -186,3 +186,9 @@ void Sound3D_Update()
 {
     // TODO: Implement Sound3D_Update
 }
+
+S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableIndex, B32 loop, lpPoint3F wPos)
+{
+    // TODO: Implement Sound3D_Play2
+    return -1;
+}

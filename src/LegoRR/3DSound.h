@@ -1,6 +1,7 @@
 #pragma once
 
 #include "platform.h"
+#include "maths.h"
 #include <d3drm.h>
 #include <dsound.h>
 
@@ -138,3 +139,5 @@ extern void Sound3D_MakeListener(LPDIRECT3DRMFRAME3 frame);
 extern B32 Sound3D_Stream_Stop(B32 looping);
 
 extern void Sound3D_Update();
+
+extern S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableIndex, B32 loop, lpPoint3F wPos);
