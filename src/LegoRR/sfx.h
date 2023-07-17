@@ -122,6 +122,8 @@ extern S32 SFX_Random_PlaySound3DOnFrame(lpContainer cont, SFX_ID sfxID, B32 loo
 extern S32 SFX_Random_PlaySound3DOnContainer(lpContainer cont, SFX_ID sfxID, B32 loop, B32 onCont, lpPoint3F wPos);
 extern B32 SFX_GetType(const char* sfxName, SFX_ID *sfxID);
 extern B32 SFX_IsSoundOn();
+extern void SFX_SetSoundOn(B32 soundOn, B32 stopAll);
+extern void SFX_SetSoundOn_AndStopAll(B32 soundOn);
 
 extern void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode);
 

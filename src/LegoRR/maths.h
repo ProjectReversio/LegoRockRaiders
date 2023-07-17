@@ -45,3 +45,5 @@ typedef struct Range2F
 {
     F32 min, max;
 } Range2F, *lpRange2F;
+
+extern S16 Maths_Rand();

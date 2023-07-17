@@ -189,6 +189,111 @@ void Sound3D_Update()
 
 S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableIndex, B32 loop, lpPoint3F wPos)
 {
-    // TODO: Implement Sound3D_Play2
+    LPDIRECTSOUNDBUFFER soundBuff;
+    LPDIRECTSOUND3DBUFFER sound3DBuff;
+    LPDIRECT3DRMFRAME3 root;
+    Point3F cPos;
+    lpSound3D_SoundData sound;
+
+    if (Sound3D_Initialized() && soundTableIndex != -1)
+    {
+        sound = &sound3DGlobs.soundTable[soundTableIndex];
+
+        if (sound->flags & SOUND3D_FLAG_ACTIVE)
+        {
+            // Play a streamed sound
+            if (sound->flags & SOUND3D_FLAG_STREAM)
+            {
+                // TODO: Implement Sound3D_Play2
+            }
+
+            // If this is a multisound, select alternate sound buffer from list
+            if (sound->flags & SOUND3D_FLAG_MULTI)
+            {
+                // NOTE A LOOPING/PLAYING SOUND MAY GET OVERWRITTEN IF MORE THAN 'SOUND3D_MAXSIMULTANEOUS', 'soundTableIndex' SOUNDS ARE PLAYED BEFORE THE SOUND IS STOPPED...
+                if (++sound->voice >= SOUND3D_MAXSIMULTANEOUS)
+                    sound->voice = 0;
+                soundBuff = sound->lpDsb3D[sound->voice];
+            } else
+                soundBuff = sound->lpDsb3D[0];
+
+            soundBuff->lpVtbl->QueryInterface(soundBuff, &IID_IDirectSound3DBuffer, (void**)&sound3DBuff);
+
+            // DEFAULT SETTINGS
+            {
+                S32 volume = sound->volume;
+                if (play == Sound3D_Play_Normal)
+                    volume += -800;
+                soundBuff->lpVtbl->SetVolume(soundBuff, volume);
+            }
+
+            sound3DBuff->lpVtbl->SetMinDistance(sound3DBuff, sound3DGlobs.minDistanceForAttenuation, DS3D_DEFERRED);
+            sound3DBuff->lpVtbl->SetMaxDistance(sound3DBuff, sound3DGlobs.maxDistance, DS3D_DEFERRED);
+
+            if (play == Sound3D_Play_OnFrame)
+            {
+                // TODO: Implement Sound3D_Play2
+            } else if (play == Sound3D_Play_OnPos)
+            {
+                // TODO: Implement Sound3D_Play2
+            } else if (play == Sound3D_Play_Normal)
+            {
+                sound3DBuff->lpVtbl->SetMode(sound3DBuff, DS3DMODE_DISABLE, DS3D_DEFERRED);
+
+                Sound3D_CheckAlreadyExists(NULL, sound3DBuff);
+
+                Sound3D_AddSoundRecord(NULL, soundBuff, sound3DBuff);
+            }
+
+            if (lp3DListenerInfo()->lpVtbl->CommitDeferredSettings(lp3DListenerInfo()) != DS_OK)
+                Error_Warn(TRUE, "DirectSound 3D failed to commit listener info settings.");
+
+            soundBuff->lpVtbl->SetCurrentPosition(soundBuff, 0);
+            if (loop)
+                soundBuff->lpVtbl->Play(soundBuff, 0, 0, DSBPLAY_LOOPING);
+            else
+                soundBuff->lpVtbl->Play(soundBuff, 0, 0, 0);
+
+            // RETURN THE INDEX OF THE BUFFER IN THE ARRAY OF DUPLICATED BUFFERS OF SOUND TYPE 'soundTableIndex'
+            // JUST RETURN THE FIRST BUFFER INDEX IF THE SAMPLE IS NOT MULTI - DUPLICATE DON'T EXIST
+            return ((soundTableIndex*SOUND3D_MAXSIMULTANEOUS) + sound->voice);
+        }
+    }
+
     return -1;
+}
+
+B32 Sound3D_CheckAlreadyExists(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff)
+{
+    lpSound3D_SoundRecord check = sound3DGlobs.soundRecord;
+
+    while (check)
+    {
+        if (check->sound3DBuff == sound3DBuff)
+        {
+            // REMOVE THE SOUND BECAUSE IT WILL BE USED ELSEWHERE
+            Sound3D_RemoveSound(check->frame, check->sound3DBuff);
+
+            return TRUE;
+        }
+
+        check = check->next;
+    }
+
+    return FALSE;
+}
+
+void Sound3D_AddSoundRecord(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUNDBUFFER soundBuff, LPDIRECTSOUND3DBUFFER sound3DBuff)
+{
+    // TODO: Implement Sound3D_AddSoundRecord
+}
+
+void Sound3D_RemoveSound(LPDIRECT3DRMFRAME3 owner, LPDIRECTSOUND3DBUFFER sound3DBuff)
+{
+    // TODO: Implement Sound3D_RemoveSound
+}
+
+void Sound3D_StopAllSounds()
+{
+    // TODO: Implement Sound3D_StopAllSounds
 }

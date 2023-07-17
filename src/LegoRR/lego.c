@@ -732,7 +732,15 @@ B32 Lego_LoadLevel(const char* levelName)
 
 void Lego_SetSoundOn(B32 isSoundOn)
 {
-    // TODO: Implement Lego_SetSoundOn
+    if (isSoundOn)
+    {
+        legoGlobs.flags1 |= GAME1_USESFX;
+        SFX_SetSoundOn_AndStopAll(TRUE);
+        return;
+    }
+
+    legoGlobs.flags1 &= ~GAME1_USESFX;
+    SFX_SetSoundOn_AndStopAll(FALSE);
 }
 
 void Lego_SetGameSpeed(F32 newGameSpeed)

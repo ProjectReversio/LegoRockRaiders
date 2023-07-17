@@ -142,6 +142,27 @@ B32 SFX_IsSoundOn()
     return sfxGlobs.flags & SFX_GLOB_FLAG_SOUNDON;
 }
 
+void SFX_SetSoundOn(B32 soundOn, B32 stopAll)
+{
+    if (soundOn)
+    {
+        sfxGlobs.flags |= SFX_GLOB_FLAG_SOUNDON;
+        return;
+    }
+
+    sfxGlobs.flags &= ~SFX_GLOB_FLAG_SOUNDON;
+
+    if (stopAll)
+        Sound3D_StopAllSounds();
+
+    sfxGlobs.globalSampleSFXType = SFX_NULL;
+}
+
+void SFX_SetSoundOn_AndStopAll(B32 soundOn)
+{
+    SFX_SetSoundOn(soundOn, TRUE);
+}
+
 void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode)
 {
     if (sfxGlobs.soundQueueCount_1 < 10)
@@ -204,7 +225,38 @@ void SFX_SetQueueMode_AndFlush(B32 on)
 
 S32 SFX_Random_GetSound3DHandle(SFX_ID sfxID)
 {
-    // TODO: Implement SFX_Random_GetSound3DHandle
+    lpSFX_Property pSVar1;
+    S16 rng;
+    U32 groupIndex;
+    lpSFX_Property sfxGroup;
+    S32 swapHandle;
+
+    groupIndex = 0;
+    if (sfxID != SFX_NULL)
+    {
+        if (sfxGlobs.samplePropTable[sfxID].next != NULL)
+        {
+            pSVar1 = &sfxGlobs.samplePropTable[sfxID];
+            for (sfxGroup = pSVar1; sfxGroup != NULL; sfxGroup = sfxGroup->next)
+            {
+                groupIndex++;
+            }
+
+            rng = Maths_Rand();
+            sfxGroup = pSVar1;
+
+            for (groupIndex = rng % groupIndex; groupIndex != 0; groupIndex--)
+            {
+                sfxGroup = sfxGroup->next;
+            }
+
+            swapHandle = sfxGroup->sound3DHandle;
+            sfxGroup->sound3DHandle = pSVar1->sound3DHandle;
+            pSVar1->sound3DHandle = swapHandle;
+        }
+
+        return sfxGlobs.samplePropTable[sfxID].sound3DHandle;
+    }
     return -1;
 }
 
