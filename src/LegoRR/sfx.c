@@ -57,6 +57,12 @@ void SFX_Initialize()
     Container_SetSoundTriggerCallback(SFX_Container_SoundTriggerCallback, NULL);
 }
 
+B32 SFX_LoadSampleProperty(char* value, SFX_ID sfxID)
+{
+    // TODO: Implement SFX_LoadSampleProperty
+    return FALSE;
+}
+
 S32 SFX_Random_PlaySoundNormal(SFX_ID sfxID, B32 loop)
 {
     // TODO: See here for OpenLRR implementation which fixes a bug from the original game:
@@ -221,6 +227,17 @@ void SFX_SetQueueMode(B32 on, B32 flushQueued)
 void SFX_SetQueueMode_AndFlush(B32 on)
 {
     SFX_SetQueueMode(on, TRUE);
+}
+
+void SFX_SetSamplePopulateMode(B32 on)
+{
+    if (on)
+    {
+        sfxGlobs.flags |= SFX_GLOB_FLAG_POPULATEMODE;
+        return;
+    }
+
+    sfxGlobs.flags &= ~SFX_GLOB_FLAG_POPULATEMODE;
 }
 
 S32 SFX_Random_GetSound3DHandle(SFX_ID sfxID)

@@ -750,7 +750,28 @@ void Lego_SetGameSpeed(F32 newGameSpeed)
 
 void Lego_LoadSamples(lpConfig config, B32 noReduceSamples)
 {
-    // TODO: Implement Lego_LoadSamples
+    SFX_ID sfxType;
+
+    lpConfig prop = Config_FindArray(config, Config_BuildStringID(legoGlobs.gameName, "Samples", 0));
+    if (!prop)
+        return;
+
+    SFX_SetSamplePopulateMode(TRUE);
+    do
+    {
+        const char* name = prop->itemName;
+        B32 reduced = FALSE;
+        if ((*name == '!') && (prop++, noReduceSamples == 0))
+            reduced = TRUE;
+        if (!reduced)
+        {
+            // SFX_SetSamplePopulateMode(TRUE); was called, meaning this function will register new SFX if they don't already exist
+            if (SFX_GetType(name, &sfxType))
+                SFX_LoadSampleProperty(prop->dataString, sfxType);
+        }
+        prop = Config_GetNextItem(prop);
+    } while (prop != NULL);
+    SFX_SetSamplePopulateMode(FALSE);
 }
 
 void Lego_LoadSurfaceTypeDescriptions_sound(lpConfig config, const char* gameName)

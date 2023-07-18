@@ -117,6 +117,8 @@ extern SFX_Globs sfxGlobs;
 
 extern void SFX_Initialize();
 
+extern B32 SFX_LoadSampleProperty(char* value, SFX_ID sfxID);
+
 extern S32 SFX_Random_PlaySoundNormal(SFX_ID sfxID, B32 loop);
 extern S32 SFX_Random_PlaySound3DOnFrame(lpContainer cont, SFX_ID sfxID, B32 loop, B32 sound3D, Point3F* wPos);
 extern S32 SFX_Random_PlaySound3DOnContainer(lpContainer cont, SFX_ID sfxID, B32 loop, B32 onCont, lpPoint3F wPos);
@@ -133,6 +135,8 @@ extern void SFX_Sound3D_Update();
 extern B32 SFX_IsQueueMode();
 extern void SFX_SetQueueMode(B32 on, B32 flushQueued);
 extern void SFX_SetQueueMode_AndFlush(B32 on);
+
+extern void SFX_SetSamplePopulateMode(B32 on);
 
 extern S32 SFX_Random_GetSound3DHandle(SFX_ID sfxID);
 
