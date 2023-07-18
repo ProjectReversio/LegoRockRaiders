@@ -761,7 +761,7 @@ void Lego_LoadSamples(lpConfig config, B32 noReduceSamples)
     {
         const char* name = prop->itemName;
         B32 reduced = FALSE;
-        if ((*name == '!') && (prop++, noReduceSamples == 0))
+        if ((*name == '!') && (name++, noReduceSamples == 0))
             reduced = TRUE;
         if (!reduced)
         {
