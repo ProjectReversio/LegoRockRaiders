@@ -57,10 +57,89 @@ void SFX_Initialize()
     Container_SetSoundTriggerCallback(SFX_Container_SoundTriggerCallback, NULL);
 }
 
+// value is modified via Util_Tokenize
 B32 SFX_LoadSampleProperty(char* value, SFX_ID sfxID)
 {
-    // TODO: Implement SFX_LoadSampleProperty
-    return FALSE;
+    // TODO: See here for OpenLRR implementation which fixes a bug from the original game:
+    //  https://github.com/trigger-segfault/OpenLRR/blob/9ec34ee254d3c1846cc41a348e160dc4fcfb966f/src/openlrr/game/audio/SFX.cpp#L140
+
+    // TODO: Cleanup Decompiled Code
+
+    lpSFX_Property prop = &sfxGlobs.samplePropTable[sfxID];
+    B32 stream = FALSE;
+    B32 success = TRUE;
+    lpSFX_Property lastItem = NULL;
+    sfxGlobs.samplePropTable[sfxID].next = NULL;
+
+    char* filename_parts[100];
+    S32 numParts = Util_Tokenize(value, filename_parts, ",");
+    if (numParts == 0)
+        return success;
+
+    char** partIter = filename_parts;
+
+    do
+    {
+        char* charIter = *partIter;
+        char currentChar = *charIter;
+        if (currentChar == '*')
+            charIter++;
+
+        S32 volume = 0;
+        if (*charIter == '#')
+        {
+            char cVar2 = charIter[1];
+            charIter++;
+            char volBuff[64];
+            if (cVar2 != '#')
+            {
+                char* pcVar3 = volBuff;
+                do
+                {
+                    *pcVar3 = cVar2;
+                    cVar2 = charIter[1];
+                    pcVar3++;
+                    charIter++;
+                } while (cVar2 != '#');
+            }
+            volume = atoi(volBuff);
+            charIter++;
+        }
+
+        if (*charIter == '@')
+        {
+            stream = TRUE;
+            charIter++;
+        }
+
+        S32 soundHandle = Sound3D_Load(charIter, stream, (currentChar == '*' ? 1 : 0), volume);
+        prop->sound3DHandle = soundHandle;
+        U32 sampleGroupCount = sfxGlobs.sampleGroupCount;
+
+        lpSFX_Property pSVar1;
+        if (soundHandle == -1)
+        {
+            success = FALSE;
+            pSVar1 = lastItem;
+        } else
+        {
+            pSVar1 = prop;
+            if (lastItem != NULL)
+            {
+                prop = &sfxGlobs.sampleGroupTable[sfxGlobs.sampleGroupCount];
+                sfxGlobs.sampleGroupCount++;
+                lastItem->next = prop;
+                sfxGlobs.sampleGroupTable[sampleGroupCount].next = NULL;
+                pSVar1 = prop;
+            }
+        }
+
+        lastItem = pSVar1;
+        partIter++;
+        numParts--;
+    } while (numParts != 0);
+
+    return success;
 }
 
 S32 SFX_Random_PlaySoundNormal(SFX_ID sfxID, B32 loop)

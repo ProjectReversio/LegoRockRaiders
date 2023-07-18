@@ -129,6 +129,8 @@ inline LPDIRECTSOUNDBUFFER lpDSStreamBuff(B32 looping) { return looping ? sound3
 extern B32 Sound3D_Initialize(HWND hwndParent);
 #define Sound3D_Initialized() sound3DGlobs.initialized
 
+extern S32 Sound3D_Load(const char* fName, B32 stream, B32 simultaneous, S32 volume);
+
 extern void Sound3D_SetMaxDist(F32 dist);
 extern void Sound3D_SetMinDistForAtten(F32 dist);
 extern F32 Sound3D_SetRollOffFactor(F32 rollOff);

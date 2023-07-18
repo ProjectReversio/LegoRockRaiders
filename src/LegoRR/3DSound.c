@@ -100,6 +100,12 @@ B32 Sound3D_Initialize(HWND hwndParent)
     return TRUE;
 }
 
+S32 Sound3D_Load(const char* fName, B32 stream, B32 simultaneous, S32 volume)
+{
+    // TODO: Implement Sound3D_Load
+    return -1;
+}
+
 void Sound3D_SetMaxDist(F32 dist)
 {
     lpSound3D_SoundRecord temp = sound3DGlobs.soundRecord;
