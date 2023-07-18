@@ -129,7 +129,12 @@ inline LPDIRECTSOUNDBUFFER lpDSStreamBuff(B32 looping) { return looping ? sound3
 extern B32 Sound3D_Initialize(HWND hwndParent);
 #define Sound3D_Initialized() sound3DGlobs.initialized
 
+extern B32 Sound3D_CheckVolumeLimits(S32 vol);
+extern B32 Sound3D_GetFreeSoundIndex(U32* soundTableIndex);
 extern S32 Sound3D_Load(const char* fName, B32 stream, B32 simultaneous, S32 volume);
+extern B32 Sound3D_LoadSample(lpSound3D_SoundData sound, const char* fName, B32 simultaneous);
+extern B32 Sound3D_CreateSoundBuffer(lpSound3D_SoundData sound, B32 simultaneous);
+extern B32 Sound3D_SendSoundToBuffer(lpSound3D_SoundData sound);
 
 extern void Sound3D_SetMaxDist(F32 dist);
 extern void Sound3D_SetMinDistForAtten(F32 dist);
@@ -141,8 +146,14 @@ extern void Sound3D_MakeListener(LPDIRECT3DRMFRAME3 frame);
 extern B32 Sound3D_Stream_Stop(B32 looping);
 
 extern void Sound3D_Update();
+extern inline void Sound3D_UpdateFrames();
+extern void Sound3D_Stream_CheckPosition(B32 looping);
 
 extern S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableIndex, B32 loop, lpPoint3F wPos);
+extern B32 Sound3D_Stream_Play(const char* fName, B32 loop, S32 volume);
+
+extern B32 Sound3D_Stream_BufferSetup(const char* waveFName, B32 loop, S32 volume);
+extern B32 Sound3D_Stream_FillDataBuffer(B32 looping);
 
 extern B32 Sound3D_CheckAlreadyExists(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff);
 

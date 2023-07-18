@@ -351,6 +351,11 @@ S32 SFX_Random_GetSound3DHandle(SFX_ID sfxID)
             pSVar1->sound3DHandle = swapHandle;
         }
 
+        //for (U32 i = 0; i < MAX_SAMPLES; i++)
+        //{
+        //    Error_Warn(TRUE, Error_Format("samplePropTable[%d].sound3DHandle = %d\n", i, sfxGlobs.samplePropTable[i].sound3DHandle));
+        //}
+
         return sfxGlobs.samplePropTable[sfxID].sound3DHandle;
     }
     return -1;

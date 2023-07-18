@@ -1,6 +1,8 @@
 #include "3DSound.h"
 #include "error.h"
 #include "sound.h"
+#include "mem.h"
+#include <stdio.h>
 
 Sound3D_Globs sound3DGlobs = { NULL };
 
@@ -100,10 +102,265 @@ B32 Sound3D_Initialize(HWND hwndParent)
     return TRUE;
 }
 
+B32 Sound3D_CheckVolumeLimits(S32 vol)
+{
+    if (vol > DSBVOLUME_MAX || vol < DSBVOLUME_MIN)
+    {
+        Error_Warn(TRUE, "Invalid volume specified.");
+
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+B32 Sound3D_GetFreeSoundIndex(U32* soundTableIndex)
+{
+    U32 loopSound;
+
+    for (loopSound = 0; loopSound < SOUND3D_MAXSAMPLES; loopSound++)
+    {
+        if (!(sound3DGlobs.soundTable[loopSound].flags & SOUND3D_FLAG_USED))
+        {
+            *soundTableIndex = loopSound;
+
+            return TRUE;
+        }
+    }
+
+    Error_Fatal(TRUE, "Run out of samples - SOUND3D_MAXSAMPLES too small.");
+
+    return FALSE;
+}
+
 S32 Sound3D_Load(const char* fName, B32 stream, B32 simultaneous, S32 volume)
 {
-    // TODO: Implement Sound3D_Load
+    B32 okay = FALSE;
+    char buffer[MAX_PATH];
+    FILE* file;
+    U32 freeSoundIndex;
+
+    if (Sound3D_Initialized())
+    {
+        if (Sound3D_GetFreeSoundIndex(&freeSoundIndex))
+        {
+            sound3DGlobs.soundTable[freeSoundIndex].flags = 0;
+            sprintf(buffer, "%s.wav", fName);
+
+            if (stream)
+            {
+                const char* hdFileName = File_VerifyFilename(buffer);
+                const char* useFile = NULL;
+                char* cdFileName[FILE_MAXPATH];
+                FILE* mfp;
+
+                if (mfp = fopen(hdFileName, "r"))
+                {
+                    useFile = hdFileName;
+                    fclose(mfp);
+                } else {
+                    if (File_GetCDFilePath(cdFileName, buffer))
+                        useFile = cdFileName;
+                }
+
+                if (useFile)
+                {
+                    Error_Fatal(simultaneous, "Cannot have a multi streaming sound!");
+
+                    // NEED TO FIND THE SIZE OF THE FILE FOR 'Sound3D_GetSamplePlayTime'
+                    if ((file = fopen(useFile, "r")))
+                    {
+                        fseek(file, 0, SEEK_END);
+
+                        sound3DGlobs.soundTable[freeSoundIndex].size = ftell(file);
+                        sound3DGlobs.soundTable[freeSoundIndex].avgBytesPerSec = GetWaveAvgBytesPerSec(useFile);
+                        sound3DGlobs.soundTable[freeSoundIndex].flags |= SOUND3D_FLAG_STREAM;
+
+                        fclose(file);
+
+                        okay = TRUE;
+                    }
+                }
+            } else if (Sound3D_LoadSample(&sound3DGlobs.soundTable[freeSoundIndex], buffer, simultaneous))
+            {
+                sound3DGlobs.soundTable[freeSoundIndex].flags &= ~SOUND3D_FLAG_STREAM;
+                if (simultaneous)
+                    sound3DGlobs.soundTable[freeSoundIndex].flags |= SOUND3D_FLAG_MULTI;
+
+                okay = TRUE;
+            }
+
+            if (okay)
+            {
+                strcpy(sound3DGlobs.soundTable[freeSoundIndex].fName, buffer);
+
+                if (Sound3D_CheckVolumeLimits(volume))
+                    sound3DGlobs.soundTable[freeSoundIndex].volume = volume;
+                else
+                    sound3DGlobs.soundTable[freeSoundIndex].volume = DSBVOLUME_MAX;
+
+                sound3DGlobs.soundTable[freeSoundIndex].flags |= SOUND3D_FLAG_ACTIVE;
+                sound3DGlobs.soundTable[freeSoundIndex].flags |= SOUND3D_FLAG_USED;
+
+                return freeSoundIndex;
+            }
+        } else
+            Error_Warn(TRUE, "Could not get free sound.");
+
+        Error_Warn(TRUE, Error_Format("Cannot load sound \"%s\".", fName));
+    }
+
     return -1;
+}
+
+B32 Sound3D_LoadSample(lpSound3D_SoundData sound, const char* fName, B32 simultaneous)
+{
+    HMMIO hmmioIn;
+    MMCKINFO ckInRiff, ckIn;
+    S32 nError;
+    U32 cbActualRead;
+    void* fileData;
+    U32 fileSize;
+
+    memset(sound, 0, sizeof(Sound3D_SoundData));
+
+    if ((fileData = File_LoadBinary(fName, &fileSize)))
+    {
+        if ((nError = WaveOpenFile(fileData, fileSize, &hmmioIn, &sound->pwf, &ckInRiff)) != 0)
+            goto err;
+
+        if ((nError = WaveStartDataRead(&hmmioIn, &ckIn, &ckInRiff)) != 0)
+            goto err;
+
+        // Ok, size of wave data is in ckIn, allocate that buffer.
+        if ((sound->data = GlobalAlloc(GMEM_FIXED, ckIn.cksize)) == NULL)
+        {
+            nError = ER_MEM;
+            goto err;
+        }
+
+        if ((nError = WaveReadFile(hmmioIn, ckIn.cksize, sound->data, &ckIn, &cbActualRead)) != 0)
+            goto err;
+
+        sound->size = cbActualRead;
+
+        // Close the wave file.
+        if (hmmioIn != NULL)
+        {
+            mmioClose(hmmioIn, 0);
+            hmmioIn = NULL;
+        }
+
+        if (Sound3D_CreateSoundBuffer(sound, simultaneous) == FALSE)
+            goto err;
+        if (Sound3D_SendSoundToBuffer(sound) == FALSE)
+            goto err;
+
+        if (sound->data != NULL)
+        {
+            GlobalFree(sound->data);
+            sound->data = NULL;
+        }
+
+        Mem_Free(fileData);
+
+        return TRUE;
+    }
+
+err:
+    Error_Warn(TRUE, "Error loading sample.");
+
+    if (sound->data != NULL)
+    {
+        GlobalFree(sound->data);
+        sound->data = NULL;
+    }
+    return FALSE;
+}
+
+B32 Sound3D_CreateSoundBuffer(lpSound3D_SoundData sound, B32 simultaneous)
+{
+    DSBUFFERDESC dsbuf;
+    U32 soundNum;
+
+    memset(&dsbuf, 0, sizeof(DSBUFFERDESC));
+    dsbuf.dwSize = sizeof(DSBUFFERDESC);
+    dsbuf.dwFlags = DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRL3D | DSBCAPS_STATIC | DSBCAPS_MUTE3DATMAXDISTANCE;
+    dsbuf.dwBufferBytes = sound->size;
+    dsbuf.lpwfxFormat = sound->pwf;
+
+    if (lpDSnd()->lpVtbl->CreateSoundBuffer(lpDSnd(), &dsbuf, &sound->lpDsb3D[0], NULL) != DS_OK)
+    {
+        Error_Warn(TRUE, "Cannot create sound buffer.");
+
+        return FALSE;
+    }
+
+    sound->voice = 0;
+
+    if (simultaneous)
+    {
+        for(soundNum = 1; soundNum < SOUND3D_MAXSIMULTANEOUS; soundNum++)
+        {
+            if (lpDSnd()->lpVtbl->DuplicateSoundBuffer(lpDSnd(), sound->lpDsb3D[0], &sound->lpDsb3D[soundNum]) != DS_OK)
+            {
+                Error_Warn(TRUE, "Cannot duplicate sound buffer.");
+
+                return FALSE;
+            }
+        }
+    }
+    return TRUE;
+}
+
+B32 Sound3D_SendSoundToBuffer(lpSound3D_SoundData sound)
+{
+    void* lpvPtr1;
+    U32 dwBytes1 = 0;
+    void* lpvPtr2;
+    U32 dwBytes2 = 0;
+    HRESULT hr;
+
+    hr = sound->lpDsb3D[0]->lpVtbl->Lock(sound->lpDsb3D[0], sound->offset, sound->size, &lpvPtr1, &dwBytes1, &lpvPtr2, &dwBytes2, 0);
+
+    if (hr == DSERR_BUFFERLOST)
+    {
+        sound->lpDsb3D[0]->lpVtbl->Restore(sound->lpDsb3D[0]);
+        hr = sound->lpDsb3D[0]->lpVtbl->Lock(sound->lpDsb3D[0], sound->offset, sound->size, &lpvPtr1, &dwBytes1, &lpvPtr2, &dwBytes2, 0);
+    } else if (hr != DS_OK)
+    {
+        Error_Warn(TRUE, "Error locking sound buffer.");
+
+        return FALSE;
+    }
+
+    CopyMemory(lpvPtr1, sound->data, dwBytes1);
+
+    if (lpvPtr2 != NULL)
+        CopyMemory(lpvPtr2, sound->data + dwBytes1, dwBytes2);
+
+    if (sound->lpDsb3D[0]->lpVtbl->Unlock(sound->lpDsb3D[0], lpvPtr1, dwBytes1, lpvPtr2, dwBytes2) != DS_OK)
+    {
+        Error_Warn(TRUE, "Error unlocking sound buffer.");
+
+        return FALSE;
+    }
+
+    if (sound->lpDsb3D[0]->lpVtbl->GetFrequency(sound->lpDsb3D[0], &sound->freq) != DS_OK)
+    {
+        Error_Warn(TRUE, "Error getting sound frequency buffer.");
+
+        return FALSE;
+    }
+
+    if (sound->lpDsb3D[0]->lpVtbl->GetVolume(sound->lpDsb3D[0], &sound->volume))
+    {
+        Error_Warn(TRUE, "Error getting sound volume buffer.");
+
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
 void Sound3D_SetMaxDist(F32 dist)
@@ -190,7 +447,35 @@ B32 Sound3D_Stream_Stop(B32 looping)
 
 void Sound3D_Update()
 {
-    // TODO: Implement Sound3D_Update
+    lpSound3D_SoundRecord next, temp = sound3DGlobs.soundRecord;
+    U32 status;
+
+    Sound3D_UpdateFrames();
+
+    while (temp)
+    {
+        next = temp->next;
+
+        temp->soundBuff->lpVtbl->GetStatus(temp->soundBuff, &status);
+
+        if (!(status & DSBSTATUS_PLAYING))
+            Sound3D_RemoveSound(temp->frame, temp->sound3DBuff);
+
+        temp = next;
+    }
+
+    Sound3D_Stream_CheckPosition(FALSE);
+    Sound3D_Stream_CheckPosition(TRUE);
+}
+
+inline void Sound3D_UpdateFrames()
+{
+    // TODO: Implement Sound3D_UpdateFrames
+}
+
+void Sound3D_Stream_CheckPosition(B32 looping)
+{
+    // TODO: Implement Sound3D_Stream_CheckPosition
 }
 
 S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableIndex, B32 loop, lpPoint3F wPos)
@@ -210,7 +495,32 @@ S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableInd
             // Play a streamed sound
             if (sound->flags & SOUND3D_FLAG_STREAM)
             {
-                // TODO: Implement Sound3D_Play2
+                const char* hdFileName = File_VerifyFilename(sound->fName);
+                const char* useFile = NULL;
+                char cdFileName[FILE_MAXPATH];
+                FILE *mfp;
+
+                Error_Fatal(Sound3D_Play_Normal != play, "Can only play a streaming sound normally, not 3D.");
+
+                if ((mfp = fopen(hdFileName, "r")))
+                {
+                    useFile = hdFileName;
+                    fclose(mfp);
+                } else
+                {
+                    if (File_GetCDFilePath(cdFileName, sound->fName))
+                        useFile = cdFileName;
+                }
+
+                if (useFile)
+                {
+                    Sound3D_Stream_Play(useFile, loop, sound->volume);
+                    // STREAM SOUNDS CANNOT BE PLAYED MULTI SO RETURN FIRST VOICE
+                    return soundTableIndex * SOUND3D_MAXSIMULTANEOUS;
+                } else
+                {
+                    return -1;
+                }
             }
 
             // If this is a multisound, select alternate sound buffer from list
@@ -267,6 +577,46 @@ S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableInd
     }
 
     return -1;
+}
+
+B32 Sound3D_Stream_Play(const char* fName, B32 loop, S32 volume)
+{
+    lpSound3D_StreamData streamData;
+
+    if (loop)
+        streamData = &sound3DGlobs.loopStreamData;
+    else
+        streamData = &sound3DGlobs.streamData;
+
+    if (streamData->playing || streamData->fileOpen)
+        Sound3D_Stream_Stop(loop);
+
+    if (Sound3D_Stream_BufferSetup(fName, loop, volume))
+    {
+        // Ensure that position is at 0, ready to go
+        lpDSStreamBuff(loop)->lpVtbl->SetCurrentPosition(lpDSStreamBuff(loop), 0);
+
+        // MUST BE PLAYED LOOPING ON STREAM BUFFER
+        lpDSStreamBuff(loop)->lpVtbl->Play(lpDSStreamBuff(loop), 0, 0, DSBPLAY_LOOPING);
+
+        streamData->playing = TRUE;
+        return TRUE;
+    } else {
+        streamData->playing = FALSE;
+        return FALSE;
+    }
+}
+
+B32 Sound3D_Stream_BufferSetup(const char* waveFName, B32 loop, S32 volume)
+{
+    // TODO: Implement Sound3D_Stream_BufferSetup
+    return FALSE;
+}
+
+B32 Sound3D_Stream_FillDataBuffer(B32 looping)
+{
+    // TODO: Implement Sound3D_Stream_FillDataBuffer
+    return FALSE;
 }
 
 B32 Sound3D_CheckAlreadyExists(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff)
