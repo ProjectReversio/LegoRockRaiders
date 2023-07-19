@@ -345,7 +345,35 @@ B32 SFX_IsQueueMode()
 
 void SFX_SetQueueMode(B32 on, B32 flushQueued)
 {
-    // TODO: Implement SFX_SetQueueMode
+    if (on)
+    {
+        sfxGlobs.flags |= SFX_GLOB_FLAG_QUEUEMODE;
+        return;
+    }
+
+    sfxGlobs.flags &= ~SFX_GLOB_FLAG_QUEUEMODE;
+
+    if (flushQueued)
+    {
+        for (U32 i = 0; i < sfxGlobs.sfxInstanceCount; i++)
+        {
+            lpSFX_Instance sfxInst = &sfxGlobs.sfxInstanceTable[i];
+
+            if (!(sfxInst->flags & SFX_INSTANCE_FLAG_SOUND3D))
+            {
+                SFX_Random_PlaySoundNormal(sfxInst->sampleIndex,
+                                           ((sfxInst->flags & SFX_INSTANCE_FLAG_LOOPING) != 0)); // != 0 for awkward precise flag boolean parameters
+            } else
+            {
+                SFX_Random_PlaySound3DOnFrame(sfxInst->frame, sfxInst->sampleIndex,
+                                              ((sfxInst->flags & SFX_INSTANCE_FLAG_LOOPING) != 0), // != 0 for awkward precise flag boolean parameters
+                                              ((sfxInst->flags & SFX_INSTANCE_FLAG_ONFRAME) != 0), // != 0 for awkward precise flag boolean parameters
+                                              &sfxInst->position);
+            }
+        }
+
+        sfxGlobs.sfxInstanceCount = 0;
+    }
 }
 
 void SFX_SetQueueMode_AndFlush(B32 on)
