@@ -62,6 +62,7 @@ extern B32 Sound_Initialize(B32 nosound);
 extern B32 Sound_IsInitialized();
 
 extern S32 WaveOpenFile(void* fileData, U32 fileSize, HMMIO* phmmioIn, WAVEFORMATEX** ppwfxInfo, MMCKINFO* pckInRIFF);
+extern S32 WaveOpenFile2(const char* pszFileName, HMMIO* phmmioIn, WAVEFORMATEX** ppwfxInfo, MMCKINFO* pckInRIFF);
 extern S32 WaveStartDataRead(HMMIO* phmmioIn, MMCKINFO* pckIn, MMCKINFO* pckInRIFF);
 extern S32 WaveReadFile(HMMIO hmmioIn, U32 cbRead, U8* pbDest, MMCKINFO* pckIn, U32* cbActualRead);
 extern U32 GetWaveAvgBytesPerSec(const char* pszFileName);

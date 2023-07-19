@@ -146,6 +146,8 @@ extern void Sound3D_MakeListener(LPDIRECT3DRMFRAME3 frame);
 extern B32 Sound3D_Stream_Stop(B32 looping);
 
 extern void Sound3D_Update();
+extern inline void Sound3D_RegisterUpdateFrame(LPDIRECT3DRMFRAME3 frame);
+extern inline void Sound3D_RemoveUpdateFrame(LPDIRECT3DRMFRAME3 frame);
 extern inline void Sound3D_UpdateFrames();
 extern void Sound3D_Stream_CheckPosition(B32 looping);
 
@@ -158,6 +160,16 @@ extern B32 Sound3D_Stream_FillDataBuffer(B32 looping);
 extern B32 Sound3D_CheckAlreadyExists(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff);
 
 extern void Sound3D_AddSoundRecord(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUNDBUFFER soundBuff, LPDIRECTSOUND3DBUFFER sound3DBuff);
+extern B32 Sound3D_RecurseRemoveSoundRecord(LPDIRECT3DRMFRAME3 owner, LPDIRECTSOUND3DBUFFER sound3DBuff, lpSound3D_SoundRecord record);
+extern void Sound3D_RemoveSoundRecord(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff);
+extern B32 Sound3D_RecurseRemoveSound(LPDIRECT3DRMFRAME3 owner, LPDIRECTSOUND3DBUFFER sound3DBuff, lpSound3D_SoundFrameRecord record);
 extern void Sound3D_RemoveSound(LPDIRECT3DRMFRAME3 owner, LPDIRECTSOUND3DBUFFER sound3DBuff);
+extern void Sound3D_AttachSound(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff);
 
 extern void Sound3D_StopAllSounds();
+
+extern void Sound3D_SoundCallback(LPDIRECT3DRMFRAME3 tFrame, void* arg, F32 delay);
+
+extern void Sound3D_SetWorldPos(LPDIRECTSOUND3DBUFFER sound3DBuff, lpPoint3F wPos, lpPoint3F vel);
+
+extern B32 Sound3D_D3DVectorEqual(LPD3DVECTOR a, LPD3DVECTOR b);

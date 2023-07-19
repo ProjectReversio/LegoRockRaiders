@@ -138,6 +138,116 @@ TEMPCLEANUP:
     return nError;
 }
 
+S32 WaveOpenFile2(const char* pszFileName, HMMIO* phmmioIn, WAVEFORMATEX** ppwfxInfo, MMCKINFO* pckInRIFF)
+{
+    HMMIO hmmioIn;
+    MMCKINFO ckIn; // chunk info. for general use.
+    PCMWAVEFORMAT pcmWaveFormat; // Temporary PCM structure to load in.
+    U16 cbExtraAlloc; // Extra bytes for waveformatex
+    S32 nError; // Return value.
+
+    // Initialization...
+    *ppwfxInfo = NULL;
+    nError = 0;
+    hmmioIn = NULL;
+
+    if ((hmmioIn = mmioOpen((LPSTR) pszFileName, NULL, MMIO_ALLOCBUF | MMIO_READ)) == NULL)
+    {
+        nError = ER_CANNOTOPEN;
+        goto ERROR_READING_WAVE;
+    }
+
+    if ((nError = (S32) mmioDescend(hmmioIn, pckInRIFF, NULL, 0)) != 0)
+        goto ERROR_READING_WAVE;
+
+    if ((pckInRIFF->ckid != FOURCC_RIFF) || (pckInRIFF->fccType != mmioFOURCC('W', 'A', 'V', 'E')))
+    {
+        nError = ER_NOTWAVEFILE;
+        goto ERROR_READING_WAVE;
+    }
+
+    // Search the input file for the 'fmt ' chunk.
+    ckIn.ckid = mmioFOURCC('f', 'm', 't', ' ');
+    if ((nError = (S32) mmioDescend(hmmioIn, &ckIn, pckInRIFF, MMIO_FINDCHUNK)) != 0)
+        goto ERROR_READING_WAVE;
+
+    // Expect the 'fmt' chunk to be at least as large as <PCMWAVEFORMAT>;
+    // if there are extra parameters at the end, we'll ignore them.
+
+    if (ckIn.cksize < sizeof(PCMWAVEFORMAT))
+    {
+        nError = ER_NOTWAVEFILE;
+        goto ERROR_READING_WAVE;
+    }
+
+    // Read the 'fmt ' chunk into <pcmWaveFormat>.
+    if (mmioRead(hmmioIn, (HPSTR) &pcmWaveFormat, sizeof(pcmWaveFormat)) != sizeof(pcmWaveFormat))
+    {
+        nError = ER_CANNOTREAD;
+        goto ERROR_READING_WAVE;
+    }
+
+    // Ok, allocate the waveformatex, but if its not pcm format, read the next
+    // word, and that's how many extra bytes to allocate.
+    if (pcmWaveFormat.wf.wFormatTag == WAVE_FORMAT_PCM)
+        cbExtraAlloc = 0;
+    else
+    {
+        // Read in length of extra bytes.
+        if (mmioRead(hmmioIn, (LPSTR) &cbExtraAlloc, sizeof(cbExtraAlloc)) != sizeof(cbExtraAlloc))
+        {
+            nError = ER_CANNOTREAD;
+            goto ERROR_READING_WAVE;
+        }
+    }
+
+    // Ok, now allocate that waveformatex structure.
+    if ((*ppwfxInfo = GlobalAlloc(GMEM_FIXED, sizeof(WAVEFORMATEX) + cbExtraAlloc)) == NULL)
+    {
+        nError = ER_MEM;
+        goto ERROR_READING_WAVE;
+    }
+
+    // Copy the bytes from the pcm structure to the waveformatex structure
+    memcpy(*ppwfxInfo, &pcmWaveFormat, sizeof(pcmWaveFormat));
+    (*ppwfxInfo)->cbSize = cbExtraAlloc;
+
+    // Now, read those extra bytes into the structure, if cbExtraAlloc != 0.
+    if (cbExtraAlloc != 0)
+    {
+        if (mmioRead(hmmioIn, (LPSTR) (((U8*)&((*ppwfxInfo)->cbSize)) + sizeof(cbExtraAlloc)), cbExtraAlloc) != cbExtraAlloc)
+        {
+            nError = ER_NOTWAVEFILE;
+            goto ERROR_READING_WAVE;
+        }
+    }
+
+    // Ascend the input file out of the 'fmt ' chunk.
+    if ((nError = mmioAscend(hmmioIn, &ckIn, 0)) != 0)
+        goto ERROR_READING_WAVE;
+
+
+    goto TEMPCLEANUP;
+
+ERROR_READING_WAVE:
+    if (*ppwfxInfo != NULL)
+    {
+        GlobalFree(*ppwfxInfo);
+        *ppwfxInfo = NULL;
+    }
+
+    if (hmmioIn != NULL)
+    {
+        mmioClose(hmmioIn, 0);
+        hmmioIn = NULL;
+    }
+
+TEMPCLEANUP:
+    *phmmioIn = hmmioIn;
+
+    return nError;
+}
+
 S32 WaveStartDataRead(HMMIO* phmmioIn, MMCKINFO* pckIn, MMCKINFO* pckInRIFF)
 {
     S32 nError = 0;

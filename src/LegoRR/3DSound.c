@@ -2,6 +2,7 @@
 #include "error.h"
 #include "sound.h"
 #include "mem.h"
+#include "container.h"
 #include <stdio.h>
 
 Sound3D_Globs sound3DGlobs = { NULL };
@@ -468,9 +469,43 @@ void Sound3D_Update()
     Sound3D_Stream_CheckPosition(TRUE);
 }
 
+inline void Sound3D_RegisterUpdateFrame(LPDIRECT3DRMFRAME3 frame)
+{
+    U32 loop;
+
+    for (loop = 0; loop < SOUND3D_MAXUPDATEFRAMES; loop++)
+    {
+        if (sound3DGlobs.updateFrameList[loop] == NULL)
+        {
+            sound3DGlobs.updateFrameList[loop] = frame;
+
+            break;
+        }
+    }
+}
+
+inline void Sound3D_RemoveUpdateFrame(LPDIRECT3DRMFRAME3 frame)
+{
+    U32 loop;
+
+    for (loop = 0; loop < SOUND3D_MAXUPDATEFRAMES; loop++)
+    {
+        if (frame == sound3DGlobs.updateFrameList[loop])
+        {
+            sound3DGlobs.updateFrameList[loop] = NULL;
+        }
+    }
+}
+
 inline void Sound3D_UpdateFrames()
 {
-    // TODO: Implement Sound3D_UpdateFrames
+    U32 loop;
+
+    for (loop = 0; loop < SOUND3D_MAXUPDATEFRAMES; loop++)
+    {
+        if (sound3DGlobs.updateFrameList[loop])
+            Sound3D_SoundCallback(sound3DGlobs.updateFrameList[loop], NULL, 0.0f);
+    }
 }
 
 void Sound3D_Stream_CheckPosition(B32 looping)
@@ -548,10 +583,20 @@ S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableInd
 
             if (play == Sound3D_Play_OnFrame)
             {
-                // TODO: Implement Sound3D_Play2
+                sound3DBuff->lpVtbl->SetMode(sound3DBuff, DS3DMODE_NORMAL, DS3D_DEFERRED);
+                frame->lpVtbl->GetScene(frame, &root);
+                Sound3D_CheckAlreadyExists(frame, sound3DBuff);
+                Sound3D_AttachSound(frame, sound3DBuff);
+                Sound3D_AddSoundRecord(frame, soundBuff, sound3DBuff);
+                frame->lpVtbl->GetPosition(frame, root, (LPD3DVECTOR) &cPos);
+                sound3DBuff->lpVtbl->SetPosition(sound3DBuff, cPos.x, cPos.y, cPos.z, DS3D_DEFERRED);
+                root->lpVtbl->Release(root);
             } else if (play == Sound3D_Play_OnPos)
             {
-                // TODO: Implement Sound3D_Play2
+                sound3DBuff->lpVtbl->SetMode(sound3DBuff, DS3DMODE_NORMAL, DS3D_DEFERRED);
+                Sound3D_SetWorldPos(sound3DBuff, wPos, NULL);
+                Sound3D_CheckAlreadyExists(NULL, sound3DBuff);
+                Sound3D_AddSoundRecord(NULL, soundBuff, sound3DBuff);
             } else if (play == Sound3D_Play_Normal)
             {
                 sound3DBuff->lpVtbl->SetMode(sound3DBuff, DS3DMODE_DISABLE, DS3D_DEFERRED);
@@ -609,14 +654,158 @@ B32 Sound3D_Stream_Play(const char* fName, B32 loop, S32 volume)
 
 B32 Sound3D_Stream_BufferSetup(const char* waveFName, B32 loop, S32 volume)
 {
-    // TODO: Implement Sound3D_Stream_BufferSetup
-    return FALSE;
+    DSBUFFERDESC dsbd;
+    S32 nChkErr;
+    S32 nRem;
+    lpSound3D_StreamData streamData;
+
+    if (loop)
+        streamData = &sound3DGlobs.loopStreamData;
+    else
+        streamData = &sound3DGlobs.streamData;
+
+    if ((nChkErr = WaveOpenFile2(waveFName, &streamData->wiWave.hmmio, &streamData->wiWave.pwfx, &streamData->wiWave.mmckInRIFF)) != 0)
+    {
+        Error_Warn(TRUE, "Error opening wave file.");
+        return FALSE;
+    }
+
+    if (streamData->wiWave.pwfx->wFormatTag != WAVE_FORMAT_PCM)
+    {
+        Error_Warn(TRUE, "Wave file not PCM.");
+        WaveCloseReadFile(&streamData->wiWave.hmmio, &streamData->wiWave.pwfx);
+        return FALSE;
+    }
+
+    // Seek to the data chunk. mmck.ckSize will be the size of all the data in the file.
+    if ((nChkErr = WaveStartDataRead(&streamData->wiWave.hmmio, &streamData->wiWave.mmck, &streamData->wiWave.mmckInRIFF)) != 0)
+    {
+        Error_Warn(TRUE, "Seek failed.");
+        WaveCloseReadFile(&streamData->wiWave.hmmio, &streamData->wiWave.pwfx);
+        return FALSE;
+    }
+
+    // Calculate a buffer length 3 sec. long. This should be an integral number of the
+    // number of bytes in one notification period.
+    streamData->wiWave.dwNotifySize = streamData->wiWave.pwfx->nSamplesPerSec * 3 * (U32)streamData->wiWave.pwfx->nBlockAlign;
+    streamData->wiWave.dwNotifySize = streamData->wiWave.dwNotifySize / SOUND3D_NUMOFPLAYNOTIFICATIONS;
+    // the notify size should be an intergral multiple of the nBlockAlign value.
+    if ((nRem = streamData->wiWave.dwNotifySize % (U32)streamData->wiWave.pwfx->nBlockAlign) != 0)
+        streamData->wiWave.dwNotifySize += streamData->wiWave.pwfx->nBlockAlign - nRem;
+    streamData->wiWave.dwBufferSize = streamData->wiWave.dwNotifySize * SOUND3D_NUMOFPLAYNOTIFICATIONS;
+
+    // Create the secondary DirectSoundBuffer object to receive our sound data.
+    memset(&dsbd, 0, sizeof(DSBUFFERDESC));
+    dsbd.dwSize = sizeof(DSBUFFERDESC);
+    // Use new GetCurrentPosition() accuracy (DirectX 2 feature)
+    dsbd.dwFlags = DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_GETCURRENTPOSITION2;
+    dsbd.dwBufferBytes = streamData->wiWave.dwBufferSize;
+
+    // Set Format properties according to the WAVE file we just opened
+    dsbd.lpwfxFormat = streamData->wiWave.pwfx;
+
+    {
+        LPDIRECTSOUNDBUFFER newBuffer;
+        if (lpDSnd()->lpVtbl->CreateSoundBuffer(lpDSnd(), &dsbd, &newBuffer, NULL) != DS_OK)
+        {
+            Error_Warn(TRUE, "Cannot create sound buffer.");
+            return FALSE;
+        }
+
+        if (loop)
+            sound3DGlobs.lpDSLoopStreamBuff = newBuffer;
+        else
+            sound3DGlobs.lpDSStreamBuff = newBuffer;
+    }
+
+    lpDSStreamBuff(loop)->lpVtbl->SetVolume(lpDSStreamBuff(loop), volume);
+
+    streamData->wiWave.bFoundEnd = FALSE;
+    streamData->wiWave.dwNextWriteOffset = 0;
+    // KEEP STREAM WRITE 2 NOTIFICATIONS BEHIND PLAY
+    // AND WRITE SINGLE NOTIFICATION BLOCKS OF DATA
+    streamData->wiWave.dwNextProgressCheck = streamData->wiWave.dwNotifySize * 2;
+
+    // ADD LOOP CAP HERE
+    streamData->wiWave.bLoopFile = loop;
+
+    // Fill data in the buffer.
+    Sound3D_Stream_FillDataBuffer(loop);
+
+    // we're set to play now.
+    streamData->wiWave.bDonePlaying = FALSE;
+
+    streamData->fileOpen = TRUE;
+
+    return TRUE;
 }
 
 B32 Sound3D_Stream_FillDataBuffer(B32 looping)
 {
-    // TODO: Implement Sound3D_Stream_FillDataBuffer
-    return FALSE;
+    lpSound3D_StreamData streamData;
+    U8 *lpWrite1, *lpWrite2;
+    U32 dwLen1, dwLen2;
+    U32 uActualBytesWritten;
+    U32 dwBytes;
+
+    if (looping)
+        streamData = &sound3DGlobs.loopStreamData;
+    else
+        streamData = &sound3DGlobs.streamData;
+
+    dwBytes = streamData->wiWave.dwBufferSize;
+
+    // This is the initial read. So we fill the entire buffer.
+    // This will not wrap around so the 2nd pointers will be NULL.
+    if (lpDSStreamBuff(looping)->lpVtbl->Lock(lpDSStreamBuff(looping), 0, dwBytes, (void**)&lpWrite1, &dwLen1, (void**)&lpWrite2, &dwLen2, 0) != DS_OK)
+    {
+        Error_Warn(TRUE, "Cannot lock stream buffer.");
+        return FALSE;
+    }
+
+    WaveReadFile(streamData->wiWave.hmmio, (U32)dwLen1, lpWrite1, &streamData->wiWave.mmck, &uActualBytesWritten);
+
+    // if the number of bytes written is less than the
+    // amount we requested, we have a short file.
+    if (uActualBytesWritten < dwLen1)
+    {
+        if (!streamData->wiWave.bLoopFile)
+        {
+            // we set the bFoundEnd flag if the length is less than
+            // one notify period long which is when the first notification comes in.
+            // The next notification will then call send a message to process a stop.
+            if (uActualBytesWritten < streamData->wiWave.dwNotifySize)
+                streamData->wiWave.bFoundEnd = TRUE;
+
+            // Fill in silence for the rest of the buffer.
+            FillMemory(lpWrite1 + uActualBytesWritten, dwLen1 - uActualBytesWritten, (U8)(streamData->wiWave.pwfx->wBitsPerSample == 8 ? 128 : 0));
+        } else {
+            // we are looping.
+            U32 uWritten = uActualBytesWritten; // from previous call above.
+
+            while (uWritten < dwLen1)
+            {
+                // this will keep reading in until the buffer is full. For very short files.
+                WaveStartDataRead(&streamData->wiWave.hmmio, &streamData->wiWave.mmck, &streamData->wiWave.mmckInRIFF);
+                WaveReadFile(streamData->wiWave.hmmio, (U32)dwLen1 - uWritten, lpWrite1 + uWritten, &streamData->wiWave.mmck, &uActualBytesWritten);
+                uWritten += uActualBytesWritten;
+            }
+        }
+    }
+
+    // now unlock the buffer.
+
+    lpDSStreamBuff(looping)->lpVtbl->Unlock(lpDSStreamBuff(looping), (void*)lpWrite1, dwLen1, NULL, 0);
+
+    streamData->wiWave.dwNextWriteOffset += dwLen1;
+    // this is a circular buffer. Do mod buffersize.
+    if (streamData->wiWave.dwNextWriteOffset >= streamData->wiWave.dwBufferSize)
+        streamData->wiWave.dwNextWriteOffset -= streamData->wiWave.dwBufferSize;
+
+    streamData->wiWave.dwProgress = 0;
+    streamData->wiWave.dwLastPos = 0;
+
+    return TRUE;
 }
 
 B32 Sound3D_CheckAlreadyExists(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff)
@@ -641,15 +830,171 @@ B32 Sound3D_CheckAlreadyExists(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER s
 
 void Sound3D_AddSoundRecord(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUNDBUFFER soundBuff, LPDIRECTSOUND3DBUFFER sound3DBuff)
 {
-    // TODO: Implement Sound3D_AddSoundRecord
+    lpSound3D_SoundRecord temp;
+
+    temp = Mem_Alloc(sizeof(Sound3D_SoundRecord));
+    temp->next = sound3DGlobs.soundRecord;
+    temp->frame = frame;
+    temp->sound3DBuff = sound3DBuff;
+    temp->soundBuff = soundBuff;
+    sound3DGlobs.soundRecord = temp;
+}
+
+B32 Sound3D_RecurseRemoveSoundRecord(LPDIRECT3DRMFRAME3 owner, LPDIRECTSOUND3DBUFFER sound3DBuff, lpSound3D_SoundRecord record)
+{
+    lpSound3D_SoundRecord temp;
+
+    if (record == NULL)
+        return FALSE;
+
+    if (Sound3D_RecurseRemoveSoundRecord(owner, sound3DBuff, record->next))
+    {
+        temp = record->next;
+        record->next = temp->next;
+        Mem_Free(temp);
+    }
+
+    if (sound3DBuff == record->sound3DBuff)
+        return TRUE;
+
+    return FALSE;
+}
+
+void Sound3D_RemoveSoundRecord(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff)
+{
+    lpSound3D_SoundRecord temp;
+
+    if (Sound3D_RecurseRemoveSoundRecord(frame, sound3DBuff, sound3DGlobs.soundRecord))
+    {
+        temp = sound3DGlobs.soundRecord;
+        sound3DGlobs.soundRecord = sound3DGlobs.soundRecord->next;
+        Mem_Free(temp);
+    }
+}
+
+B32 Sound3D_RecurseRemoveSound(LPDIRECT3DRMFRAME3 owner, LPDIRECTSOUND3DBUFFER sound3DBuff, lpSound3D_SoundFrameRecord record)
+{
+    lpSound3D_SoundFrameRecord temp;
+
+    if (!record)
+        return FALSE;
+
+    if (Sound3D_RecurseRemoveSound(owner, sound3DBuff, record->next))
+    {
+        Sound3D_RemoveSoundRecord(owner, sound3DBuff);
+
+        temp = record->next;
+        record->next = temp->next;
+        Mem_Free(temp);
+    }
+
+    if (sound3DBuff == record->sound3DBuff)
+        return TRUE;
+
+    return FALSE;
 }
 
 void Sound3D_RemoveSound(LPDIRECT3DRMFRAME3 owner, LPDIRECTSOUND3DBUFFER sound3DBuff)
 {
-    // TODO: Implement Sound3D_RemoveSound
+    lpSound3D_SoundFrameRecord temp;
+    Container_AppData* data;
+
+    sound3DBuff->lpVtbl->Release(sound3DBuff);
+
+    if (!owner)
+    {
+        Sound3D_RemoveSoundRecord(NULL, sound3DBuff);
+
+        return;
+    }
+
+    data = (Container_AppData*) owner->lpVtbl->GetAppData(owner);
+
+    if (Sound3D_RecurseRemoveSound(owner, sound3DBuff, data->soundList))
+    {
+        Sound3D_RemoveSoundRecord(owner, sound3DBuff);
+
+        temp = data->soundList;
+        data->soundList = data->soundList->next;
+
+        Mem_Free(temp);
+    }
+
+    Sound3D_RemoveUpdateFrame(owner);
+}
+
+void Sound3D_AttachSound(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff)
+{
+    Container_AppData* data = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    lpSound3D_SoundFrameRecord temp;
+
+    temp = Mem_Alloc(sizeof(Sound3D_SoundFrameRecord));
+    if (data)
+        temp->next = data->soundList;
+    else
+        temp->next = NULL;
+    temp->sound3DBuff = sound3DBuff;
+
+    temp->pos.x = 0;
+    temp->pos.y = 0;
+    temp->pos.z = 0;
+
+    Container_Frame_SetAppData(frame, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, temp, NULL);
+
+    Sound3D_RegisterUpdateFrame(frame);
 }
 
 void Sound3D_StopAllSounds()
 {
-    // TODO: Implement Sound3D_StopAllSounds
+    lpSound3D_SoundRecord temp = sound3DGlobs.soundRecord;
+
+    while (temp)
+    {
+        temp->soundBuff->lpVtbl->Stop(temp->soundBuff);
+        temp = temp->next;
+    }
+
+    Sound3D_Stream_Stop(FALSE);
+    Sound3D_Stream_Stop(TRUE);
+}
+
+void Sound3D_SoundCallback(LPDIRECT3DRMFRAME3 tFrame, void* arg, F32 delay)
+{
+    Container_AppData* data = (Container_AppData*)tFrame->lpVtbl->GetAppData(tFrame);
+    D3DVECTOR rlvVisualInfo;
+    LPDIRECT3DRMFRAME3 root;
+    lpSound3D_SoundFrameRecord temp = data->soundList;
+
+    tFrame->lpVtbl->GetScene(tFrame, &root);
+
+    while (temp)
+    {
+        // GET POSITION OF THE 3D SOUND WHEN IT WAS LAST SET, THEN COMPARE IT WITH THE POSITION OF ITS FRAME
+        // IF DIFFERENT, UPDATE THE SOUND POSITION
+        tFrame->lpVtbl->GetPosition(tFrame, root, &rlvVisualInfo);
+        if (!Sound3D_D3DVectorEqual(&rlvVisualInfo, &temp->pos))
+        {
+            temp->sound3DBuff->lpVtbl->SetPosition(temp->sound3DBuff, rlvVisualInfo.x, rlvVisualInfo.y, rlvVisualInfo.z, DS3D_IMMEDIATE);
+            temp->pos = rlvVisualInfo;
+        }
+
+        temp = temp->next;
+    }
+
+    root->lpVtbl->Release(root);
+}
+
+void Sound3D_SetWorldPos(LPDIRECTSOUND3DBUFFER sound3DBuff, lpPoint3F wPos, lpPoint3F vel)
+{
+    sound3DBuff->lpVtbl->SetPosition(sound3DBuff, wPos->x, wPos->y, wPos->z, DS3D_IMMEDIATE);
+}
+
+B32 Sound3D_D3DVectorEqual(LPD3DVECTOR a, LPD3DVECTOR b)
+{
+    if (a->x == b->x &&
+        a->y == b->y &&
+        a->z == b->z)
+        return TRUE;
+
+    return FALSE;
 }
