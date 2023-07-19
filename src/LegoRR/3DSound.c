@@ -510,7 +510,130 @@ inline void Sound3D_UpdateFrames()
 
 void Sound3D_Stream_CheckPosition(B32 looping)
 {
-    // TODO: Implement Sound3D_Stream_CheckPosition
+    lpSound3D_StreamData streamData;
+    U32 hr = DS_OK;
+    U32 hRet = 0;
+    U32 dwPlayPos, dwWritePos, dwPlayed;
+    B32 sameLoop;
+
+    if (looping)
+        streamData = &sound3DGlobs.loopStreamData;
+    else
+        streamData = &sound3DGlobs.streamData;
+
+    if (streamData->playing && streamData->fileOpen)
+    {
+        lpDSStreamBuff(looping)->lpVtbl->GetCurrentPosition(lpDSStreamBuff(looping), &dwPlayPos, &dwWritePos);
+
+        if (dwPlayPos < streamData->wiWave.dwLastPos)
+            dwPlayed = streamData->wiWave.dwBufferSize - streamData->wiWave.dwLastPos + dwPlayPos;
+        else
+            dwPlayed = dwPlayPos - streamData->wiWave.dwLastPos;
+
+        streamData->wiWave.dwProgress += dwPlayed;
+        streamData->wiWave.dwLastPos = dwPlayPos;
+        sameLoop = FALSE;
+
+        while (streamData->wiWave.dwProgress > streamData->wiWave.dwNextProgressCheck)
+        {
+            // A play notification has been received.
+            U8* lpWrite1;
+            U32 dwWrite1;
+            U32 cbActual = 0;
+
+            // ON NEXT NOTIFICATION, IF DONE PLAYING IS SET STOP THE SOUND
+            if (streamData->wiWave.bDonePlaying && !sameLoop)
+            {
+                Sound3D_Stream_Stop(looping);
+                break;
+            }
+
+            sameLoop = TRUE;
+
+            // If the entire file has been read into the buffer, bFoundEnd will be TRUE.
+            if (!streamData->wiWave.bFoundEnd)
+            {
+                // read in more of the file.
+
+                //Error_Debug(Error_Format("Next write pos = %i\n", streamData->wiWave.dwNextWriteOffset));
+                //Error_Debug(Error_Format("Write size = %i\n\n", streamData->wiWave.dwNotifySize));
+
+                // Lock the buffer.
+                if (lpDSStreamBuff(looping)->lpVtbl->Lock(lpDSStreamBuff(looping), streamData->wiWave.dwNextWriteOffset, streamData->wiWave.dwNotifySize, &lpWrite1, &dwWrite1, NULL, NULL, 0) != DS_OK)
+                {
+                    Error_Warn(TRUE, "Cannot lock stream buffer.");
+                    return;
+                }
+
+                // now read the file.
+                WaveReadFile(streamData->wiWave.hmmio, dwWrite1, lpWrite1, &streamData->wiWave.mmck, &cbActual);
+
+                // if cbActual is less than the amount asked for, we may have
+                // reached end of file. If we are looping, we will simply read the
+                // file in again until we have written dwWrite1 bytes into the buffer.
+                // If not looping we fill with silence.
+                if ((U32)cbActual < dwWrite1)
+                {
+                    if (!streamData->wiWave.bLoopFile)
+                    {
+                        streamData->wiWave.bFoundEnd = TRUE;
+
+                        // fill up the rest of the buffer with silence.
+                        FillMemory(lpWrite1 + cbActual, (U32)dwWrite1 - cbActual, (U8)(streamData->wiWave.pwfx->wBitsPerSample == 8 ? 128 : 0));
+                    } else
+                    {
+                        // we're looping. Read in the file again.
+                        S32 nChkErr = 0;
+                        U32 cbWritten = cbActual; // from previous call above.
+
+                        while (cbWritten < (U32)dwWrite1) // write only one notification worth.
+                        {
+                            // this will keep reading in until the buffer is full. For very short files.
+                            WaveStartDataRead(&streamData->wiWave.hmmio, &streamData->wiWave.mmck, &streamData->wiWave.mmckInRIFF);
+                            WaveReadFile(streamData->wiWave.hmmio, (U32)dwWrite1 - cbWritten, lpWrite1 + cbWritten, &streamData->wiWave.mmck, &cbActual);
+                            cbWritten += cbActual;
+                        }
+                    }
+                }
+
+                // unlock now
+                lpDSStreamBuff(looping)->lpVtbl->Unlock(lpDSStreamBuff(looping), lpWrite1, dwWrite1, NULL, 0);
+
+                // setup the next write offset
+                streamData->wiWave.dwNextWriteOffset += dwWrite1;
+                streamData->wiWave.dwNextProgressCheck += dwWrite1;
+
+                if (streamData->wiWave.dwNextWriteOffset >= streamData->wiWave.dwBufferSize)
+                    streamData->wiWave.dwNextWriteOffset -= streamData->wiWave.dwBufferSize;
+
+            } else {
+                // We have read in the whole file. We will keep filling in silence
+                // in the buffer to allow the remaining sound bytes filled earlier
+                // to be played.
+
+                // Allow the rest of the bytes to be played and fill here
+                // with silence. The next notification will quit the while loop.
+                lpDSStreamBuff(looping)->lpVtbl->Lock(lpDSStreamBuff(looping), streamData->wiWave.dwNextWriteOffset, streamData->wiWave.dwNotifySize, &lpWrite1, &dwWrite1, NULL, NULL, 0);
+                FillMemory(lpWrite1, dwWrite1, (U8)(streamData->wiWave.pwfx->wBitsPerSample == 8 ? 128 : 0));
+
+                hr = lpDSStreamBuff(looping)->lpVtbl->Unlock(lpDSStreamBuff(looping), lpWrite1, dwWrite1, NULL, 0);
+
+                // We don't want to cut off the sound before it's done playing.
+                // ON NEXT NOTIFICATION, IF DONE PLAYING IS SET STOP THE SOUND
+                if (streamData->wiWave.mmckInRIFF.cksize > streamData->wiWave.dwNotifySize &&
+                    streamData->wiWave.dwProgress >= streamData->wiWave.mmckInRIFF.cksize - streamData->wiWave.dwNotifySize)
+                {
+                    streamData->wiWave.bDonePlaying = TRUE;
+                } else if (streamData->wiWave.dwProgress >= streamData->wiWave.mmckInRIFF.cksize)
+                {
+                    // for short files.
+                    streamData->wiWave.bDonePlaying = TRUE;
+                }
+
+                streamData->wiWave.dwNextProgressCheck += dwWrite1;
+            }
+        }
+    }
 }
 
 S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableIndex, B32 loop, lpPoint3F wPos)
