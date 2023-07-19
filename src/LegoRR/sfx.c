@@ -174,16 +174,61 @@ S32 SFX_Random_PlaySoundNormal(SFX_ID sfxID, B32 loop)
     return result;
 }
 
-S32 SFX_Random_PlaySound3DOnFrame(lpContainer cont, SFX_ID sfxID, B32 loop, B32 sound3D, Point3F* wPos)
+S32 SFX_Random_PlaySound3DOnFrame(LPDIRECT3DRMFRAME3 frame, SFX_ID sfxID, B32 loop, B32 onFrame, Point3F* wPos)
 {
-    // TODO: Implement SFX_Random_PlaySound3DOnFrame
-    return -1;
+    if (((U8)sfxGlobs.flags & SFX_GLOB_FLAG_QUEUEMODE) == 0)
+    {
+        if (sfxID != SFX_NULL && (((U8)sfxGlobs.flags & SFX_GLOB_FLAG_SOUNDON) != 0))
+        {
+            S32 rngSound3DHandle = SFX_Random_GetSound3DHandle(sfxID);
+            if (rngSound3DHandle != 0)
+            {
+                if (onFrame)
+                    return Sound3D_Play2(Sound3D_Play_OnFrame, frame, rngSound3DHandle, loop, NULL);
+
+                return Sound3D_Play2(Sound3D_Play_OnPos, NULL, rngSound3DHandle, loop, wPos);
+            }
+        }
+    } else if (sfxGlobs.sfxInstanceCount < 10)
+    {
+        lpSFX_Instance sfxInst = &sfxGlobs.sfxInstanceTable[sfxGlobs.sfxInstanceCount];
+        sfxInst->sampleIndex = sfxID;
+        sfxInst->frame = frame;
+
+        sfxInst->flags &= ~(SFX_INSTANCE_FLAG_ONFRAME | SFX_INSTANCE_FLAG_LOOPING);
+        sfxInst->flags |= SFX_INSTANCE_FLAG_SOUND3D;
+
+        if (loop)
+            sfxInst->flags |= SFX_INSTANCE_FLAG_LOOPING;
+
+        if (onFrame)
+            sfxInst->flags |= SFX_INSTANCE_FLAG_ONFRAME;
+
+        if (wPos != NULL)
+        {
+            sfxInst->position.x = wPos->x;
+            sfxInst->position.y = wPos->y;
+            sfxInst->position.z = wPos->z;
+        }
+
+        sfxGlobs.sfxInstanceCount++;
+    }
+
+    return 0;
 }
 
 S32 SFX_Random_PlaySound3DOnContainer(lpContainer cont, SFX_ID sfxID, B32 loop, B32 onCont, lpPoint3F wPos)
 {
-    // TODO: Implement SFX_Random_PlaySound3DOnContainer
-    return -1;
+    LPDIRECT3DRMFRAME3 frame;
+    S32 playHandle;
+
+    if (cont == NULL)
+        frame = NULL;
+    else
+        frame = Container_GetMasterFrame(cont);
+
+    playHandle = SFX_Random_PlaySound3DOnFrame(frame, sfxID, loop, onCont, wPos);
+    return playHandle;
 }
 
 B32 SFX_GetType(const char* sfxName, SFX_ID *sfxID)

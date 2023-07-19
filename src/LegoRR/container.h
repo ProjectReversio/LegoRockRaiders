@@ -159,3 +159,5 @@ extern lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 
 extern void Container_Hide(lpContainer cont, B32 hide);
 
 extern void Container_SetSoundTriggerCallback(ContainerSoundTriggerCallback callback, void* data);
+
+extern inline LPDIRECT3DRMFRAME3 Container_GetMasterFrame(lpContainer cont);

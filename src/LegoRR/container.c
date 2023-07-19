@@ -223,3 +223,8 @@ void Container_SetSoundTriggerCallback(ContainerSoundTriggerCallback callback, v
     containerGlobs.soundTriggerData = data;
     containerGlobs.flags |= CONTAINER_GLOB_FLAG_TRIGGERENABLED;
 }
+
+inline LPDIRECT3DRMFRAME3 Container_GetMasterFrame(lpContainer cont)
+{
+    return cont->masterFrame;
+}

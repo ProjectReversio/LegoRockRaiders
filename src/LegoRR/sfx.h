@@ -65,9 +65,9 @@ typedef enum SFX_ID
 typedef enum SFX_InstanceFlags
 {
     SFX_INSTANCE_FLAG_NONE    = 0,
-    SFX_INSTANCE_FLAG_UNK_1   = 0x1,
+    SFX_INSTANCE_FLAG_SOUND3D = 0x1,
     SFX_INSTANCE_FLAG_LOOPING = 0x2,
-    SFX_INSTANCE_FLAG_SOUND3D = 0x3,
+    SFX_INSTANCE_FLAG_ONFRAME = 0x4,
 } SFX_InstanceFlags;
 
 typedef enum SFX_GlobFlags
@@ -120,7 +120,7 @@ extern void SFX_Initialize();
 extern B32 SFX_LoadSampleProperty(char* value, SFX_ID sfxID);
 
 extern S32 SFX_Random_PlaySoundNormal(SFX_ID sfxID, B32 loop);
-extern S32 SFX_Random_PlaySound3DOnFrame(lpContainer cont, SFX_ID sfxID, B32 loop, B32 sound3D, Point3F* wPos);
+extern S32 SFX_Random_PlaySound3DOnFrame(LPDIRECT3DRMFRAME3 frame, SFX_ID sfxID, B32 loop, B32 sound3D, Point3F* wPos);
 extern S32 SFX_Random_PlaySound3DOnContainer(lpContainer cont, SFX_ID sfxID, B32 loop, B32 onCont, lpPoint3F wPos);
 extern B32 SFX_GetType(const char* sfxName, SFX_ID *sfxID);
 extern B32 SFX_IsSoundOn();
