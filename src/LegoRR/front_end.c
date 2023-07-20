@@ -1046,7 +1046,122 @@ void Front_Menu_UpdateMousePosition(lpMenu menu)
 
 void Front_Menu_UpdateOverlays(lpMenu menu)
 {
-    // TODO: Implement Front_Menu_UpdateOverlays
+
+    if (frontGlobs.overlayImageOrFlic == NULL)
+    {
+        lpMenuOverlay overlay = &menu->overlays[0];
+        if (overlay == NULL)
+            return;
+
+        if (menu->playRandom == BOOL3_TRUE)
+        {
+            U32 overlayCount = 0;
+            if (Front_Menu_ShouldRandomPlay())
+                overlayCount = Front_Menu_GetOverlayCount(menu);
+
+            if (overlayCount != 0)
+            {
+                U32 i = rand();
+                for (i = i % overlayCount; i != 0; i--)
+                    overlay = overlay->previous;
+
+                if (Flic_Setup(overlay->filename, &frontGlobs.overlayImageOrFlic, FLICDISK))
+                {
+                    SFX_AddToQueue(overlay->sfxType, SoundMode_Once);
+                    frontGlobs.overlayPosition.y = overlay->position.x;
+                    frontGlobs.overlayPosition.x = overlay->position.y;
+                    frontGlobs.overlayStartTime = Main_GetTime();
+                    frontGlobs.overlayCurrTime = frontGlobs.overlayStartTime;
+                    return;
+                }
+            }
+        } else
+        {
+            if (-1 < g_saveMenuOverlayState)
+            {
+                for (U32 i = 4 - g_saveMenuOverlayState; i != 0; i--)
+                    overlay = overlay->previous;
+
+                if (Flic_Setup(overlay->filename, &frontGlobs.overlayImageOrFlic, FLICDISK))
+                {
+                    SFX_AddToQueue(overlay->sfxType, SoundMode_Once);
+                    frontGlobs.overlayPosition.y = overlay->position.x;
+                    frontGlobs.overlayPosition.x = overlay->position.y;
+                    frontGlobs.overlayStartTime = Main_GetTime();
+                    frontGlobs.overlayCurrTime = frontGlobs.overlayStartTime;
+                }
+
+                g_saveMenuOverlayPlaying = TRUE;
+                g_saveMenuOverlayState = -1;
+                g_saveMenuSelectedIndex = -1;
+
+                return;
+            }
+
+            if (-1 < g_saveMenuSelectedIndex)
+            {
+                g_saveMenuOverlayState = g_saveMenuSelectedIndex;
+                g_saveMenu_UnkNextMenu = NULL;
+            }
+        }
+
+        return;
+    }
+
+    U32 width = Flic_GetWidth(frontGlobs.overlayImageOrFlic);
+    U32 height = Flic_GetHeight(frontGlobs.overlayImageOrFlic);
+
+    Area2F overlayRect;
+    overlayRect.x = frontGlobs.overlayPosition.y;
+    overlayRect.y = frontGlobs.overlayPosition.x;
+    overlayRect.width = width;
+    overlayRect.height = height;
+
+    U32 time = Main_GetTime();
+    U32 oldTime = (U32)((F32)(frontGlobs.overlayCurrTime - frontGlobs.overlayStartTime) / 1000.0f * STANDARD_FRAMERATE);
+    U32 newTime = (U32)((F32)(time - frontGlobs.overlayStartTime) / 1000.0f * STANDARD_FRAMERATE);
+
+    if (g_saveMenuOverlayPlaying)
+    {
+        if (frontGlobs.overlayImageOrFlic->fsHeader.frames <= frontGlobs.overlayImageOrFlic->currentframe)
+        {
+            newTime = oldTime;
+            g_saveMenuOverlayState = -2;
+        }
+    }
+
+    frontGlobs.overlayCurrTime = time;
+
+    if (!Flic_Animate(frontGlobs.overlayImageOrFlic, &overlayRect, (newTime != oldTime), FALSE))
+    {
+        Flic_Close(frontGlobs.overlayImageOrFlic);
+        Mem_Free(frontGlobs.overlayImageOrFlic);
+        Sound3D_Stream_Stop(FALSE);
+        frontGlobs.overlayImageOrFlic = NULL;
+        frontGlobs.overlayStartTime = 0;
+        frontGlobs.overlayCurrTime = 0;
+        Sound3D_Stream_Stop(FALSE);
+    }
+
+    if (g_saveMenuOverlayPlaying && inputGlobs.mslb)
+    {
+        g_saveMenuOverlayState = -2;
+        g_saveMenuOverlayPlaying = FALSE;
+    }
+}
+
+B32 Front_Menu_ShouldRandomPlay()
+{
+    return rand() % 400 == 0;
+}
+
+U32 Front_Menu_GetOverlayCount(lpMenu menu)
+{
+    U32 count = 0;
+    for (lpMenuOverlay overlay = &menu->overlays[0]; overlay != NULL; overlay = overlay->previous)
+        count++;
+
+    return count;
 }
 
 void Front_Menu_DrawMenuImage(lpMenu menu, B32 light)

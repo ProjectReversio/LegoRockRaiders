@@ -399,6 +399,8 @@ extern lpMenu Front_Menu_UpdateMenuItemsInput(F32 elapsed, lpMenu menu);
 extern void Front_Menu_UpdateMousePosition(lpMenu menu);
 
 extern void Front_Menu_UpdateOverlays(lpMenu menu);
+extern B32 Front_Menu_ShouldRandomPlay();
+extern U32 Front_Menu_GetOverlayCount(lpMenu menu);
 
 extern void Front_Menu_DrawMenuImage(lpMenu menu, B32 light);
 extern void Front_Menu_DrawLoadSaveText(lpMenu* pMenu, lpMenu* currMenu, lpMenu* nextMenu);
