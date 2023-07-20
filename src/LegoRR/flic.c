@@ -1,4 +1,6 @@
 #include "flic.h"
+#include "file.h"
+#include "mem.h"
 
 B32 Flic_Setup(const char* filename, lpFlic* fsp, FlicUserFlags flags)
 {
@@ -8,8 +10,23 @@ B32 Flic_Setup(const char* filename, lpFlic* fsp, FlicUserFlags flags)
 
 B32 Flic_Close(lpFlic fsp)
 {
-    // TODO: Implement Flic_Close
-    return FALSE;
+    if (!fsp)
+        return FALSE;
+
+    if ((fsp->userFlags & FLICMEMORY) == FLICMEMORY)
+        Mem_Free(fsp->rambufferhandle);
+    else
+        File_Close(fsp->filehandle);
+
+    if (fsp->fsLoadBuffer)
+    {
+        Mem_Free(fsp->fsLoadBuffer);
+        fsp->fsLoadBuffer = NULL;
+    }
+
+    fsp = NULL;
+
+    return TRUE;
 }
 
 U32 Flic_GetWidth(lpFlic fsp)

@@ -1,7 +1,9 @@
 #pragma once
 
+#include <ddraw.h>
 #include "platform.h"
 #include "maths.h"
+#include "file.h"
 
 typedef enum FlicUserFlags
 {
@@ -40,22 +42,36 @@ struct FLICHEADERSTRUCT
 
 typedef struct Flic
 {
-    // TODO: Implement Flic
+    S32 userFlags;
 
-    S32 fsXc;
-    S32 fsYc;
-    S32 fsXsize;
-    S32 fsYsize;
+    S32 fsXc, fsYc;
+    S32 fsXsize, fsYsize;
+    char* rambufferhandle;
+    char* destportalhandle;
 
-    // TODO: Implement Flic
+    char filename[256];
+    U8 fsPalette256[(256 * 3)];
+    U16 fsPalette64k[256];
 
-    S32 currentframe;
+    S32 framerate, lastticks;
+    S32 currentframe, overallframe;
+    S32 mode;
+    S32 ringframe;
+    S32 pointerposition;
 
-    // TODO: Implement Flic
+    U32 fsPitch;
 
+    LPDIRECTDRAWSURFACE4 fsSurface;
     struct FLICHEADERSTRUCT fsHeader;
+    lpFile filehandle;
 
-    // TODO: Implement Flic
+    void* fsSPtr;
+    void* fsSource;
+    S32 fsDisplayMode;
+    S32 fsBitPlanes;
+    S32 fsLoadBufferSize;
+    void* fsLoadBuffer;
+    B32 is15bit;
 
 } Flic, *lpFlic;
 
