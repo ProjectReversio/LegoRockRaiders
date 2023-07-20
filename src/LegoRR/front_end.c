@@ -1603,12 +1603,18 @@ void Front_MenuItem_DrawSelectItem(S32 x, S32 y, lpFont font, lpMenuItem_SelectD
 
 void Front_RockWipe_Play()
 {
-    // TODO: Implement Front_RockWipe_Play
+    if (frontGlobs.rockWipeAnim != NULL)
+    {
+        frontGlobs.rockWipeSFXTimer = 0.0f;
+        frontGlobs.rockWipeFlags |= (ROCKWIPE_FLAG_ANIMATING | ROCKWIPE_FLAG_NOINPUT);
+        frontGlobs.rockWipeSFXStartTime = Main_GetTime();
+        SFX_AddToQueue(SFX_RockWipe, SoundMode_Once);
+    }
 }
 
 void Front_RockWipe_Stop()
 {
-    // TODO: Implement Front_RockWipe_Stop
+    frontGlobs.rockWipeFlags &= ~(ROCKWIPE_FLAG_ANIMATING | ROCKWIPE_FLAG_NOINPUT);
 }
 
 const char* Front_GetSelectedLevel()
