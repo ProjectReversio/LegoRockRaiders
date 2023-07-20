@@ -138,6 +138,8 @@ extern void Main_RestoreStates(B32 force);
 
 extern void Main_DisableTextureManagement();
 
+extern U32 Main_GetTime();
+
 inline HWND Main_hWnd() { return mainGlobs.hWnd; }
 inline HINSTANCE Main_hInst() { return mainGlobs.hInst; }
 inline void Main_SetFogMethod(U32 m) { mainGlobs.fogMethod = m; }

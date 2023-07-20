@@ -49,3 +49,6 @@ extern lpContainer Viewport_GetCamera(lpViewport view);
 
 extern void Viewport_AddList();
 extern void Viewport_RemoveAll();
+
+extern void Viewport_Render(lpViewport vp, lpContainer root, F32 delta);
+extern void Viewport_Clear(lpViewport vp, B32 full);

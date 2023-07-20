@@ -178,3 +178,13 @@ void Viewport_RemoveAll()
         }
     }
 }
+
+void Viewport_Render(lpViewport vp, lpContainer root, F32 delta)
+{
+    // TODO: Implement Viewport_Render
+}
+
+void Viewport_Clear(lpViewport vp, B32 full)
+{
+    // TODO: Implement Viewport_Clear
+}

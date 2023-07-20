@@ -734,3 +734,8 @@ void Main_DisableTextureManagement()
     if (!(mainGlobs.flags & MAIN_FLAG_FORCETEXTUREMANAGEMENT))
         mainGlobs.flags |= MAIN_FLAG_DONTMANAGETEXTURES;
 }
+
+U32 Main_GetTime()
+{
+    return timeGetTime();
+}

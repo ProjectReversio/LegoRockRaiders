@@ -515,7 +515,23 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
         currMenu = nextMenu;
     }
 
-    // TODO: Implement Front_Menu_Update
+    Point3F origCamUp;
+    Point3F origCamDir;
+    Point3F origCamPos;
+
+    if (frontGlobs.rockWipeAnim != NULL && (frontGlobs.rockWipeFlags & ROCKWIPE_FLAG_ANIMATING))
+    {
+        Viewport_Clear(view, TRUE);
+
+        // Setup camera and add rockwipe
+        Container_SetParent(frontGlobs.rockWipeAnim, legoGlobs.rootCont);
+        camera = Viewport_GetCamera(view);
+        Container_GetPosition(camera, NULL, &origCamPos);
+        Container_GetOrientation(camera, NULL, &origCamDir, &origCamUp);
+        Container_SetPosition(camera, NULL, 0.0f, 0.0f, 5.0f);
+        Container_SetOrientation(camera, NULL, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
+        Container_SetAnimationTime(frontGlobs.rockWipeAnim, frontGlobs.rockWipeSFXTimer);
+    }
 
     Front_Menu_DrawMenuImage(menu, TRUE);
 
@@ -790,8 +806,50 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
         // TODO: Implement Front_Menu_Update
     }
 
-    // TODO: Implement Front_Menu_Update
+    if (frontGlobs.rockWipeAnim != NULL && (frontGlobs.rockWipeFlags & ROCKWIPE_FLAG_ANIMATING))
+    {
+        Container_Hide(frontGlobs.rockWipeLight, FALSE);
+        Viewport_Render(view, legoGlobs.rootCont, 0.0f);
+        Container_Hide(frontGlobs.rockWipeLight, TRUE);
 
+        Container_SetPosition(camera, NULL, origCamPos.x, origCamPos.y, origCamPos.z);
+        Container_SetOrientation(camera, NULL, origCamDir.x, origCamDir.y, origCamDir.z, origCamUp.x, origCamUp.y,
+                                 origCamUp.z);
+        Container_SetParent(frontGlobs.rockWipeAnim, NULL);
+
+        F32 frames = Container_GetAnimationFrames(frontGlobs.rockWipeAnim);
+        F32 time = Main_GetTime();
+
+        F32 unnamed = ((F32)time - frontGlobs.rockWipeSFXStartTime) * 0.001f * 25.0f;
+        F32 local_850 = unnamed + unnamed;
+        if (3.0f < local_850)
+            local_850 = 3.0f;
+
+        if (frontGlobs.rockWipeSFXTimer <= frames * 0.5f && (frames * 0.5f <= local_850 + frontGlobs.rockWipeSFXTimer))
+        {
+            if (menuTransition != NULL)
+                *menuTransition = TRUE;
+
+            g_saveMenuOverlayState = -1;
+            g_saveMenuSelectedIndex = -1;
+            g_saveMenu_UnkNextMenu = NULL;
+            g_saveMenuOverlayPlaying = 0;
+
+            if (frontGlobs.overlayImageOrFlic != NULL)
+            {
+                frontGlobs.overlayStartTime = 0;
+                frontGlobs.overlayCurrTime = 0;
+            }
+        }
+
+        if (frames < frontGlobs.rockWipeSFXTimer)
+        {
+            Front_RockWipe_Stop();
+        }
+
+        frontGlobs.rockWipeSFXTimer += local_850;
+        frontGlobs.rockWipeSFXStartTime = time;
+    }
     Pointer_DrawPointer(inputGlobs.msx, inputGlobs.msy);
     Pointer_SetCurrent_IfTimerFinished(currPointer);
     return currMenu;

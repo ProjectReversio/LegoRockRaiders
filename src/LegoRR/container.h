@@ -153,6 +153,13 @@ extern void Container_SetPosition(lpContainer cont, lpContainer ref, F32 x, F32 
 extern void Container_SetOrientation(lpContainer cont, lpContainer ref, F32 dirx, F32 diry, F32 dirz, F32 upx, F32 upy, F32 upz);
 extern void Container_SetParent(lpContainer child, lpContainer parent);
 
+extern void Container_GetPosition(lpContainer cont, lpContainer ref, lpPoint3F pos);
+extern void Container_GetOrientation(lpContainer cont, lpContainer ref, lpPoint3F dir, lpPoint3F up);
+
+extern F32 Container_SetAnimationTime(lpContainer cont, F32 time);
+
+extern U32 Container_GetAnimationFrames(lpContainer cont);
+
 extern lpContainer Container_Load(lpContainer parent, const char* filename, const char* typestr, B32 looping);
 extern lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 b);
 

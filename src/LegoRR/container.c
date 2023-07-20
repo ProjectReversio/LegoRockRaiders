@@ -200,6 +200,28 @@ void Container_SetParent(lpContainer child, lpContainer parent)
     // TODO: Implement Container_SetParent
 }
 
+void Container_GetPosition(lpContainer cont, lpContainer ref, lpPoint3F pos)
+{
+    // TODO: Implement Container_GetPosition
+}
+
+void Container_GetOrientation(lpContainer cont, lpContainer ref, lpPoint3F dir, lpPoint3F up)
+{
+    // TODO: Implement Container_GetOrientation
+}
+
+F32 Container_SetAnimationTime(lpContainer cont, F32 time)
+{
+    // TODO: Implement Container_SetAnimationTime
+    return 0.0f;
+}
+
+U32 Container_GetAnimationFrames(lpContainer cont)
+{
+    // TODO: Implement Container_GetAnimationFrames
+    return 0;
+}
+
 lpContainer Container_Load(lpContainer parent, const char* filename, const char* typestr, B32 looping)
 {
     // TODO: Implement Container_Load
