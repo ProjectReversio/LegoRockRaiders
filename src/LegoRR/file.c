@@ -592,6 +592,21 @@ S32 File_GetC(lpFile f)
     return 0;
 }
 
+char* File_GetLine(char* buffer, U32 size, lpFile file)
+{
+    // Same as File_GetS() but without the return character.
+
+    char* res = File_GetS(buffer, size, file);
+    U32 length = strlen(buffer) - 1;
+    if (buffer[length] == '\n')
+        buffer[length] = '\0';
+
+    if (length && buffer[length - 1] == '\r')
+        buffer[length - 1] = '\0';
+
+    return res;
+}
+
 char* File_InternalFGetS(char* fgetsBuffer, S32 num, lpFile f)
 {
     S32 pos = 0;

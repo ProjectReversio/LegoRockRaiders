@@ -98,9 +98,9 @@ typedef struct Lws_Globs
     F32 staticDissolveLevel[LWS_MAXSTATICDISSOLVES];
     U32 staticDissolveCount;
 
-    B32 (*FindSFXIDFunc)(const char* name, U32* sfxID);
+    B32 (*FindSFXIDFunc)(const char* name, SFX_ID* sfxID);
     B32 (*SoundEnabledFunc)();
-    S32 (*PlaySample3DFunc)(void* frame, U32 type, B32 loop, B32 onCont, lpPoint3F wPos);
+    S32 (*PlaySample3DFunc)(lpContainer frame, SFX_ID type, B32 loop, B32 onCont, lpPoint3F wPos);
 
 #ifdef _DEBUG
     B32 initialized;
@@ -116,4 +116,6 @@ extern lpLws_Info Lws_Parse(const char* fname, B32 looping);
 extern void Lws_LoadMeshes(lpLws_Info scene, LPDIRECT3DRMFRAME3 parent);
 extern void Lws_SetTime(lpLws_Info scene, F32 time);
 extern U32 Lws_GetFrameCount(lpLws_Info scene);
+
+extern void Lws_SetupSoundTriggers(lpLws_Info scene);
 

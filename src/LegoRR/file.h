@@ -106,6 +106,8 @@ extern void File_SetLoadCallback(void (*callback)(const char* filename, U32 file
 extern char* File_GetS(char* fgetsBuffer, S32 num, lpFile f);
 extern S32 File_GetC(lpFile f);
 
+extern char* File_GetLine(char* buffer, U32 size, lpFile file);
+
 #ifdef __cplusplus
 }
 #endif
