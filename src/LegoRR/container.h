@@ -55,6 +55,14 @@ typedef enum Container_GlobFlags
     CONTAINER_GLOB_FLAG_TRIGGERENABLED = 0x40,
 } Container_GlobFlags;
 
+typedef struct Container_Texture
+{
+    LPDIRECTDRAWSURFACE4 surface;
+    LPDIRECT3DRMTEXTURE3 texture;
+
+    B32 colourKey;
+} Container_Texture, *lpContainer_Texture;
+
 typedef struct Container_TextureRef
 {
     const char* fileName;

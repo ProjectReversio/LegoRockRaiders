@@ -19,6 +19,11 @@ typedef struct Point3F
     F32 x, y, z;
 } Point3F, *lpPoint3F;
 
+typedef struct Point4F
+{
+    F32 x, y, z, w;
+} Point4F, *lpPoint4F;
+
 typedef struct Size2F
 {
     F32 width, height;

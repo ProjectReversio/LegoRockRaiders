@@ -114,6 +114,13 @@ extern void Lws_Initialize(const char* sharedDir, B32 (*FindSFXID)(const char* n
 
 extern lpLws_Info Lws_Parse(const char* fname, B32 looping);
 extern void Lws_LoadMeshes(lpLws_Info scene, LPDIRECT3DRMFRAME3 parent);
+extern void Lws_CreateFrames(lpLws_Info scene, lpLws_Node node, LPDIRECT3DRMFRAME3 parent, U16* frameCount);
+extern void Lws_LoadNodes(lpLws_Info scene, lpLws_Node node);
+extern lpMesh Lws_LoadMesh(const char* baseDir, const char* fname, LPDIRECT3DRMFRAME3 frame, B32 noTextures);
+
+extern void Lws_SetAbsoluteKey(lpLws_Info scene, lpLws_Node node, U16 key);
+extern void Lws_SetDissolveLevel(lpLws_Info scene, lpLws_Node node, F32 level);
+
 extern void Lws_SetTime(lpLws_Info scene, F32 time);
 extern U32 Lws_GetFrameCount(lpLws_Info scene);
 

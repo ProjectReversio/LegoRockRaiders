@@ -4,6 +4,7 @@
 #include "file.h"
 #include "error.h"
 #include "utils.h"
+#include "main.h"
 
 Lws_Globs lwsGlobs = { NULL };
 
@@ -335,7 +336,110 @@ lpLws_Info Lws_Parse(const char* fname, B32 looping)
 
 void Lws_LoadMeshes(lpLws_Info scene, LPDIRECT3DRMFRAME3 parent)
 {
-    // TODO: Implement Lws_LoadMeshes
+    // Generate the frame hierarchy and load in the meshes...
+    // Must run through the hierarchy, not the array...
+
+    lpLws_Node root;
+    U16 frameCount = 0;
+
+    scene->frameList = Mem_Alloc(sizeof(LPDIRECT3DRMFRAME3) * scene->nodeCount);
+
+    for (root = scene->masterNode; root; root = root->next)
+    {
+        Lws_CreateFrames(scene, root, parent, &frameCount);
+        Lws_LoadNodes(scene, root);
+    }
+
+    Lws_SetTime(scene, 0.0f);
+}
+
+void Lws_CreateFrames(lpLws_Info scene, lpLws_Node node, LPDIRECT3DRMFRAME3 parent, U16* frameCount)
+{
+    LPDIRECT3DRMFRAME3 frame;
+    lpLws_Node child;
+
+    lpD3DRM()->lpVtbl->CreateFrame(lpD3DRM(), parent, &frame);
+
+    if (node->flags & LWSNODE_FLAG_FACECAMERA)
+    {
+        D3DRMMATRIX4D m;
+        memset(m, 0, sizeof(D3DRMMATRIX4D));
+        m[0][0] = m[1][1] = m[2][2] = m[3][3] = 1.0f;
+        m[3][0] = m[3][1] = m[3][2] = 0.0f;
+        frame->lpVtbl->AddTransform(frame, D3DRMCOMBINE_REPLACE, m);
+    }
+
+    scene->frameList[*frameCount] = frame;
+    node->frameIndex = *frameCount;
+    (*frameCount)++;
+
+    {
+        char name[1024];
+        char* s;
+        sprintf(name, "%s_%0.2i", node->name, node->reference);
+        for (s = name; *s != '\0'; s++)
+        {
+            if (!isprint(*s))
+                *s = '_';
+        }
+        frame->lpVtbl->SetName(frame, name);
+    }
+
+    for (child = node->childList; child; child = child->next)
+    {
+        Lws_CreateFrames(scene, child, frame, frameCount);
+    }
+}
+
+void Lws_LoadNodes(lpLws_Info scene, lpLws_Node node)
+{
+    LPDIRECT3DRMFRAME3 frame;
+    lpLws_Node child;
+    lpMesh mesh;
+
+    frame = scene->frameList[node->frameIndex];
+
+    // If there is only one keyframe, then set it now...
+    if (node->keyCount == 1)
+        Lws_SetAbsoluteKey(scene, node, 0);
+
+    if (!(node->flags & LWSNODE_FLAG_NULL))
+    {
+        if ((mesh = Lws_LoadMesh(scene->filePath, node->name, frame, FALSE)))
+        {
+            if (node->flags & LWSNODE_FLAG_FACECAMERA)
+                mesh->flags |= MESH_FLAG_FACECAMERA;
+            if (node->dissolveLevel != NULL && node->dissolveCount == 0)
+            {
+                Lws_SetDissolveLevel(scene, node, node->dissolveLevel[0]);
+                node->dissolveLevel = NULL;
+            }
+        } else
+        {
+            Error_Fatal(TRUE, Error_Format("Missing object file in lightwave scene \"%s\"", node->name));
+        }
+    }
+
+    for (child = node->childList; child; child = child->next)
+    {
+        Lws_LoadNodes(scene, child);
+    }
+}
+
+lpMesh Lws_LoadMesh(const char* baseDir, const char* fname, LPDIRECT3DRMFRAME3 frame, B32 noTextures)
+{
+    // TODO: Implement Lws_LoadMesh
+    return NULL;
+}
+
+void Lws_SetAbsoluteKey(lpLws_Info scene, lpLws_Node node, U16 key)
+{
+    // TODO: Implement Lws_SetAbsoluteKey
+}
+
+void Lws_SetDissolveLevel(lpLws_Info scene, lpLws_Node node, F32 level)
+{
+    // TODO: Implement Lws_SetDissolveLevel
 }
 
 void Lws_SetTime(lpLws_Info scene, F32 time)
