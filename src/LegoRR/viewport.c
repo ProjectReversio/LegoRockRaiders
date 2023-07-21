@@ -2,6 +2,8 @@
 #include "mem.h"
 #include "main.h"
 #include "error.h"
+#include "dxbug.h"
+#include "mesh.h"
 
 Viewport_Globs viewportGlobs = { NULL };
 
@@ -98,18 +100,18 @@ void Viewport_SetBackClip(lpViewport viewport, F32 dist)
         Error_Warn(TRUE, "Cannot set back clipping plane distance");
 }
 
-lpContainer Viewport_GetCamera(lpViewport view)
+lpContainer Viewport_GetCamera(lpViewport vp)
 {
     LPDIRECT3DRMFRAME3 frame;
     lpContainer camera = NULL;
 
     Viewport_CheckInit();
 
-    Error_Fatal(!view, "NULL passed as viewport or container to Viewport_GetCamera()");
+    Error_Fatal(!vp, "NULL passed as viewport or container to Viewport_GetCamera()");
 
     // Does it matter that a non-camera container can be used as a camera????
 
-    if (view->lpVP->lpVtbl->GetCamera(view->lpVP, &frame) == D3DRM_OK)
+    if (vp->lpVP->lpVtbl->GetCamera(vp->lpVP, &frame) == D3DRM_OK)
     {
         lpContainer_AppData appData = (lpContainer_AppData) frame->lpVtbl->GetAppData(frame);
         if (appData)
@@ -123,6 +125,22 @@ lpContainer Viewport_GetCamera(lpViewport view)
     }
 
     return camera;
+}
+
+LPDIRECT3DRMFRAME3 Viewport_GetScene(lpViewport vp)
+{
+    LPDIRECT3DRMFRAME3 camera = NULL, scene = NULL;
+
+    vp->lpVP->lpVtbl->GetCamera(vp->lpVP, &camera);
+
+    if (camera)
+    {
+        camera->lpVtbl->Release(camera);
+        camera->lpVtbl->GetScene(camera, &scene);
+        scene->lpVtbl->Release(scene);
+    }
+
+    return scene;
 }
 
 void Viewport_AddList()
@@ -181,10 +199,71 @@ void Viewport_RemoveAll()
 
 void Viewport_Render(lpViewport vp, lpContainer root, F32 delta)
 {
-    // TODO: Implement Viewport_Render
+    HRESULT r;
+
+    Viewport_CheckInit();
+
+    Error_Fatal(!vp || !root, "NULL passed as viewport or container to Viewport_Render()");
+
+    vp->rendering = TRUE;
+
+    if (vp->smoothFOV != 0.0f)
+    {
+        F32 coef, fov = vp->lpVP->lpVtbl->GetField(vp->lpVP);
+
+        coef = 4.0f * (1.0f / delta);
+        fov *= coef;
+        fov += vp->smoothFOV;
+        fov *= 1.0f / (1.0f + coef);
+
+        vp->lpVP->lpVtbl->SetField(vp->lpVP, fov);
+
+        if (fov == vp->smoothFOV)
+            vp->smoothFOV = 0.0f;
+    }
+
+    if ((r = vp->lpVP->lpVtbl->Render(vp->lpVP, root->masterFrame)) == D3DRM_OK)
+    {
+        Mesh_PostRenderAll(vp);
+    } else {
+        Error_Warn(TRUE, "Cannot render viewport");
+        CHKRM(r);
+    }
+
+    vp->rendering = FALSE;
 }
 
 void Viewport_Clear(lpViewport vp, B32 full)
 {
-    // TODO: Implement Viewport_Clear
+    Viewport_CheckInit();
+
+    if (full)
+    {
+        LPDIRECT3DRMFRAME3 scene = Viewport_GetScene(vp);
+        D3DCOLOR colour = 0;
+        Area2F area = {
+            (F32) vp->lpVP->lpVtbl->GetX(vp->lpVP),
+            (F32) vp->lpVP->lpVtbl->GetY(vp->lpVP),
+            (F32) vp->lpVP->lpVtbl->GetWidth(vp->lpVP),
+            (F32) vp->lpVP->lpVtbl->GetHeight(vp->lpVP)
+        };
+
+        if (scene)
+            colour = scene->lpVtbl->GetSceneBackground(scene);
+
+        {
+            LPDIRECT3DVIEWPORT view1;
+            LPDIRECT3DVIEWPORT3 view3;
+            HRESULT r;
+            D3DRECT rect = {(U32) area.x, (U32) area.y, (U32) (area.x + area.width), (U32) (area.y + area.height)};
+            r = vp->lpVP->lpVtbl->GetDirect3DViewport(vp->lpVP, &view1);
+            r = view1->lpVtbl->QueryInterface(view1, &IID_IDirect3DViewport3, &view3);
+            view1->lpVtbl->Release(view1);
+            r = view3->lpVtbl->Clear2(view3, 1, &rect, D3DCLEAR_ZBUFFER | D3DCLEAR_TARGET, colour, 1.0f, 0);
+            view3->lpVtbl->Release(view3);
+        }
+    } else
+    {
+        vp->lpVP->lpVtbl->Clear(vp->lpVP, D3DRMCLEAR_ALL);
+    }
 }

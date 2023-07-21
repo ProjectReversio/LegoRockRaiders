@@ -45,7 +45,9 @@ extern lpViewport Viewport_CreatePixel(S32 xPos, S32 yPos, U32 width, U32 height
 
 extern void Viewport_SetBackClip(lpViewport viewport, F32 dist);
 
-extern lpContainer Viewport_GetCamera(lpViewport view);
+extern lpContainer Viewport_GetCamera(lpViewport vp);
+
+extern LPDIRECT3DRMFRAME3 Viewport_GetScene(lpViewport vp);
 
 extern void Viewport_AddList();
 extern void Viewport_RemoveAll();

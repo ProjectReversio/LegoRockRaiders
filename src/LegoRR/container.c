@@ -1,8 +1,13 @@
+#include <stdio.h>
 #include "container.h"
 #include "error.h"
 #include "activities.h"
 #include "main.h"
 #include "mem.h"
+#include "config.h"
+#include "utils.h"
+#include "lws.h"
+#include "anim_clone.h"
 
 extern Container_Globs containerGlobs = { NULL };
 
@@ -222,16 +227,116 @@ U32 Container_GetAnimationFrames(lpContainer cont)
     return 0;
 }
 
+Container_Type Container_ParseTypeString(const char* str, B32* noTexture)
+{
+    // For now, just check against one type...
+
+    U32 loop, argc;
+    char* argv[10];
+    char string[40];
+
+    Container_DebugCheckOK(CONTAINER_DEBUG_NOTREQUIRED);
+
+    if (str != NULL)
+    {
+        strcpy(string, str);
+        argc = Util_Tokenize(string, argv, ":");
+        if (argc > 1 && stricmp(argv[1], "NOTEXTURE") == 0)
+            *noTexture = TRUE;
+        else
+            *noTexture = FALSE;
+
+        for (loop = 0; loop < Container_TypeCount; loop++)
+        {
+            if (containerGlobs.typeName[loop] != NULL)
+            {
+                if (stricmp(containerGlobs.typeName[loop], string) == 0)
+                    return loop;
+            }
+        }
+    } else
+    {
+        Error_Fatal(TRUE, "Null string passed to Container_ParseTypeString()");
+    }
+
+    return Container_Invalid;
+}
+
 lpContainer Container_Load(lpContainer parent, const char* filename, const char* typestr, B32 looping)
 {
-    // TODO: Implement Container_Load
-    return NULL;
+    Container_Type type;
+    lpConfig rootConf, conf;
+    U8 tempString[UTIL_DEFSTRINGLEN];
+    U8 name[UTIL_DEFSTRINGLEN], baseDir[UTIL_DEFSTRINGLEN];
+    lpContainer cont = NULL;
+    F32 scale;
+    B32 noTexture;
+
+    Container_DebugCheckOK(CONTAINER_DEBUG_NOTREQUIRED);
+
+    type = Container_ParseTypeString(typestr, &noTexture);
+
+    strcpy(name, filename);
+
+    if (type == Container_FromActivity)
+    {
+        // TODO: Implement Container_Load
+    } else if (type == Container_Frame)
+    {
+        // TODO: Implement Container_Load
+    } else if (type == Container_Mesh)
+    {
+        // TODO: Implement Container_Load
+    } else if (type == Container_Anim || type == Container_LWS)
+    {
+        lpAnimClone animClone;
+        U32 frameCount;
+
+        cont = Container_Create(parent);
+        cont->type = Container_Anim;
+        sprintf(tempString, "%s.%s", name, containerGlobs.extensionNames[Container_Anim]);
+        if ((animClone = Container_LoadAnimSet(tempString, cont->activityFrame, &frameCount, (type == Container_LWS) ? TRUE : FALSE, looping)))
+        {
+            Container_Frame_SetAppData(cont->activityFrame, cont, animClone, name, &frameCount, NULL, NULL, NULL, NULL, NULL, NULL);
+        } else {
+            Error_Warn(TRUE, Error_Format("Cannot Load File \"%s\".\n", tempString));
+            Container_Remove(cont);
+            cont = NULL;
+        }
+    } else if (type == Container_LWO)
+    {
+        // TODO: Implement Container_Load
+    } else if (type == Container_Invalid)
+    {
+        Error_Fatal(TRUE, "Do not recognize container type");
+    } else {
+        Error_Warn(TRUE, Error_Format("Code not implemented for Container type #%d", type));
+    }
+
+#ifdef _DEBUG
+    if (cont)
+    {
+        Container_Frame_FormatName(cont->masterFrame, "Master Frame (%s:%s)", name, typestr);
+        Container_Frame_FormatName(cont->activityFrame, "Activity Frame (%s:%s)", name, typestr);
+        Container_Frame_FormatName(cont->hiddenFrame, "Hidden Frame (%s:%s)", name, typestr);
+    }
+#endif
+
+    return cont;
 }
 
 lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 b)
 {
     // TODO: Implement Container_MakeLight
     return NULL;
+}
+
+void Container_Hide2(lpContainer cont, B32 hide)
+{
+    if (hide)
+        cont->flags |= CONTAINER_FLAG_HIDDEN2;
+    else
+        cont->flags &= ~CONTAINER_FLAG_HIDDEN2;
 }
 
 void Container_Hide(lpContainer cont, B32 hide)
@@ -249,4 +354,61 @@ void Container_SetSoundTriggerCallback(ContainerSoundTriggerCallback callback, v
 inline LPDIRECT3DRMFRAME3 Container_GetMasterFrame(lpContainer cont)
 {
     return cont->masterFrame;
+}
+
+void Container_Frame_FormatName(LPDIRECT3DRMFRAME3 frame, const char* msg, ...)
+{
+    U8 buffer[1024];
+    char* name;
+    U32 len;
+    va_list args;
+
+    va_start(args, msg);
+    len = vsprintf(buffer, msg, args);
+    va_end(args);
+
+    name = Mem_Alloc(len + 1);
+    va_start(args, msg);
+    vsprintf(name, msg, args);
+    va_end(args);
+
+    frame->lpVtbl->SetName(frame, name);
+    Container_Frame_SetAppData(frame, NULL, NULL, NULL, NULL, name, NULL, NULL, NULL, NULL, NULL);
+}
+
+lpAnimClone Container_LoadAnimSet(const char* fname, LPDIRECT3DRMFRAME3 frame, U32* frameCount, B32 lws, B32 looping)
+{
+    LPDIRECT3DRMANIMATIONSET2 animSet = NULL;
+    LPDIRECT3DRMFRAME3 rootFrame;
+    D3DRMLOADMEMORY buffer;
+    Container_TextureData tData;
+    lpAnimClone animClone = NULL;
+    U32 fc;
+
+    Error_Debug(Error_Format("Attempting to load animation from xfile \"%s\"\n", fname));
+
+    if (lws)
+    {
+        lpLws_Info scene;
+        char file[FILE_MAXPATH];
+
+        strcpy(file, fname);
+        file[strlen(file) - 2] = '\0';
+        if ((scene = Lws_Parse(file, looping)))
+        {
+            Lws_LoadMeshes(scene, frame);
+            Lws_SetTime(scene, 0.0f);
+            if (frameCount)
+                *frameCount = Lws_GetFrameCount(scene);
+            animClone = AnimClone_RegisterLws(scene, frame, *frameCount);
+        } else
+        {
+            Error_Warn(TRUE, "Cannot load file");
+        }
+    } else
+    {
+        // TODO: Implement Container_LoadAnimSet
+    }
+
+    return animClone;
 }

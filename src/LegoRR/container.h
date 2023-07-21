@@ -1,7 +1,6 @@
 #pragma once
 
 #include "platform.h"
-#include "anim_clone.h"
 #include "3DSound.h"
 #include <d3drm.h>
 
@@ -62,6 +61,12 @@ typedef struct Container_TextureRef
     LPDIRECT3DRMTEXTURE3 texture;
 } Container_TextureRef, *lpContainer_TextureRef;
 
+typedef struct Container_TextureData
+{
+    const char* xFileName;
+    U32 flags;
+} Container_TextureData, *lpContainer_TextureData;
+
 typedef struct Container
 {
     LPDIRECT3DRMFRAME3 masterFrame, activityFrame, hiddenFrame;
@@ -95,7 +100,7 @@ typedef struct Container_AppData
     F32 currTime;
     F32 transCo; // Standard translation during amimset loop.
     char* activitySample; // Sample to play when activity is called...
-    lpAnimClone animClone;
+    struct AnimClone* animClone;
     U32 trigger;
 
     lpSound3D_SoundFrameRecord soundList;
@@ -141,7 +146,7 @@ extern void Container_Remove2(lpContainer dead, B32 kill);
 
 extern void Container_AddList();
 
-extern void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer owner, lpAnimClone animClone, const char* asfname, U32* frameCount, const char* frameName, F32* currTime, F32* transCo, const char* actSample, void* soundRecord, U32* trigger);
+extern void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer owner, struct AnimClone* animClone, const char* asfname, U32* frameCount, const char* frameName, F32* currTime, F32* transCo, const char* actSample, void* soundRecord, U32* trigger);
 
 extern void Container_SetSharedTextureDirectory(const char* path);
 
@@ -160,11 +165,18 @@ extern F32 Container_SetAnimationTime(lpContainer cont, F32 time);
 
 extern U32 Container_GetAnimationFrames(lpContainer cont);
 
+extern Container_Type Container_ParseTypeString(const char* str, B32* noTexture);
+
 extern lpContainer Container_Load(lpContainer parent, const char* filename, const char* typestr, B32 looping);
 extern lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 b);
 
+extern void Container_Hide2(lpContainer cont, B32 hide);
 extern void Container_Hide(lpContainer cont, B32 hide);
 
 extern void Container_SetSoundTriggerCallback(ContainerSoundTriggerCallback callback, void* data);
 
 extern inline LPDIRECT3DRMFRAME3 Container_GetMasterFrame(lpContainer cont);
+
+extern void Container_Frame_FormatName(LPDIRECT3DRMFRAME3 frame, const char* msg, ...);
+
+extern struct AnimClone* Container_LoadAnimSet(const char* fname, LPDIRECT3DRMFRAME3 frame, U32* frameCount, B32 lws, B32 looping);
