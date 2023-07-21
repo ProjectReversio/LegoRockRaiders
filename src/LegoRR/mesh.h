@@ -187,4 +187,11 @@ extern Mesh_Globs meshGlobs;
 
 extern B32 Mesh_Initialize(const char* sharedTextureDir);
 
+extern void Mesh_ClearPostRenderList();
+extern B32 Mesh_CreateGlobalMaterial();
+
 extern void Mesh_PostRenderAll(lpViewport vp);
+
+extern lpMesh Mesh_Load(const char* fname, LPDIRECT3DRMFRAME3 frame, B32 noTextures);
+
+extern lpMesh Mesh_Clone(lpMesh mesh, LPDIRECT3DRMFRAME3 frame);

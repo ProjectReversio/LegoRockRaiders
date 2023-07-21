@@ -118,6 +118,9 @@ extern void Lws_CreateFrames(lpLws_Info scene, lpLws_Node node, LPDIRECT3DRMFRAM
 extern void Lws_LoadNodes(lpLws_Info scene, lpLws_Node node);
 extern lpMesh Lws_LoadMesh(const char* baseDir, const char* fname, LPDIRECT3DRMFRAME3 frame, B32 noTextures);
 
+extern lpMesh Lws_SearchMeshPathList(lpLws_MeshPath list, U32 count, const char* path);
+extern void Lws_AddMeshPathEntry(lpLws_MeshPath list, U32* count, const char* path, lpMesh mesh);
+
 extern void Lws_SetAbsoluteKey(lpLws_Info scene, lpLws_Node node, U16 key);
 extern void Lws_SetDissolveLevel(lpLws_Info scene, lpLws_Node node, F32 level);
 

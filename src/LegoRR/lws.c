@@ -428,8 +428,62 @@ void Lws_LoadNodes(lpLws_Info scene, lpLws_Node node)
 
 lpMesh Lws_LoadMesh(const char* baseDir, const char* fname, LPDIRECT3DRMFRAME3 frame, B32 noTextures)
 {
-    // TODO: Implement Lws_LoadMesh
+    char path[FILE_MAXPATH];
+    lpMesh mesh;
+
+    if (baseDir)
+        sprintf(path, "%s%s", baseDir, fname);
+    else
+        strcpy(path, fname);
+
+    if ((mesh = Lws_SearchMeshPathList(lwsGlobs.meshPathList, lwsGlobs.meshPathCount, path)))
+    {
+        Mesh_Clone(mesh, frame);
+        return mesh;
+    } else if ((mesh = Mesh_Load(path, frame, noTextures)))
+    {
+        Lws_AddMeshPathEntry(lwsGlobs.meshPathList, &lwsGlobs.meshPathCount, path, mesh);
+        return mesh;
+    } else if (lwsGlobs.sharedDir)
+    {
+        sprintf(path, "%s%s", lwsGlobs.sharedDir, fname);
+
+        if ((mesh = Lws_SearchMeshPathList(lwsGlobs.meshPathListShared, lwsGlobs.meshPathCountShared, fname)))
+        {
+            Mesh_Clone(mesh, frame);
+            return mesh;
+        } else if ((mesh = Mesh_Load(path, frame, noTextures)))
+        {
+            Lws_AddMeshPathEntry(lwsGlobs.meshPathListShared, &lwsGlobs.meshPathCountShared, fname, mesh);
+            return mesh;
+        }
+    }
+
+    Error_Warn(TRUE, Error_Format("Cannot find or load mesh >(%s\\)%s<<", baseDir, fname));
+
     return NULL;
+}
+
+lpMesh Lws_SearchMeshPathList(lpLws_MeshPath list, U32 count, const char* path)
+{
+    U16 loop;
+
+    for (loop = 0; loop < count; loop++)
+    {
+        if (stricmp(path, list[loop].path) == 0)
+            return list[loop].mesh;
+    }
+
+    return NULL;
+}
+
+void Lws_AddMeshPathEntry(lpLws_MeshPath list, U32* count, const char* path, lpMesh mesh)
+{
+    Error_Fatal(*count == LWS_MAXMESHFILES, "LWS_MAXMESHFILES too small");
+
+    list[*count].path = Util_StrCpy(path);
+    list[*count].mesh = mesh;
+    (*count)++;
 }
 
 void Lws_SetAbsoluteKey(lpLws_Info scene, lpLws_Node node, U16 key)
