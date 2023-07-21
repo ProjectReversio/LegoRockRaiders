@@ -158,7 +158,71 @@ void Container_Remove2(lpContainer dead, B32 kill)
 
 void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer owner, lpAnimClone animClone, const char* asfname, U32* frameCount, const char* frameName, F32* currTime, F32* transCo, const char* actSample, void* soundRecord, U32* trigger)
 {
-    // TODO: Implement Container_Frame_SetAppData
+    Container_AppData *appData;
+
+    if ((appData = (Container_AppData*)frame->lpVtbl->GetAppData(frame)))
+    {
+        if (owner != NULL)
+            appData->ownerContainer = owner;
+
+        if (animClone != NULL)
+            appData->animClone = animClone;
+
+        if (asfname != NULL && appData->animSetFileName != NULL)
+            Mem_Free(appData->animSetFileName);
+
+        if (frameCount != NULL)
+            appData->frameCount = *frameCount;
+
+        if (frameName != NULL)
+            appData->frameName = frameName;
+
+        if (currTime != NULL)
+            appData->currTime = *currTime;
+
+        if (transCo != NULL)
+            appData->transCo = *transCo;
+
+        if (actSample != NULL)
+            appData->activitySample = actSample;
+
+        if (trigger != NULL)
+            appData->trigger = *trigger;
+    } else {
+        appData = Mem_Alloc(sizeof(Container_AppData));
+        appData->ownerContainer = owner;
+        appData->animClone = animClone;
+        appData->animSetFileName = NULL;
+        if (frameCount)
+            appData->frameCount = *frameCount;
+        else
+            appData->frameCount = 0;
+
+        appData->frameName = frameName;
+
+        if (currTime)
+            appData->currTime = *currTime;
+
+        if (transCo)
+            appData->transCo = *transCo;
+        else
+            appData->transCo = 0.0f;
+
+        if (trigger)
+            appData->trigger = *trigger;
+        else
+            appData->trigger = 0;
+
+        appData->activitySample = actSample;
+
+        frame->lpVtbl->SetAppData(frame, (DWORD)appData);
+    }
+
+    if (asfname != NULL)
+    {
+        appData->animSetFileName = Mem_Alloc(strlen(asfname) + 1);
+        strcpy(appData->animSetFileName, asfname);
+    }
 }
 
 void Container_SetSharedTextureDirectory(const char* path)
