@@ -68,6 +68,32 @@ U32 Util_Tokenize(const char* string, char** argv, const char* sep)
     return count;
 }
 
+U32 Util_WSTokenize(const char* string, char** argv)
+{
+    char* s = string;
+    U32 count = 0;
+
+    if (string[0] == '\0')
+        return 0;
+
+    argv[count++] = string;
+    while (*s != '\0')
+    {
+        if (isspace(*s))
+        {
+            *s++ = '\0';
+            while (isspace(*s))
+                *s++;
+            argv[count++] = s;
+        } else
+        {
+            s++;
+        }
+    }
+
+    return count;
+}
+
 #ifdef _DEBUG
 char* Util_StrCpyDebug(const char* string, const char* file, U32 line)
 {

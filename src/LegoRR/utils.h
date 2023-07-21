@@ -7,6 +7,7 @@
 extern const char* Util_StrIStr(const char* str1, const char* str2);
 extern U32 Util_GetBoolFromString(const char* string);
 extern U32 Util_Tokenize(const char* string, char** argv, const char* sep);
+extern U32 Util_WSTokenize(const char* string, char** argv);
 
 #ifdef _DEBUG
 extern char* Util_StrCpyDebug(const char* string, const char* file, U32 line);
