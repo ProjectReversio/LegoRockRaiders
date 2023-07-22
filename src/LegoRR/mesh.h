@@ -2,6 +2,7 @@
 
 #include "platform.h"
 #include "viewport.h"
+#include "lwt.h"
 
 #define MESH_MAXTEXTURESEQENCE			100
 
@@ -37,7 +38,32 @@
 
 #define MESH_TEXTURELISTSIZE		2048
 
-// --------------------------------------------------
+typedef enum Mesh_Colour
+{
+    Mesh_Colour_Diffuse,
+    Mesh_Colour_Ambient,
+    Mesh_Colour_Specular,
+    Mesh_Colour_Emissive,
+
+    Mesh_Colour_Alpha,
+    Mesh_Colour_Power
+} Mesh_Colour;
+
+
+typedef enum Mesh_Type
+{
+    Mesh_Type_Norm,
+    Mesh_Type_PostEffect,
+    Mesh_Type_LightWaveObject,
+} Mesh_Type;
+
+
+typedef enum Mesh_WrapType
+{
+    Mesh_WrapType_XAxis,
+    Mesh_WrapType_YAxis,
+    Mesh_WrapType_ZAxis
+} Mesh_WrapType;
 
 #define MESH_DEFLISTSIZE			10
 #define MESH_LISTINCREASE			150			// Increase list size by 150% when it is full...
@@ -193,5 +219,7 @@ extern B32 Mesh_CreateGlobalMaterial();
 extern void Mesh_PostRenderAll(lpViewport vp);
 
 extern lpMesh Mesh_Load(const char* fname, LPDIRECT3DRMFRAME3 frame, B32 noTextures);
+extern B32 Mesh_ParseLWO(const char* basePath, lpMesh mesh, APPOBJ *lightWaveObject, B32 noTextures);
+extern lpMesh Mesh_CreateOnFrame(LPDIRECT3DRMFRAME3 frame, void(*renderFunc)(lpMesh mesh, void* data, lpViewport vp), U32 renderFlags, void* data, U32 type);
 
 extern lpMesh Mesh_Clone(lpMesh mesh, LPDIRECT3DRMFRAME3 frame);

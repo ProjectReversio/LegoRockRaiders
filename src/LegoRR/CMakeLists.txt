@@ -54,6 +54,7 @@ set(MAIN_SRC
     text.c
     priorities.c
     lws.c
+    lwt.c
     damage_font.c
     detail.c
     rewards.c
@@ -130,6 +131,7 @@ set(MAIN_SRC
     text.h
     priorities.h
     lws.h
+    lwt.h
     damage_font.h
     detail.h
     rewards.h
