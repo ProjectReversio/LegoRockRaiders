@@ -609,7 +609,10 @@ B32 LoadLWOB(char* fn, LWSIZE *sd, F32 **verts, LWPOLY **polys, LWSURFACE **surf
         {
             *fileUV = File_Open(fname, "rb");
             if (*fileUV)
-                Error_Debug(Error_Format("UV file \"%s\" found\n", fname));
+            {
+                // Un-needed debug message
+                //Error_Debug(Error_Format("UV file \"%s\" found\n", fname));
+            }
         } else
         {
             *fileUV = NULL;
