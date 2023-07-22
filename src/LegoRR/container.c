@@ -476,3 +476,8 @@ lpAnimClone Container_LoadAnimSet(const char* fname, LPDIRECT3DRMFRAME3 frame, U
 
     return animClone;
 }
+
+lpContainer Container_GetRoot()
+{
+    return containerGlobs.rootContainer;
+}

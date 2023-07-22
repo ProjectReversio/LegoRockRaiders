@@ -222,4 +222,21 @@ extern lpMesh Mesh_Load(const char* fname, LPDIRECT3DRMFRAME3 frame, B32 noTextu
 extern B32 Mesh_ParseLWO(const char* basePath, lpMesh mesh, APPOBJ *lightWaveObject, B32 noTextures);
 extern lpMesh Mesh_CreateOnFrame(LPDIRECT3DRMFRAME3 frame, void(*renderFunc)(lpMesh mesh, void* data, lpViewport vp), U32 renderFlags, void* data, U32 type);
 
+extern BOOL Mesh_RenderCallback(LPDIRECT3DRMUSERVISUAL lpD3DRMUV, LPVOID lpArg, D3DRMUSERVISUALREASON lpD3DRMUVreason, LPDIRECT3DRMDEVICE lpD3DRMDev, LPDIRECT3DRMVIEWPORT lpD3DRMview);
+
 extern lpMesh Mesh_Clone(lpMesh mesh, LPDIRECT3DRMFRAME3 frame);
+
+extern lpMesh Mesh_ObtainFromList();
+extern void Mesh_ReturnToList(lpMesh dead);
+
+extern void Mesh_AddList();
+
+#ifdef _DEBUG
+#define Mesh_Debug_CheckIMDevice_Ptr()      { if (lpIMDevice() == NULL) return (void*)1; }
+#define Mesh_Debug_CheckIMDevice_Void()     { if (lpIMDevice() == NULL) return; }
+#define Mesh_Debug_CheckIMDevice_Int()      { if (lpIMDevice() == NULL) return 1; }
+#else
+#define Mesh_Debug_CheckIMDevice_Ptr()
+#define Mesh_Debug_CheckIMDevice_Void()
+#define Mesh_Debug_CheckIMDevice_Int()
+#endif
