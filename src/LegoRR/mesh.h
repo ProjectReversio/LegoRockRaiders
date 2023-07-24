@@ -229,8 +229,26 @@ extern B32 Mesh_RenderMesh(lpMesh mesh, LPD3DMATRIX matWorld, B32 alphaBlend);
 
 extern lpMesh Mesh_Clone(lpMesh mesh, LPDIRECT3DRMFRAME3 frame);
 
+extern void Mesh_UViewMesh(APPOBJ* lightWaveObject, Point2F textCoords[]);
+
+extern void Mesh_GetSurfInfo(const char* basePath, APPOBJ* lightWaveObject, Mesh_LightWave_Surface lightWaveSurf[], B32 noTextures);
+
+extern S32 Mesh_AddGroup(lpMesh mesh, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData);
+
+extern void Mesh_GetTextureUVsWrap(U32 vertexCount, Point3F vertices[], Point2F coords[], F32 sx, F32 sy, F32 sz, F32 px, F32 py, F32 pz, U32 flags);
+extern void Mesh_SetVertices_VNT(lpMesh mesh, U32 groupID, U32 index, U32 count, Point3F vertices[], lpPoint3F normal[], Point2F textCoords[]);
+extern void Mesh_AlterGroupRenderFlags(lpMesh mesh, U32 groupID, U32 newFlags);
+extern void Mesh_SetGroupTexture(lpMesh mesh, U32 groupID, lpMesh_Texture mt);
+
+extern B32 Mesh_SetGroupColour(lpMesh mesh, U32 groupID, F32 r, F32 g, F32 b, U32 type);
+extern void Mesh_GetGroupColour(lpMesh mesh, U32 groupID, F32* r, F32* g, F32* b, U32 type);
+extern B32 Mesh_SetGroupMaterialValues(lpMesh mesh, U32 groupID, F32 value, U32 type);
+extern void Mesh_GetGroupMaterialValues(lpMesh mesh, U32 groupID, F32* value, U32 type);
+
 extern B32 Mesh_CreateGroupMaterial(lpMesh mesh, U32 groupID);
 extern B32 Mesh_SetGroupMaterial(lpMesh mesh, U32 groupID, LPD3DMATERIAL mat);
+
+extern B32 Mesh_SetTransform(D3DTRANSFORMSTATETYPE type, Matrix4F* matrix);
 
 extern B32 Mesh_CanRenderGroup(lpMesh_Group group);
 extern B32 Mesh_RenderGroup(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 alphaBlend);
@@ -244,6 +262,7 @@ extern lpMesh Mesh_ObtainFromList();
 extern void Mesh_ReturnToList(lpMesh dead);
 
 extern void Mesh_AddList();
+extern void Mesh_Remove(lpMesh mesh, LPDIRECT3DRMFRAME3 frame);
 
 #ifdef _DEBUG
 #define Mesh_Debug_CheckIMDevice_Ptr()      { if (lpIMDevice() == NULL) return (void*)1; }
@@ -254,3 +273,24 @@ extern void Mesh_AddList();
 #define Mesh_Debug_CheckIMDevice_Void()
 #define Mesh_Debug_CheckIMDevice_Int()
 #endif
+
+#define Mesh_Create(c, f, rf, d) Mesh_CreateOnFrame((c->activityFrame), (f), (rf), (d), Mesh_Type_Norm)
+#define Mesh_CreatePostEffect(c, f, rf, d) Mesh_CreateOnFrame((c->activityFrame), (f), (rf), (d), Mesh_Type_PostEffect)
+#define Mesh_LoadLightWaveObject(n, c) Mesh_Load((n), (c->activityFrame))
+#define Mesh_RemoveFromContainer(m, c) Mesh_Remove((m), (c)->activityFrame)
+
+#define Mesh_SetWorldTransform(m)   Mesh_SetTransform(TRANSFORMSTATE_WORLD, (m))
+
+#define Mesh_SetGroupDiffuse(m, n, r, g, b) Mesh_SetGroupColour((m), (n), (r), (g), (b), Mesh_Colour_Diffuse)
+#define Mesh_SetGroupAmbient(m, n, r, g, b) Mesh_SetGroupColour((m), (n), (r), (g), (b), Mesh_Colour_Ambient)
+#define Mesh_SetGroupSpecular(m, n, r, g, b) Mesh_SetGroupColour((m), (n), (r), (g), (b), Mesh_Colour_Specular)
+#define Mesh_SetGroupEmissive(m, n, r, g, b) Mesh_SetGroupColour((m), (n), (r), (g), (b), Mesh_Colour_Emissive)
+#define Mesh_SetGroupPower(m, n, p) Mesh_SetGroupMaterialValues((m), (n), (p), Mesh_Colour_Power)
+#define Mesh_SetGroupAlpha(m, n, a) Mesh_SetGroupMaterialValues((m), (n), (a), Mesh_Colour_Alpha)
+
+#define Mesh_GetGroupDiffuse(m, n, r, g, b) Mesh_GetGroupColour((m), (n), (r), (g), (b), Mesh_Colour_Diffuse)
+#define Mesh_GetGroupAmbient(m, n, r, g, b) Mesh_GetGroupColour((m), (n), (r), (g), (b), Mesh_Colour_Ambient)
+#define Mesh_GetGroupSpecular(m, n, r, g, b) Mesh_GetGroupColour((m), (n), (r), (g), (b), Mesh_Colour_Specular)
+#define Mesh_GetGroupEmissive(m, n, r, g, b) Mesh_GetGroupColour((m), (n), (r), (g), (b), Mesh_Colour_Emissive)
+#define Mesh_GetGroupPower(m, n, p) Mesh_GetGroupMaterialValues((m), (n), (p), Mesh_Colour_Power)
+#define Mesh_GetGroupAlpha(m, n, a) Mesh_GetGroupMaterialValues((m), (n), (a), Mesh_Colour_Alpha)

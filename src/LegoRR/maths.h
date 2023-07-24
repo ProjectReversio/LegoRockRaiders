@@ -1,8 +1,12 @@
 #pragma once
 
+#include <math.h>
 #include "platform.h"
 
 #define M_PI 3.14159265358979323846f
+
+typedef F32 Matrix4F[4][4];
+typedef F32 Matrix3F[3][3];
 
 typedef struct Point2F
 {
@@ -52,3 +56,50 @@ typedef struct Range2F
 } Range2F, *lpRange2F;
 
 extern S16 Maths_Rand();
+
+#define Maths_Vector3DLength(v) Maths_Vector3DModulus((v))
+
+extern lpPoint3F Maths_PlaneNormal(lpPoint3F n, lpPoint3F p1, lpPoint3F p2, lpPoint3F p3);
+
+inline lpPoint3F Maths_Vector3DCrossProduct(lpPoint3F r, lpPoint3F a, lpPoint3F b)
+{
+    r->x = a->y * b->z - a->z * b->y;
+    r->y = a->z * b->x - a->x * b->z;
+    r->z = a->x * b->y - a->y * b->x;
+    return r;
+}
+
+inline lpPoint3F Maths_Vector3DSubtract(lpPoint3F r, lpPoint3F a, lpPoint3F b)
+{
+    r->x = a->x - b->x;
+    r->y = a->y - b->y;
+    r->z = a->z - b->z;
+    return r;
+}
+
+inline lpPoint3F Maths_Vector3DAdd(lpPoint3F r, lpPoint3F a, lpPoint3F b)
+{
+    r->x = a->x + b->x;
+    r->y = a->y + b->y;
+    r->z = a->z + b->z;
+    return r;
+}
+
+inline F32 Maths_Vector3DModulus(lpPoint3F v)
+{
+    return (F32)sqrt(v->x * v->x + v->y * v->y + v->z * v->z);
+}
+
+inline lpPoint3F Maths_Vector3DScale(lpPoint3F r, lpPoint3F a, F32 f)
+{
+    r->x = a->x * f;
+    r->y = a->y * f;
+    r->z = a->z * f;
+    return r;
+}
+
+inline lpPoint3F Maths_Vector3DNormalize(lpPoint3F r)
+{
+    Maths_Vector3DScale(r, r, 1.0f / Maths_Vector3DLength(r));
+    return r;
+}
