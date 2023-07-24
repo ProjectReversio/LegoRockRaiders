@@ -216,6 +216,7 @@ extern B32 Mesh_Initialize(const char* sharedTextureDir);
 extern B32 Mesh_SetMaterial(LPD3DMATERIAL newMaterial);
 extern B32 Mesh_CreateGlobalMaterial();
 
+extern void Mesh_AddToPostRenderList(lpMesh mesh, LPD3DMATRIX matWorld);
 extern void Mesh_ClearPostRenderList();
 extern void Mesh_PostRenderAll(lpViewport vp);
 
@@ -252,10 +253,17 @@ extern B32 Mesh_SetGroupMaterial(lpMesh mesh, U32 groupID, LPD3DMATERIAL mat);
 
 extern B32 Mesh_SetTransform(D3DTRANSFORMSTATETYPE type, Matrix4F* matrix);
 
+extern B32 Mesh_SetTextureTime2(lpMesh mesh, F32 frame);
+
 extern B32 Mesh_CanRenderGroup(lpMesh_Group group);
 extern B32 Mesh_RenderGroup(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 alphaBlend);
 
+extern B32 Mesh_SetGroupRenderDesc(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 alphaBlend);
+
+extern B32 Mesh_RenderTriangleList(D3DMATERIALHANDLE matHandle, LPDIRECT3DTEXTURE2 texture, U32 renderFlags, Mesh_Vertex vertices[], U32 vertexCount, U16 faceData[], U32 indexCount);
+
 extern void Mesh_SetMeshRenderDesc(lpMesh mesh, lpViewport vp, LPD3DMATRIX matWorld, B32 alphaBlend);
+extern B32 Mesh_SetCurrentViewport(LPDIRECT3DRMVIEWPORT view);
 extern B32 Mesh_SetCurrentGODSViewport(lpViewport vp);
 extern void Mesh_StoreTextureAndMat();
 extern void Mesh_RestoreTextureAndMat();

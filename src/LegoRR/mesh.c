@@ -99,6 +99,22 @@ B32 Mesh_CreateGlobalMaterial()
     return TRUE;
 }
 
+void Mesh_AddToPostRenderList(lpMesh mesh, LPD3DMATRIX matWorld)
+{
+    lpMesh_PostRenderInfo info;
+
+    info = Mem_Alloc(sizeof(Mesh_PostRenderInfo));
+    memset(info, 0, sizeof(Mesh_PostRenderInfo));
+
+    info->mesh = mesh;
+    if (matWorld)
+        info->matWorld = (*matWorld);
+
+    // ADD TO LINKED LIST
+    info->next = meshGlobs.postRenderMeshList;
+    meshGlobs.postRenderMeshList = info;
+}
+
 void Mesh_ClearPostRenderList()
 {
     lpMesh_PostRenderInfo info = meshGlobs.postRenderMeshList;
@@ -532,7 +548,147 @@ lpMesh Mesh_CreateOnFrame(LPDIRECT3DRMFRAME3 frame, void(*renderFunc)(lpMesh mes
 
 BOOL Mesh_RenderCallback(LPDIRECT3DRMUSERVISUAL lpD3DRMUV, LPVOID lpArg, D3DRMUSERVISUALREASON lpD3DRMUVreason, LPDIRECT3DRMDEVICE lpD3DRMDev, LPDIRECT3DRMVIEWPORT lpD3DRMview)
 {
-    // TODO: Implement Mesh_RenderCallback
+    lpMesh mesh = lpArg;
+    lpViewport vp;
+    D3DMATRIX matWorld;
+
+    if (lpD3DRMUVreason == D3DRMUSERVISUAL_CANSEE)
+    {
+        if (lpIMDevice())
+        {
+            if (mesh->flags & MESH_FLAG_HIDDEN)
+                return FALSE;
+
+            if ((mesh->flags & MESH_FLAG_FACECAMERA) && !(mesh->flags & MESH_FLAG_FACECAMERADONE))
+            {
+                LPDIRECT3DRMFRAME3 camera, scene;
+                vp = (lpViewport) lpD3DRMview->lpVtbl->GetAppData(lpD3DRMview);
+                if (vp->rendering)
+                {
+                    mesh->frameCreatedOn->lpVtbl->GetScene(mesh->frameCreatedOn, &scene);
+                    vp->lpVP->lpVtbl->GetCamera(vp->lpVP, &camera);
+                    mesh->frameCreatedOn->lpVtbl->LookAt(mesh->frameCreatedOn, camera, scene, 0);
+                    mesh->flags |= MESH_FLAG_FACECAMERADONE;
+                }
+            }
+
+            return TRUE;
+        } else
+        {
+            return FALSE;
+        }
+    } else if (lpD3DRMUVreason == D3DRMUSERVISUAL_RENDER)
+    {
+        if (lpIMDevice())
+        {
+            LPDIRECT3DRMVIEWPORT2 view;
+            lpMesh_Group group;
+            U32 loop;
+            B32 postRender = FALSE;
+            B32 renderStateSet = FALSE;
+
+            mesh->flags &= ~MESH_FLAG_FACECAMERADONE;
+
+            // GET THE CURRENT RM WORLD MATRIX FOR POST RENDER
+            lpIMDevice()->lpVtbl->GetTransform(lpIMDevice(), D3DTRANSFORMSTATE_WORLD, &matWorld);
+
+            Mesh_SetCurrentViewport(lpD3DRMview);
+            lpD3DRMview->lpVtbl->QueryInterface(lpD3DRMview, &IID_IDirect3DRMViewport2, &view);
+
+            vp = (lpViewport) view->lpVtbl->GetAppData(view);
+
+            if (mesh->flags & MESH_FLAG_POSTEFFECT)
+            {
+                // POST RENDER MESH
+                Mesh_AddToPostRenderList(mesh, &matWorld);
+            } else if (mesh->renderDesc.renderFlags & MESH_FLAG_RENDER_ALLALPHA)
+            {
+                // RENDER ALL GROUPS WITHOUT FLAGS CHANGED FIRST
+                for (loop = 0; loop < mesh->groupCount; loop++)
+                {
+                    group = &mesh->groupList[loop];
+
+                    if (Mesh_CanRenderGroup(group))
+                    {
+                        if (group->flags & MESH_FLAG_ALPHAENABLE)
+                        {
+                            // POST RENDER MESH
+                            // DO NOT RENDER GROUP NOW
+                            postRender = TRUE;
+                            continue;
+                        }
+
+                        if (group->renderFlags == 0)
+                        {
+                            // GROUP OPAQUE SO RENDER NOW
+                            if (!renderStateSet)
+                            {
+                                Mesh_StoreTextureAndMat();
+                                Mesh_SetMeshRenderDesc(mesh, vp, &matWorld, FALSE);
+                                renderStateSet = TRUE;
+                            }
+
+                            Mesh_RenderGroup(mesh, group, &matWorld, FALSE);
+                        }
+                    }
+                }
+
+                // RENDER ALL GROUPS WITH FLAGS CHANGED FIRST
+                for (loop = 0; loop < mesh->groupCount; loop++)
+                {
+                    group = &mesh->groupList[loop];
+
+                    if (Mesh_CanRenderGroup(group))
+                    {
+                        if (group->flags & MESH_FLAG_ALPHAENABLE)
+                        {
+                            // POST RENDER MESH
+                            // DO NOT RENDER GROUP NOW
+                            postRender = TRUE;
+                            continue;
+                        }
+
+                        if (group->renderFlags)
+                        {
+                            // GROUP OPAQUE SO RENDER NOW
+                            if (!renderStateSet)
+                            {
+                                Mesh_StoreTextureAndMat();
+                                Mesh_SetMeshRenderDesc(mesh, vp, &matWorld, FALSE);
+                                renderStateSet = TRUE;
+                            }
+
+                            Mesh_RenderGroup(mesh, group, &matWorld, FALSE);
+                        }
+                    }
+                }
+
+                if (postRender)
+                    Mesh_AddToPostRenderList(mesh, &matWorld);
+            } else
+            {
+                // NOTE IS SOME OF THE GROUPS IN THIS MESH USE ALPHA BLENDING THEY WILL NOT APPEAR
+                // IF YOU SUSPECT THAT ONE OR MORE GROUPS WILL USE ALPHA BLENDING SET 'MESH_FLAG_RENDER_ALPHATRANS' ON THE MESH RRENDER DESC.
+                Mesh_StoreTextureAndMat();
+                Mesh_SetMeshRenderDesc(mesh, vp, &matWorld, FALSE);
+                renderStateSet = TRUE;
+
+                Mesh_RenderMesh(mesh, &matWorld, FALSE);
+            }
+
+            if (renderStateSet)
+            {
+                // RESTORE STATES
+                Main_RestoreStates(FALSE);
+                Mesh_RestoreTextureAndMat();
+            }
+
+            RELEASE(view);
+        }
+
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -1082,6 +1238,12 @@ B32 Mesh_SetTransform(D3DTRANSFORMSTATETYPE type, Matrix4F* matrix)
     return FALSE;
 }
 
+B32 Mesh_SetTextureTime2(lpMesh mesh, F32 frame)
+{
+    // TODO: Implement Mesh_SetTextureTime2
+    return FALSE;
+}
+
 B32 Mesh_CanRenderGroup(lpMesh_Group group)
 {
     return (!(group->flags & MESH_FLAG_HIDDEN) && (!group->flags & MESH_FLAG_ALPHAHIDDEN));
@@ -1089,8 +1251,105 @@ B32 Mesh_CanRenderGroup(lpMesh_Group group)
 
 B32 Mesh_RenderGroup(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 alphaBlend)
 {
-    // TODO: Implement Mesh_RenderGroup
+    B32 ok = TRUE;
+    S32 frame;
+
+    Mesh_SetGroupRenderDesc(mesh, group, matWorld, alphaBlend);
+
+    if (!Mesh_SetMaterial(&group->material))
+        ok = FALSE;
+
+    if (mesh->textureRenderCallback)
+    {
+        frame = (mesh->textureRenderCallback(mesh->textureRenderCallbackData));
+        if (frame != -1)
+            Mesh_SetTextureTime2(mesh, (F32) frame);
+    }
+
+    if (!Mesh_RenderTriangleList(meshGlobs.matHandle, group->imText, MESH_DEFAULTRENDERFLAGS,
+                                 group->vertices, group->vertexCount, group->faceData, group->faceDataSize))
+    {
+        ok = FALSE;
+    }
+
+    return ok;
+}
+
+B32 Mesh_SetGroupRenderDesc(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 alphaBlend)
+{
+    // TODO: Implement Mesh_SetGroupRenderDesc
     return FALSE;
+}
+
+B32 Mesh_RenderTriangleList(D3DMATERIALHANDLE matHandle, LPDIRECT3DTEXTURE2 texture, U32 renderFlags, Mesh_Vertex vertices[], U32 vertexCount, U16 faceData[], U32 indexCount)
+{
+    B32 ok = TRUE;
+    U32 textureHandle;
+    LPDIRECT3DDEVICE2 device2;
+    U32 oldAmbientLightState;
+
+    // TEXTURES
+    if (!(mainGlobs.flags & MAIN_FLAG_DONTMANAGETEXTURES))
+    {
+        if (texture != meshGlobs.currTextureIM)
+        {
+            // SET NEW TEXTURE
+            if (lpIMDevice()->lpVtbl->SetTexture(lpIMDevice(), 0, texture))
+            {
+                Error_Warn(TRUE, "Cannot 'SetTexture' for new D3DIM texture.");
+                ok = FALSE;
+            } else
+            {
+                meshGlobs.currTextureIM = texture;
+            }
+        }
+    } else
+    {
+        textureHandle = 0;
+
+        if (texture)
+        {
+            // QUERY INTERFACE FOR OLD DEVICE AND GET HANDLE
+            lpIMDevice()->lpVtbl->QueryInterface(lpIMDevice(), &IID_IDirect3DDevice2, &device2);
+            texture->lpVtbl->GetHandle(texture, device2, &textureHandle);
+            RELEASE(device2);
+        }
+
+        if (textureHandle != meshGlobs.currTextureRM)
+        {
+            // SET NEW TEXTURE
+            Main_ChangeRenderState(D3DRENDERSTATE_TEXTUREHANDLE, textureHandle);
+            meshGlobs.currTextureRM = textureHandle;
+        }
+    }
+
+    // MATERIAL
+    if (matHandle != meshGlobs.currMatIM)
+    {
+        // SET NEW MATERIAL
+        if (lpIMDevice()->lpVtbl->SetLightState(lpIMDevice(), D3DLIGHTSTATE_MATERIAL, matHandle) != D3D_OK)
+        {
+            Error_Warn(TRUE, "Cannot 'SetLightState' for new D3DIM material.")
+            ok = FALSE;
+        } else
+        {
+            meshGlobs.currMatIM = matHandle;
+        }
+    }
+
+    lpIMDevice()->lpVtbl->GetLightState(lpIMDevice(), D3DLIGHTSTATE_AMBIENT, &oldAmbientLightState);
+    lpIMDevice()->lpVtbl->SetLightState(lpIMDevice(), D3DLIGHTSTATE_AMBIENT, meshGlobs.ambientLight);
+
+    // RENDER PRIMITIVE
+    if (lpIMDevice()->lpVtbl->DrawIndexedPrimitive(lpIMDevice(), D3DPT_TRIANGLELIST, renderFlags, vertices, vertexCount, faceData, indexCount, 0) != D3D_OK)
+    {
+        Error_Warn(TRUE, "Cannot 'DrawIndexedPrimitive'.")
+        ok = FALSE;
+    }
+
+    lpIMDevice()->lpVtbl->SetLightState(lpIMDevice(), D3DLIGHTSTATE_AMBIENT, oldAmbientLightState);
+
+    return ok;
 }
 
 void Mesh_SetMeshRenderDesc(lpMesh mesh, lpViewport vp, LPD3DMATRIX matWorld, B32 alphaBlend)
@@ -1098,10 +1357,68 @@ void Mesh_SetMeshRenderDesc(lpMesh mesh, lpViewport vp, LPD3DMATRIX matWorld, B3
     // TODO: Implement Mesh_SetMeshRenderDesc
 }
 
+B32 Mesh_SetCurrentViewport(LPDIRECT3DRMVIEWPORT view)
+{
+    LPDIRECT3DVIEWPORT imview1;
+    LPDIRECT3DVIEWPORT3 imview;
+
+    if (view->lpVtbl->GetDirect3DViewport(view, &imview1) != D3DRM_OK)
+    {
+        Error_Warn(TRUE, "Cannot 'GetDirect3DViewport'.");
+        return FALSE;
+    }
+
+    if (imview1->lpVtbl->QueryInterface(imview1, &IID_IDirect3DViewport3, &imview) != D3DRM_OK)
+    {
+        Error_Warn(TRUE, "Cannot 'QueryInterface' 'IID_IDirect3DViewport3'.");
+        RELEASE(imview1);
+        return FALSE;
+    }
+
+    RELEASE(imview1);
+
+    if (lpIMDevice()->lpVtbl->SetCurrentViewport(lpIMDevice(), imview) != D3D_OK)
+    {
+        Error_Warn(TRUE, "Cannot 'SetCurrentViewport'.");
+        RELEASE(imview);
+        return FALSE;
+    }
+
+    RELEASE(imview);
+
+    return TRUE;
+}
+
 B32 Mesh_SetCurrentGODSViewport(lpViewport vp)
 {
-    // TODO: Implement Mesh_SetCurrentGODSViewport
-    return FALSE;
+    LPDIRECT3DVIEWPORT imview1;
+    LPDIRECT3DVIEWPORT3 imview;
+
+    if (vp->lpVP->lpVtbl->GetDirect3DViewport(vp->lpVP, &imview1) != D3DRM_OK)
+    {
+        Error_Warn(TRUE, "Cannot 'GetDirect3DViewport'.");
+        return FALSE;
+    }
+
+    if (imview1->lpVtbl->QueryInterface(imview1, &IID_IDirect3DViewport3, &imview))
+    {
+        Error_Warn(TRUE, "Cannot 'QueryInterface' 'IID_IDirect3DViewport3'.");
+        RELEASE(imview1);
+        return FALSE;
+    }
+
+    RELEASE(imview1);
+
+    if (lpIMDevice()->lpVtbl->SetCurrentViewport(lpIMDevice(), imview) != D3D_OK)
+    {
+        Error_Warn(TRUE, "Cannot 'SetCurrentViewport'.");
+        RELEASE(imview);
+        return FALSE;
+    }
+
+    RELEASE(imview);
+
+    return TRUE;
 }
 
 void Mesh_StoreTextureAndMat()
