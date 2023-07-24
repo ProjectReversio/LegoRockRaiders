@@ -1,8 +1,10 @@
+#include <stdio.h>
 #include "mesh.h"
 #include "mem.h"
 #include "file.h"
 #include "main.h"
 #include "error.h"
+#include "utils.h"
 
 #define RELEASE(x) { if (x != NULL) { x->lpVtbl->Release(x); x = NULL; } }
 
@@ -373,7 +375,7 @@ B32 Mesh_ParseLWO(const char* basePath, lpMesh mesh, APPOBJ *lightWaveObject, B3
                                       &vertexNorm[lightWaveObject->aoPoly[face].plyData[faceDataQuad[vertex]]],
                                       &faceNorm[face]);
                     Maths_Vector3DNormalize(&vertexNorm[lightWaveObject->aoPoly[face].plyData[faceDataQuad[vertex]]]);
-                    surfVerticesNorm[surfArraySize = surfVertexCount[lightWaveObject->aoPoly[face].plySurface]]
+                    surfVerticesNorm[surfArraySize + surfVertexCount[lightWaveObject->aoPoly[face].plySurface]]
                         = &vertexNorm[lightWaveObject->aoPoly[face].plyData[faceDataQuad[vertex]]];
 
                     // STORE NEW VERTEX IN FACE DATA
@@ -575,14 +577,355 @@ lpMesh Mesh_Clone(lpMesh mesh, LPDIRECT3DRMFRAME3 frame)
     return newMesh;
 }
 
+#define MESH_UVREALLOCSIZE 10
+
+void Mesh_HandleUViewUV(APPOBJ *lwo, Point2F textCoords[], B32* uvSet, U32* addedCount, U32 currPoly, U32 currPolyVertex, F32 u, F32 v)
+{
+    // Copy of the code from within the original Mesh_UViewMesh()
+
+    U32 vertexIndex, newIndex;
+
+    if (uvSet[lwo->aoPoly[currPoly].plyData[currPolyVertex]])
+    {
+        textCoords[lwo->aoPoly[currPoly].plyData[currPolyVertex]].x = u;
+        textCoords[lwo->aoPoly[currPoly].plyData[currPolyVertex]].y = v;
+        uvSet[lwo->aoPoly[currPoly].plyData[currPolyVertex]] = 1;
+    } else if ((textCoords[lwo->aoPoly[currPoly].plyData[currPolyVertex]].x != u) ||
+               (textCoords[lwo->aoPoly[currPoly].plyData[currPolyVertex]].y != v))
+    {
+        // THE SHARED VERTEX HAS MORE THAN ONE TEXTURE COORDINATE
+        // COPY THE VERTEX AND ALTER THE FACE DATA FOR THE GROUP
+        // ADD THE NEW UV INFORMATION TO THE NEW VERTEX
+
+        // THIS ALTERS THE STRUCTURE OF 'lwo'
+        // REFERENCES BEFORE THIS FUNCTION WILL BE DIFFERENT TO THOSE AFTER
+
+        if (*addedCount == 0)
+            lwo->aoVerts = Mem_ReAlloc(lwo->aoVerts, (sizeof(F32) * 3) * (lwo->aoSize.lwVertCount + MESH_UVREALLOCSIZE + 1));
+
+        vertexIndex = lwo->aoPoly[currPoly].plyData[currPolyVertex] * 3;
+        newIndex = lwo->aoSize.lwVertCount * 3;
+
+        // ADD A COPY OF VERTEX TO LIST
+        lwo->aoVerts[newIndex + 0] = lwo->aoVerts[vertexIndex + 0];
+        lwo->aoVerts[newIndex + 1] = lwo->aoVerts[vertexIndex + 1];
+        lwo->aoVerts[newIndex + 2] = lwo->aoVerts[vertexIndex + 2];
+
+        // POINT THE FACE DATA TO POINT TO THE NEW VERTEX
+        lwo->aoPoly[currPoly].plyData[currPolyVertex] = (U16)lwo->aoSize.lwVertCount;
+
+        // STORE THE NEW UV INFORMATION
+        textCoords[lwo->aoPoly[currPoly].plyData[currPolyVertex]].x = u;
+        textCoords[lwo->aoPoly[currPoly].plyData[currPolyVertex]].y = v;
+
+        lwo->aoSize.lwVertCount++;
+
+        if (++(*addedCount) >= MESH_UVREALLOCSIZE)
+            *addedCount = 0;
+    }
+}
+
+void Mesh_UViewMeshV4(APPOBJ *lwo, Point2F textCoords[])
+{
+    char line[1024];
+    char* argv[10];
+    U32 argc;
+    U32 surfaceCount, currSurface, polyCount, currPoly;
+    U32 polyVertexCount, currPolyVertex, currChannel;
+    B32 surfaceFileMode = FALSE;
+    B32* uvSet;
+    U32 addedCount = 0;
+
+    uvSet = Mem_Alloc(sizeof(B32*) * lwo->aoSize.lwVertCount * 2);
+    memset(uvSet, 0, sizeof(B32*) * lwo->aoSize.lwVertCount * 2);
+
+    File_GetLine(line, sizeof(line), lwo->aoFileUV);
+    while (File_GetLine(line, sizeof(line), lwo->aoFileUV))
+    {
+        if (surfaceFileMode)
+        {
+            if (currChannel == 0)
+                lwo->aoSurface[currSurface].srfPath = Util_StrCpy(line);
+            surfaceFileMode = FALSE;
+        } else
+        {
+            if ((argc = Util_WSTokenize(line, argv)))
+            {
+                if (strcmp("VERSION", argv[0]) == 0)
+                {
+                    Error_Fatal(atol(argv[1]) != 4, "Incorrect UView file version");
+                } else if (strcmp("SURFACE_COUNT", argv[0]) == 0)
+                {
+                    surfaceCount = atol(argv[1]);
+                    Error_Fatal(lwo->aoSize.lwSurfaceCount != surfaceCount, "Invalid/Incorrect UView file (Surface count mismatch)");
+                } else if (strcmp("SURFACE", argv[0]) == 0)
+                {
+                    currSurface = atol(argv[1]);
+                } else if (strcmp("SURFACE_IMAGE_FILE", argv[0]) == 0)
+                {
+                    surfaceFileMode = TRUE;
+                } else if (strcmp("POLY_COUNT", argv[0]))
+                {
+                    polyCount = atol(argv[1]);
+                    Error_Fatal(lwo->aoSize.lwPolyCount != polyCount, "Invalid/Incorrect UView file (Poly count mismatch)");
+                } else if (strcmp("POLY", argv[0]) == 0)
+                {
+                    currPoly = atol(argv[1]);
+                } else if (strcmp("POLY_VERT_COUNT", argv[0]) == 0)
+                {
+                    polyVertexCount = atol(argv[1]);
+                    Error_Fatal(lwo->aoPoly[currPoly].plyCount != polyVertexCount, "Invalid/Incorrect UView file (Poly vertex count mismatch)");
+                } else if (strcmp("VERT", argv[0]) == 0)
+                {
+                    currPolyVertex = atol(argv[1]);
+                } else if (strcmp("VERT_CUV", argv[0]) == 0)
+                {
+                    Mesh_HandleUViewUV(lwo, textCoords, uvSet, &addedCount, currPoly, currPolyVertex, (F32) atof(argv[2]), (F32) -atof(argv[3]));
+                } else if (strcmp("CHANNEL", argv[0]) == 0)
+                {
+                    currChannel = atoi(argv[1]);
+                }
+            }
+        }
+    }
+
+    Mem_Free(uvSet);
+}
+
 void Mesh_UViewMesh(APPOBJ* lightWaveObject, Point2F textCoords[])
 {
-    // TODO: Implement Mesh_UViewMesh
+    char line[1024];
+    char lineSplit[1024];
+    U32 groupID;
+    char* argv[5];
+    S32 argc, lineNum = 0;
+    S32 polyRead = -2;
+    S32 surfRead = -1;
+    S32 vertexRead = -1;
+    lpFile fileUV = lightWaveObject->aoFileUV;
+    U32* uvSet;
+    U32 addedCount = 0;
+    B32 notSame;
+    F32 uvX, uvY;
+    U32 vertexIndex, newIndex;
+
+    if (File_GetLine(line, sizeof(line), fileUV))
+    {
+        if (File_GetLine(line, sizeof(line), fileUV))
+        {
+            File_Seek(fileUV, 0, File_SeekSet);
+            if (strcmp("VERSION 4", line) == 0)
+            {
+                Mesh_UViewMeshV4(lightWaveObject, textCoords);
+                return;
+            }
+        }
+    }
+
+    uvSet = Mem_Alloc(sizeof(U32) * lightWaveObject->aoSize.lwVertCount * 2);
+    memset(uvSet, 0, sizeof(U32) * lightWaveObject->aoSize.lwVertCount * 2);
+
+    while (File_GetLine(line, sizeof(line), fileUV))
+    {
+        strcpy(lineSplit, line);
+
+        if ((argc = Util_WSTokenize(lineSplit, argv)))
+        {
+            // MAYBE CHECK VERSION NUMBER ON FIRST LINE - SHOULD BE 2
+
+            // CHECK SURFACE COUNT IS SAME AS OBJECT
+            Error_Fatal(lineNum == 1 && lightWaveObject->aoSize.lwSurfaceCount != (U32)atoi(argv[0]), "UView file corrupt.");
+
+            if (lineNum == 2)
+                surfRead = 0;
+
+            // READ SURFACE INFORMATION
+            if (surfRead != -1)
+            {
+                if (surfRead >= (S32)(lightWaveObject->aoSize.lwSurfaceCount * 2))
+                {
+                    polyRead = -1;
+                    surfRead = -1;
+                } else if (surfRead >= (S32)lightWaveObject->aoSize.lwSurfaceCount)
+                {
+                    // OVERWRITE EXISTING IMAGE FILE NAME ON SURFACE
+                    lightWaveObject->aoSurface[surfRead - lightWaveObject->aoSize.lwSurfaceCount].srfPath = Util_StrCpy(argv[0]);
+
+                    surfRead++;
+                } else
+                {
+                    surfRead++;
+                }
+            }
+
+            // RUN THROUGH POLYGONS
+            if (polyRead != -2)
+            {
+                if (polyRead == -1)
+                {
+                    // CHECK POLY COUNT IS THE SAME AS OBJECT
+                    Error_Fatal((lightWaveObject->aoSize.lwPolyCount != (U32)atoi(argv[0])), "UView file corrupt.");
+                    polyRead = 0;
+                } else if (polyRead < (S32)lightWaveObject->aoSize.lwPolyCount)
+                {
+                    if (vertexRead != -1 && vertexRead < (S32)lightWaveObject->aoPoly[groupID].plyCount)
+                    {
+                        notSame = FALSE;
+
+                        // READ UV INFORMATION FOR EACH VERTEX
+                        uvX = (F32)atof(argv[0]);
+                        uvY = -(F32)atof(argv[1]);
+
+                        if ((textCoords[lightWaveObject->aoPoly[groupID].plyData[vertexRead]].x != uvX) ||
+                            (textCoords[lightWaveObject->aoPoly[groupID].plyData[vertexRead]].y != uvY))
+                        {
+                            notSame = TRUE;
+                        }
+
+                        if (uvSet[lightWaveObject->aoPoly[groupID].plyData[vertexRead]] == 0)
+                        {
+                            textCoords[lightWaveObject->aoPoly[groupID].plyData[vertexRead]].x = uvX;
+                            textCoords[lightWaveObject->aoPoly[groupID].plyData[vertexRead]].y = uvY;
+
+                            uvSet[lightWaveObject->aoPoly[groupID].plyData[vertexRead]] = 1;
+                        } else if (notSame)
+                        {
+                            // THE SHARED VERTEX HAS MORE THAN ONE TEXTURE COORDINATE
+                            // COPY THE VERTEX AND ALTER THE FACE DATA FOR THE GROUP
+                            // ADD THE NEW UV INFORMATION TO THE NEW VERTEX
+
+                            // THIS ALTERS THE STRUCTURE OF 'lightWaveObject'
+                            // REFERENCES BEFORE THIS FUNCTION WILL BE DIFFERENT TO THOSE AFTER
+
+                            if (addedCount == 0)
+                                lightWaveObject->aoVerts = Mem_ReAlloc(lightWaveObject->aoVerts, (sizeof(F32) * (lightWaveObject->aoSize.lwVertCount + MESH_UVREALLOCSIZE + 1) * 3));
+
+                            vertexIndex = lightWaveObject->aoPoly[groupID].plyData[vertexRead] * 3;
+                            newIndex = lightWaveObject->aoSize.lwVertCount * 3;
+
+                            // ADD A COPY OF VERTEX TO LIST
+                            lightWaveObject->aoVerts[newIndex] = lightWaveObject->aoVerts[vertexIndex];
+                            lightWaveObject->aoVerts[newIndex + 1] = lightWaveObject->aoVerts[vertexIndex + 1];
+                            lightWaveObject->aoVerts[newIndex + 2] = lightWaveObject->aoVerts[vertexIndex + 2];
+
+                            // POINT THE FACE FATA TO POINT TO THE NEW VERTEX
+                            lightWaveObject->aoPoly[groupID].plyData[vertexRead] = (U16)lightWaveObject->aoSize.lwVertCount;
+
+                            // STORE THE NEW UV INFORMATION
+                            textCoords[lightWaveObject->aoPoly[groupID].plyData[vertexRead]].x = uvX;
+                            textCoords[lightWaveObject->aoPoly[groupID].plyData[vertexRead]].y = uvY;
+
+                            lightWaveObject->aoSize.lwVertCount++;
+
+                            if (++addedCount >= MESH_UVREALLOCSIZE)
+                                addedCount = 0;
+                        }
+
+                        vertexRead++;
+                    } else if (polyRead < (S32)lightWaveObject->aoSize.lwPolyCount - 1)
+                    {
+                        // CHECK POLY VERTEX COUNT IS SAME AS OBJECT
+                        groupID = atoi(argv[0]);
+                        Error_Fatal((lightWaveObject->aoPoly[groupID].plyCount != (U32)atoi(argv[1])), "UView file corrupt.");
+
+                        if (vertexRead != -1)
+                            polyRead++;
+
+                        vertexRead = 0;
+                    }
+                } else
+                {
+                    polyRead = -2;
+
+                    // RETURN HERE BECAUSE REST OF FILE IS UNUSED
+                    return;
+                }
+            }
+
+            lineNum++;
+        }
+    }
+
+    Mem_Free(uvSet);
 }
 
 void Mesh_GetSurfInfo(const char* basePath, APPOBJ* lightWaveObject, Mesh_LightWave_Surface lightWaveSurf[], B32 noTextures)
 {
-    // TODO: Implement Mesh_GetSurfInfo
+    U32 loopSurf;
+    char drive[_MAX_DRIVE];
+    char dir[_MAX_DIR];
+    char fname[_MAX_FNAME];
+    char ext[_MAX_EXT];
+    char path[_MAX_PATH];
+    U32 tempNum;
+
+    for (loopSurf = 0; loopSurf < lightWaveObject->aoSize.lwSurfaceCount; loopSurf++)
+    {
+        if (lightWaveObject->aoSurface[loopSurf].srfPath && !noTextures)
+        {
+            _splitpath(lightWaveObject->aoSurface[loopSurf].srfPath, drive, dir, fname, ext);
+
+            if (lightWaveObject->aoSurface[loopSurf].srfTexFlags & TFM_SEQUENCE)
+            {
+                char baseName[_MAX_FNAME], textName[_MAX_FNAME];
+                U32 textNum, numOfDigits, numInTexSeq = 0;
+
+                // FIND NUM OF TEXTURES IN SEQUENCE
+                if (Mesh_GetTextureSeqInfo(fname, baseName, &textNum, &numOfDigits))
+                {
+                    tempNum = textNum;
+
+                    lightWaveSurf[loopSurf].textureSeq = Mem_Alloc(sizeof(lpMesh_Texture) * MESH_MAXTEXTURESEQUENCE);
+                    for (numInTexSeq = 0; numInTexSeq < MESH_MAXTEXTURESEQUENCE; numInTexSeq++)
+                    {
+                        Mesh_GetNextInSequence(baseName, textName, &textNum, numOfDigits);
+                        sprintf(path, "%s%s", textName, ext);
+                        if ((lightWaveSurf[loopSurf].textureSeq[numInTexSeq] = Mesh_LoadTexture(basePath, path, NULL, NULL)) == NULL)
+                            break;
+                    }
+
+                    // Mem_Realloc() will set 'textureSeq' to NULL if 'numInTexSeq' is zero...
+                    lightWaveSurf[loopSurf].numInTexSeq = numInTexSeq;
+                    lightWaveSurf[loopSurf].textureSeq = Mem_ReAlloc(lightWaveSurf[loopSurf].textureSeq, sizeof(lpMesh_Texture) * numInTexSeq);
+                } else
+                {
+                    Error_Fatal(TRUE, Error_Format("Error loading texture sequence \"%s\".", fname));
+                }
+            } else
+            {
+                // LOAD SINGLE TEXTURE
+                sprintf(path, "%s%s", fname, ext);
+
+                lightWaveSurf[loopSurf].texture = Mesh_LoadTexture(basePath, path, NULL, NULL);
+            }
+
+            if (lightWaveObject->aoSurface[loopSurf].srfFlags & SFM_SHARPTERMINATOR)
+            {
+                // IF SHARP TERMINATOR FLAG IS SET THEN MIX TEXTURE COLOUR WITH DIFFUSE
+                lightWaveSurf[loopSurf].colour.x = lightWaveObject->aoSurface[loopSurf].srfCol.colRed / 256.0f;
+                lightWaveSurf[loopSurf].colour.y = lightWaveObject->aoSurface[loopSurf].srfCol.colGreen / 256.0f;
+                lightWaveSurf[loopSurf].colour.z = lightWaveObject->aoSurface[loopSurf].srfCol.colBlue / 256.0f;
+            } else
+            {
+                lightWaveSurf[loopSurf].colour.x = 1.0f;
+                lightWaveSurf[loopSurf].colour.y = 1.0f;
+                lightWaveSurf[loopSurf].colour.z = 1.0f;
+            }
+
+        } else {
+            lightWaveSurf[loopSurf].colour.x = lightWaveObject->aoSurface[loopSurf].srfCol.colRed / 256.0f;
+            lightWaveSurf[loopSurf].colour.y = lightWaveObject->aoSurface[loopSurf].srfCol.colGreen / 256.0f;
+            lightWaveSurf[loopSurf].colour.z = lightWaveObject->aoSurface[loopSurf].srfCol.colBlue / 256.0f;
+        }
+
+        lightWaveSurf[loopSurf].emissive = lightWaveObject->aoSurface[loopSurf].srfLuminous;
+        lightWaveSurf[loopSurf].transparency = lightWaveObject->aoSurface[loopSurf].srfTransparent;
+        lightWaveSurf[loopSurf].diffuse = lightWaveObject->aoSurface[loopSurf].srfDiffuse;
+        lightWaveSurf[loopSurf].specular = lightWaveObject->aoSurface[loopSurf].srfSpecular;
+        lightWaveSurf[loopSurf].power = lightWaveObject->aoSurface[loopSurf].srfSpecPower;
+        lightWaveSurf[loopSurf].flags = lightWaveObject->aoSurface[loopSurf].srfFlags;
+        lightWaveSurf[loopSurf].texFlags = lightWaveObject->aoSurface[loopSurf].srfTexFlags;
+    }
 }
 
 S32 Mesh_AddGroup(lpMesh mesh, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData)
@@ -623,12 +966,43 @@ S32 Mesh_AddGroup(lpMesh mesh, U32 vertexCount, U32 faceCount, U32 vPerFace, U32
 
 void Mesh_GetTextureUVsWrap(U32 vertexCount, Point3F vertices[], Point2F coords[], F32 sx, F32 sy, F32 sz, F32 px, F32 py, F32 pz, U32 flags)
 {
-    // TODO: Implement Mesh_GetTextureUVsWrap
+    F32 x, y, z;
+    U32 vertex;
+
+    for (vertex = 0; vertex < vertexCount; vertex++)
+    {
+        x = vertices[vertex].x - px;
+        y = vertices[vertex].y - py;
+        z = vertices[vertex].z - pz;
+
+        coords[vertex].x = (flags & TFM_AXIS_X) ? (z / sz) + 0.5f : (x / sx) + 0.5f;
+        coords[vertex].y = (flags & TFM_AXIS_Y) ? (z / sz) + 0.5f : (y / sy) + 0.5f;
+    }
 }
 
 void Mesh_SetVertices_VNT(lpMesh mesh, U32 groupID, U32 index, U32 count, Point3F vertices[], lpPoint3F normal[], Point2F textCoords[])
 {
-    // TODO: Implement Mesh_SetVertices_VNT
+    if (groupID < mesh->groupCount)
+    {
+        U32 loop;
+        lpMesh_Group group;
+
+        Mesh_Debug_CheckIMDevice_Void();
+
+        group = &mesh->groupList[groupID];
+
+        for (loop = 0; loop < count; loop++)
+        {
+            group->vertices[loop + index].position.x = vertices[loop].x;
+            group->vertices[loop + index].position.y = vertices[loop].y;
+            group->vertices[loop + index].position.z = vertices[loop].z;
+            group->vertices[loop + index].normal.x = normal[loop]->x;
+            group->vertices[loop + index].normal.y = normal[loop]->y;
+            group->vertices[loop + index].normal.z = normal[loop]->z;
+            group->vertices[loop + index].tu = textCoords[loop].x;
+            group->vertices[loop + index].tv = textCoords[loop].y;
+        }
+    }
 }
 
 void Mesh_AlterGroupRenderFlags(lpMesh mesh, U32 groupID, U32 newFlags)
@@ -738,6 +1112,23 @@ void Mesh_StoreTextureAndMat()
 void Mesh_RestoreTextureAndMat()
 {
     // TODO: Implement Mesh_RestoreTextureAndMat
+}
+
+B32 Mesh_GetTextureSeqInfo(const char* tname, const char* tfname, U32* tstart, U32* tnumlen)
+{
+    // TODO: Implement Mesh_GetTextureSeqInfo
+    return FALSE;
+}
+
+void Mesh_GetNextInSequence(const char* baseName, const char* nextTextName, U32* texNum, U32 tnumlen)
+{
+    // TODO: Implement Mesh_GetNextInSequence
+}
+
+lpMesh_Texture Mesh_LoadTexture(const char* baseDir, const char* name, U32* width, U32* height)
+{
+    // TODO: Implement Mesh_LoadTexture
+    return NULL;
 }
 
 lpMesh Mesh_ObtainFromList()

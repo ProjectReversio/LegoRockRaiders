@@ -4,7 +4,7 @@
 #include "viewport.h"
 #include "lwt.h"
 
-#define MESH_MAXTEXTURESEQENCE			100
+#define MESH_MAXTEXTURESEQUENCE			100
 
 //MESH RENDER FLAGS FOR RENDER DESC
 //#define MESH_FLAG_ZB_ENABLE				0x00000100
@@ -229,6 +229,8 @@ extern B32 Mesh_RenderMesh(lpMesh mesh, LPD3DMATRIX matWorld, B32 alphaBlend);
 
 extern lpMesh Mesh_Clone(lpMesh mesh, LPDIRECT3DRMFRAME3 frame);
 
+extern void Mesh_HandleUViewUV(APPOBJ *lwo, Point2F textCoords[], B32* uvSet, U32* addedCount, U32 currPoly, U32 currPolyVertex, F32 u, F32 v);
+extern void Mesh_UViewMeshV4(APPOBJ *lwo, Point2F textCoords[]);
 extern void Mesh_UViewMesh(APPOBJ* lightWaveObject, Point2F textCoords[]);
 
 extern void Mesh_GetSurfInfo(const char* basePath, APPOBJ* lightWaveObject, Mesh_LightWave_Surface lightWaveSurf[], B32 noTextures);
@@ -257,6 +259,11 @@ extern void Mesh_SetMeshRenderDesc(lpMesh mesh, lpViewport vp, LPD3DMATRIX matWo
 extern B32 Mesh_SetCurrentGODSViewport(lpViewport vp);
 extern void Mesh_StoreTextureAndMat();
 extern void Mesh_RestoreTextureAndMat();
+
+extern B32 Mesh_GetTextureSeqInfo(const char* tname, const char* tfname, U32* tstart, U32* tnumlen);
+extern void Mesh_GetNextInSequence(const char* baseName, const char* nextTextName, U32* texNum, U32 tnumlen);
+
+extern lpMesh_Texture Mesh_LoadTexture(const char* baseDir, const char* name, U32* width, U32* height);
 
 extern lpMesh Mesh_ObtainFromList();
 extern void Mesh_ReturnToList(lpMesh dead);
