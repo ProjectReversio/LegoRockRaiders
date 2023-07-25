@@ -458,7 +458,11 @@ B32 Mesh_ParseLWO(const char* basePath, lpMesh mesh, APPOBJ *lightWaveObject, B3
             Mesh_AlterGroupRenderFlags(mesh, group, newFlags);
         }
 
-        Mesh_AlterGroupRenderFlags(mesh, group, newFlags);
+        if (!(mesh->lightWaveSurf[loop].texFlags & TFM_PIXEL_BLENDING))
+        {
+            newFlags |= MESH_FLAG_RENDER_FILTERNEAREST;
+            Mesh_AlterGroupRenderFlags(mesh, group, newFlags);
+        }
 
         // SET TEXTURE
         if ((lightWaveObject->aoSurface[loop].srfTexFlags & TFM_SEQUENCE))
@@ -712,6 +716,7 @@ lpMesh Mesh_Clone(lpMesh mesh, LPDIRECT3DRMFRAME3 frame)
 
     newMesh->listSize = newMesh->groupCount;
     newMesh->groupList = Mem_Alloc(sizeof(Mesh_Group) * newMesh->groupCount);
+    memcpy(newMesh->groupList, mesh->groupList, sizeof(Mesh_Group) * newMesh->groupCount);
 
     for (loop = 0; loop < newMesh->groupCount; loop++)
     {
@@ -1093,6 +1098,29 @@ S32 Mesh_AddGroup(lpMesh mesh, U32 vertexCount, U32 faceCount, U32 vPerFace, U32
     Error_Fatal((vPerFace != 3), "Only triangles supported so far.");
     Error_Fatal((mesh->clonedFrom != NULL) || (mesh->flags & MESH_FLAG_HASBEENCLONED), "Cannot AddGroup() to a cloned mesh");
 
+//    if (mesh->groupList == NULL)
+//    {
+//        mesh->listSize = MESH_DEFLISTSIZE;
+//        mesh->groupCount = 1;
+//        mesh->groupList = Mem_Alloc(mesh->listSize * sizeof(Mesh_Group));
+//    } else if (++mesh->groupCount == mesh->listSize)
+//    {
+//        Mesh_Group* newList;
+//        U32 newSize = (mesh->listSize * MESH_LISTINCREASE) / 100;
+//
+//        if (newList = Mem_ReAlloc(mesh->groupList, newSize * sizeof(Mesh_Group)))
+//        {
+//            mesh->groupList = newList;
+//            mesh->listSize = newSize;
+//        } else
+//        {
+//            Error_Fatal(TRUE, "Memory allocation error");
+//
+//            return -1;
+//        }
+//    }
+//    group = &mesh->groupList[mesh->groupCount - 1];
+
     if (mesh->groupCount == mesh->listSize)
     {
         mesh->listSize = max(MESH_DEFLISTSIZE, (mesh->listSize * MESH_LISTINCREASE) / 100);
@@ -1100,7 +1128,7 @@ S32 Mesh_AddGroup(lpMesh mesh, U32 vertexCount, U32 faceCount, U32 vPerFace, U32
     }
 
     group = &mesh->groupList[mesh->groupCount++];
-    memset(group, 0, sizeof(&group));
+    memset(group, 0, sizeof(*group));
 
     size = sizeof(U16) * faceCount * vPerFace;
     group->faceData = Mem_Alloc(size);
@@ -1169,7 +1197,20 @@ void Mesh_AlterGroupRenderFlags(lpMesh mesh, U32 groupID, U32 newFlags)
 
 void Mesh_SetGroupTexture(lpMesh mesh, U32 groupID, lpMesh_Texture mt)
 {
-    // TODO: Implement Mesh_SetGroupTexture
+    if (groupID < mesh->groupCount)
+    {
+        Mesh_Debug_CheckIMDevice_Void();
+
+        if (mt)
+        {
+            if (mt->surface)
+                mt->surface->lpVtbl->QueryInterface(mt->surface, &IID_IDirect3DTexture2, &mesh->groupList[groupID].imText);
+            if (mt->colourKey)
+                mesh->groupList[groupID].flags |= MESH_FLAG_TRANSTEXTURE;
+            else
+                mesh->groupList[groupID].flags &= ~MESH_FLAG_TRANSTEXTURE;
+        }
+    }
 }
 
 B32 Mesh_SetGroupColour(lpMesh mesh, U32 groupID, F32 r, F32 g, F32 b, U32 type)
@@ -1238,15 +1279,58 @@ B32 Mesh_SetTransform(D3DTRANSFORMSTATETYPE type, Matrix4F* matrix)
     return FALSE;
 }
 
+B32 Mesh_SetTextureTime(lpMesh mesh, F32 frame)
+{
+    if (mesh->textureRenderCallback == NULL)
+        return Mesh_SetTextureTime2(mesh, frame);
+
+    return FALSE;
+}
+
 B32 Mesh_SetTextureTime2(lpMesh mesh, F32 frame)
 {
-    // TODO: Implement Mesh_SetTextureTime2
+    U32 texNum;
+    U32 groupNum;
+    S32 groupTexNum;
+    lpMesh_Group group;
+
+    texNum = (U32)(frame - (F32)fmod(frame, 1.0f));
+
+    if (mesh->flags & MESH_FLAG_LWO)
+    {
+        for (groupNum = 0; groupNum < mesh->groupCount; groupNum++)
+        {
+            group = &mesh->groupList[groupNum];
+
+            if ((group->lightWaveSurfaceInfo->texFlags & TFM_SEQUENCE) && (group->lightWaveSurfaceInfo->numInTexSeq))
+            {
+                groupTexNum = (group->lightWaveSurfaceInfo->texSeqOffset + (S32)texNum) % (S32) group->lightWaveSurfaceInfo->numInTexSeq;
+
+                if (groupTexNum < 0)
+                    groupTexNum = 0;
+
+                Mesh_SetGroupTexture(mesh, groupNum, group->lightWaveSurfaceInfo->textureSeq[groupTexNum]);
+            }
+        }
+
+        return TRUE;
+    } else
+    {
+        Error_Warn(TRUE, "Cannot set texture time on non LightWave mesh.");
+    }
+
+    return FALSE;
+}
+
+B32 Mesh_ChangeTextureStageState(D3DTEXTURESTAGESTATETYPE dwRenderStateType, U32 dwRenderState)
+{
+    // TODO: Implement Mesh_ChangeTextureStageState
     return FALSE;
 }
 
 B32 Mesh_CanRenderGroup(lpMesh_Group group)
 {
-    return (!(group->flags & MESH_FLAG_HIDDEN) && (!group->flags & MESH_FLAG_ALPHAHIDDEN));
+    return (!(group->flags & MESH_FLAG_HIDDEN) && !(group->flags & MESH_FLAG_ALPHAHIDDEN));
 }
 
 B32 Mesh_RenderGroup(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 alphaBlend)
@@ -1277,8 +1361,32 @@ B32 Mesh_RenderGroup(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 
 
 B32 Mesh_SetGroupRenderDesc(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 alphaBlend)
 {
-    // TODO: Implement Mesh_SetGroupRenderDesc
+    if (!(mainGlobs.flags & MAIN_FLAG_DONTMANAGETEXTURES))
+    {
+        if ((group->flags & MESH_FLAG_TEXTURECOLOURONLY) && group->imText)
+            Mesh_ChangeTextureStageState(D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+        else
+            Mesh_ChangeTextureStageState(D3DTSS_COLOROP, D3DTOP_MODULATE);
+    }
+
+    if (group->flags & MESH_FLAG_TRANSTEXTURE)
+        Main_ChangeRenderState(D3DRENDERSTATE_COLORKEYENABLE, TRUE);
+    else
+        Main_ChangeRenderState(D3DRENDERSTATE_COLORKEYENABLE, FALSE);
+
+    if (group->renderFlags)
+    {
+        Mesh_SetRenderDesc(group->renderFlags, matWorld, alphaBlend);
+
+        return TRUE;
+    }
+
     return FALSE;
+}
+
+void Mesh_SetRenderDesc(U32 flags, LPD3DMATRIX matWorld, B32 alphaBlend)
+{
+    // TODO: Implement Mesh_SetRenderDesc
 }
 
 B32 Mesh_RenderTriangleList(D3DMATERIALHANDLE matHandle, LPDIRECT3DTEXTURE2 texture, U32 renderFlags, Mesh_Vertex vertices[], U32 vertexCount, U16 faceData[], U32 indexCount)
@@ -1329,7 +1437,7 @@ B32 Mesh_RenderTriangleList(D3DMATERIALHANDLE matHandle, LPDIRECT3DTEXTURE2 text
         // SET NEW MATERIAL
         if (lpIMDevice()->lpVtbl->SetLightState(lpIMDevice(), D3DLIGHTSTATE_MATERIAL, matHandle) != D3D_OK)
         {
-            Error_Warn(TRUE, "Cannot 'SetLightState' for new D3DIM material.")
+            Error_Warn(TRUE, "Cannot 'SetLightState' for new D3DIM material.");
             ok = FALSE;
         } else
         {
@@ -1343,7 +1451,7 @@ B32 Mesh_RenderTriangleList(D3DMATERIALHANDLE matHandle, LPDIRECT3DTEXTURE2 text
     // RENDER PRIMITIVE
     if (lpIMDevice()->lpVtbl->DrawIndexedPrimitive(lpIMDevice(), D3DPT_TRIANGLELIST, renderFlags, vertices, vertexCount, faceData, indexCount, 0) != D3D_OK)
     {
-        Error_Warn(TRUE, "Cannot 'DrawIndexedPrimitive'.")
+        Error_Warn(TRUE, "Cannot 'DrawIndexedPrimitive'.");
         ok = FALSE;
     }
 

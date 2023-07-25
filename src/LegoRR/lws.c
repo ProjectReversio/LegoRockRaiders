@@ -498,7 +498,36 @@ void Lws_SetDissolveLevel(lpLws_Info scene, lpLws_Node node, F32 level)
 
 void Lws_SetTime(lpLws_Info scene, F32 time)
 {
-    // TODO: Implement Lws_SetTime
+    U16 prev;
+    U16 loop;
+    F32 delta;
+    lpLws_Node node;
+
+    scene->lastTime = scene->time;
+    if (scene->flags & LWS_FLAG_LOOPING)
+        scene->time = (F32) fmod(time, (F32)scene->lastFrame);
+    else if (time > scene->lastFrame)
+        scene->time = (F32)scene->lastFrame;
+    else
+        scene->time = time;
+
+    for (loop = 0; loop < scene->nodeCount; loop++)
+    {
+        node = &scene->nodeList[loop];
+        if (node->keyCount > 1)
+        {
+            delta = Lws_FindPrevKey(node, scene->time, &prev);
+            Lws_InterpolateKeys(scene, node, prev, delta);
+        }
+        if (node->dissolveCount > 1)
+        {
+            delta = Lws_FindPrevDissolve(node, scene->time, &prev);
+            Lws_InterpolateDissolve(scene, node, prev, delta);
+        }
+
+        Lws_AnimateTextures(scene, node);
+        Lws_HandleTrigger(scene, node);
+    }
 }
 
 U32 Lws_GetFrameCount(lpLws_Info scene)
@@ -506,8 +535,74 @@ U32 Lws_GetFrameCount(lpLws_Info scene)
     return scene->lastFrame;
 }
 
+void Lws_AnimateTextures(lpLws_Info scene, lpLws_Node node)
+{
+    lpMesh mesh;
+    if (!(node->flags & LWSNODE_FLAG_NULL))
+    {
+        mesh = Lws_GetNodeMesh(scene, node);
+        Mesh_SetTextureTime(mesh, scene->time);
+    }
+}
+
 void Lws_SetupSoundTriggers(lpLws_Info scene)
 {
     // TODO: Implement Lws_SetupSoundTriggers
     scene->triggerCount = 0;
+}
+
+F32 Lws_FindPrevKey(lpLws_Node node, F32 time, U16* prev)
+{
+    // TODO: Implement Lws_FindPrevKey
+    return 0.0f;
+}
+
+F32 Lws_FindPrevDissolve(lpLws_Node node, F32 time, U16* prev)
+{
+    // TODO: Implement Lws_FindPrevDissolve
+    return 0.0f;
+}
+
+void Lws_HandleTrigger(lpLws_Info scene, lpLws_Node node)
+{
+    if (lwsGlobs.FindSFXIDFunc)
+    {
+        if (node->flags & LWSNODE_FLAG_SOUNDTRIGGER)
+        {
+            // TODO: Implement Lws_HandleTrigger
+        }
+    }
+}
+
+void Lws_InterpolateKeys(lpLws_Info scene, lpLws_Node node, U16 key, F32 delta)
+{
+    // TODO: Implement Lws_InterpolateKeys
+}
+
+void Lws_InterpolateDissolve(lpLws_Info scene, lpLws_Node node, U16 key, F32 delta)
+{
+    // TODO: Implement Lws_InterpolateDissolve
+}
+
+inline lpMesh Lws_GetNodeMesh(lpLws_Info scene, lpLws_Node node)
+{
+    struct IUnknown *iunknown;
+    LPDIRECT3DRMUSERVISUAL uv;
+    lpMesh mesh;
+    U32 count;
+    HRESULT r;
+    LPDIRECT3DRMFRAME3 frame = scene->frameList[node->frameIndex];
+    U32 rc;
+
+    frame->lpVtbl->GetVisuals(frame, &count, NULL);
+    Error_Fatal(count != 1, Error_Format("Failed to obtain lwo mesh from lightwave scene.\nLws_GetNodeMesh() - Node name == '%s'", node->name));
+    frame->lpVtbl->GetVisuals(frame, &count, &iunknown);
+    r = iunknown->lpVtbl->QueryInterface(iunknown, &IID_IDirect3DRMUserVisual, &uv);
+    Error_Fatal(r != D3DRM_OK, "Cannot get user visual");
+    rc = iunknown->lpVtbl->Release(iunknown);
+    mesh = (lpMesh) uv->lpVtbl->GetAppData(uv);
+    Error_Fatal(mesh == NULL, "Cannot get mesh");
+    rc = uv->lpVtbl->Release(uv);
+
+    return mesh;
 }

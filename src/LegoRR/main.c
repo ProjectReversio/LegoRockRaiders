@@ -712,8 +712,8 @@ void Main_ChangeRenderState(D3DRENDERSTATETYPE dwRenderStateType, U32 dwRenderSt
 
 void Main_RestoreStates(B32 force)
 {
-    if (force)
-    {
+    //if (force)
+    //{
         U32 loop;
         lpMain_StateChangeData data;
 
@@ -726,7 +726,7 @@ void Main_RestoreStates(B32 force)
                 data->changed = FALSE;
             }
         }
-    }
+    //}
 }
 
 void Main_DisableTextureManagement()

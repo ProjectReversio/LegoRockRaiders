@@ -166,6 +166,8 @@ extern void Container_SetPosition(lpContainer cont, lpContainer ref, F32 x, F32 
 extern void Container_SetOrientation(lpContainer cont, lpContainer ref, F32 dirx, F32 diry, F32 dirz, F32 upx, F32 upy, F32 upz);
 extern void Container_SetParent(lpContainer child, lpContainer parent);
 
+extern void Container_Frame_SafeAddChild(LPDIRECT3DRMFRAME3 parent, LPDIRECT3DRMFRAME3 child);
+
 extern void Container_GetPosition(lpContainer cont, lpContainer ref, lpPoint3F pos);
 extern void Container_GetOrientation(lpContainer cont, lpContainer ref, lpPoint3F dir, lpPoint3F up);
 

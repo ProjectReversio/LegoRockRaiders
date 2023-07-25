@@ -127,5 +127,17 @@ extern void Lws_SetDissolveLevel(lpLws_Info scene, lpLws_Node node, F32 level);
 extern void Lws_SetTime(lpLws_Info scene, F32 time);
 extern U32 Lws_GetFrameCount(lpLws_Info scene);
 
+extern void Lws_AnimateTextures(lpLws_Info scene, lpLws_Node node);
+
 extern void Lws_SetupSoundTriggers(lpLws_Info scene);
+
+extern F32 Lws_FindPrevKey(lpLws_Node node, F32 time, U16* prev);
+extern F32 Lws_FindPrevDissolve(lpLws_Node node, F32 time, U16* prev);
+
+extern void Lws_HandleTrigger(lpLws_Info scene, lpLws_Node node);
+
+extern void Lws_InterpolateKeys(lpLws_Info scene, lpLws_Node node, U16 key, F32 delta);
+extern void Lws_InterpolateDissolve(lpLws_Info scene, lpLws_Node node, U16 key, F32 delta);
+
+extern inline lpMesh Lws_GetNodeMesh(lpLws_Info scene, lpLws_Node node);
 

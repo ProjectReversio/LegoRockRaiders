@@ -253,12 +253,16 @@ extern B32 Mesh_SetGroupMaterial(lpMesh mesh, U32 groupID, LPD3DMATERIAL mat);
 
 extern B32 Mesh_SetTransform(D3DTRANSFORMSTATETYPE type, Matrix4F* matrix);
 
+extern B32 Mesh_SetTextureTime(lpMesh, F32 frame);
 extern B32 Mesh_SetTextureTime2(lpMesh mesh, F32 frame);
+
+extern B32 Mesh_ChangeTextureStageState(D3DTEXTURESTAGESTATETYPE dwRenderStateType, U32 dwRenderState);
 
 extern B32 Mesh_CanRenderGroup(lpMesh_Group group);
 extern B32 Mesh_RenderGroup(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 alphaBlend);
 
 extern B32 Mesh_SetGroupRenderDesc(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 alphaBlend);
+extern void Mesh_SetRenderDesc(U32 flags, LPD3DMATRIX matWorld, B32 alphaBlend);
 
 extern B32 Mesh_RenderTriangleList(D3DMATERIALHANDLE matHandle, LPDIRECT3DTEXTURE2 texture, U32 renderFlags, Mesh_Vertex vertices[], U32 vertexCount, U16 faceData[], U32 indexCount);
 

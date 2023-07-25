@@ -266,7 +266,59 @@ void Container_SetOrientation(lpContainer cont, lpContainer ref, F32 dirx, F32 d
 
 void Container_SetParent(lpContainer child, lpContainer parent)
 {
-    // TODO: Implement Container_SetParent
+    // Pass NULL as the parent to unhook the Container...
+
+    LPDIRECT3DRMFRAME3 parentFrame, childFrame, childFrameHidden;
+    Container_DebugCheckOK(child);
+
+    childFrame = child->masterFrame;
+    childFrameHidden = child->hiddenFrame;
+    Error_Fatal(!childFrame || !childFrameHidden, "Child has no master/hiddenFrame");
+
+    if (parent == NULL)
+    {
+        // Delete the Child from its existing parent...
+        childFrame->lpVtbl->GetParent(childFrame, &parentFrame);
+
+        if (parentFrame)
+        {
+            parentFrame->lpVtbl->DeleteChild(parentFrame, childFrame);
+            parentFrame->lpVtbl->Release(parentFrame);
+        }
+
+        // Do the same with the hidden frame...
+        childFrame->lpVtbl->GetParent(childFrameHidden, &parentFrame);
+
+        if (parentFrame)
+        {
+            parentFrame->lpVtbl->DeleteChild(parentFrame, childFrameHidden);
+            parentFrame->lpVtbl->Release(parentFrame);
+        }
+    } else
+    {
+        parentFrame = parent->masterFrame;
+        Error_Fatal(!parentFrame, "Parent has no masterFrame");
+
+        Container_Frame_SafeAddChild(parentFrame, childFrame);
+
+        // Do the same with the hidden frame...
+        parentFrame = parent->hiddenFrame;
+        Container_Frame_SafeAddChild(parentFrame, childFrameHidden);
+    }
+}
+
+void Container_Frame_SafeAddChild(LPDIRECT3DRMFRAME3 parent, LPDIRECT3DRMFRAME3 child)
+{
+    // Stop addchild from corrupting the transformation matrix...
+    D3DRMMATRIX4D mat;
+    LPDIRECT3DRMFRAME3 oldParent;
+
+    child->lpVtbl->GetParent(child, &oldParent);
+    child->lpVtbl->GetTransform(child, oldParent, mat);
+    if (oldParent)
+        oldParent->lpVtbl->Release(oldParent);
+    parent->lpVtbl->AddChild(parent, child);
+    child->lpVtbl->AddTransform(child, D3DRMCOMBINE_REPLACE, mat);
 }
 
 void Container_GetPosition(lpContainer cont, lpContainer ref, lpPoint3F pos)
