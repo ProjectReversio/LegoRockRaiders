@@ -8,6 +8,8 @@
 #include "utils.h"
 #include "lws.h"
 #include "anim_clone.h"
+#include "bmp.h"
+#include "dxbug.h"
 
 extern Container_Globs containerGlobs = { NULL };
 
@@ -492,6 +494,25 @@ void Container_Frame_FormatName(LPDIRECT3DRMFRAME3 frame, const char* msg, ...)
     Container_Frame_SetAppData(frame, NULL, NULL, NULL, NULL, name, NULL, NULL, NULL, NULL, NULL);
 }
 
+B32 Container_GetDecalColour(const char* fname, U32* colour)
+{
+    char *s, *t;
+
+    for (s = t = fname; *t != '\0'; t++)
+    {
+        if (*t == '\\')
+            s = t + 1;
+    }
+
+    if ((*s == 'a' || *s == 'A') && isdigit(*(s + 1)) && isdigit(*(s + 2)) && isdigit(*(s + 3)) && *(s + 4) == '_')
+    {
+        *colour = atoi(s + 1);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 lpAnimClone Container_LoadAnimSet(const char* fname, LPDIRECT3DRMFRAME3 frame, U32* frameCount, B32 lws, B32 looping)
 {
     LPDIRECT3DRMANIMATIONSET2 animSet = NULL;
@@ -527,6 +548,209 @@ lpAnimClone Container_LoadAnimSet(const char* fname, LPDIRECT3DRMFRAME3 frame, U
     }
 
     return animClone;
+}
+
+LPDIRECTDRAWSURFACE4 Container_LoadTextureSurface(const char* fname, B32 managed, U32* width, U32* height, B32* trans)
+{
+    char* fileData;
+    U32 size;
+    D3DRMIMAGE image;
+    LPDIRECTDRAWSURFACE4 surface = NULL;
+    DDSURFACEDESC2 desc, descBak;
+    LPDIRECTDRAWPALETTE palette;
+    B32 copy = FALSE;
+    HRESULT result;
+
+    if ((fileData = File_LoadBinary(fname, &size)))
+    {
+        BMP_Parse(fileData, size, &image);
+
+        if (image.rgb == FALSE && image.depth == 8)
+        {
+            memset(&desc, 0, sizeof(desc));
+            desc.dwSize = sizeof(DDSURFACEDESC2);
+            desc.dwFlags = DDSD_CAPS | DDSD_WIDTH | DDSD_HEIGHT | DDSD_PIXELFORMAT;
+            desc.dwWidth = image.width;
+            desc.dwHeight = image.height;
+            desc.ddsCaps.dwCaps = DDSCAPS_TEXTURE;
+
+            if (!(mainGlobs.flags & MAIN_FLAG_DONTMANAGETEXTURES))
+            {
+                if (managed)
+                    desc.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE;
+                else
+                    desc.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
+            } else
+            {
+                desc.ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
+            }
+
+            // Find the preferred 8 bit palettized format...
+            desc.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+            if (lpDevice()->lpVtbl->FindPreferredTextureFormat(lpDevice(), DDBD_8, D3DRMFPTF_PALETTIZED, &desc.ddpfPixelFormat) != D3DRM_OK)
+            {
+                memcpy(&descBak, &desc, sizeof(descBak));
+
+                // If the card doesn't like this then create a standard 8 bit surface and then blit it to one it does like...
+                memset(&desc.ddpfPixelFormat, 0, sizeof(desc.ddpfPixelFormat));
+
+                desc.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+                desc.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
+                desc.ddpfPixelFormat.dwRGBBitCount = 8;
+
+                desc.ddsCaps.dwCaps &= ~DDSCAPS_TEXTURE;
+                desc.ddsCaps.dwCaps &= ~DDSCAPS_VIDEOMEMORY;
+                desc.ddsCaps.dwCaps2 &= ~DDSCAPS2_TEXTUREMANAGE;
+
+                desc.ddsCaps.dwCaps |= DDSCAPS_SYSTEMMEMORY;
+                desc.ddsCaps.dwCaps |= DDSCAPS_OFFSCREENPLAIN;
+
+                copy = TRUE;
+            }
+
+            if (DirectDraw()->lpVtbl->CreateSurface(DirectDraw(), &desc, &surface, NULL) == DD_OK)
+            {
+                memset(&desc, 0, sizeof(desc));
+                desc.dwSize = sizeof(desc);
+
+                if ((result = surface->lpVtbl->Lock(surface, NULL, &desc, DDLOCK_WAIT, NULL)) == DD_OK)
+                {
+                    S32 y;
+                    char *surfaceMem = desc.lpSurface, *imageMem = image.buffer1;
+                    for (y = 0; y < image.height; y++)
+                    {
+                        memcpy(surfaceMem, imageMem, image.bytes_per_line);
+                        surfaceMem += desc.lPitch;
+                        imageMem += image.bytes_per_line;
+                    }
+                    surface->lpVtbl->Unlock(surface, NULL);
+
+                    if (DirectDraw()->lpVtbl->CreatePalette(DirectDraw(), DDPCAPS_INITIALIZE | DDPCAPS_8BIT | DDPCAPS_ALLOW256, (LPPALETTEENTRY) image.palette, &palette, NULL) == D3DRM_OK)
+                    {
+                        if (surface->lpVtbl->SetPalette(surface, palette) == D3DRM_OK)
+                        {
+                            U32 r, g, b;
+                            U32 decalColour;
+
+                            if (copy) // Find the cards preferred texture format...
+                            {
+                                memset(&descBak.ddpfPixelFormat, 0, sizeof(descBak.ddpfPixelFormat));
+                                descBak.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+                                if (lpDevice()->lpVtbl->FindPreferredTextureFormat(lpDevice(), DDBD_16, 0, &descBak.ddpfPixelFormat) == D3DRM_OK)
+                                {
+                                    // Replace 'surface' with one of a format that the card will accept...
+
+                                    LPDIRECTDRAWSURFACE4 oldSurface = surface;
+                                    if (DirectDraw()->lpVtbl->CreateSurface(DirectDraw(), &descBak, &surface, NULL) == D3DRM_OK)
+                                    {
+                                        if (descBak.ddpfPixelFormat.dwRGBBitCount == 16)
+                                            DirectDraw_Blt8To16(surface, oldSurface, (LPPALETTEENTRY) image.palette);
+
+                                        oldSurface->lpVtbl->Release(oldSurface);
+                                    } else
+                                    {
+                                        Error_Fatal(TRUE, "Error creating new texture surface");
+                                    }
+                                }
+                            }
+
+                            if (trans)
+                            {
+                                if (Container_GetDecalColour(fname, &decalColour))
+                                {
+                                    DDCOLORKEY ddck;
+
+                                    if (copy)
+                                    {
+                                        r = image.palette[decalColour].red;
+                                        g = image.palette[decalColour].green;
+                                        b = image.palette[decalColour].blue;
+                                        decalColour = DirectDraw_GetColour(surface, RGB_MAKE(r, g, b));
+                                    }
+
+                                    ddck.dwColorSpaceLowValue = ddck.dwColorSpaceHighValue = decalColour;
+                                    surface->lpVtbl->SetColorKey(surface, DDCKEY_SRCBLT, &ddck);
+
+                                    *trans = TRUE;
+                                } else
+                                {
+                                    *trans = FALSE;
+                                }
+                            }
+
+                            if (width)
+                                *width = image.width;
+
+                            if (height)
+                                *height = image.height;
+
+                            surface->lpVtbl->AddRef(surface);
+                        }
+
+                        palette->lpVtbl->Release(palette);
+                    } else
+                    {
+                        Error_Fatal(TRUE, "Cannot create Palette");
+                    }
+                } else
+                {
+#ifdef _DEBUG
+                    char error[128];
+
+                    sprintf(error, "Texture file %s : Cannot lock surface ", fname);
+
+                    switch(result)
+                    {
+                        case DDERR_INVALIDOBJECT:
+                            strcat(error, "(DDERR_INVALIDOBJECT) ");
+                            break;
+                        case DDERR_INVALIDPARAMS:
+                            strcat(error, "(DDERR_INVALIDPARAMS) ");
+                            break;
+                        case DDERR_OUTOFMEMORY:
+                            strcat(error, "(DDERR_OUTOFMEMORY) ");
+                            break;
+                        case DDERR_SURFACEBUSY:
+                            strcat(error, "(DDERR_SURFACEBUSY) ");
+                            break;
+                        case DDERR_SURFACELOST:
+                            strcat(error, "(DDERR_SURFACELOST) ");
+                            break;
+                        case DDERR_WASSTILLDRAWING:
+                            strcat(error, "(DDERR_WASSTILLDRAWING) ");
+                            break;
+                        case DDERR_LOCKEDSURFACES:
+                            strcat(error, "(DDERR_LOCKEDSURFACES) ");
+                            break;
+                        default:
+                            CHKDD(result);
+                            break;
+                    }
+
+                    {
+                        U32 refCount;
+                        surface->lpVtbl->AddRef(surface);
+                        refCount = surface->lpVtbl->Release(surface);
+                        sprintf(&error[strlen(error)], "- Reference count == %i", refCount);
+                    }
+
+                    Error_Fatal(TRUE, error);
+#endif // _DEBUG
+                }
+
+                if (surface->lpVtbl->Release(surface) == 0)
+                    surface = NULL;
+            }
+
+        } else
+        {
+            Error_Warn(TRUE, Error_Format("Non 8bit/palettized texture %s", fname));
+        }
+
+        BMP_Cleanup(&image);
+        Mem_Free(fileData);
+    }
+    return surface;
 }
 
 lpContainer Container_GetRoot()

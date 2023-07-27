@@ -1213,6 +1213,18 @@ void Mesh_SetGroupTexture(lpMesh mesh, U32 groupID, lpMesh_Texture mt)
     }
 }
 
+LPD3DMATERIAL Mesh_GetGroupMaterial(lpMesh mesh, U32 groupID)
+{
+    if (groupID < mesh->groupCount)
+    {
+        Mesh_Debug_CheckIMDevice_Ptr();
+
+        return &mesh->groupList[groupID].material;
+    }
+
+    return NULL;
+}
+
 B32 Mesh_SetGroupColour(lpMesh mesh, U32 groupID, F32 r, F32 g, F32 b, U32 type)
 {
     // TODO: Implement Mesh_SetGroupColour
@@ -1273,10 +1285,37 @@ B32 Mesh_SetGroupMaterial(lpMesh mesh, U32 groupID, LPD3DMATERIAL mat)
     return FALSE;
 }
 
-B32 Mesh_SetTransform(D3DTRANSFORMSTATETYPE type, Matrix4F* matrix)
+void Mesh_SetIdentityMatrix(Matrix4F m)
 {
-    // TODO: Implement Mesh_SetTransform
-    return FALSE;
+    m[0][1] = m[0][2] = m[0][3] = m[1][0] = m[1][2] = m[1][3] = 0.0f;
+    m[2][0] = m[2][1] = m[2][3] = m[3][0] = m[3][1] = m[3][2] = 0.0f;
+    m[0][0] = m[1][1] = m[2][2] = m[3][3] = 1.0f;
+}
+
+B32 Mesh_SetTransform(D3DTRANSFORMSTATETYPE state, Matrix4F* matrix)
+{
+    D3DMATRIX oldMatrix;
+    D3DMATRIX newMatrix = *((LPD3DMATRIX)matrix);
+
+    // DIRECTX DOCUMENTATION STATES CALLS TO 'SetTransform' SHOULD BE MINIMIZED
+    if (lpIMDevice()->lpVtbl->GetTransform(lpIMDevice(), state, &oldMatrix) != D3D_OK)
+        Error_Warn(TRUE, "Cannot 'GetTransform'.");
+
+    // MAYBE PUT != COMPARISON AS A GLOBAL FUNCTION?
+    if ((oldMatrix._11 != newMatrix._11) || (oldMatrix._12 != newMatrix._12) || (oldMatrix._13 != newMatrix._13) || (oldMatrix._14 != newMatrix._14) ||
+        (oldMatrix._21 != newMatrix._21) || (oldMatrix._22 != newMatrix._22) || (oldMatrix._23 != newMatrix._23) || (oldMatrix._24 != newMatrix._24) ||
+        (oldMatrix._31 != newMatrix._31) || (oldMatrix._32 != newMatrix._32) || (oldMatrix._33 != newMatrix._33) || (oldMatrix._34 != newMatrix._34) ||
+        (oldMatrix._41 != newMatrix._41) || (oldMatrix._42 != newMatrix._42) || (oldMatrix._43 != newMatrix._43) || (oldMatrix._44 != newMatrix._44))
+    {
+        if (lpIMDevice()->lpVtbl->SetTransform(lpIMDevice(), state, (LPD3DMATRIX)matrix))
+        {
+            Error_Warn(TRUE, "Cannot 'SetTransform'.");
+
+            return FALSE;
+        }
+    }
+
+    return TRUE;
 }
 
 B32 Mesh_SetTextureTime(lpMesh mesh, F32 frame)
@@ -1324,8 +1363,49 @@ B32 Mesh_SetTextureTime2(lpMesh mesh, F32 frame)
 
 B32 Mesh_ChangeTextureStageState(D3DTEXTURESTAGESTATETYPE dwRenderStateType, U32 dwRenderState)
 {
-    // TODO: Implement Mesh_ChangeTextureStageState
-    return FALSE;
+    lpMesh_TextureStateChangeData data;
+    U32 currValue;
+
+    Error_Fatal(dwRenderStateType >= MESH_MAXTEXTURESTAGESTATES, "TextureStageState type is out of range");
+
+    data = &meshGlobs.stateData[dwRenderStateType];
+    if (lpIMDevice()->lpVtbl->GetTextureStageState(lpIMDevice(), 0, dwRenderStateType, &currValue) != D3D_OK)
+    {
+        Error_Warn(TRUE, "Cannot 'GetTextureStageState'.");
+
+        currValue = -1;
+    }
+
+    if (currValue != dwRenderState)
+    {
+        if (lpIMDevice()->lpVtbl->SetTextureStageState(lpIMDevice(), 0, dwRenderStateType, dwRenderState) != D3D_OK)
+        {
+            Error_Warn(TRUE, "Cannot 'SetTextureStageState'.");
+
+            return FALSE;
+        }
+        else
+        {
+            if (data->changed)
+            {
+                if (data->origValue == currValue)
+                    data->changed = FALSE;
+            }
+            else
+            {
+                data->origValue = currValue;
+                data->changed = TRUE;
+            }
+        }
+    }
+    return TRUE;
+}
+
+void Mesh_SetAlphaRender(D3DBLEND src, D3DBLEND dest)
+{
+    Main_ChangeRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, TRUE);
+    Main_ChangeRenderState(D3DRENDERSTATE_SRCBLEND, src);
+    Main_ChangeRenderState(D3DRENDERSTATE_DESTBLEND, dest);
 }
 
 B32 Mesh_CanRenderGroup(lpMesh_Group group)
@@ -1386,7 +1466,69 @@ B32 Mesh_SetGroupRenderDesc(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorl
 
 void Mesh_SetRenderDesc(U32 flags, LPD3DMATRIX matWorld, B32 alphaBlend)
 {
-    // TODO: Implement Mesh_SetRenderDesc
+    Matrix4F temp;
+
+    // CECK MESH IS ALPHA BLENDED
+    if ((flags & MESH_FLAG_RENDER_ALLALPHA) && alphaBlend)
+        Main_ChangeRenderState(D3DRENDERSTATE_FOGENABLE, FALSE); // Don't fog alpha effects...
+
+    // ALPHA STATES
+    if((flags & MESH_FLAG_RENDER_ALLALPHA) && !alphaBlend)
+        Main_ChangeRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+    else if (flags & MESH_FLAG_RENDER_ALPHA11)
+        Mesh_SetAlphaRender(D3DBLEND_ONE, D3DBLEND_ONE);
+    else if (flags & MESH_FLAG_RENDER_ALPHASA1)
+        Mesh_SetAlphaRender(D3DBLEND_SRCALPHA, D3DBLEND_ONE);
+    else if (flags & MESH_FLAG_RENDER_ALPHATRANS)
+        Mesh_SetAlphaRender(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
+    else if (flags & MESH_FLAG_RENDER_ALPHASA0)
+        Mesh_SetAlphaRender(D3DBLEND_ZERO, D3DBLEND_INVSRCCOLOR);
+    else
+        Main_ChangeRenderState(D3DRENDERSTATE_ALPHABLENDENABLE, FALSE);
+
+    if (flags & MESH_FLAG_RENDER_DOUBLESIDED)
+        Main_ChangeRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_NONE);
+    else
+        Main_ChangeRenderState(D3DRENDERSTATE_CULLMODE, D3DCULL_CCW);
+
+    if (!(mainGlobs.flags & MAIN_FLAG_DONTMANAGETEXTURES))
+    {
+        // ALPHA CHANNEL
+        if (flags & MESH_FLAG_RENDER_ALPHATEX)
+            Mesh_ChangeTextureStageState(D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+        else if (flags & MESH_FLAG_RENDER_ALPHADIFFUSE)
+            Mesh_ChangeTextureStageState(D3DTSS_ALPHAOP, D3DTOP_SELECTARG2);
+        else
+            Mesh_ChangeTextureStageState(D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+    }
+
+    // Z BUFFER CHECK
+    Main_ChangeRenderState(D3DRENDERSTATE_ZENABLE, TRUE);
+
+    // Z BUFFER WRITE
+    if ((flags & MESH_FLAG_RENDER_ALLALPHA) && alphaBlend)
+        Main_ChangeRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
+    else
+        Main_ChangeRenderState(D3DRENDERSTATE_ZWRITEENABLE, TRUE);
+
+    // WORLD TRANSFORMATION
+    if (flags & MESH_FLAG_TRANSFORM_PARENTPOS)
+        Mesh_SetTransform(D3DTRANSFORMSTATE_WORLD, (Matrix4F*)matWorld);
+    else if (flags & MESH_FLAG_TRANSFORM_IDENTITY)
+    {
+        Mesh_SetIdentityMatrix(temp);
+        Mesh_SetTransform(D3DTRANSFORMSTATE_WORLD, &temp);
+    }
+
+    if (flags & MESH_FLAG_RENDER_FILTERNEAREST)
+    {
+        Main_ChangeRenderState(D3DRENDERSTATE_TEXTUREMAG, D3DFILTER_NEAREST);
+        Main_ChangeRenderState(D3DRENDERSTATE_TEXTUREMIN, D3DFILTER_NEAREST);
+    } else
+    {
+        Main_ChangeRenderState(D3DRENDERSTATE_TEXTUREMAG, D3DFILTER_LINEAR);
+        Main_ChangeRenderState(D3DRENDERSTATE_TEXTUREMIN, D3DFILTER_MIPLINEAR);
+    }
 }
 
 B32 Mesh_RenderTriangleList(D3DMATERIALHANDLE matHandle, LPDIRECT3DTEXTURE2 texture, U32 renderFlags, Mesh_Vertex vertices[], U32 vertexCount, U16 faceData[], U32 indexCount)
@@ -1462,7 +1604,24 @@ B32 Mesh_RenderTriangleList(D3DMATERIALHANDLE matHandle, LPDIRECT3DTEXTURE2 text
 
 void Mesh_SetMeshRenderDesc(lpMesh mesh, lpViewport vp, LPD3DMATRIX matWorld, B32 alphaBlend)
 {
-    // TODO: Implement Mesh_SetMeshRenderDesc
+    // CALL MESH SPECIFIC RENDER FUNCTION
+    if (mesh->renderDesc.renderCallback)
+        mesh->renderDesc.renderCallback(mesh, mesh->renderDesc.renderCallbackData, vp);
+
+    // ADD DEFAULT STATES HERE
+    Main_ChangeRenderState(D3DRENDERSTATE_SPECULARENABLE, FALSE);
+    Main_ChangeRenderState(D3DRENDERSTATE_SHADEMODE, D3DSHADE_GOURAUD);
+    Main_ChangeRenderState(D3DRENDERSTATE_DITHERENABLE, TRUE);
+
+    if (!(mainGlobs.flags & MAIN_FLAG_DONTMANAGETEXTURES))
+    {
+        Mesh_ChangeTextureStageState(D3DTSS_COLORARG1, D3DTA_TEXTURE);
+        Mesh_ChangeTextureStageState(D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+        Mesh_ChangeTextureStageState(D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+        Mesh_ChangeTextureStageState(D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+    }
+
+    Mesh_SetRenderDesc(mesh->renderDesc.renderFlags, matWorld, alphaBlend);
 }
 
 B32 Mesh_SetCurrentViewport(LPDIRECT3DRMVIEWPORT view)
@@ -1552,8 +1711,78 @@ void Mesh_GetNextInSequence(const char* baseName, const char* nextTextName, U32*
 
 lpMesh_Texture Mesh_LoadTexture(const char* baseDir, const char* name, U32* width, U32* height)
 {
-    // TODO: Implement Mesh_LoadTexture
+    char path[FILE_MAXPATH];
+    lpMesh_Texture texture = Mem_Alloc(sizeof(Container_Texture));
+    LPDIRECTDRAWSURFACE4 surface = NULL;
+    lpMesh_TextureReference ref;
+    B32 trans;
+
+    Mesh_Debug_CheckIMDevice_Ptr();
+
+    if (baseDir)
+        sprintf(path, "%s%s", baseDir, name);
+    else
+        strcpy(path, name);
+
+    if ((ref = Mesh_SearchTexturePathList(meshGlobs.textureList, meshGlobs.textureCount, path)))
+    {
+        if ((surface = ref->surface))
+            surface->lpVtbl->AddRef(surface);
+        trans = ref->trans;
+    } else if ((surface = Container_LoadTextureSurface(path, TRUE, width, height, &trans)))
+    {
+        Mesh_AddTexturePathEntry(meshGlobs.textureList, &meshGlobs.textureCount, path, surface, trans);
+    } else if (meshGlobs.sharedTextureDir)
+    {
+        sprintf(path, "%s%s", meshGlobs.sharedTextureDir, name);
+
+        if ((ref = Mesh_SearchTexturePathList(meshGlobs.textureListShared, meshGlobs.textureCountShared, path)))
+        {
+            if ((surface = ref->surface))
+                surface->lpVtbl->AddRef(surface);
+            trans = ref->trans;
+        } else if ((surface = Container_LoadTextureSurface(path, TRUE, width, height, &trans)))
+        {
+            Mesh_AddTexturePathEntry(meshGlobs.textureListShared, &meshGlobs.textureCountShared, path, surface, trans);
+        }
+    }
+
+    if (surface)
+    {
+        texture->texture = NULL;
+        texture->surface = surface;
+        texture->colourKey = trans;
+    } else
+    {
+        Mem_Free(texture);
+        texture = NULL;
+        //Error_Fatal(TRUE, Error_Format("Cannot find or load texture >(%s\\)%s<.", baseDir, name));
+    }
+
+    return texture;
+}
+
+lpMesh_TextureReference Mesh_SearchTexturePathList(lpMesh_TextureReference list, U32 count, const char* path)
+{
+    U32 loop;
+
+    for (loop = 0; loop < count; loop++)
+    {
+        if (stricmp(path, list[loop].path) == 0)
+            return &list[loop];
+    }
+
     return NULL;
+}
+
+void Mesh_AddTexturePathEntry(lpMesh_TextureReference list, U32* count, const char* path, LPDIRECTDRAWSURFACE4 surface, B32 trans)
+{
+    Error_Fatal(*count == MESH_TEXTURELISTSIZE, "MESH_TEXTURELISTSIZE too small");
+
+    list[*count].path = Util_StrCpy(path);
+    list[*count].surface = surface;
+    list[*count].trans = trans;
+    (*count)++;
 }
 
 lpMesh Mesh_ObtainFromList()

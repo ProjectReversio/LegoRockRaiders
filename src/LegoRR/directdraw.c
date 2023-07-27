@@ -500,3 +500,14 @@ void DirectDraw_AdjustTextureUsage(U32* textureUsage)
             *textureUsage *= (pixelFormat.dwRGBBitCount / 8);
     }
 }
+
+void DirectDraw_Blt8To16(LPDIRECTDRAWSURFACE4 target, LPDIRECTDRAWSURFACE4 source, LPPALETTEENTRY palette)
+{
+    // TODO: Implement DirectDraw_Blt8To16
+}
+
+U32 DirectDraw_GetColour(LPDIRECTDRAWSURFACE4 surf, U32 colour)
+{
+    // TODO: Implement DirectDraw_GetColour
+    return 0;
+}

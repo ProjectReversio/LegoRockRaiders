@@ -243,6 +243,8 @@ extern void Mesh_SetVertices_VNT(lpMesh mesh, U32 groupID, U32 index, U32 count,
 extern void Mesh_AlterGroupRenderFlags(lpMesh mesh, U32 groupID, U32 newFlags);
 extern void Mesh_SetGroupTexture(lpMesh mesh, U32 groupID, lpMesh_Texture mt);
 
+extern LPD3DMATERIAL Mesh_GetGroupMaterial(lpMesh mesh, U32 groupID);
+
 extern B32 Mesh_SetGroupColour(lpMesh mesh, U32 groupID, F32 r, F32 g, F32 b, U32 type);
 extern void Mesh_GetGroupColour(lpMesh mesh, U32 groupID, F32* r, F32* g, F32* b, U32 type);
 extern B32 Mesh_SetGroupMaterialValues(lpMesh mesh, U32 groupID, F32 value, U32 type);
@@ -251,12 +253,14 @@ extern void Mesh_GetGroupMaterialValues(lpMesh mesh, U32 groupID, F32* value, U3
 extern B32 Mesh_CreateGroupMaterial(lpMesh mesh, U32 groupID);
 extern B32 Mesh_SetGroupMaterial(lpMesh mesh, U32 groupID, LPD3DMATERIAL mat);
 
-extern B32 Mesh_SetTransform(D3DTRANSFORMSTATETYPE type, Matrix4F* matrix);
+extern void Mesh_SetIdentityMatrix(Matrix4F m);
+extern B32 Mesh_SetTransform(D3DTRANSFORMSTATETYPE state, Matrix4F* matrix);
 
 extern B32 Mesh_SetTextureTime(lpMesh, F32 frame);
 extern B32 Mesh_SetTextureTime2(lpMesh mesh, F32 frame);
 
 extern B32 Mesh_ChangeTextureStageState(D3DTEXTURESTAGESTATETYPE dwRenderStateType, U32 dwRenderState);
+extern void Mesh_SetAlphaRender(D3DBLEND src, D3DBLEND dest);
 
 extern B32 Mesh_CanRenderGroup(lpMesh_Group group);
 extern B32 Mesh_RenderGroup(lpMesh mesh, lpMesh_Group group, LPD3DMATRIX matWorld, B32 alphaBlend);
@@ -276,6 +280,9 @@ extern B32 Mesh_GetTextureSeqInfo(const char* tname, const char* tfname, U32* ts
 extern void Mesh_GetNextInSequence(const char* baseName, const char* nextTextName, U32* texNum, U32 tnumlen);
 
 extern lpMesh_Texture Mesh_LoadTexture(const char* baseDir, const char* name, U32* width, U32* height);
+
+extern lpMesh_TextureReference Mesh_SearchTexturePathList(lpMesh_TextureReference list, U32 count, const char* path);
+extern void Mesh_AddTexturePathEntry(lpMesh_TextureReference list, U32* count, const char* path, LPDIRECTDRAWSURFACE4 surface, B32 trans);
 
 extern lpMesh Mesh_ObtainFromList();
 extern void Mesh_ReturnToList(lpMesh dead);

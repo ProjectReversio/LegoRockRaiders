@@ -189,6 +189,10 @@ extern inline LPDIRECT3DRMFRAME3 Container_GetMasterFrame(lpContainer cont);
 
 extern void Container_Frame_FormatName(LPDIRECT3DRMFRAME3 frame, const char* msg, ...);
 
+extern B32 Container_GetDecalColour(const char* fname, U32* colour);
+
 extern struct AnimClone* Container_LoadAnimSet(const char* fname, LPDIRECT3DRMFRAME3 frame, U32* frameCount, B32 lws, B32 looping);
+
+extern LPDIRECTDRAWSURFACE4 Container_LoadTextureSurface(const char* fname, B32 managed, U32* width, U32* height, B32* trans);
 
 extern lpContainer Container_GetRoot();
