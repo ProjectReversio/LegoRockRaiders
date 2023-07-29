@@ -63,7 +63,7 @@ B32 Mesh_CreateGlobalMaterial()
     D3DMATERIAL material = {
         sizeof (D3DMATERIAL),
         { 1.0f, 1.0f, 1.0f, 1.0f },
-        { 1.0f, 1.0f, 1.0f, 1.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f },
         { 0.0f, 0.0f, 0.0f, 0.0f },
         { 0.0f, 0.0f, 0.0f, 0.0f },
         0.0f,
@@ -1186,6 +1186,24 @@ S32 Mesh_AddGroup(lpMesh mesh, U32 vertexCount, U32 faceCount, U32 vPerFace, U32
     return mesh->groupCount - 1;
 }
 
+//void Mesh_SetAmbientLight(F32 r, F32 g, F32 b)
+//{
+//    if (r > 1.0f)
+//        r = 1.0f;
+//    if (g > 1.0f)
+//        g = 1.0f;
+//    if (b > 1.0f)
+//        b = 1.0f;
+//    if (r < 0.0f)
+//        r = 0.0f;
+//    if (g < 0.0f)
+//        g = 0.0f;
+//    if (b < 0.0f)
+//        b = 0.0f;
+//
+//    meshGlobs.ambientLight = ((U32) (r * 255.0f) << 16) | ((U32) (g * 255.0f) << 8) | ((U32) (b * 255.0f));
+//}
+
 void Mesh_GetTextureUVsWrap(U32 vertexCount, Point3F vertices[], Point2F coords[], F32 sx, F32 sy, F32 sz, F32 px, F32 py, F32 pz, U32 flags)
 {
     F32 x, y, z;
@@ -1293,10 +1311,10 @@ B32 Mesh_SetGroupColour(lpMesh mesh, U32 groupID, F32 r, F32 g, F32 b, U32 type)
             material->diffuse.g = g;
             material->diffuse.b = b;
 
-            if (r == 1.0f && g == 1.0f && b == 1.0f)
-                group->flags |= MESH_FLAG_TEXTURECOLOURONLY;
-            else
-                group->flags &= ~MESH_FLAG_TEXTURECOLOURONLY;
+//            if (r == 1.0f && g == 1.0f && b == 1.0f)
+//                group->flags |= MESH_FLAG_TEXTURECOLOURONLY;
+//            else
+//                group->flags &= ~MESH_FLAG_TEXTURECOLOURONLY;
         }
         else if (type == Mesh_Colour_Ambient)
         {
@@ -1792,8 +1810,8 @@ B32 Mesh_RenderTriangleList(D3DMATERIALHANDLE matHandle, LPDIRECT3DTEXTURE2 text
         }
     }
 
-    lpIMDevice()->lpVtbl->GetLightState(lpIMDevice(), D3DLIGHTSTATE_AMBIENT, &oldAmbientLightState);
-    lpIMDevice()->lpVtbl->SetLightState(lpIMDevice(), D3DLIGHTSTATE_AMBIENT, meshGlobs.ambientLight);
+    //lpIMDevice()->lpVtbl->GetLightState(lpIMDevice(), D3DLIGHTSTATE_AMBIENT, &oldAmbientLightState);
+    //lpIMDevice()->lpVtbl->SetLightState(lpIMDevice(), D3DLIGHTSTATE_AMBIENT, meshGlobs.ambientLight);
 
     // RENDER PRIMITIVE
     if (lpIMDevice()->lpVtbl->DrawIndexedPrimitive(lpIMDevice(), D3DPT_TRIANGLELIST, renderFlags, vertices, vertexCount, faceData, indexCount, 0) != D3D_OK)
@@ -1802,7 +1820,7 @@ B32 Mesh_RenderTriangleList(D3DMATERIALHANDLE matHandle, LPDIRECT3DTEXTURE2 text
         ok = FALSE;
     }
 
-    lpIMDevice()->lpVtbl->SetLightState(lpIMDevice(), D3DLIGHTSTATE_AMBIENT, oldAmbientLightState);
+    //lpIMDevice()->lpVtbl->SetLightState(lpIMDevice(), D3DLIGHTSTATE_AMBIENT, oldAmbientLightState);
 
     return ok;
 }

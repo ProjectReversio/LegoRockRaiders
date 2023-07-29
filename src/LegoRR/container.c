@@ -158,6 +158,31 @@ void Container_Remove2(lpContainer dead, B32 kill)
     // TODO: Implement Container_Remove2
 }
 
+void Container_SetTypeData(lpContainer cont, const char* name, LPDIRECT3DRMLIGHT light, LPDIRECT3DRMMESH mesh, struct Mesh* transMesh)
+{
+    Container_DebugCheckOK(cont);
+
+    if (cont->typeData)
+    {
+        if (name != NULL)
+            cont->typeData->name = name;
+        if (light != NULL)
+            cont->typeData->light = light;
+        if (mesh != NULL)
+            cont->typeData->mesh = mesh;
+        if (transMesh != NULL)
+            cont->typeData->transMesh = transMesh;
+    }
+    else
+    {
+        cont->typeData = Mem_Alloc(sizeof(Container_TypeData));
+        cont->typeData->name = name;
+        cont->typeData->light = light;
+        cont->typeData->mesh = mesh;
+        cont->typeData->transMesh = transMesh;
+    }
+}
+
 void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer owner, lpAnimClone animClone, const char* asfname, U32* frameCount, const char* frameName, F32* currTime, F32* transCo, const char* actSample, void* soundRecord, U32* trigger)
 {
     Container_AppData *appData;
@@ -594,8 +619,34 @@ lpContainer Container_Load(lpContainer parent, const char* filename, const char*
 
 lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 b)
 {
-    // TODO: Implement Container_MakeLight
-    return NULL;
+    lpContainer cont = Container_Create(parent);
+    LPDIRECT3DRMLIGHT light;
+    Container_DebugCheckOK(CONTAINER_DEBUG_NOTREQUIRED);
+
+    if (cont)
+    {
+        cont->type = Container_Light;
+        //if (type == Container_Light_Ambient)
+        //    Mesh_SetAmbientLight(r, g, b);
+
+        if (lpD3DRM()->lpVtbl->CreateLightRGB(lpD3DRM(), type, r, g, b, &light) == D3DRM_OK)
+        {
+            Container_NoteCreation(light);
+
+            cont->activityFrame->lpVtbl->AddLight(cont->activityFrame, light);
+            Container_SetTypeData(cont, NULL, light, NULL, NULL);
+        }
+        else
+        {
+            Error_Fatal(TRUE, "Unable to create light");
+        }
+
+#ifdef _DEBUG
+        Container_Frame_FormatName(cont->masterFrame, "Light type #%d (%0.2f,%0.2f,%0.2f)", type, r, g, b);
+#endif
+    }
+
+    return cont;
 }
 
 void Container_Hide2(lpContainer cont, B32 hide)
