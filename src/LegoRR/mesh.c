@@ -1122,6 +1122,11 @@ void Mesh_GetSurfInfo(const char* basePath, APPOBJ* lightWaveObject, Mesh_LightW
     }
 }
 
+U32 Mesh_GetGroupCount(lpMesh mesh)
+{
+    return mesh->groupCount;
+}
+
 S32 Mesh_AddGroup(lpMesh mesh, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData)
 {
     U32 size, loop;

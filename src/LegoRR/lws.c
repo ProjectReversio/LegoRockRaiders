@@ -486,14 +486,80 @@ void Lws_AddMeshPathEntry(lpLws_MeshPath list, U32* count, const char* path, lpM
     (*count)++;
 }
 
+void Lws_SetupNodeTransform(lpLws_Info scene, lpLws_Node node, lpPoint3F pos, lpPoint3F hpb, lpPoint3F scale)
+{
+    // Scale the object, rotate then translate...
+    // Heading(.x) pitch(.y) and bank(.z) (y, x, z in world coordinates) must be multiplied as
+    // bank then heading then pitch...
+
+    LPDIRECT3DRMFRAME3 frame = scene->frameList[node->frameIndex];
+    D3DRMMATRIX4D m;
+
+    if (node->flags & LWSNODE_FLAG_FACECAMERA)
+    {
+        LPDIRECT3DRMFRAME3 parent;
+        frame->lpVtbl->GetParent(frame, &parent);
+
+        frame->lpVtbl->GetTransform(frame, parent, m);
+        parent->lpVtbl->Release(parent);
+        parent = NULL;
+        m[0][0] *= scale->x;
+        m[1][1] *= scale->y;
+        m[2][2] *= scale->z;
+        m[3][0] = pos->x;
+        m[3][1] = pos->y;
+        m[3][2] = pos->z;
+        frame->lpVtbl->AddTransform(frame, D3DRMCOMBINE_REPLACE, m);
+    } else
+    {
+        // Each of the sub terms
+        F32 Cx = Maths_Cos(hpb->y);
+        F32 Sx = Maths_Sin(hpb->y);
+        F32 Cz = Maths_Cos(hpb->z);
+        F32 Sz = Maths_Sin(hpb->z);
+        F32 Cy = Maths_Cos(hpb->x);
+        F32 Sy = Maths_Sin(hpb->x);
+
+        F32 pVx = node->pivotVector.x;
+        F32 pVy = node->pivotVector.y;
+        F32 pVz = node->pivotVector.z;
+
+        m[0][0] = (((((1.0f * scale->x) * Cz) * 1.0f) * Cy) + ((((1.0f * scale->x) * Sz) * Sx) * Sy) * 1.0f);
+        m[0][1] = (((((1.0f * scale->x) * Sz) * Cx) * 1.0f) * 1.0f);
+        m[0][2] = (((((1.0f * scale->x) * Cz) * 1.0f) * -Sy) + ((((1.0f * scale->x) * Sz) * Sx) * Cy) * 1.0f);
+        m[0][3] = 0.0f;
+        m[1][0] = (((((1.0f * scale->y) * -Sz) * 1.0f) * Cy) + ((((1.0f * scale->y) * Cz) * Sx) * Sy) * 1.0f);
+        m[1][1] = (((((1.0f * scale->y) * Cz) * Cx) * 1.0f) * 1.0f);
+        m[1][2] = (((((1.0f * scale->y) * -Sz) * 1.0f) * -Sy) + ((((1.0f * scale->y) * Cz) * Sx) * Cy) * 1.0f);
+        m[1][3] = 0.0f;
+        m[2][0] = (((((1.0f * scale->z) * 1.0f) * Cx) * Sy) * 1.0f);
+        m[2][1] = (((((1.0f * scale->z) * 1.0f) * -Sx) * 1.0f) * 1.0f);
+        m[2][2] = (((((1.0f * scale->z) * 1.0f) * Cx) * Cy) * 1.0f);
+        m[2][3] = 0.0f;
+        m[3][0] = (m[0][0] * pVx) + (m[1][0] * pVy) + (m[2][0] * pVz) + pos->x;
+        m[3][1] = (m[0][1] * pVx) + (m[1][1] * pVy) + (m[2][1] * pVz) + pos->y;
+        m[3][2] = (m[0][2] * pVx) + (m[1][2] * pVy) + (m[2][2] * pVz) + pos->z;
+        m[3][3] = 1.0f;
+
+        frame->lpVtbl->AddTransform(frame, D3DRMCOMBINE_REPLACE, m);
+    }
+}
+
 void Lws_SetAbsoluteKey(lpLws_Info scene, lpLws_Node node, U16 key)
 {
-    // TODO: Implement Lws_SetAbsoluteKey
+    Lws_SetupNodeTransform(scene, node, &node->keyList[key].position, &node->keyList[key].hpb, &node->keyList[key].scale);
 }
 
 void Lws_SetDissolveLevel(lpLws_Info scene, lpLws_Node node, F32 level)
 {
-    // TODO: Implement Lws_SetDissolveLevel
+    lpMesh mesh;
+    U32 group, groupCount;
+
+    mesh = Lws_GetNodeMesh(scene, node);
+
+    groupCount = Mesh_GetGroupCount(mesh);
+    for (group = 0; group < groupCount; group++)
+        Mesh_SetGroupAlpha(mesh, group, level);
 }
 
 void Lws_SetTime(lpLws_Info scene, F32 time)
@@ -547,19 +613,107 @@ void Lws_AnimateTextures(lpLws_Info scene, lpLws_Node node)
 
 void Lws_SetupSoundTriggers(lpLws_Info scene)
 {
-    // TODO: Implement Lws_SetupSoundTriggers
-    scene->triggerCount = 0;
+    if (lwsGlobs.FindSFXIDFunc)
+    {
+        lpLws_Node node;
+        char line[LWS_MAXLINELEN];
+        U16 loop;
+        U32 argc, index;
+        char* argv[256];
+        U8 triggerIndex = 0;
+        lpLws_SoundTrigger st;
+
+        if (scene->triggerCount)
+        {
+            scene->triggerList = Mem_Alloc(sizeof(Lws_SoundTrigger) * scene->triggerCount);
+            for (loop = 0; loop < scene->nodeCount; loop++)
+            {
+                node = &scene->nodeList[loop];
+                if (node->flags & LWSNODE_FLAG_SOUNDTRIGGER)
+                {
+                    st = &scene->triggerList[triggerIndex];
+                    node->triggerIndex = triggerIndex;
+                    triggerIndex++;
+                    strcpy(line, node->name);
+                    argc = Util_Tokenize(line, argv, LWS_SOUNDTRIGGERSEPERATOR);
+                    st->count = (U16) argc - 2;
+                    Error_Fatal(st->count >= LWS_MAXTRIGGERKEYS, "LWS_MAXTRIGGERKEYS too small");
+                    Error_Fatal(st->count == 0, "No trigger frames specified");
+                    {
+                        B32 result = lwsGlobs.FindSFXIDFunc(argv[1], &st->sfxID);
+                        if (mainGlobs.flags & MAIN_FLAG_REDUCESAMPLES)
+                        {
+                            Error_Warn(!result, Error_Format("Cannot match sound with %s", argv[1]));
+                            if (!result)
+                                st->sfxID = 0;
+                        } else
+                        {
+                            Error_Fatal(!result, Error_Format("Cannot match sound with %s", argv[1]));
+                        }
+                    }
+                    for (index = 0; index < st->count; index++)
+                    {
+                        char* end = strstr(argv[index + 2], "-");
+                        st->frameStartList[index] = atoi(argv[index + 2]);
+                        if (end)
+                            st->frameEndList[index] = atoi(&end[1]);
+                        else
+                            st->frameEndList[index] = st->frameStartList[index];
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        scene->triggerCount = 0;
+    }
 }
 
 F32 Lws_FindPrevKey(lpLws_Node node, F32 time, U16* prev)
 {
-    // TODO: Implement Lws_FindPrevKey
-    return 0.0f;
+    U16 low = 0, middle, high = node->keyCount;
+    U16 frame;
+
+    middle = high;
+
+    while (1)
+    {
+        middle = (low + high) / 2;
+        frame = node->keyList[middle].frame;
+
+        if (middle == low)
+            break;
+
+        if (time < (F32) frame)
+            high = middle;
+        else
+            low = middle;
+    }
+
+    *prev = middle;
+    return Maths_InterpolationDelta((F32) frame, (F32) node->keyList[middle + 1].frame, time);
 }
 
 F32 Lws_FindPrevDissolve(lpLws_Node node, F32 time, U16* prev)
 {
-    // TODO: Implement Lws_FindPrevDissolve
+    // Assume that there will be a small number of these keys...
+
+    U16 loop;
+    U16 frame, prevTime;
+
+    for (loop = 1; loop < node->dissolveCount; loop++)
+    {
+        frame = node->dissolveFrame[loop];
+        if (time <= (F32) frame)
+        {
+            *prev = loop - 1;
+            prevTime = node->dissolveFrame[*prev];
+            return Maths_InterpolationDelta((F32) prevTime, (F32) frame, time);
+        }
+    }
+
+    *prev = node->dissolveCount - 1;
     return 0.0f;
 }
 
@@ -569,19 +723,73 @@ void Lws_HandleTrigger(lpLws_Info scene, lpLws_Node node)
     {
         if (node->flags & LWSNODE_FLAG_SOUNDTRIGGER)
         {
-            // TODO: Implement Lws_HandleTrigger
+            U16 loop;
+            B32 loopMode;
+            LPDIRECT3DRMFRAME3 frame = scene->frameList[node->frameIndex];
+            lpLws_SoundTrigger st = &scene->triggerList[node->triggerIndex];
+
+            for (loop = 0; loop < st->count; loop++)
+            {
+                loopMode = (st->frameStartList[loop] != st->frameEndList[loop]);
+                if (Lws_KeyPassed(scene, st->frameStartList[loop]))
+                {
+                    if (lwsGlobs.SoundEnabledFunc())
+                        st->loopUID[loop] = lwsGlobs.PlaySample3DFunc(frame, st->sfxID, loopMode, TRUE, NULL);
+                }
+                if (loopMode && Lws_KeyPassed(scene, st->frameEndList[loop]))
+                    Sound3D_StopSound(st->loopUID[loop]);
+            }
         }
     }
 }
 
-void Lws_InterpolateKeys(lpLws_Info scene, lpLws_Node node, U16 key, F32 delta)
+B32 Lws_KeyPassed(lpLws_Info scene, U32 key)
 {
-    // TODO: Implement Lws_InterpolateKeys
+    F32 keyTime, lastTime, currTime, totalTime, maxTime, minTime;
+
+    keyTime = (F32) key;
+    lastTime = scene->lastTime;
+    currTime = scene->time;
+    totalTime = (F32) Lws_GetFrameCount(scene);
+
+    maxTime = max(lastTime, currTime);
+    minTime = min(lastTime, currTime);
+
+    if ((maxTime - minTime) / totalTime < 0.5f)
+    {
+        if (keyTime <= maxTime && keyTime >= minTime)
+            return TRUE;
+    }
+    else
+    {
+        if (keyTime >= maxTime || keyTime <= minTime)
+            return TRUE;
+    }
+
+    return FALSE;
 }
 
-void Lws_InterpolateDissolve(lpLws_Info scene, lpLws_Node node, U16 key, F32 delta)
+void Lws_InterpolateKeys(lpLws_Info scene, lpLws_Node node, U16 key, F32 delta)
 {
-    // TODO: Implement Lws_InterpolateDissolve
+    Point3F pos, scale, rotation;
+
+    Maths_Vector3DInterpolate(&pos, &node->keyList[key].position, &node->keyList[key + 1].position, delta);
+    Maths_Vector3DInterpolate(&scale, &node->keyList[key].scale, &node->keyList[key + 1].scale, delta);
+    Maths_Vector3DInterpolate(&rotation, &node->keyList[key].hpb, &node->keyList[key + 1].hpb, delta);
+
+    Lws_SetupNodeTransform(scene, node, &pos, &rotation, &scale);
+}
+
+void Lws_InterpolateDissolve(lpLws_Info scene, lpLws_Node node, U16 prev, F32 delta)
+{
+    F32 level;
+
+    if (prev == node->dissolveCount - 1)
+        level = node->dissolveLevel[prev];
+    else
+        level = Maths_Interpolate(node->dissolveLevel[prev], node->dissolveLevel[prev + 1], delta);
+
+    Lws_SetDissolveLevel(scene, node, level);
 }
 
 inline lpMesh Lws_GetNodeMesh(lpLws_Info scene, lpLws_Node node)

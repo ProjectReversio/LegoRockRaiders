@@ -59,6 +59,23 @@ extern S16 Maths_Rand();
 
 #define Maths_Vector3DLength(v) Maths_Vector3DModulus((v))
 
+#define Maths_Cos(a)  (F32)cos((F64)(a))
+#define Maths_Sin(a)  (F32)sin((F64)(a))
+#define Maths_Tan(a)  (F32)tan((F64)(a))
+#define Maths_ACos(a) (F32)acos((F64)(a))
+#define Maths_ASin(a) (F32)asin((F64)(a))
+#define Maths_ATan(a) (F32)atan((F64)(a))
+
+inline F32 Maths_InterpolationDelta(F32 start, F32 end, F32 current)
+{
+    return (current - start) / (end - start);
+}
+
+inline F32 Maths_Interpolate(F32 start, F32 end, F32 delta)
+{
+    return start + ((end - start) * delta);
+}
+
 extern lpPoint3F Maths_PlaneNormal(lpPoint3F n, lpPoint3F p1, lpPoint3F p2, lpPoint3F p3);
 
 inline lpPoint3F Maths_Vector3DCrossProduct(lpPoint3F r, lpPoint3F a, lpPoint3F b)
@@ -102,4 +119,12 @@ inline lpPoint3F Maths_Vector3DNormalize(lpPoint3F r)
 {
     Maths_Vector3DScale(r, r, 1.0f / Maths_Vector3DLength(r));
     return r;
+}
+
+inline lpPoint3F Maths_Vector3DInterpolate(lpPoint3F result, lpPoint3F start, lpPoint3F end, F32 delta)
+{
+    Maths_Vector3DSubtract(result, end, start);
+    Maths_Vector3DScale(result, result, delta);
+    Maths_Vector3DAdd(result, start, result);
+    return result;
 }

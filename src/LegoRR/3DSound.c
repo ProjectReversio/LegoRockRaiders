@@ -1067,6 +1067,29 @@ void Sound3D_AttachSound(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3D
     Sound3D_RegisterUpdateFrame(frame);
 }
 
+LPDIRECTSOUNDBUFFER Sound3D_GetSoundBuffer(S32 soundHandle)
+{
+    U32 remainder;
+
+    if (soundHandle == -1)
+        return NULL;
+
+    remainder = soundHandle % SOUND3D_MAXSIMULTANEOUS;
+
+    return sound3DGlobs.soundTable[(soundHandle - remainder) / SOUND3D_MAXSIMULTANEOUS].lpDsb3D[remainder];
+}
+
+void Sound3D_StopSound(S32 soundHandle)
+{
+    LPDIRECTSOUNDBUFFER soundBuff = Sound3D_GetSoundBuffer(soundHandle);
+
+    if (Sound3D_Initialized() && soundHandle != -1)
+    {
+        if (soundBuff)
+            soundBuff->lpVtbl->Stop(soundBuff);
+    }
+}
+
 void Sound3D_StopAllSounds()
 {
     lpSound3D_SoundRecord temp = sound3DGlobs.soundRecord;

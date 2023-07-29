@@ -121,6 +121,7 @@ extern lpMesh Lws_LoadMesh(const char* baseDir, const char* fname, LPDIRECT3DRMF
 extern lpMesh Lws_SearchMeshPathList(lpLws_MeshPath list, U32 count, const char* path);
 extern void Lws_AddMeshPathEntry(lpLws_MeshPath list, U32* count, const char* path, lpMesh mesh);
 
+extern void Lws_SetupNodeTransform(lpLws_Info scene, lpLws_Node node, lpPoint3F pos, lpPoint3F hpb, lpPoint3F scale);
 extern void Lws_SetAbsoluteKey(lpLws_Info scene, lpLws_Node node, U16 key);
 extern void Lws_SetDissolveLevel(lpLws_Info scene, lpLws_Node node, F32 level);
 
@@ -135,9 +136,10 @@ extern F32 Lws_FindPrevKey(lpLws_Node node, F32 time, U16* prev);
 extern F32 Lws_FindPrevDissolve(lpLws_Node node, F32 time, U16* prev);
 
 extern void Lws_HandleTrigger(lpLws_Info scene, lpLws_Node node);
+extern B32 Lws_KeyPassed(lpLws_Info scene, U32 key);
 
 extern void Lws_InterpolateKeys(lpLws_Info scene, lpLws_Node node, U16 key, F32 delta);
-extern void Lws_InterpolateDissolve(lpLws_Info scene, lpLws_Node node, U16 key, F32 delta);
+extern void Lws_InterpolateDissolve(lpLws_Info scene, lpLws_Node node, U16 prev, F32 delta);
 
 extern inline lpMesh Lws_GetNodeMesh(lpLws_Info scene, lpLws_Node node);
 

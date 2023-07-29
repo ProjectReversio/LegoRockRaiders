@@ -166,6 +166,10 @@ extern B32 Sound3D_RecurseRemoveSound(LPDIRECT3DRMFRAME3 owner, LPDIRECTSOUND3DB
 extern void Sound3D_RemoveSound(LPDIRECT3DRMFRAME3 owner, LPDIRECTSOUND3DBUFFER sound3DBuff);
 extern void Sound3D_AttachSound(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff);
 
+extern LPDIRECTSOUNDBUFFER Sound3D_GetSoundBuffer(S32 soundHandle);
+
+extern void Sound3D_StopSound(S32 soundHandle);
+
 extern void Sound3D_StopAllSounds();
 
 extern void Sound3D_SoundCallback(LPDIRECT3DRMFRAME3 tFrame, void* arg, F32 delay);
