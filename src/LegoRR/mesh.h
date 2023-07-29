@@ -276,13 +276,15 @@ extern B32 Mesh_SetCurrentGODSViewport(lpViewport vp);
 extern void Mesh_StoreTextureAndMat();
 extern void Mesh_RestoreTextureAndMat();
 
-extern B32 Mesh_GetTextureSeqInfo(const char* tname, const char* tfname, U32* tstart, U32* tnumlen);
+extern B32 Mesh_GetTextureSeqInfo(const char* tname, char* tfname, U32* tstart, U32* tnumlen);
 extern void Mesh_GetNextInSequence(const char* baseName, const char* nextTextName, U32* texNum, U32 tnumlen);
 
 extern lpMesh_Texture Mesh_LoadTexture(const char* baseDir, const char* name, U32* width, U32* height);
 
 extern lpMesh_TextureReference Mesh_SearchTexturePathList(lpMesh_TextureReference list, U32 count, const char* path);
 extern void Mesh_AddTexturePathEntry(lpMesh_TextureReference list, U32* count, const char* path, LPDIRECTDRAWSURFACE4 surface, B32 trans);
+
+extern void Mesh_RemoveGroupTexture(lpMesh mesh, U32 groupID);
 
 extern lpMesh Mesh_ObtainFromList();
 extern void Mesh_ReturnToList(lpMesh dead);

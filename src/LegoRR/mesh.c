@@ -698,8 +698,41 @@ BOOL Mesh_RenderCallback(LPDIRECT3DRMUSERVISUAL lpD3DRMUV, LPVOID lpArg, D3DRMUS
 
 B32 Mesh_RenderMesh(lpMesh mesh, LPD3DMATRIX matWorld, B32 alphaBlend)
 {
-    // TODO: Implement Mesh_RenderMesh
-    return FALSE;
+    B32 ok = TRUE;
+    lpMesh_Group group;
+    U32 loop;
+
+    // RENDER ALL GROUPS WITHOUT FLAGS CHANGED FIRST
+    for (loop = 0; loop < mesh->groupCount; loop++)
+    {
+        group = &mesh->groupList[loop];
+
+        if (Mesh_CanRenderGroup(group))
+        {
+            if (group->renderFlags == 0)
+            {
+                    if (!Mesh_RenderGroup(mesh, group, matWorld, alphaBlend))
+                        ok = FALSE;
+            }
+        }
+    }
+
+    // RENDER ALL GROUPS WITH FLAGS CHANGED
+    for (loop = 0; loop < mesh->groupCount; loop++)
+    {
+        group = &mesh->groupList[loop];
+
+        if (Mesh_CanRenderGroup(group))
+        {
+            if (group->renderFlags)
+            {
+                if (!Mesh_RenderGroup(mesh, group, matWorld, alphaBlend))
+                    ok = FALSE;
+            }
+        }
+    }
+
+    return ok;
 }
 
 lpMesh Mesh_Clone(lpMesh mesh, LPDIRECT3DRMFRAME3 frame)
@@ -1227,24 +1260,191 @@ LPD3DMATERIAL Mesh_GetGroupMaterial(lpMesh mesh, U32 groupID)
 
 B32 Mesh_SetGroupColour(lpMesh mesh, U32 groupID, F32 r, F32 g, F32 b, U32 type)
 {
-    // TODO: Implement Mesh_SetGroupColour
+    if (groupID < mesh->groupCount)
+    {
+        lpMesh_Group group = &mesh->groupList[groupID];
+        LPD3DMATERIAL material;
+
+        Mesh_Debug_CheckIMDevice_Int();
+
+        material = Mesh_GetGroupMaterial(mesh, groupID);
+
+        if (r < 0.0f)
+            r = 0.0f;
+        if (g < 0.0f)
+            g = 0.0f;
+        if (b < 0.0f)
+            b = 0.0f;
+        if (r > 1.0f)
+            r = 1.0f;
+        if (g > 1.0f)
+            g = 1.0f;
+        if (b > 1.0f)
+            b = 1.0f;
+
+        if (type == Mesh_Colour_Diffuse)
+        {
+            material->diffuse.r = r;
+            material->diffuse.g = g;
+            material->diffuse.b = b;
+
+            if (r == 1.0f && g == 1.0f && b == 1.0f)
+                group->flags |= MESH_FLAG_TEXTURECOLOURONLY;
+            else
+                group->flags &= ~MESH_FLAG_TEXTURECOLOURONLY;
+        }
+        else if (type == Mesh_Colour_Ambient)
+        {
+            material->ambient.r = r;
+            material->ambient.g = g;
+            material->ambient.b = b;
+        }
+        else if (type == Mesh_Colour_Emissive)
+        {
+            material->emissive.r = r;
+            material->emissive.g = g;
+            material->emissive.b = b;
+        }
+        else if (type == Mesh_Colour_Specular)
+        {
+            material->specular.r = r;
+            material->specular.g = g;
+            material->specular.b = b;
+        }
+
+        return TRUE;
+    }
+
     return FALSE;
 }
 
 void Mesh_GetGroupColour(lpMesh mesh, U32 groupID, F32* r, F32* g, F32* b, U32 type)
 {
-    // TODO: Implement Mesh_GetGroupColour
+    if (groupID < mesh->groupCount)
+    {
+        lpMesh_Group group = &mesh->groupList[groupID];
+        LPD3DMATERIAL material;
+
+        Mesh_Debug_CheckIMDevice_Void();
+
+        material = Mesh_GetGroupMaterial(mesh, groupID);
+
+        if (type == Mesh_Colour_Diffuse)
+        {
+            *r = material->diffuse.r;
+            *g = material->diffuse.g;
+            *b = material->diffuse.b;
+        }
+        else if (type == Mesh_Colour_Ambient)
+        {
+            *r = material->ambient.r;
+            *g = material->ambient.g;
+            *b = material->ambient.b;
+        }
+        else if (type == Mesh_Colour_Emissive)
+        {
+            *r = material->emissive.r;
+            *g = material->emissive.g;
+            *b = material->emissive.b;
+        }
+        else if (type == Mesh_Colour_Specular)
+        {
+            *r = material->specular.r;
+            *g = material->specular.g;
+            *b = material->specular.b;
+        }
+    }
 }
 
 B32 Mesh_SetGroupMaterialValues(lpMesh mesh, U32 groupID, F32 value, U32 type)
 {
-    // TODO: Implement Mesh_SetGroupMaterialValues
+    if (groupID < mesh->groupCount)
+    {
+        lpMesh_Group group = &mesh->groupList[groupID];
+        LPD3DMATERIAL material;
+
+        Mesh_Debug_CheckIMDevice_Int();
+
+        material = Mesh_GetGroupMaterial(mesh, groupID);
+
+        if (value < 0.0f)
+            value = 0.0f;
+        if (value > 1.0f)
+            value = 1.0f;
+
+        if (type == Mesh_Colour_Alpha)
+        {
+            group->flags &= ~MESH_FLAG_ALPHAHIDDEN;
+            group->flags &= ~MESH_FLAG_ALPHAENABLE;
+
+            if (value == 0.0f)
+            {
+                if (group->renderFlags)
+                {
+                    if (group->renderFlags & MESH_FLAG_RENDER_ALLALPHA)
+                        group->flags |= MESH_FLAG_ALPHAHIDDEN;
+                }
+                else if (mesh->renderDesc.renderFlags & MESH_FLAG_RENDER_ALLALPHA)
+                    group->flags |= MESH_FLAG_ALPHAHIDDEN;
+            }
+            else if (value != 1.0f)
+            {
+                if (group->renderFlags)
+                {
+                    if (group->renderFlags & MESH_FLAG_RENDER_ALLALPHA)
+                        group->flags |= MESH_FLAG_ALPHAENABLE;
+                }
+                else if (mesh->renderDesc.renderFlags & MESH_FLAG_RENDER_ALLALPHA)
+                    group->flags |= MESH_FLAG_ALPHAENABLE;
+            }
+
+            // COLOUR ADDITION CAN OCCUR EVEN IF ALPHA VALUE IS 1.0f
+            if (group->renderFlags)
+            {
+                if ((mesh->renderDesc.renderFlags & MESH_FLAG_RENDER_ALPHA11) ||
+                    (mesh->renderDesc.renderFlags & MESH_FLAG_RENDER_ALPHASA1) ||
+                    (mesh->renderDesc.renderFlags & MESH_FLAG_RENDER_ALPHASA0))
+                {
+                    group->flags |= MESH_FLAG_ALPHAENABLE;
+                }
+            }
+            else if ((mesh->renderDesc.renderFlags & MESH_FLAG_RENDER_ALPHA11) ||
+                     (mesh->renderDesc.renderFlags & MESH_FLAG_RENDER_ALPHASA1) ||
+                     (mesh->renderDesc.renderFlags & MESH_FLAG_RENDER_ALPHASA0))
+            {
+                group->flags |= MESH_FLAG_ALPHAENABLE;
+            }
+
+            material->diffuse.a = value;
+        }
+        else if (type == Mesh_Colour_Power)
+        {
+            material->power = value;
+        }
+
+        return TRUE;
+    }
+
     return FALSE;
 }
 
 void Mesh_GetGroupMaterialValues(lpMesh mesh, U32 groupID, F32* value, U32 type)
 {
-    // TODO: Implement Mesh_GetGroupMaterialValues
+    if (groupID < mesh->groupCount)
+    {
+        lpMesh_Group group = &mesh->groupList[groupID];
+
+        LPD3DMATERIAL material;
+
+        Mesh_Debug_CheckIMDevice_Void();
+
+        material = Mesh_GetGroupMaterial(mesh, groupID);
+
+        if (type == Mesh_Colour_Alpha)
+            *value = material->diffuse.a;
+        else if (type == Mesh_Colour_Power)
+            *value = material->power;
+    }
 }
 
 B32 Mesh_CreateGroupMaterial(lpMesh mesh, U32 groupID)
@@ -1690,23 +1890,128 @@ B32 Mesh_SetCurrentGODSViewport(lpViewport vp)
 
 void Mesh_StoreTextureAndMat()
 {
-    // TODO: Implement Mesh_StoreTextureAndMat
+    B32 ok = TRUE;
+
+    // GET OLD MATERIAL
+    if (lpIMDevice()->lpVtbl->GetLightState(lpIMDevice(), D3DLIGHTSTATE_MATERIAL, &meshGlobs.oldMatIM) != D3D_OK)
+    {
+        Error_Warn(TRUE, "Cannot 'GetLightState' for current D3DIM material.");
+
+        ok = FALSE;
+    }
+
+    meshGlobs.currMatIM = meshGlobs.oldMatIM;
+
+    if (!(mainGlobs.flags & MAIN_FLAG_DONTMANAGETEXTURES))
+    {
+        // GET OLD TEXTURE
+        if (lpIMDevice()->lpVtbl->GetTexture(lpIMDevice(), 0, &meshGlobs.oldTextureIM) != D3D_OK)
+        {
+            Error_Warn(TRUE, "Cannot 'GetTexture' for current D3DIM texture.");
+
+            ok = FALSE;
+        }
+        meshGlobs.currTextureIM = meshGlobs.oldTextureIM;
+
+        // GET OLD RM TEXTURE
+        lpIMDevice()->lpVtbl->GetRenderState(lpIMDevice(), D3DRENDERSTATE_TEXTUREHANDLE, &meshGlobs.oldTextureRM);
+
+        // CLEAR RETAINED MODE TEXTURE HANDLE
+        if (meshGlobs.oldTextureIM != 0)
+            lpIMDevice()->lpVtbl->SetRenderState(lpIMDevice(), D3DRENDERSTATE_TEXTUREHANDLE, 0);
+    } else {
+        lpIMDevice()->lpVtbl->GetRenderState(lpIMDevice(), D3DRENDERSTATE_TEXTUREHANDLE, &meshGlobs.oldTextureRM);
+        meshGlobs.currTextureRM = meshGlobs.oldTextureRM;
+    }
 }
 
 void Mesh_RestoreTextureAndMat()
 {
-    // TODO: Implement Mesh_RestoreTextureAndMat
+    B32 ok = TRUE;
+
+    if (meshGlobs.currMatIM != meshGlobs.oldMatIM)
+    {
+        // SET OLD MATERIAL
+        if (lpIMDevice()->lpVtbl->SetLightState(lpIMDevice(), D3DLIGHTSTATE_MATERIAL, meshGlobs.oldMatIM) != D3D_OK)
+        {
+            Error_Warn(TRUE, "Cannot 'SetLightState' for old D3DIM material.");
+
+            ok = FALSE;
+        }
+
+        if (!(mainGlobs.flags & MAIN_FLAG_DONTMANAGETEXTURES))
+        {
+            if (meshGlobs.currTextureIM != meshGlobs.oldTextureIM)
+            {
+                // SET OLD TEXTURE
+                if (lpIMDevice()->lpVtbl->SetTexture(lpIMDevice(), 0, meshGlobs.oldTextureIM) != D3D_OK)
+                {
+                    Error_Warn(TRUE, "Cannot 'SetTexture' for old D3DIM texture.");
+
+                    ok = FALSE;
+                }
+            }
+
+            // SET OLD RETAINED MODE TEXTURE
+            if (meshGlobs.oldTextureRM != 0)
+                lpIMDevice()->lpVtbl->SetRenderState(lpIMDevice(), D3DRENDERSTATE_TEXTUREHANDLE, meshGlobs.oldTextureRM);
+        } else
+        {
+            lpIMDevice()->lpVtbl->SetRenderState(lpIMDevice(), D3DRENDERSTATE_TEXTUREHANDLE, meshGlobs.oldTextureRM);
+        }
+    }
 }
 
-B32 Mesh_GetTextureSeqInfo(const char* tname, const char* tfname, U32* tstart, U32* tnumlen)
+B32 Mesh_GetTextureSeqInfo(const char* tname, char* tfname, U32* tstart, U32* tnumlen)
 {
-    // TODO: Implement Mesh_GetTextureSeqInfo
-    return FALSE;
+    U32 len, n, indx = 1, val = 0;
+    char c;
+
+    len = strlen(tname);
+    c = tname[len - 1];
+    if ((c < '0') || (c > '9'))
+        return FALSE;
+
+    for (n = len - 1; n > 0; n--)
+    {
+        c = tname[n];
+        if ((c < '0') || (c > '9'))
+            break;
+        else
+            val += (c - '0') * indx;
+
+        indx *= 10;
+    }
+
+    if (n == 0)
+        return FALSE;
+
+    strcpy(tfname, tname);
+    tfname[n + 1] = 0;
+    *tnumlen = len - n - 1;
+    *tstart = val;
+
+    return TRUE;
 }
 
 void Mesh_GetNextInSequence(const char* baseName, const char* nextTextName, U32* texNum, U32 tnumlen)
 {
-    // TODO: Implement Mesh_GetNextInSequence
+    char numBuff[16];
+    U32 k;
+
+    strcpy(nextTextName, baseName);
+
+    sprintf(numBuff, "%d", (*texNum));
+    k = tnumlen - strlen(numBuff);
+    while (k >= 1)
+    {
+        strcat(nextTextName, "0");
+        k--;
+    }
+
+    (*texNum)++;
+
+    strcat(nextTextName, numBuff);
 }
 
 lpMesh_Texture Mesh_LoadTexture(const char* baseDir, const char* name, U32* width, U32* height)
@@ -1785,6 +2090,23 @@ void Mesh_AddTexturePathEntry(lpMesh_TextureReference list, U32* count, const ch
     (*count)++;
 }
 
+void Mesh_RemoveGroupTexture(lpMesh mesh, U32 groupID)
+{
+    if (groupID < mesh->groupCount)
+    {
+        lpMesh_Group group = &mesh->groupList[groupID];
+
+        Mesh_Debug_CheckIMDevice_Void();
+
+        if (group->imText)
+        {
+            RELEASE(group->imText);
+
+            group->imText = NULL;
+        }
+    }
+}
+
 lpMesh Mesh_ObtainFromList()
 {
     lpMesh newMesh;
@@ -1834,5 +2156,45 @@ void Mesh_AddList()
 
 void Mesh_Remove(lpMesh mesh, LPDIRECT3DRMFRAME3 frame)
 {
-    // TODO: Implement Mesh_Remove
+    U32 loop;
+    lpMesh_Group group;
+
+    Mesh_Debug_CheckIMDevice_Void();
+
+    frame->lpVtbl->DeleteVisual(frame, (struct IUnknown*) mesh->uv);
+
+    if (mesh->clonedFrom)
+    {
+        lpMesh clonedFrom = mesh->clonedFrom;
+
+        RELEASE(mesh->uv);
+        for (loop = 0; loop < mesh->groupCount; loop++)
+            group = &mesh->groupList[loop];
+
+        Mem_Free(mesh->groupList);
+        Mesh_ReturnToList(mesh);
+
+        mesh = clonedFrom;
+    }
+
+    mesh->numOfRefs--;
+
+    if (mesh->numOfRefs == 0)
+    {
+        RELEASE(mesh->uv);
+
+        for (loop = 0; loop < mesh->groupCount; loop++)
+        {
+            group = &mesh->groupList[loop];
+
+            Mesh_RemoveGroupTexture(mesh, loop);
+            Mem_Free(group->faceData);
+            Mem_Free(group->vertices);
+        }
+
+        if (mesh->lightWaveSurf)
+            Mem_Free(mesh->lightWaveSurf);
+        Mem_Free(mesh->groupList);
+        Mesh_ReturnToList(mesh);
+    }
 }
