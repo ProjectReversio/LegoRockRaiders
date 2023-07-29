@@ -55,6 +55,14 @@ typedef enum Container_GlobFlags
     CONTAINER_GLOB_FLAG_TRIGGERENABLED = 0x40,
 } Container_GlobFlags;
 
+typedef struct Container_TypeData
+{
+    char* name;
+    LPDIRECT3DRMLIGHT light;
+    LPDIRECT3DRMMESH mesh;
+    struct Mesh *transMesh;
+} Container_TypeData, *lpContainer_TypeData;
+
 typedef struct Container_Texture
 {
     LPDIRECTDRAWSURFACE4 surface;
@@ -78,7 +86,7 @@ typedef struct Container_TextureData
 typedef struct Container
 {
     LPDIRECT3DRMFRAME3 masterFrame, activityFrame, hiddenFrame;
-    lpContainer_Type typeData;
+    lpContainer_TypeData typeData;
     Container_Type type;
     ContainerFlags flags;
     void (*activityCallback)(struct Container* cont, void* data);
@@ -171,9 +179,17 @@ extern void Container_Frame_SafeAddChild(LPDIRECT3DRMFRAME3 parent, LPDIRECT3DRM
 extern void Container_GetPosition(lpContainer cont, lpContainer ref, lpPoint3F pos);
 extern void Container_GetOrientation(lpContainer cont, lpContainer ref, lpPoint3F dir, lpPoint3F up);
 
+extern F32 Container_GetAnimationTime(lpContainer cont);
 extern F32 Container_SetAnimationTime(lpContainer cont, F32 time);
 
 extern U32 Container_GetAnimationFrames(lpContainer cont);
+
+extern LPDIRECT3DRMFRAME3 Container_Frame_Find(lpContainer cont, const char* findName, U32 hidden);
+
+extern F32 Container_Frame_GetCurrTime(LPDIRECT3DRMFRAME3 frame);
+extern U32 Container_Frame_GetFrameCount(LPDIRECT3DRMFRAME3 frame);
+extern struct AnimClone* Container_Frame_GetAnimClone(LPDIRECT3DRMFRAME3 frame);
+extern U32 Container_Frame_GetTrigger(LPDIRECT3DRMFRAME3 frame);
 
 extern Container_Type Container_ParseTypeString(const char* str, B32* noTexture);
 

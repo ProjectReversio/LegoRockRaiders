@@ -26,3 +26,5 @@ extern B32 AnimClone_WalkTree(LPDIRECT3DRMFRAME3 frame, U32 level, B32 (*Callbac
 
 extern B32 AnimClone_FrameCountCallback(LPDIRECT3DRMFRAME3 frame, void* data);
 extern B32 AnimClone_SetupFrameArrayCallback(LPDIRECT3DRMFRAME3 frame, void* p);
+
+extern void AnimClone_SetTime(lpAnimClone clone, F32 time, F32* oldTime);

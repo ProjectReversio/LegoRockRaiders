@@ -229,7 +229,7 @@ void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer owner, lpA
 
 void Container_SetSharedTextureDirectory(const char* path)
 {
-    // TODO: Implement Container_SetSharedTextureDirectory
+    containerGlobs.sharedDir = Util_StrCpy(path);
 }
 
 void Container_SetTriggerFrameCallback(void (*Callback)(lpContainer cont, void* data), void* data)
@@ -325,23 +325,172 @@ void Container_Frame_SafeAddChild(LPDIRECT3DRMFRAME3 parent, LPDIRECT3DRMFRAME3 
 
 void Container_GetPosition(lpContainer cont, lpContainer ref, lpPoint3F pos)
 {
-    // TODO: Implement Container_GetPosition
+    LPDIRECT3DRMFRAME3 refFrame, frame;
+    Container_GetFrames(cont, ref, &frame, &refFrame);
+    frame->lpVtbl->GetPosition(frame, refFrame, (LPD3DVECTOR) pos);
 }
 
 void Container_GetOrientation(lpContainer cont, lpContainer ref, lpPoint3F dir, lpPoint3F up)
 {
-    // TODO: Implement Container_GetOrientation
+    LPDIRECT3DRMFRAME3 refFrame, frame;
+    Point3F vdir, vup;
+
+    Container_GetFrames(cont, ref, &frame, &refFrame);
+    frame->lpVtbl->GetOrientation(frame, refFrame, (LPD3DVECTOR) &vdir, (LPD3DVECTOR) &vup);
+    if (dir)
+        *dir = vdir;
+    if (up)
+        *up = vup;
+}
+
+F32 Container_GetAnimationTime(lpContainer cont)
+{
+    LPDIRECT3DRMFRAME3 frame;
+    char* currAnimName;
+    F32 time = 0.0f;
+
+    Container_DebugCheckOK(cont);
+
+    if (cont->type == Container_FromActivity)
+    {
+        // TODO: Implement Container_GetAnimationTime
+    }
+    else if (cont->type == Container_Anim)
+    {
+        time = Container_Frame_GetCurrTime(cont->activityFrame);
+    }
+
+    return time;
 }
 
 F32 Container_SetAnimationTime(lpContainer cont, F32 time)
 {
-    // TODO: Implement Container_SetAnimationTime
-    return 0.0f;
+    LPDIRECT3DRMFRAME3 frame;
+    char* currAnimName;
+    U32 frameCount;
+    lpAnimClone animClone = NULL;
+    F32 overrun = 0.0f;
+
+    Container_DebugCheckOK(cont);
+
+    if (cont->type == Container_FromActivity)
+    {
+        // TODO: Implement Container_SetAnimationTime
+    }
+    else if (cont->type == Container_Anim)
+    {
+        animClone = Container_Frame_GetAnimClone(cont->activityFrame);
+        frame = cont->activityFrame;
+    }
+
+    if (animClone)
+    {
+        B32 skipSetTime = (cont->flags & CONTAINER_FLAG_HIDDEN);
+        F32 oldTime = Container_GetAnimationTime(cont);
+
+        // If the container is hidden then don't bother updating the animation
+        // unless the animation has ended...
+
+        frameCount = Container_Frame_GetFrameCount(frame);
+        Container_Frame_SetAppData(frame, NULL, NULL, NULL, NULL, NULL, &time, NULL, NULL, NULL, NULL);
+        if (frameCount)
+        {
+            frameCount--;
+            if (time > frameCount)
+            {
+                overrun = (time - frameCount);
+                skipSetTime = FALSE;
+            }
+
+            if (skipSetTime == FALSE)
+            {
+                F32 triggerFrame = (F32) Container_Frame_GetTrigger(frame);
+                //#pragma message("Not restoring the time on original animation set")
+                if (frameCount != 1)
+                {
+                    AnimClone_SetTime(animClone, time, NULL);
+                    if (containerGlobs.triggerFrameCallback && triggerFrame)
+                    {
+                        if (oldTime < triggerFrame && time >= triggerFrame)
+                            containerGlobs.triggerFrameCallback(cont, containerGlobs.triggerFrameData);
+                    }
+                }
+            }
+            else
+            {
+                cont->flags |= CONTAINER_FLAG_ANIMATIONSKIPPED;
+            }
+        }
+    }
+
+    return overrun;
 }
 
 U32 Container_GetAnimationFrames(lpContainer cont)
 {
-    // TODO: Implement Container_GetAnimationFrames
+    LPDIRECT3DRMFRAME3 frame = NULL;
+    char* currAnimName;
+
+    if (cont->type == Container_FromActivity)
+    {
+        Error_Fatal(!cont->typeData, "Container has no typeData");
+        currAnimName = cont->typeData->name;
+        frame = Container_Frame_Find(cont, currAnimName, 0);
+    }
+    else if (cont->type == Container_Anim)
+    {
+        frame = cont->activityFrame;
+    }
+
+    if (frame)
+        return Container_Frame_GetFrameCount(frame);
+    else
+        return 0;
+}
+
+LPDIRECT3DRMFRAME3 Container_Frame_Find(lpContainer cont, const char* findName, U32 hidden)
+{
+    // TODO: Implement Container_Frame_Find
+    return NULL;
+}
+
+F32 Container_Frame_GetCurrTime(LPDIRECT3DRMFRAME3 frame)
+{
+    Container_AppData *appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    Error_Fatal(!appData, "AppData not set on frame");
+    if (appData)
+        return appData->currTime;
+
+    return 0.0f;
+}
+
+U32 Container_Frame_GetFrameCount(LPDIRECT3DRMFRAME3 frame)
+{
+    Container_AppData *appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    Error_Fatal(!appData, "AppData not set on frame");
+    if (appData)
+        return appData->frameCount;
+
+    return 0;
+}
+
+lpAnimClone Container_Frame_GetAnimClone(LPDIRECT3DRMFRAME3 frame)
+{
+    Container_AppData *appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    Error_Fatal(!appData, "AppData not set on frame");
+    if (appData)
+        return appData->animClone;
+
+    return NULL;
+}
+
+U32 Container_Frame_GetTrigger(LPDIRECT3DRMFRAME3 frame)
+{
+    Container_AppData *appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    Error_Fatal(!appData, "AppData not set on frame");
+    if (appData)
+        return appData->trigger;
+
     return 0;
 }
 
@@ -459,7 +608,27 @@ void Container_Hide2(lpContainer cont, B32 hide)
 
 void Container_Hide(lpContainer cont, B32 hide)
 {
-    // TODO: Implement Container_Hide
+    // Move the activity frame onto the hidden frame (will not hide any children attached
+    // to the master frame)...
+
+    B32 hidden;
+
+    if (cont == NULL)
+        return;
+
+    hidden = cont->flags & CONTAINER_FLAG_HIDDEN;
+    Container_DebugCheckOK(cont);
+
+    if (hide && !hidden)
+    {
+        Container_Frame_SafeAddChild(cont->hiddenFrame, cont->activityFrame);
+        cont->flags |= CONTAINER_FLAG_HIDDEN;
+    }
+    else if (!hide && hidden)
+    {
+        Container_Frame_SafeAddChild(cont->masterFrame, cont->activityFrame);
+        cont->flags &= ~CONTAINER_FLAG_HIDDEN;
+    }
 }
 
 void Container_SetSoundTriggerCallback(ContainerSoundTriggerCallback callback, void* data)

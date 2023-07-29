@@ -78,3 +78,46 @@ B32 AnimClone_SetupFrameArrayCallback(LPDIRECT3DRMFRAME3 frame, void* p)
     data->partArray[data->partCount++] = frame;
     return FALSE;
 }
+
+void AnimClone_SetTime(lpAnimClone clone, F32 time, F32* oldTime)
+{
+    lpAnimClone orig = clone->clonedFrom;
+
+    if (orig)
+    {
+        LPDIRECT3DRMFRAME3 parent;
+        D3DRMMATRIX4D mat;
+        U32 loop;
+
+        // Set time on the original animation then copy all of the transformations to the clone...
+        if (orig->lws)
+            Lws_SetTime(orig->scene, time);
+        else
+            orig->animSet->lpVtbl->SetTime(orig->animSet, time);
+
+        for (loop = 0; loop < clone->partCount; loop++)
+        {
+            orig->partArray[loop]->lpVtbl->GetParent(orig->partArray[loop], &parent);
+            orig->partArray[loop]->lpVtbl->GetTransform(orig->partArray[loop], parent, mat);
+            parent->lpVtbl->Release(parent);
+            clone->partArray[loop]->lpVtbl->AddTransform(clone->partArray[loop], D3DRMCOMBINE_REPLACE, mat);
+        }
+
+        // Restore the original animations' time if required...
+        if (oldTime)
+        {
+            if (orig->lws)
+                Lws_SetTime(orig->scene, *oldTime);
+            else
+                orig->animSet->lpVtbl->SetTime(orig->animSet, *oldTime);
+        }
+    }
+    else
+    {
+        // 'clone' is actually the original...
+        if (clone->lws)
+            Lws_SetTime(clone->scene, time);
+        else
+            clone->animSet->lpVtbl->SetTime(clone->animSet, time);
+    }
+}
