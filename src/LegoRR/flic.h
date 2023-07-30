@@ -5,6 +5,10 @@
 #include "maths.h"
 #include "file.h"
 
+#define FLICFINISHED 1
+#define FLICNOERROR  0
+#define FLICERROR    (-1)
+
 typedef enum FlicUserFlags
 {
     FLICDISK      = 0,
@@ -94,3 +98,7 @@ extern U32 Flic_GetHeight(lpFlic fsp);
 
 extern B32 Flic_Animate(lpFlic fsp, Area2F* destArea, B32 advance, B32 trans);
 
+extern S32 Flic_Memory(lpFlic fsp);
+extern S32 Flic_Load(lpFlic fsp);
+
+extern S32 Flic_FindChunk(lpFlic fsp);

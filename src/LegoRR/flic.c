@@ -162,6 +162,113 @@ U32 Flic_GetHeight(lpFlic fsp)
 
 B32 Flic_Animate(lpFlic fsp, Area2F* destArea, B32 advance, B32 trans)
 {
-    // TODO: Implement Flic_Animate
-    return FALSE;
+    DDSURFACEDESC2 dds;
+    HRESULT hr;
+    DDBLTFX ddBltFx;
+    LPDIRECTDRAWSURFACE4 BackBuffer = DirectDraw_bSurf();
+    LPDIRECTDRAWSURFACE4 *lpBB = &BackBuffer;
+    RECT destRect = {
+        (U32) destArea->x,
+        (U32) destArea->y,
+        (U32) destArea->x + (U32) destArea->width,
+        (U32) destArea->y + (U32) destArea->height
+    };
+    RECT *dest = &destRect;
+    S32 flicRetVal = FLICNOERROR;
+
+    ZeroMemory(&dds, sizeof(dds));
+    dds.dwSize = sizeof(dds);
+    hr = fsp->fsSurface->lpVtbl->Lock(fsp->fsSurface, NULL, &dds, DDLOCK_WAIT, NULL);
+    fsp->fsSPtr = dds.lpSurface;
+    fsp->fsPitch = dds.lPitch;
+    fsp->is15bit = dds.ddpfPixelFormat.dwGBitMask == 0x3E0;
+
+    if (fsp->currentframe == 0)
+        advance = TRUE;
+
+    if (advance)
+    {
+        if (((fsp->userFlags) & FLICMEMORY) == FLICMEMORY)
+            flicRetVal = Flic_Memory(fsp);
+        else
+            flicRetVal = Flic_Load(fsp);
+    }
+
+    hr = fsp->fsSurface->lpVtbl->Unlock(fsp->fsSurface, NULL);
+
+    ZeroMemory(&ddBltFx, sizeof(DDBLTFX));
+    ddBltFx.dwSize = sizeof(DDBLTFX);
+    ddBltFx.dwFillColor = 0xFF00;
+
+    hr = (*lpBB)->lpVtbl->Blt(*lpBB, dest, fsp->fsSurface, NULL, DDBLT_WAIT | (trans ? DDBLT_KEYSRC : 0), &ddBltFx);
+
+    return (flicRetVal == FLICNOERROR);
+}
+
+S32 Flic_Memory(lpFlic fsp)
+{
+    S32 flicRetVal = FLICNOERROR;
+
+    Flic_FindChunk(fsp);
+
+    if (fsp->currentframe == 0)
+        fsp->ringframe = fsp->pointerposition;
+
+    fsp->currentframe++;
+    fsp->overallframe++;
+
+    if ((fsp->userFlags & FLICLOOPINGON) == FLICLOOPINGON)
+    {
+        if (fsp->currentframe == fsp->fsHeader.frames + 1)
+        {
+            fsp->pointerposition = fsp->ringframe;
+            fsp->currentframe = 1;
+        }
+    }
+    else
+    {
+        if (fsp->currentframe == fsp->fsHeader.frames + 1)
+            flicRetVal = FLICFINISHED;
+    }
+
+    return flicRetVal;
+}
+
+S32 Flic_Load(lpFlic fsp)
+{
+    S32 flicRetVal = FLICNOERROR;
+    S16* source;
+
+    source = fsp->fsLoadBuffer;
+
+    if (fsp->currentframe == 0)
+        fsp->ringframe = fsp->pointerposition;
+
+    File_Read(source, 16, 1, fsp->filehandle);
+    Flic_FindChunk(fsp);
+
+    fsp->currentframe++;
+    fsp->overallframe++;
+
+    if ((fsp->userFlags & FLICLOOPINGON) == FLICLOOPINGON)
+    {
+        if (fsp->currentframe > fsp->fsHeader.frames)
+        {
+            File_Seek(fsp->filehandle, fsp->ringframe, SEEK_SET);
+            fsp->pointerposition = fsp->ringframe;
+            fsp->currentframe = 0;
+        }
+    }
+    else
+    {
+        if (fsp->currentframe > fsp->fsHeader.frames)
+            flicRetVal = FLICFINISHED;
+    }
+    return flicRetVal;
+}
+
+S32 Flic_FindChunk(lpFlic fsp)
+{
+    // TODO: Implement Flic_FindChunk
+    return 0;
 }
