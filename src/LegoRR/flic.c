@@ -269,6 +269,255 @@ S32 Flic_Load(lpFlic fsp)
 
 S32 Flic_FindChunk(lpFlic fsp)
 {
-    // TODO: Implement Flic_FindChunk
-    return 0;
+    U16 chunktype;
+    S32 flag;
+    void* source;
+    S32 storepointer, originalpointer;
+
+    if (((fsp->userFlags) & FLICMEMORY) == FLICMEMORY)
+        source = fsp->rambufferhandle;
+    else
+        source = fsp->fsLoadBuffer;
+
+    originalpointer = fsp->pointerposition;
+
+    if (((fsp->userFlags) & FLICMEMORY) == FLICMEMORY)
+    {
+        source = (char*)source + fsp->pointerposition;
+        storepointer = *(S32*)(char*)source;
+        flag = 0;
+        while((flag == 0) && ((fsp->pointerposition) < (fsp->fsHeader.size)))
+        {
+            chunktype = (*((U16*)source + 2));
+            switch (chunktype)
+            {
+                case (U16)0xf1fa:
+                {
+                    Flic_FrameChunk(fsp);
+                    flag = 1;
+                    break;
+                }
+                case 0x4b4c:
+                {
+                    Flic_LoadPointers(fsp);
+                    fsp->pointerposition += *(S32*)source;
+                    source = (char*) source + (*(S32*)source);
+                    storepointer += (*(S32*)source);
+                    break;
+                }
+                case 0x000b:
+                {
+                    Flic_LoadPalette64(fsp);
+                    fsp->pointerposition += *(S32*)source;
+                    source = (char*) source + (*(S32*)source);
+                    storepointer += (*(S32*)source);
+                    break;
+                }
+                default:
+                {
+                    fsp->pointerposition += *(S32*)source;
+                    source = (char*) source + (*(S32*)source);
+                    storepointer += (*(S32*)source);
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        storepointer = (*(S32 *) source);
+        flag = 0;
+        while ((flag == 0) && ((fsp->pointerposition) < (fsp->fsHeader.size)))
+        {
+            chunktype = (*((U16*) source + 2));
+            switch (chunktype)
+            {
+                case (U16)0xf1fa:
+                {
+                    Flic_FrameChunk(fsp);
+                    flag = 1;
+                    break;
+                }
+                case 0x4b4c:
+                    Flic_LoadPointers(fsp);
+                    fsp->pointerposition += *(S32*)source;
+                    File_Seek(fsp->filehandle, fsp->pointerposition, SEEK_SET);
+                    source = fsp->fsLoadBuffer;
+                    File_Read((char*)source, 16, 1, fsp->filehandle);
+                    storepointer += (*(S32*)source);
+                    break;
+                case 0x000b:
+                    Flic_LoadPalette64(fsp);
+                    fsp->pointerposition += *(S32*)source;
+                    File_Seek(fsp->filehandle, fsp->pointerposition, SEEK_SET);
+                    source = fsp->fsLoadBuffer;
+                    File_Read((char*)source, 16, 1, fsp->filehandle);
+                    storepointer += (*(S32*)source);
+                    break;
+                    break;
+                default:
+                    fsp->pointerposition += *(S32*)source; // this bit must load in the next
+                    File_Seek(fsp->filehandle, fsp->pointerposition, SEEK_SET);
+                    source = fsp->fsLoadBuffer;
+                    File_Read((char*)source, 16, 1, fsp->filehandle);
+                    storepointer += (*(S32*)source);
+                    break;
+            }
+        }
+    }
+
+    fsp->pointerposition = storepointer + originalpointer;
+    return FLICNOERROR;
+}
+
+B32 Flic_FrameChunk(lpFlic fsp)
+{
+    S32 flicmaxchunk;
+    char chunkcount;
+    char *source;
+    char buff[128];
+
+    if (((fsp->userFlags) & FLICMEMORY) == FLICMEMORY)
+    {
+        source = fsp->rambufferhandle;
+        source += (fsp->pointerposition);
+        chunkcount = *(source + 6);
+        source += 16;
+        fsp->pointerposition += 16;
+        while ((chunkcount > 0) && ((fsp->pointerposition) < (fsp->fsHeader.size)))
+        {
+            fsp->fsSource = source;
+            Flic_DoChunk(fsp);
+            fsp->pointerposition += *(S32*)source;
+            source = (char*) source + (*(S32*)source);
+            chunkcount--;
+        }
+    }
+    else
+    {
+        source = fsp->fsLoadBuffer;
+        chunkcount = (*((char*)source + 6));
+        flicmaxchunk = (*(S32*)source) - 16;
+        if (flicmaxchunk > fsp->fsLoadBufferSize)
+        {
+            if (fsp->fsLoadBuffer)
+                Mem_Free(fsp->fsLoadBuffer);
+            fsp->fsLoadBufferSize = flicmaxchunk;
+            fsp->fsLoadBuffer = Mem_Alloc(fsp->fsLoadBufferSize);
+            if (!fsp->fsLoadBuffer)
+            {
+                sprintf(buff, "Flic Not Enough Memory");
+                Error_Warn(TRUE, buff);
+                return FALSE;
+            }
+            source = (fsp->fsLoadBuffer);
+        }
+
+        File_Read(source, flicmaxchunk, 1, fsp->filehandle);
+        fsp->pointerposition += 16;
+        while ((chunkcount > 0) && ((fsp->pointerposition) < (fsp->fsHeader.size)))
+        {
+            fsp->fsSource = source;
+            Flic_DoChunk(fsp);
+            fsp->pointerposition += *(S32*)source;
+            source = (char*)source + (*(S32*)source);
+            chunkcount--;
+        }
+    }
+
+    return TRUE;
+}
+
+// Function to load pointers for each frame of flic
+S32 Flic_LoadPointers(lpFlic fsp)
+{
+    S32 flicmaxchunk;
+    char chunkcount;
+    void* source;
+    char buff[256];
+
+    if (((fsp->userFlags) & FLICMEMORY) == FLICMEMORY)
+    {
+        source = fsp->rambufferhandle;
+        source = (char*)source + fsp->pointerposition;
+    }
+    else
+    {
+        source = fsp->fsLoadBuffer;
+        flicmaxchunk = (*(S32*)source);
+        if (flicmaxchunk > fsp->fsLoadBufferSize)
+        {
+            if (fsp->fsLoadBuffer)
+                Mem_Free(fsp->fsLoadBuffer);
+            fsp->fsLoadBufferSize = flicmaxchunk;
+            fsp->fsLoadBuffer = Mem_Alloc(fsp->fsLoadBufferSize);
+            if (!fsp->fsLoadBuffer)
+            {
+                sprintf(buff, "Flic Not Enough Memory");
+                Error_Warn(TRUE, buff);
+                return FALSE;
+            }
+            source = fsp->fsLoadBuffer;
+        }
+
+        File_Seek(fsp->filehandle, fsp->pointerposition, SEEK_SET);
+        File_Read(source, flicmaxchunk, 1, fsp->filehandle);
+    }
+
+    chunkcount = flicmaxchunk / 8;
+    source = (char*) source + 6;
+
+    return FLICNOERROR;
+}
+
+// Function to load an 8 bit palette
+S32 Flic_LoadPalette64(lpFlic fsp)
+{
+    S32 flicmaxchunk;
+    char *source;
+    char buff[128];
+
+    if (((fsp->userFlags) & FLICMEMORY) == FLICMEMORY)
+    {
+        source = fsp->rambufferhandle;
+        source = (char*)source + fsp->pointerposition;
+    }
+    else
+    {
+        source = fsp->fsLoadBuffer;
+        flicmaxchunk = (*(S32*)source);
+        if (flicmaxchunk > fsp->fsLoadBufferSize)
+        {
+            if (fsp->fsLoadBuffer)
+                Mem_Free(fsp->fsLoadBuffer);
+            fsp->fsLoadBufferSize = flicmaxchunk;
+            fsp->fsLoadBuffer = Mem_Alloc(fsp->fsLoadBufferSize);
+            if (!fsp->fsLoadBuffer)
+            {
+                sprintf(buff, "Flic Not Enough Memory");
+                Error_Warn(TRUE, buff);
+                return TRUE;
+            }
+            source = fsp->fsLoadBuffer;
+        }
+
+        File_Seek(fsp->filehandle, fsp->pointerposition, SEEK_SET);
+        File_Read(source, flicmaxchunk, 1, fsp->filehandle);
+    }
+    return FLICNOERROR;
+}
+
+S32 Flic_DoChunk(lpFlic fsp)
+{
+    S16 chunktype;
+    S32 flag = 0;
+    chunktype = (*((S16*)(fsp->fsSource) + 2));
+    switch (chunktype)
+    {
+        // TODO: Implement Flic_DoChunk
+        default:
+            break;
+    }
+
+    return flag;
 }

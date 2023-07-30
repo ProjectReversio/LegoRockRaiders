@@ -102,3 +102,7 @@ extern S32 Flic_Memory(lpFlic fsp);
 extern S32 Flic_Load(lpFlic fsp);
 
 extern S32 Flic_FindChunk(lpFlic fsp);
+extern B32 Flic_FrameChunk(lpFlic fsp);
+extern S32 Flic_LoadPointers(lpFlic fsp);
+extern S32 Flic_LoadPalette64(lpFlic fsp);
+extern S32 Flic_DoChunk(lpFlic fsp);
