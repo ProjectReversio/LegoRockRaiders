@@ -503,6 +503,16 @@ S32 File_Read(void* buffer, S32 size, S32 count, lpFile f)
     return 0;
 }
 
+S32 File_Length(lpFile f)
+{
+    S32 pos, len;
+    pos = File_Tell(f);
+    File_Seek(f, 0, SEEK_END);
+    len = File_Tell(f);
+    File_Seek(f, pos, SEEK_SET);
+    return len;
+}
+
 U32 File_VPrintF(lpFile file, const char* msg, va_list args)
 {
     // TODO: Implement File_VPrintF

@@ -94,6 +94,8 @@ extern S32 File_Seek(lpFile f, S32 pos, S32 mode);
 extern S32 File_Tell(lpFile f);
 extern S32 File_Read(void* buffer, S32 size, S32 count, lpFile f);
 
+extern S32 File_Length(lpFile f);
+
 extern U32 File_VPrintF(lpFile file, const char* msg, va_list args);
 extern S32 File_Flush(lpFile file);
 

@@ -14,7 +14,16 @@ typedef enum FlicUserFlags
     FLICSOUNDOFF  = 0x8,
 } FlicUserFlags;
 
-struct FLICHEADERSTRUCT
+typedef enum FlicMode
+{
+    FLICMODE_BYTEPERPIXEL,
+    FLICMODE_MODEX,
+    FLICMODE_PLANAR,
+    FLICMODE_TRUECOLOR,
+    FLICMODE_HICOLOR
+} FlicMode;
+
+typedef struct FLICHEADERSTRUCT
 {
     S32 size; // Size of FLIC including this header
     U16 magic; // File type [0x1234, 0x9119, 0xaf11, 0xaf12, 0xaf43]
@@ -38,11 +47,11 @@ struct FLICHEADERSTRUCT
     S32 SoundChunkSize;
     S16 SoundNumPreRead;
     U16 padding4;
-};
+} FLICHEADERSTRUCT;
 
 typedef struct Flic
 {
-    S32 userFlags;
+    FlicUserFlags userFlags;
 
     S32 fsXc, fsYc;
     S32 fsXsize, fsYsize;
@@ -62,7 +71,7 @@ typedef struct Flic
     U32 fsPitch;
 
     LPDIRECTDRAWSURFACE4 fsSurface;
-    struct FLICHEADERSTRUCT fsHeader;
+    FLICHEADERSTRUCT fsHeader;
     lpFile filehandle;
 
     void* fsSPtr;
@@ -76,9 +85,12 @@ typedef struct Flic
 } Flic, *lpFlic;
 
 extern B32 Flic_Setup(const char* filename, lpFlic* fsp, FlicUserFlags flags);
+extern B32 Flic_LoadHeader(const char* filename, lpFlic* fsp);
+
 extern B32 Flic_Close(lpFlic fsp);
 
 extern U32 Flic_GetWidth(lpFlic fsp);
 extern U32 Flic_GetHeight(lpFlic fsp);
 
 extern B32 Flic_Animate(lpFlic fsp, Area2F* destArea, B32 advance, B32 trans);
+
