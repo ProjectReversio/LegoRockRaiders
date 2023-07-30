@@ -449,6 +449,7 @@ extern void Front_Menu_FreeMenu(lpMenu menu);
 extern B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light);
 
 extern lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverlay* linkedOverlay, S32 positionX, S32 positionY, SFX_ID sfxType);
+extern MenuOverlay_Type Front_Menu_GetOverlayType(lpMenuOverlay menuOverlay);
 
 extern void Front_LoadLevels(lpMenuSet mainMenuFull);
 extern lpLevelLink Front_LevelSet_LoadLevelLinks(lpLevelSet levelSet, const char* levelName);

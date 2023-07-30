@@ -2316,8 +2316,51 @@ B32 Front_Menu_LoadMenuImage(lpMenu menu, const char* filename, B32 light)
 
 lpMenuOverlay Front_Menu_CreateOverlay(const char* filename, lpMenuOverlay* linkedOverlay, S32 positionX, S32 positionY, SFX_ID sfxType)
 {
-    // TODO: Implement Front_Menu_CreateOverlay
-    return NULL;
+    lpMenuOverlay overlay = Mem_Alloc(sizeof(MenuOverlay));
+    memset(overlay, 0, sizeof(MenuOverlay));
+
+    // Okay... so don't use a filename that STARTS with "null"...?
+    if (_strnicmp(filename, "Null", 4) != 0)
+    {
+        if (filename != NULL)
+            overlay->filename = Front_Util_StrCpy(filename);
+
+        overlay->overlayType = Front_Menu_GetOverlayType(overlay);
+        overlay->field_1c = 0;
+        overlay->position.x = positionX;
+        overlay->position.y = positionY;
+        overlay->previous = *linkedOverlay;
+        overlay->sfxType = sfxType;
+
+        *linkedOverlay = overlay;
+    }
+
+    return overlay;
+}
+
+MenuOverlay_Type Front_Menu_GetOverlayType(lpMenuOverlay menuOverlay)
+{
+    char* ext = menuOverlay->filename;
+    char c = *ext;
+
+    // TODO: Memory access violation if there's no '.' extension.
+    while (c != '.')
+    {
+        char* curr = ext + 1;
+        ext++;
+        c = *curr;
+    }
+
+    if (_stricmp(".avi", ext) == 0)
+        return MenuOverlay_Type_Animation;
+
+    if (_stricmp(".bmp", ext) == 0)
+        return MenuOverlay_Type_Image;
+
+    if (_stricmp(".lws", ext) == 0)
+        return MenuOverlay_Type_Lws;
+
+    return MenuOverlay_Type_Flic;
 }
 
 void Front_LoadLevels(lpMenuSet mainMenuFull)
