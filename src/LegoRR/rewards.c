@@ -11,3 +11,9 @@ B32 Reward_Initialize()
     // TODO: Implement Reward_Initialize
     return FALSE;
 }
+
+lpRewardLevel Reward_GetRewardLevel()
+{
+    // TODO: Implement Reward_GetRewardLevel
+    return NULL;
+}

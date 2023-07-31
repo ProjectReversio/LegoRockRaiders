@@ -113,6 +113,8 @@ extern void DirectDraw_AdjustTextureUsage(U32* textureUsage);
 extern void DirectDraw_Blt8To16(LPDIRECTDRAWSURFACE4 target, LPDIRECTDRAWSURFACE4 source, LPPALETTEENTRY palette);
 extern U32 DirectDraw_GetColour(LPDIRECTDRAWSURFACE4 surf, U32 colour);
 
+extern B32 DirectDraw_SaveBMP(LPDIRECTDRAWSURFACE4 surface, const char* fname);
+
 inline LPDIRECTDRAW4 DirectDraw() { return directDrawGlobs.lpDirectDraw; }
 inline LPDIRECTDRAWSURFACE4 DirectDraw_fSurf() { return directDrawGlobs.fSurf; }
 inline LPDIRECTDRAWSURFACE4 DirectDraw_bSurf() { return directDrawGlobs.bSurf; }

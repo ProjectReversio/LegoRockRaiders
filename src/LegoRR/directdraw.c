@@ -511,3 +511,9 @@ U32 DirectDraw_GetColour(LPDIRECTDRAWSURFACE4 surf, U32 colour)
     // TODO: Implement DirectDraw_GetColour
     return 0;
 }
+
+B32 DirectDraw_SaveBMP(LPDIRECTDRAWSURFACE4 surface, const char* fname)
+{
+    // TODO: Implement DirectDraw_SaveBMP
+    return FALSE;
+}

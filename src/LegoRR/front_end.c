@@ -469,7 +469,16 @@ void Front_ScreenMenuLoop(lpMenu menu)
     }
     Front_FreeSaveSlotImages();
 
-    // TODO: Implement Front_ScreenMenuLoop
+    RewardLevel *rewardLevel;
+    if ((nextMenu == frontGlobs.saveMenuSet->menus[0] && -1 < g_saveMenuOutputSelectedIndex && (rewardLevel = Reward_GetRewardLevel(), rewardLevel != NULL)) &&
+        (rewardLevel = Reward_GetRewardLevel(), rewardLevel->saveHasCapture != 0))
+    {
+        const char* saveImage = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Menu::SaveImage", "Path", 0));
+
+        char buff[128];
+        sprintf(buff, "%s\\%d.dat", saveImage, g_saveMenuOutputSelectedIndex);
+        Image_SaveBMP(&rewardLevel->saveCaptureImage, buff);
+    }
 
     if (frontGlobs.overlayImageOrFlic != NULL)
     {

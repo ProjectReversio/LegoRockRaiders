@@ -95,3 +95,5 @@ extern void Image_UnlockSurface(lpImage image);
 extern U32 Image_GetPen255(lpImage image);
 extern void Image_SetPenZeroTrans(lpImage image);
 extern U32 Image_GetPixelMask(lpImage image);
+
+extern B32 Image_SaveBMP(lpImage image, const char* fname);

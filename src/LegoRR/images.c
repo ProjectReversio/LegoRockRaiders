@@ -675,3 +675,8 @@ U32 Image_GetPixelMask(lpImage image)
 
     return 0;
 }
+
+B32 Image_SaveBMP(lpImage image, const char* fname)
+{
+    return DirectDraw_SaveBMP(image->surface, fname);
+}
