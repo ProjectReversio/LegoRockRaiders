@@ -812,7 +812,22 @@ lpMenu Front_Menu_Update(F32 elapsed, lpMenu menu, B32 *menuTransition)
 
     if (menu == frontGlobs.saveMenuSet->menus[0] && g_saveMenuOverwriteShowing)
     {
-        // TODO: Implement Front_Menu_Update
+        char buff[2048];
+        sprintf(buff, frontGlobs.langOverwriteMessage);
+        g_saveMenuOverwriteResult = Front_SaveMenu_ConfirmMessage_FUN_004354f0(frontGlobs.langOverwriteTitle, buff, frontGlobs.langOverwriteOK, frontGlobs.langOverwriteCancel);
+        if (g_saveMenuOverwriteResult == 0)
+        {
+            frontGlobs.saveMenuKeepOpen = TRUE;
+            menu->closed = TRUE;
+            g_saveMenuOverwriteShowing = FALSE;
+            g_saveMenuOutputSelectedIndex = -1;
+        }
+        else if (g_saveMenuOverwriteResult == 1)
+        {
+            frontGlobs.saveMenuKeepOpen = FALSE;
+            menu->closed = TRUE;
+            g_saveMenuOverwriteShowing = FALSE;
+        }
     }
 
     if (frontGlobs.rockWipeAnim != NULL && (frontGlobs.rockWipeFlags & ROCKWIPE_FLAG_ANIMATING))
@@ -2944,6 +2959,12 @@ void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer)
 void Front_Save_LoadAllSaveFiles()
 {
     // TODO: Implement Front_Save_LoadAllSaveFiles
+}
+
+S32 Front_SaveMenu_ConfirmMessage_FUN_004354f0(const char* titleText, const char* message, const char* okText, const char* cancelText)
+{
+    // TODO: Implement Front_SaveMenu_ConfirmMessage_FUN_004354f0
+    return -1;
 }
 
 lpFront_Cache Front_Cache_Create(const char* filename)

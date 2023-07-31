@@ -502,6 +502,8 @@ extern void Front_Save_SetShouldClearUnlockedLevels(B32 state);
 extern void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer);
 extern void Front_Save_LoadAllSaveFiles();
 
+extern S32 Front_SaveMenu_ConfirmMessage_FUN_004354f0(const char* titleText, const char* message, const char* okText, const char* cancelText);
+
 extern lpFront_Cache Front_Cache_Create(const char* filename);
 extern lpFront_Cache Front_Cache_FindByName(const char* filename);
 extern lpFont Front_Cache_LoadFont(const char* filename);
