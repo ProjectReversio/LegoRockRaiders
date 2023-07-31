@@ -129,4 +129,12 @@ extern B32 FlicBRunDepackHiColor(lpFlic fsp);
 extern B32 FlicBRunDepackHiColorFlic32k(lpFlic fsp);
 extern B32 FlicBRunDepackHiColorFlic(lpFlic fsp);
 
+extern void FlicCopyHiColorFlic(lpFlic fsp);
+extern void FlicCopyBytePerPixel(lpFlic fsp);
+extern void FlicCopyHiColor(lpFlic fsp);
+
+extern U16 getFlicCol(U8 n, lpFlic fsp);
+
+#define FHCOL(n) getFlicCol(n, fsp)
+
 #define DoScreenConversion(fs, val) ((fs->is15bit) ? ((((val) & 0xFFE0) >> 1) | ((val) & 0x1F)) : (val))

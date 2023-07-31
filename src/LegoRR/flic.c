@@ -670,7 +670,16 @@ B32 Flic_BrunDepack(lpFlic fsp)
 
 B32 Flic_Copy(lpFlic fsp)
 {
-    // TODO: Implement Flic_Copy
+    if (fsp->fsBitPlanes == 16)
+    {
+        FlicCopyHiColorFlic(fsp);
+        return TRUE;
+    }
+    if (fsp->fsDisplayMode == FLICMODE_BYTEPERPIXEL)
+        FlicCopyBytePerPixel(fsp);
+    if (fsp->fsDisplayMode == FLICMODE_HICOLOR)
+        FlicCopyHiColor(fsp);
+
     return TRUE;
 }
 
@@ -718,7 +727,92 @@ void FlicDeltaWordBytePerPixel(lpFlic fsp)
 
 void FlicDeltaWordHiColor(lpFlic fsp)
 {
-    // TODO: Implement FlicDeltaWordHiColor
+    U8 *dst;
+    U8 *src, w1, w2, mfval;
+    U16 wrd, cnt, ctrl, cpy, mcnt, mflag, line, height, offs;
+
+    dst = fsp->fsSPtr;
+    height = fsp->fsYsize;
+
+    src = fsp->fsSource;
+    src += 6;
+
+    line = 0;
+    cnt = *(U16*)src;
+    src += 2;
+
+    while (cnt)
+    {
+        dst = (U8*)(fsp->fsSPtr) + ((fsp->fsPitch) * line);
+
+        ctrl = *(U16*)src;
+        ctrl >>= 12;
+        ctrl &= 0xc;
+        if (ctrl == 0xc)
+        {
+            wrd = *(U16*)src;
+            src += 2;
+            wrd = 65536 - wrd;
+
+            line += wrd;
+        }
+        else if (ctrl == 0x4)
+        {
+            return;
+        }
+        else
+        {
+            mflag = 0;
+            if (ctrl == 0x8)
+            {
+                mfval = *src;
+                src += 2;
+                mflag = 1;
+            }
+            mcnt = *(U16*)src;
+            src += 2;
+            while(mcnt)
+            {
+                offs = *src++;
+                dst += 2 * offs;
+                cpy = *src++;
+                if ((cpy & 0x80))
+                {
+                    cpy = 256 - cpy;
+                    w1 = *src++;
+                    w2 = *src++;
+                    while (cpy)
+                    {
+                        *(U16*)dst = FHCOL(w1);
+                        dst += 2;
+                        *(U16*)dst = FHCOL(w2);
+                        dst += 2;
+
+                        cpy--;
+                    }
+                }
+                else
+                {
+                    while (cpy)
+                    {
+                        w1 = *src++;
+                        w2 = *src++;
+                        *(U16*)dst = FHCOL(w1);
+                        dst += 2;
+                        *(U16*)dst = FHCOL(w2);
+                        dst += 2;
+
+                        cpy--;
+                    }
+                }
+                mcnt--;
+            }
+            if (mflag)
+                *(U16*)dst = FHCOL(mfval);
+            cnt--;
+            line++;
+        }
+    }
 }
 
 void FlicDeltaWordHiColorDZ(lpFlic fsp)
@@ -825,7 +919,54 @@ B32 FlicBRunDepackBytePerPixel(lpFlic fsp)
 
 B32 FlicBRunDepackHiColor(lpFlic fsp)
 {
-    // TODO: Implement FlicBRunDepackHiColor
+    U8* src, wrd;
+    U16 *dst;
+    U16 cnt, width, height, line;
+
+    // 421 6259 karl
+
+    src = fsp->fsSource;
+    src += 6;
+
+    height = fsp->fsYsize;
+    line = 0;
+    src++;
+
+    while (line < height)
+    {
+        width = fsp->fsXsize;
+        dst = (U16*)(fsp->fsSPtr) + (fsp->fsPitch / 2) * line;
+
+        while (width > 0)
+        {
+            cnt = *src++;
+
+            if (cnt < 128)
+            {
+                width -= cnt;
+                wrd = *src++;
+                while (cnt)
+                {
+                    *dst++ = FHCOL(wrd);
+                    cnt--;
+                }
+            }
+            else
+            {
+                cnt = 256 - cnt;
+                width -= cnt;
+                while (cnt)
+                {
+                    wrd = *src++;
+                    *dst++ = FHCOL(wrd);
+                    cnt--;
+                }
+            }
+        }
+
+        line++;
+        src++;
+    }
     return TRUE;
 }
 
@@ -891,4 +1032,31 @@ B32 FlicBRunDepackHiColorFlic32k(lpFlic fsp)
 B32 FlicBRunDepackHiColorFlic(lpFlic fsp)
 {
     return TRUE;
+}
+
+void FlicCopyHiColorFlic(lpFlic fsp)
+{
+    // Empty on purpose
+}
+
+void FlicCopyBytePerPixel(lpFlic fsp)
+{
+    // Empty on purpose
+}
+
+void FlicCopyHiColor(lpFlic fsp)
+{
+    // Empty on purpose
+}
+
+U16 getFlicCol(U8 n, lpFlic fsp)
+{
+    U16 ret;
+    U16 *ctab;
+
+    ctab = fsp->fsPalette64k;
+
+    ret = ctab[n];
+
+    return ret;
 }
