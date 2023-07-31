@@ -951,6 +951,21 @@ B32 Sound3D_CheckAlreadyExists(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER s
     return FALSE;
 }
 
+F32 Sound3D_GetSamplePlayTime(S32 handle)
+{
+    lpSound3D_SoundData soundData;
+
+    if (handle == -1)
+        return 0.0f;
+
+    soundData = &sound3DGlobs.soundTable[handle];
+
+    if (soundData->flags & SOUND3D_FLAG_STREAM)
+        return ((F32)soundData->size / (F32)soundData->avgBytesPerSec);
+    else
+        return ((F32)soundData->size / (F32)soundData->pwf->nAvgBytesPerSec);
+}
+
 void Sound3D_AddSoundRecord(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUNDBUFFER soundBuff, LPDIRECTSOUND3DBUFFER sound3DBuff)
 {
     lpSound3D_SoundRecord temp;

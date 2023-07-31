@@ -159,6 +159,8 @@ extern B32 Sound3D_Stream_FillDataBuffer(B32 looping);
 
 extern B32 Sound3D_CheckAlreadyExists(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff);
 
+extern F32 Sound3D_GetSamplePlayTime(S32 handle);
+
 extern void Sound3D_AddSoundRecord(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUNDBUFFER soundBuff, LPDIRECTSOUND3DBUFFER sound3DBuff);
 extern B32 Sound3D_RecurseRemoveSoundRecord(LPDIRECT3DRMFRAME3 owner, LPDIRECTSOUND3DBUFFER sound3DBuff, lpSound3D_SoundRecord record);
 extern void Sound3D_RemoveSoundRecord(LPDIRECT3DRMFRAME3 frame, LPDIRECTSOUND3DBUFFER sound3DBuff);

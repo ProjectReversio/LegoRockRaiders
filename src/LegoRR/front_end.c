@@ -2817,7 +2817,43 @@ void Front_Callback_SelectMissionItem(F32 elapsedAbs, S32 selectIndex)
 
 void Front_Callback_SelectTutorialItem(F32 elapsedAbs, S32 selectIndex)
 {
-    // TODO: Implement Front_Callback_SelectTutorialItem
+    LevelLink *info = Front_LevelLink_FindByLinkIndex(frontGlobs.startTutorialLink, selectIndex);
+    char* langLevelName = frontGlobs.tutorialLevels.langNames[info->setIndex];
+    frontGlobs.levelSelectLastNumber = frontGlobs.levelSelectHoverNumber;
+    frontGlobs.levelSelectHoverNumber = info->setIndex + 1;
+    // Fallback to config level ID name if no language name is defined.
+    if (langLevelName == NULL || *langLevelName == '\0')
+        langLevelName = frontGlobs.tutorialLevels.idNames[info->setIndex];
+
+    if (frontGlobs.saveLevelWnd->textWindow != NULL && g_levelSelectPrinting)
+    {
+        TextWindow_PrintF(frontGlobs.saveLevelWnd->textWindow, langLevelName);
+        if (frontGlobs.levelSelectHoverNumber != frontGlobs.levelSelectLastNumber)
+        {
+            frontGlobs.levelSelectSFXStopped = TRUE;
+            frontGlobs.levelSelectSFXTimer = 0.0f;
+        }
+
+        if (frontGlobs.levelSelectSFXStopped && (frontGlobs.levelSelectSFXTimer = elapsedAbs + frontGlobs.levelSelectSFXTimer, 500.0f < frontGlobs.levelSelectSFXTimer * 25.0f))
+        {
+            if (Front_LevelSelect_PlayTutoLevelNameSFX(frontGlobs.levelSelectHoverNumber))
+                frontGlobs.levelSelectSFXStopped = FALSE;
+        }
+    }
+
+    g_levelSelectPrinting = FALSE;
+}
+
+B32 Front_LevelSelect_PlayTutoLevelNameSFX(S32 levelNumber)
+{
+    SFX_ID sfxType;
+    char buff[128];
+
+    sprintf(buff, "Stream_LevelName_TLevel%d", levelNumber);
+    if (SFX_GetType(buff, &sfxType))
+        return SFX_Random_SetAndPlayGlobalSample(sfxType, NULL);
+
+    return FALSE;
 }
 
 void Front_Callback_SelectLoadSave(F32 elapsedAbs, S32 selectIndex)

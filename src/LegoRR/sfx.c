@@ -293,6 +293,34 @@ void SFX_SetSoundOn_AndStopAll(B32 soundOn)
     SFX_SetSoundOn(soundOn, TRUE);
 }
 
+B32 SFX_Random_SetAndPlayGlobalSample(SFX_ID sfxID, S32* handle)
+{
+    if (sfxGlobs.globalSampleDuration <= 0.0f)
+    {
+        sfxGlobs.globalSampleSoundHandle.handle = SFX_Random_PlaySoundNormal(sfxID, FALSE);
+        if (sfxGlobs.globalSampleSoundHandle.handle != -1)
+        {
+            F32 playTime = SFX_Random_GetSamplePlayTime(sfxID);
+            sfxGlobs.globalSampleSFXType = sfxID;
+            sfxGlobs.globalSampleDuration = playTime * 25.0f;
+            if (handle != NULL)
+                *handle = sfxGlobs.globalSampleSoundHandle.handle;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+F32 SFX_Random_GetSamplePlayTime(SFX_ID sfxID)
+{
+    S32 rngSound3DHandle = SFX_Random_GetSound3DHandle(sfxID);
+    if (rngSound3DHandle != 0)
+        return Sound3D_GetSamplePlayTime(rngSound3DHandle);
+
+    return 0.0f;
+}
+
 void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode)
 {
     if (sfxGlobs.soundQueueCount_1 < 10)

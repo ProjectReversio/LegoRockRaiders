@@ -127,6 +127,9 @@ extern B32 SFX_IsSoundOn();
 extern void SFX_SetSoundOn(B32 soundOn, B32 stopAll);
 extern void SFX_SetSoundOn_AndStopAll(B32 soundOn);
 
+extern B32 SFX_Random_SetAndPlayGlobalSample(SFX_ID sfxID, S32* handle);
+extern F32 SFX_Random_GetSamplePlayTime(SFX_ID sfxID);
+
 extern void SFX_AddToQueue(SFX_ID sfxId, SoundMode mode);
 
 extern void SFX_Update(F32 elapsed);
