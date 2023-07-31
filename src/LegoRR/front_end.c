@@ -2880,7 +2880,85 @@ void Front_Callback_CycleAutoGameSpeed(S32 cycle_On_Off)
 
 void Front_Callback_SelectMissionItem(F32 elapsedAbs, S32 selectIndex)
 {
-    // TODO: Implement Front_Callback_SelectMissionItem
+    char buffLevel[64]; // Used to display level number (1-indexed) with `-testercall` cmd option.
+    char buffMsg[300];
+
+    lpMenuTextWindow menuTextWnd = frontGlobs.saveLevelWnd;
+    lpFont font = frontGlobs.mainMenuSet->menus[1]->menuFont;
+    lpLevelLink link = Front_LevelLink_FindByLinkIndex(frontGlobs.startMissionLink, selectIndex);
+    const char* langName = frontGlobs.missionLevels.langNames[link->setIndex];
+
+    memset(buffLevel, 0, sizeof(buffLevel));
+
+    lpSaveData currSave = Front_Save_GetCurrentSaveData();
+    frontGlobs.levelSelectLastNumber = frontGlobs.levelSelectHoverNumber;
+    frontGlobs.levelSelectHoverNumber = link->setIndex + 1;
+
+    if ((mainGlobs.flags & MAIN_FLAG_TESTERCALL) != MAIN_FLAG_NONE)
+        sprintf(buffLevel, " (Level %d)", link->setIndex + 1);
+
+    // Fallback to ID name when language name (cfg: FullName) isn't defined.
+    if (langName == NULL || *langName == '\0')
+        langName = frontGlobs.missionLevels.idNames[link->setIndex];
+
+    if (menuTextWnd->textWindow == NULL)
+    {
+        // HARDCODED SCREEN RESOLUTION!! (390)
+        Front_LevelSelect_LevelNamePrintF(font, (S32) mainGlobs.appWidth / 2 - (S32) (Font_GetStringWidth(font, langName)) / 2, 390, langName);
+    }
+    else if (g_levelSelectPrinting && (TextWindow_PrintF(menuTextWnd->textWindow, langName), mainGlobs.flags & MAIN_FLAG_TESTERCALL) != MAIN_FLAG_NONE)
+        TextWindow_PrintF(menuTextWnd->textWindow, buffLevel);
+
+    if (currSave != NULL && (currSave->missionsTable[link->setIndex].flags & SAVEREWARD_FLAG_COMPLETED) &&
+                            !(currSave->missionsTable[link->setIndex].flags & SAVEREWARD_FLAG_TUTORIAL))
+    {
+        S32 score = Front_Save_GetLevelScore(link->setIndex, currSave);
+        const char* completeText = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Menu", "Level_Completed", 0));
+        sprintf(buffMsg, " %s (%i)", completeText, score);
+        Front_Util_StringReplaceChar(buffMsg, '_', ' ');
+    }
+    else
+    {
+        const char* incompleteText = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Menu", "Level_Incomplete", 0));
+
+        sprintf(buffMsg, " %s", incompleteText);
+        Front_Util_StringReplaceChar(buffMsg, '_', ' ');
+    }
+
+    if (menuTextWnd->textWindow != NULL && g_levelSelectPrinting)
+    {
+        // TODO: Ahhh, lovely... nested printf calls without sanitization,
+        //  it may be possible to intentionally corrupt memory with this.
+        TextWindow_PrintF(menuTextWnd->textWindow, buffMsg);
+
+        if (frontGlobs.levelSelectHoverNumber != frontGlobs.levelSelectLastNumber)
+        {
+            frontGlobs.levelSelectSFXStopped = TRUE;
+            frontGlobs.levelSelectSFXTimer = 0.0f;
+        }
+
+        if (frontGlobs.levelSelectSFXStopped)
+        {
+            frontGlobs.levelSelectSFXTimer += elapsedAbs;
+
+            if ((frontGlobs.levelSelectSFXTimer * STANDARD_FRAMERATE) > 500.0f)
+            {
+                B32 soundResult;
+
+                // TODO: Uhhh, well then...
+                //  tutorial levels are kind of hardcoded to a max of 9...???
+                if ((S32)frontGlobs.levelSelectHoverNumber <= 8)
+                    soundResult = Front_LevelSelect_PlayTutoLevelNameSFX(frontGlobs.levelSelectHoverNumber);
+                else
+                    soundResult = Front_LevelSelect_PlayLevelNameSFX(frontGlobs.levelSelectHoverNumber - 8); // levelSelectHoverNumber - NUM_TUTORIALS
+
+                if (soundResult)
+                    frontGlobs.levelSelectSFXStopped = FALSE;
+            }
+        }
+    }
+
+    g_levelSelectPrinting = FALSE;
 }
 
 void Front_Callback_SelectTutorialItem(F32 elapsedAbs, S32 selectIndex)
@@ -2910,6 +2988,18 @@ void Front_Callback_SelectTutorialItem(F32 elapsedAbs, S32 selectIndex)
     }
 
     g_levelSelectPrinting = FALSE;
+}
+
+B32 Front_LevelSelect_PlayLevelNameSFX(S32 levelNumber)
+{
+    SFX_ID sfxType;
+    char buff[128];
+
+    sprintf(buff, "Stream_LevelName_Level%d", levelNumber);
+    if (SFX_GetType(buff, &sfxType))
+        return SFX_Random_SetAndPlayGlobalSample(sfxType, NULL);
+
+    return FALSE;
 }
 
 B32 Front_LevelSelect_PlayTutoLevelNameSFX(S32 levelNumber)
@@ -3002,6 +3092,12 @@ void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer)
 void Front_Save_LoadAllSaveFiles()
 {
     // TODO: Implement Front_Save_LoadAllSaveFiles
+}
+
+S32 Front_Save_GetLevelScore(U32 index, lpSaveData saveData)
+{
+    // TODO: Implement Front_Save_GetLevelScore
+    return 0;
 }
 
 S32 Front_SaveMenu_ConfirmMessage_FUN_004354f0(const char* titleText, const char* message, const char* okText, const char* cancelText)

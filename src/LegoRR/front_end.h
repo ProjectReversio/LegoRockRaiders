@@ -486,6 +486,7 @@ extern void Front_Callback_CycleAutoGameSpeed(S32 cycle_On_Off);
 extern void Front_Callback_SelectMissionItem(F32 elapsedAbs, S32 selectIndex);
 extern void Front_Callback_SelectTutorialItem(F32 elapsedAbs, S32 selectIndex);
 
+extern B32 Front_LevelSelect_PlayLevelNameSFX(S32 levelNumber);
 extern B32 Front_LevelSelect_PlayTutoLevelNameSFX(S32 levelNumber);
 
 extern void Front_Callback_SelectLoadSave(F32 elapsedAbs, S32 selectIndex);
@@ -501,6 +502,7 @@ extern S32 Front_CalcSliderCDVolume();
 extern void Front_Save_SetShouldClearUnlockedLevels(B32 state);
 extern void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer);
 extern void Front_Save_LoadAllSaveFiles();
+extern S32 Front_Save_GetLevelScore(U32 index, lpSaveData saveData);
 
 extern S32 Front_SaveMenu_ConfirmMessage_FUN_004354f0(const char* titleText, const char* message, const char* okText, const char* cancelText);
 
