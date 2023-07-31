@@ -106,3 +106,27 @@ extern B32 Flic_FrameChunk(lpFlic fsp);
 extern S32 Flic_LoadPointers(lpFlic fsp);
 extern S32 Flic_LoadPalette64(lpFlic fsp);
 extern S32 Flic_DoChunk(lpFlic fsp);
+
+extern B32 Flic_Palette256(lpFlic fsp);
+extern B32 Flic_DeltaWord(lpFlic fsp);
+extern B32 Flic_Palette64(lpFlic fsp);
+extern B32 Flic_DeltaByte(lpFlic fsp);
+extern B32 Flic_Black(lpFlic fsp);
+extern B32 Flic_BrunDepack(lpFlic fsp);
+extern B32 Flic_Copy(lpFlic fsp);
+extern S32 Flic_Unpack(lpFlic fsp);
+
+extern void FlicCreateHiColorTable(lpFlic fsp);
+
+extern void FlicDeltaWordBytePerPixel(lpFlic fsp);
+extern void FlicDeltaWordHiColor(lpFlic fsp);
+extern void FlicDeltaWordHiColorDZ(lpFlic fsp);
+extern void FlicDeltaWordHiColorFlic32k(lpFlic fsp);
+extern void FlicDeltaWordHiColorFlic(lpFlic fsp);
+
+extern B32 FlicBRunDepackBytePerPixel(lpFlic fsp);
+extern B32 FlicBRunDepackHiColor(lpFlic fsp);
+extern B32 FlicBRunDepackHiColorFlic32k(lpFlic fsp);
+extern B32 FlicBRunDepackHiColorFlic(lpFlic fsp);
+
+#define DoScreenConversion(fs, val) ((fs->is15bit) ? ((((val) & 0xFFE0) >> 1) | ((val) & 0x1F)) : (val))

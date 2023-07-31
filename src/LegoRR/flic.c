@@ -514,10 +514,381 @@ S32 Flic_DoChunk(lpFlic fsp)
     chunktype = (*((S16*)(fsp->fsSource) + 2));
     switch (chunktype)
     {
-        // TODO: Implement Flic_DoChunk
+        case 0x0004:
+            Flic_Palette256(fsp);
+            flag = 1;
+            break;
+        case 0x0007:
+            Flic_DeltaWord(fsp);
+            flag = 1;
+            break;
+        case 0x000b:
+            Flic_Palette64(fsp);
+            flag = 1;
+            break;
+        case 0x000c:
+            Flic_DeltaByte(fsp);
+            flag = 1;
+            break;
+        case 0x000d:
+            Flic_Black(fsp);
+            flag = 1;
+            break;
+        case 0x000f:
+            Flic_BrunDepack(fsp);
+            flag = 1;
+            break;
+        case 0x0010:
+            Flic_Copy(fsp);
+            flag = 1;
+            break;
+        case 0x0019:
+            Flic_BrunDepack(fsp);
+            flag = 1;
+            break;
+        case 0x001b:
+            Flic_DeltaWord(fsp);
+            flag = 1;
+            break;
+        case 0x5344:
+            //Flic_SoundChunk(fsp);
+            flag = 1;
+            break;
+        case 0x5555:
+            Flic_Unpack(fsp);
+            flag = 1;
+            break;
         default:
             break;
     }
 
     return flag;
+}
+
+B32 Flic_Palette256(lpFlic fsp)
+{
+    U8* src;
+    U8* dst, col;
+    U16 cnt, indx, ccnt;
+
+    src = fsp->fsSource;
+    src += 6;
+
+    cnt = *(U16*)src;
+    src += 2;
+
+    dst = (U16*)&fsp->fsPalette256;
+
+    while (cnt)
+    {
+        indx = *src++;
+        dst += (indx * 3);
+        ccnt = *src++;
+
+        if (!ccnt)
+        {
+            cnt = 1;
+            ccnt = 256;
+            dst = (U8*)&fsp->fsPalette256;
+        }
+        ccnt *= 3;
+        while (ccnt)
+        {
+            col = *src++;
+            col >>= 2;
+
+            *dst++ = col;
+            ccnt--;
+        }
+        cnt--;
+    }
+
+    if (fsp->fsDisplayMode == FLICMODE_HICOLOR)
+    {
+        FlicCreateHiColorTable(fsp);
+    }
+    return TRUE;
+}
+
+B32 Flic_DeltaWord(lpFlic fsp)
+{
+    if (fsp->fsHeader.depth == 8)
+    {
+        if (fsp->fsDisplayMode == FLICMODE_BYTEPERPIXEL)
+            FlicDeltaWordBytePerPixel(fsp);
+        if (fsp->fsDisplayMode == FLICMODE_HICOLOR)
+            FlicDeltaWordHiColor(fsp);
+    }
+    else
+    {
+        if (fsp->fsHeader.depth == 16)
+        {
+            if (fsp->fsHeader.magic == 0x1234)
+                FlicDeltaWordHiColorDZ(fsp);
+            else if (fsp->fsHeader.magic == 0xaf43)
+                FlicDeltaWordHiColorFlic32k(fsp);
+            else
+                FlicDeltaWordHiColorFlic(fsp);
+        }
+    }
+    return TRUE;
+}
+
+B32 Flic_Palette64(lpFlic fsp)
+{
+    return TRUE;
+}
+
+B32 Flic_DeltaByte(lpFlic fsp)
+{
+    return TRUE;
+}
+
+B32 Flic_Black(lpFlic fsp)
+{
+    return TRUE;
+}
+
+B32 Flic_BrunDepack(lpFlic fsp)
+{
+    if (fsp->fsHeader.depth == 8)
+    {
+        if (fsp->fsDisplayMode == FLICMODE_BYTEPERPIXEL)
+            FlicBRunDepackBytePerPixel(fsp);
+        if (fsp->fsDisplayMode == FLICMODE_HICOLOR)
+            FlicBRunDepackHiColor(fsp);
+    }
+    else if (fsp->fsHeader.depth == 16)
+    {
+        if (fsp->fsHeader.magic == 0xaf43)
+            FlicBRunDepackHiColorFlic32k(fsp);
+        else
+            FlicBRunDepackHiColorFlic(fsp);
+    }
+    return TRUE;
+}
+
+B32 Flic_Copy(lpFlic fsp)
+{
+    // TODO: Implement Flic_Copy
+    return TRUE;
+}
+
+S32 Flic_Unpack(lpFlic fsp)
+{
+    return 0;
+}
+
+void FlicCreateHiColorTable(lpFlic fsp)
+{
+    U8* src;
+    U16 *dst, wrd, col;
+    S32 i;
+
+    src = (U8*)&fsp->fsPalette256;
+    dst = (U16*)&fsp->fsPalette64k;
+
+    for (i = 0; i < 256; i++)
+    {
+        col = src[0];
+        col >>= 1;
+        col <<= 11;
+
+        wrd = src[1];
+        wrd <<= 5;
+
+        col |= wrd;
+
+        wrd = src[2];
+        wrd >>= 1;
+
+        col |= wrd;
+
+        *dst++ = col;
+
+        src += 3;
+    }
+    fsp->fsPalette64k[0] = 0x00;
+}
+
+void FlicDeltaWordBytePerPixel(lpFlic fsp)
+{
+    // Empty on purpose
+}
+
+void FlicDeltaWordHiColor(lpFlic fsp)
+{
+    // TODO: Implement FlicDeltaWordHiColor
+}
+
+void FlicDeltaWordHiColorDZ(lpFlic fsp)
+{
+    // Empty on purpose
+}
+
+void FlicDeltaWordHiColorFlic32k(lpFlic fsp)
+{
+    U8* dst;
+    U8* src;
+    U16 wrd, cnt, ctrl, cpy, mcnt, tmp, mflag, mfval, line, height;
+
+    dst = fsp->fsSPtr;
+    height = fsp->fsYsize;
+
+    src = fsp->fsSource;
+    src += 6;
+
+    line = 0;
+    cnt = *(U16*)src;
+    src += 2;
+    while (cnt)
+    {
+        dst = (U8*)(fsp->fsSPtr) + ((fsp->fsPitch) * line);
+
+        ctrl = *(U16*)src;
+        ctrl >>= 12;
+        ctrl &= 0xc;
+        if (ctrl == 0xc)
+        {
+            wrd = *(U16*)src;
+            src += 2;
+            wrd = 65536 - wrd;
+
+            line += wrd;
+        }
+        else if (ctrl == 0x4)
+        {
+            return;
+        }
+        else
+        {
+            mflag = 0;
+            if (ctrl == 0x8)
+            {
+                mfval = DoScreenConversion(fsp, *(U16*)src);
+                src += 2;
+                mflag = 1;
+            }
+            mcnt = *(U16*)src;
+            src += 2;
+            while (mcnt)
+            {
+                dst += 2 * (*src++);
+                cpy = *src++;
+                if ((cpy & 0x80))
+                {
+                    tmp = *(U16*)src;
+                    src += 2;
+                    wrd = ((tmp & 0xffe0) << 1);
+                    wrd |= tmp & 0x1f;
+                    cpy = 256 - cpy;
+                    while (cpy)
+                    {
+                        *(U16*)dst = DoScreenConversion(fsp, wrd);
+                        dst += 2;
+                        cpy--;
+                    }
+                }
+                else
+                {
+                    while (cpy)
+                    {
+                        tmp = *(U16*)src;
+                        src += 2;
+                        wrd = ((tmp & 0xffe0) << 1);
+                        wrd |= tmp & 0x1f;
+                        *(U16*) dst = DoScreenConversion(fsp, wrd);
+                        dst += 2;
+
+                        cpy--;
+                    }
+                }
+                mcnt--;
+            }
+            if (mflag)
+                *dst = (char)mfval;
+            line++;
+            cnt--;
+        }
+    }
+}
+
+void FlicDeltaWordHiColorFlic(lpFlic fsp)
+{
+    // Empty on purpose
+}
+
+B32 FlicBRunDepackBytePerPixel(lpFlic fsp)
+{
+    return TRUE;
+}
+
+B32 FlicBRunDepackHiColor(lpFlic fsp)
+{
+    // TODO: Implement FlicBRunDepackHiColor
+    return TRUE;
+}
+
+B32 FlicBRunDepackHiColorFlic32k(lpFlic fsp)
+{
+    S16 height, width;
+    U8* src;
+    U16 wrd, cnt, tmp, line;
+    U16 *dst;
+
+    dst = fsp->fsSPtr;
+    src = fsp->fsSource;
+    src += 6;
+    src++;
+
+    line = 0;
+    height = fsp->fsYsize;
+    while (line < height)
+    {
+        width = fsp->fsXsize;
+        dst = (U16*)(fsp->fsSPtr) + ((fsp->fsPitch / 2) * line);
+
+        while (width > 0)
+        {
+            cnt = *src++;
+            if (cnt < 128)
+            {
+                width -= cnt;
+                wrd = *(U16*)src;
+                src += 2;
+                tmp = ((wrd & 0xffe0) << 1);
+                tmp |= wrd & 0x1f;
+                wrd = tmp;
+                while (cnt)
+                {
+                    *dst++ = DoScreenConversion(fsp, wrd);
+                    cnt--;
+                }
+            }
+            else
+            {
+                cnt = 256 - cnt;
+                width -= cnt;
+                while (cnt)
+                {
+                    tmp = *(U16*)src;
+                    src += 2;
+                    wrd = ((tmp & 0xffe0) << 1);
+                    wrd |= tmp & 0x1f;
+                    *dst++ = DoScreenConversion(fsp, wrd);
+
+                    cnt--;
+                }
+            }
+        }
+
+        src++;
+        line++;
+    }
+    return TRUE;
+}
+
+B32 FlicBRunDepackHiColorFlic(lpFlic fsp)
+{
+    return TRUE;
 }
