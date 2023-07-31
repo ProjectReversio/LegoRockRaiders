@@ -1101,9 +1101,10 @@ void Front_Menu_UpdateOverlays(lpMenu menu)
             }
         } else
         {
-            if (-1 < g_saveMenuOverlayState)
+            if (g_saveMenuOverlayState >= 0)
             {
-                for (U32 i = 4 - g_saveMenuOverlayState; i != 0; i--)
+                S32 index = 4 - g_saveMenuOverlayState;
+                for (S32 i = 0; i < index; i++)
                     overlay = overlay->previous;
 
                 if (Flic_Setup(overlay->filename, &frontGlobs.overlayImageOrFlic, FLICDISK))
@@ -1118,11 +1119,8 @@ void Front_Menu_UpdateOverlays(lpMenu menu)
                 g_saveMenuOverlayPlaying = TRUE;
                 g_saveMenuOverlayState = -1;
                 g_saveMenuSelectedIndex = -1;
-
-                return;
             }
-
-            if (-1 < g_saveMenuSelectedIndex)
+            else if (g_saveMenuSelectedIndex >= 0)
             {
                 g_saveMenuOverlayState = g_saveMenuSelectedIndex;
                 g_saveMenu_UnkNextMenu = NULL;
