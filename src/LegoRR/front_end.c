@@ -2953,7 +2953,6 @@ void Front_Save_SetShouldClearUnlockedLevels(B32 state)
 void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer)
 {
     // TODO: Implement Front_Save_GetLevelCompleteWithPoints
-    sprintf(buffer, "temp"); // TEMP
 }
 
 void Front_Save_LoadAllSaveFiles()
