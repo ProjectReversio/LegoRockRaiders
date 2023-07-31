@@ -726,7 +726,14 @@ B32 Lego_MainLoop(F32 time)
 
 B32 Lego_LoadLevel(const char* levelName)
 {
+    Front_PlayLevelMovie(levelName, TRUE);
+
     // TODO: Implement Lego_LoadLevel
+
+    Loader_Display_Loading_Bar(levelName);
+
+    // TODO: Implement Lego_LoadLevel
+    
     return TRUE;
 }
 

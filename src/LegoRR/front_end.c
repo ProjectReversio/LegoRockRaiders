@@ -91,6 +91,24 @@ void Front_PlayIntroSplash(const char* imageKey, B32 skippable, const char* time
     Image_Remove(img);
 }
 
+void Front_PlayLevelMovie(const char* levelName, B32 skippable)
+{
+    if (levelName == NULL)
+        return;
+
+    const char* videoName = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "Video", 0));
+    if (videoName == NULL)
+        return;
+
+    if (File_Exists(videoName))
+    {
+        Movie_t* mov = Movie_Load(videoName);
+        Front_PlayMovie(mov, skippable);
+        Movie_Free(mov);
+    }
+    Mem_Free(videoName);
+}
+
 void Front_PlayMovie(Movie_t* mov, B32 skippable)
 {
     // HARDCODED SCREEN RESOLUTION
