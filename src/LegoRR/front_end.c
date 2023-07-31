@@ -1217,6 +1217,52 @@ void Front_Menu_DrawMenuImage(lpMenu menu, B32 light)
 
 void Front_Menu_DrawLoadSaveText(lpMenu* pMenu, lpMenu* currMenu, lpMenu* nextMenu)
 {
+    lpMenu menu = *pMenu;
+
+    // Is this the Load Game or Save Game menu?
+    if ((menu == frontGlobs.mainMenuSet->menus[3]) || (menu == frontGlobs.mainMenuSet->menus[0]))
+    {
+        // Is this the Load Game menu?
+        if ((menu == frontGlobs.saveMenuSet->menus[0]) && g_saveMenuSelectedIndex >= 0)
+        {
+            // TODO: Implement Front_Menu_DrawLoadSaveText
+        }
+
+        TextWindow_Clear(frontGlobs.saveTextWnd->textWindow);
+        TextWindow_PrintF(frontGlobs.saveTextWnd->textWindow, "\n");
+
+        if (g_saveMenuOverlayState == -2 || g_saveMenuOverlayState == -1)
+        {
+            if (g_saveMenuOverlayState == -2)
+            {
+                if (g_saveMenu_UnkNextMenu != NULL)
+                {
+                    *currMenu = g_saveMenu_UnkNextMenu;
+                    g_saveMenu_UnkNextMenu = NULL;
+                }
+
+                g_frontSelectHoverIndex = -1;
+                g_saveMenuSelectingIndex = -1;
+            }
+
+            *nextMenu = NULL;
+            g_saveMenuSelectedIndex = -1;
+
+            const char* format = frontGlobs.saveTextWnd->LoadText;
+            if (menu != frontGlobs.mainMenuSet->menus[3])
+                format = frontGlobs.saveTextWnd->SaveText;
+
+            TextWindow_PrintF(frontGlobs.saveTextWnd->textWindow, format);
+        }
+        else
+        {
+            g_saveMenu_UnkNextMenu = *currMenu;
+            *currMenu = *nextMenu;
+            g_saveMenuSelectingIndex = g_saveMenuOverlayState;
+        }
+
+        // TODO: Implement Front_Menu_DrawLoadSaveText
+    }
     // TODO: Implement Front_Menu_DrawLoadSaveText
 }
 
