@@ -368,11 +368,13 @@ extern B32 Gods_Go(const char* programName);
 extern B32 Lego_Initialize();
 extern B32 Lego_Shutdown_Full();
 extern B32 Lego_Shutdown_Quick();
-extern B32 Lego_MainLoop(F32 time);
+extern B32 Lego_MainLoop(F32 elapsed);
 
 extern B32 Lego_LoadLevel(const char* levelName);
 
 extern void Lego_SetSoundOn(B32 isSoundOn);
+extern void Lego_SetMusicOn(B32 isMusicOn);
+extern void Lego_CDTrackPlayNextCallback();
 
 extern void Lego_SetGameSpeed(F32 newGameSpeed);
 

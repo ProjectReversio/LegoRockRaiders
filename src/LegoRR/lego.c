@@ -41,6 +41,7 @@
 #include "stats.h"
 #include "dependencies.h"
 #include "encyclopedia.h"
+#include "objective.h"
 
 Lego_Globs legoGlobs;
 
@@ -717,8 +718,76 @@ B32 Lego_Shutdown_Quick()
     return TRUE;
 }
 
-B32 Lego_MainLoop(F32 time)
+B32 Lego_MainLoop(F32 elapsed)
 {
+    // TODO: Implement Lego_MainLoop
+
+    legoGlobs.elapsedAbs = elapsed;
+
+    // TODO: Implement Lego_MainLoop
+
+    // TODO: B32 dontExit = Lego_HandleKeys(...);
+
+    // TODO: Implement Lego_MainLoop
+
+    Main_Finalize3D();
+
+    // TODO: Implement Lego_MainLoop
+
+    if ((legoGlobs.flags1 & GAME1_RENDERPANELS) != GAME1_NONE)
+    {
+        if ((legoGlobs.flags1 & GAME1_RADARON) == GAME1_NONE)
+        {
+            Panel_FUN_0045a9f0(Panel_RadarFill, elapsed);
+        }
+        Panel_FUN_0045a9f0(Panel_Radar, elapsed);
+
+        if ((((legoGlobs.flags1 & GAME1_RADARON) != GAME1_NONE) && ((legoGlobs.flags1 & GAME1_RADAR_TRACKOBJECTVIEW) != GAME1_NONE)) &&
+            ((legoGlobs.flags1 & GAME1_RADAR_NOTRACKOBJECT) == GAME1_NONE))
+        {
+            Panel_FUN_0045a9f0(Panel_RadarOverlay, elapsed);
+        }
+        Panel_FUN_0045a9f0(Panel_MessagesSide, elapsed);
+        Panel_FUN_0045a9f0(Panel_CameraControl, elapsed);
+        Panel_FUN_0045a9f0(Panel_TopPanel, elapsed);
+        Panel_FUN_0045a9f0(Panel_PriorityList, elapsed);
+        Priorities_Draw();
+        Panel_FUN_0045a9f0(Panel_Encyclopedia, elapsed);
+        Encyclopedia_Update(elapsed);
+        if ((legoGlobs.flags2 & GAME2_INMENU) == GAME2_NONE)
+        {
+            Interface_FUN_0041b3c0();
+        }
+        Interface_FUN_0041b860(elapsed);
+        Panel_FUN_0045a9f0(Panel_CrystalSideBar, elapsed);
+
+        F32 crystals = elapsed;
+        F32 chargedCrystals = elapsed;
+        if (legoGlobs.currLevel != NULL)
+        {
+            // TODO: crystals = legoGlobs.currLevel->crystals;
+            // TODO: chargedCrystals = legoGlobs.currLevel->crystals - legoGlobs.currLevel->crystalsDrained;
+        }
+        // TODO: Panel_Crystals_Draw((U32)crystals, (U32)chargedCrystals, elapsedGame_00);
+        Panel_CryOreSideBar_Draw();
+
+        // TODO: Implement Lego_MainLoop
+
+        Panel_FUN_0045a9f0(Panel_Information, elapsed);
+        ScrollInfo_Update(FALSE);
+        Info_DrawPanel(elapsed);
+        Panel_FUN_0045a9f0(Panel_InfoDock, elapsed);
+        Info_Draw(elapsed);
+    }
+
+    // TODO: Implement Lego_MainLoop
+
+    Sound_Update(legoGlobs.flags1 & GAME1_USEMUSIC);
+
+    // TODO: Implement
+
+    // TODO: Objective_Update(legoGlobs.textWnd_80, legoGlobs.currLevel, elapsedGame_00, elapsedAbs);
+
     // TODO: Implement Lego_MainLoop
 
     return TRUE;
@@ -733,8 +802,39 @@ B32 Lego_LoadLevel(const char* levelName)
     Loader_Display_Loading_Bar(levelName);
 
     // TODO: Implement Lego_LoadLevel
+
+    // TEMP:
+    Loader_Display_Loading_Bar(NULL);
+
+    // TODO: Implement Lego_LoadLevel
+
+    // TEMP:
+    Lego_SetMusicOn(TRUE);
+
+    // TODO: Implement Lego_LoadLevel
     
     return TRUE;
+}
+
+void Lego_SetMusicOn(B32 isMusicOn)
+{
+    if (isMusicOn)
+    {
+        S16 rng = Maths_Rand();
+        legoGlobs.flags1 |= GAME1_USEMUSIC;
+        Sound_PlayCDTrack(((U32)(S32)rng % legoGlobs.CDTracks - 1) + legoGlobs.CDStartTrack, SoundMode_Once, Lego_CDTrackPlayNextCallback);
+        return;
+    }
+
+    legoGlobs.flags1 &= ~GAME1_USEMUSIC;
+    Sound_StopCD();
+    Sound_Update(FALSE);
+}
+
+void Lego_CDTrackPlayNextCallback()
+{
+    Sound_StopCD();
+    Lego_SetMusicOn(TRUE);
 }
 
 void Lego_SetSoundOn(B32 isSoundOn)

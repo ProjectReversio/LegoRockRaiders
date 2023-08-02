@@ -81,3 +81,7 @@ extern void Panel_CryOreSideBar_Initialize(const char* sidebarName, U32 xPos, U3
 extern void Panel_Button_SetFlags_10(Panel_Type panelType, PanelButton_Type buttonType, B32 state);
 
 extern void Panel_LoadInterfaceButtons_ScrollInfo();
+
+extern void Panel_FUN_0045a9f0(Panel_Type panelType, F32 elapsedAbs);
+
+extern void Panel_CryOreSideBar_Draw();

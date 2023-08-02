@@ -34,3 +34,13 @@ void Panel_LoadInterfaceButtons_ScrollInfo()
 {
     // TODO: Implement Panel_LoadInterfaceButtons_ScrollInfo
 }
+
+void Panel_FUN_0045a9f0(Panel_Type panelType, F32 elapsedAbs)
+{
+    // TODO: Implement Panel_FUN_0045a9f0
+}
+
+void Panel_CryOreSideBar_Draw()
+{
+    // TODO: Implement Panel_CryOreSideBar_Draw
+}

@@ -24,3 +24,13 @@ void Interface_LoadPlusMinusImages(const char* plusName, const char* minusName)
 {
     // TODO: Implement Interface_LoadPlusMinusImages
 }
+
+void Interface_FUN_0041b3c0()
+{
+    // TODO: Implement Interface_FUN_0041b3c0
+}
+
+void Interface_FUN_0041b860(F32 elapsedAbs)
+{
+    // TODO: Implement Interface_FUN_0041b860
+}

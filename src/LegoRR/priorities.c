@@ -9,3 +9,8 @@ void Priorities_LoadImages(lpConfig config, const char* gameName)
 {
     // TODO: Implement Priorities_LoadImages
 }
+
+void Priorities_Draw()
+{
+    // TODO: Implement Priorities_Draw
+}

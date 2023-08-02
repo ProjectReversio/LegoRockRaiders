@@ -54,12 +54,24 @@ typedef struct Sound_Globs
     B32 loopCDTrack;
     SoundCDStopCallback CDStopCallback;
     B32 updateCDTrack;
+
+    MCIERROR mciErr;
 } Sound_Globs, *lpSound_Globs;
 
 extern Sound_Globs soundGlobs;
 
 extern B32 Sound_Initialize(B32 nosound);
 extern B32 Sound_IsInitialized();
+
+extern B32 Sound_PlayCDTrack(U32 track, SoundMode mode, SoundCDStopCallback stopCallback);
+extern void Sound_Update(B32 cdtrack);
+extern B32 Sound_StopCD();
+
+extern B32 Play_CDTrack(S32 track);
+extern B32 Status_CDTrack(S32 track);
+extern B32 Restart_CDTrack(S32 track);
+extern B32 Stop_CDTrack();
+extern void ReportCDError();
 
 extern S32 WaveOpenFile(void* fileData, U32 fileSize, HMMIO* phmmioIn, WAVEFORMATEX** ppwfxInfo, MMCKINFO* pckInRIFF);
 extern S32 WaveOpenFile2(const char* pszFileName, HMMIO* phmmioIn, WAVEFORMATEX** ppwfxInfo, MMCKINFO* pckInRIFF);

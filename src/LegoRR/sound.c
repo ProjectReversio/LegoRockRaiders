@@ -1,8 +1,10 @@
+#include <stdio.h>
 #include "sound.h"
 #include "main.h"
 #include "3DSound.h"
 
 Sound_Globs soundGlobs = { 0 };
+char mciReturn[200];
 
 B32 Sound_Initialize(B32 nosound)
 {
@@ -21,6 +23,130 @@ B32 Sound_Initialize(B32 nosound)
 B32 Sound_IsInitialized()
 {
     return (soundGlobs.initialized && Sound3D_Initialized());
+}
+
+B32 Sound_PlayCDTrack(U32 track, SoundMode mode, SoundCDStopCallback stopCallback)
+{
+    if (!soundGlobs.initialized)
+        return FALSE;
+
+    if (mode == SoundMode_Loop)
+        soundGlobs.loopCDTrack = TRUE;
+
+    soundGlobs.currTrack = track;
+    soundGlobs.CDStopCallback = stopCallback;
+
+    return Play_CDTrack(track);
+}
+
+void Sound_Update(B32 cdtrack)
+{
+    U32 uVar1;
+    U32 DVar2;
+    B32 BVar3;
+    static U32 lastUpdate = 0;
+    uVar1 = lastUpdate;
+    if (((soundGlobs.initialized && (DVar2 = timeGetTime(), uVar1 = lastUpdate, lastUpdate + 4000 < DVar2)) &&
+        (uVar1 = DVar2, cdtrack)) && (BVar3 = Status_CDTrack(soundGlobs.currTrack), !BVar3))
+    {
+        if (soundGlobs.loopCDTrack)
+            Restart_CDTrack(soundGlobs.currTrack);
+
+        if (soundGlobs.CDStopCallback != NULL)
+            soundGlobs.CDStopCallback();
+    }
+    lastUpdate = uVar1;
+}
+
+B32 Sound_StopCD()
+{
+    if (!soundGlobs.initialized)
+        return FALSE;
+
+    return Stop_CDTrack();
+}
+
+B32 Play_CDTrack(S32 track)
+{
+    soundGlobs.mciErr = mciSendString("open cdaudio", mciReturn, 200, NULL);
+    if (soundGlobs.mciErr != 0)
+    {
+        ReportCDError();
+        return FALSE;
+    }
+
+    soundGlobs.mciErr = mciSendString("set cdaudio time format tmsf", mciReturn, 200, NULL);
+    if (soundGlobs.mciErr != 0)
+    {
+        ReportCDError();
+        return FALSE;
+    }
+
+    Restart_CDTrack(track);
+    if (soundGlobs.mciErr != 0)
+    {
+        ReportCDError();
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+B32 Status_CDTrack(S32 track)
+{
+    char buff[100];
+
+    sprintf(buff, "status cdaudio mode");
+    soundGlobs.mciErr = mciSendString(buff, mciReturn, 200, NULL);
+    if (_stricmp(mciReturn, "stopped") != 0)
+    {
+        sprintf(buff, "status cdaudio current track");
+        soundGlobs.mciErr = mciSendString(buff, mciReturn, 200, NULL);
+        if (atoi(mciReturn) <= track + 1)
+            return TRUE;
+    }
+
+    ReportCDError();
+    return FALSE;
+}
+
+B32 Restart_CDTrack(S32 track)
+{
+    char local_64[100];
+
+    wsprintf(local_64, "play cdaudio from %i", track + 1);
+    soundGlobs.mciErr = mciSendString(local_64, mciReturn, 200, NULL);
+    if (soundGlobs.mciErr != 0)
+    {
+        ReportCDError();
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+B32 Stop_CDTrack()
+{
+    soundGlobs.mciErr = mciSendString("stop cdaudio", mciReturn, 200, NULL);
+    if (soundGlobs.mciErr != 0)
+    {
+        ReportCDError();
+        return FALSE;
+    }
+
+    soundGlobs.mciErr = mciSendString("close cdaudio", mciReturn, 200, NULL);
+    if (soundGlobs.mciErr != 0)
+    {
+        ReportCDError();
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+void ReportCDError()
+{
+    mciGetErrorString(soundGlobs.mciErr, mciReturn, 200);
 }
 
 S32 WaveOpenFile(void* fileData, U32 fileSize, HMMIO* phmmioIn, WAVEFORMATEX** ppwfxInfo, MMCKINFO* pckInRIFF)

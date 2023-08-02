@@ -119,6 +119,7 @@ typedef struct Main_Globs
 extern Main_Globs mainGlobs;
 
 extern void Main_ParseCommandLine(const char* lpszCmdLine, B32* out_nosound, B32* out_insistOnCD);
+extern void Main_Finalize3D();
 extern B32 Main_InitApp(HINSTANCE hInstance);
 
 extern __declspec(noreturn) void Main_Exit();
