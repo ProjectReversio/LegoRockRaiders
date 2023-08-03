@@ -3097,6 +3097,11 @@ S32 Front_CalcSliderCDVolume()
     return 0;
 }
 
+void Front_UpdateOptionsSliders()
+{
+    // TODO: Implement Front_UpdateOptionsSliders
+}
+
 void Front_Save_SetShouldClearUnlockedLevels(B32 state)
 {
     frontGlobs.shouldClearUnlockedLevels = state;
@@ -3116,6 +3121,11 @@ S32 Front_Save_GetLevelScore(U32 index, lpSaveData saveData)
 {
     // TODO: Implement Front_Save_GetLevelScore
     return 0;
+}
+
+S32 Front_Save_GetSaveNumber()
+{
+    return frontGlobs.saveNumber;
 }
 
 S32 Front_SaveMenu_ConfirmMessage_FUN_004354f0(const char* titleText, const char* message, const char* okText, const char* cancelText)

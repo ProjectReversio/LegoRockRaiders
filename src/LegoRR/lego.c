@@ -42,6 +42,8 @@
 #include "dependencies.h"
 #include "encyclopedia.h"
 #include "objective.h"
+#include "teleporter.h"
+#include "construction.h"
 
 Lego_Globs legoGlobs;
 
@@ -796,10 +798,57 @@ B32 Lego_MainLoop(F32 elapsed)
 B32 Lego_LoadLevel(const char* levelName)
 {
     Front_PlayLevelMovie(levelName, TRUE);
+    Teleporter_Restart();
+    Front_UpdateOptionsSliders();
+    HelpWindow_IfFlag4_AndParam_Clear1_Set2_Else_Clear3(FALSE);
+    Construction_DisableCryOreDrop(FALSE);
+    LegoObject_SetLevelEnding(FALSE);
+    lpSaveData save = Front_Save_GetCurrentSaveData();
+    lpSaveStruct_18 saveStruct18;
+    if (save == NULL)
+        saveStruct18 = NULL;
+    else
+        saveStruct18 = &save->saveStruct18_1c;
 
-    // TODO: Implement Lego_LoadLevel
+    Object_Save_OverwriteStruct18(saveStruct18);
+    S32 saveNumber;
+    if (!ObjectRecall_IsLoaded() && (saveNumber = Front_Save_GetSaveNumber(), saveNumber != -1))
+    {
+        char buff[260];
+        sprintf(buff, "%s\\%i.osf", "Saves", saveNumber);
+        ObjectRecall_LoadRROSFile(buff);
+    }
+
+    lpLego_Level level = Mem_Alloc(sizeof(Lego_Level));
+    if (level == NULL)
+    {
+        Loader_Display_Loading_Bar(NULL); // this line probably isn't needed, in the og source it's just a goto
+        legoGlobs.currLevel = NULL;
+        return FALSE;
+    }
+
+    memset(level, 0, sizeof(Lego_Level));
+
+    legoGlobs.flags1 |= GAME1_LEVELSTART;
+    legoGlobs.currLevel = level;
 
     Loader_Display_Loading_Bar(levelName);
+
+    Priorities_LoadLevel(legoGlobs.config, legoGlobs.gameName, levelName);
+
+    U32 seed = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "Seed", 0));
+    if (seed != 0)
+        srand(seed);
+
+    const char* boulderAnimation = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "BoulderAnimation", 0));
+    if (boulderAnimation == NULL || _stricmp(boulderAnimation, "Rock") == 0)
+        level->BoulderAnimation = TEXTURES_ROCK;
+    else if (_stricmp(boulderAnimation, "Lava") == 0)
+        level->BoulderAnimation = TEXTURES_LAVA;
+    else if (_stricmp(boulderAnimation, "Ice") == 0)
+        level->BoulderAnimation = TEXTURES_ICE;
+    else
+        level->BoulderAnimation = TEXTURES_ROCK;
 
     // TODO: Implement Lego_LoadLevel
 

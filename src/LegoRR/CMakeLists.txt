@@ -77,6 +77,8 @@ set(MAIN_SRC
     credits.c
     search.c
     objective.c
+    teleporter.c
+    construction.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -155,6 +157,8 @@ set(MAIN_SRC
     credits.h
     search.h
     objective.h
+    teleporter.h
+    construction.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

@@ -24,3 +24,8 @@ void LegoObject_LoadObjTtsSFX(lpConfig config, const char* gameName)
 {
     // TODO: Implement LegoObject_LoadObjTtsSFX
 }
+
+void LegoObject_SetLevelEnding(B32 ending)
+{
+    // TODO: Implement LegoObject_SetLevelEnding
+}

@@ -65,3 +65,8 @@ typedef struct SaveData
     U32 field_0xb0;
     U32 field_0xb4;
 } SaveData, *lpSaveData;
+
+extern void Object_Save_OverwriteStruct18(lpSaveStruct_18 saveStruct18);
+
+extern B32 ObjectRecall_IsLoaded();
+extern B32 ObjectRecall_LoadRROSFile(const char* filename);

@@ -14,3 +14,9 @@ void Priorities_Draw()
 {
     // TODO: Implement Priorities_Draw
 }
+
+B32 Priorities_LoadLevel(lpConfig config, const char* gameName, const char* levelName)
+{
+    // TODO: Implement Priorities_LoadLevel
+    return TRUE;
+}

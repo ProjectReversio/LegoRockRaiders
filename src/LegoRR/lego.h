@@ -18,9 +18,22 @@
 #include "building.h"
 #include "upgrade.h"
 
+typedef enum TextureType
+{
+    TEXTURES_ROCK = 0,
+    TEXTURES_LAVA = 1,
+    TEXTURES_ICE = 2,
+    TEXTURES_INVALID = -1,
+} TextureType;
+
 typedef struct Lego_Level
 {
-    void* temp;
+    char* name; // (format: "Levels::level")
+
+    // TODO: Implement Lego_Level
+
+    TextureType BoulderAnimation; // (texture index, hardcoded: Rock, Lava, Ice)
+
     // TODO: Implement Lego_Level
 } Lego_Level, *lpLego_Level;
 

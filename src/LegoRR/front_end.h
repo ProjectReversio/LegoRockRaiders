@@ -501,10 +501,13 @@ extern B32 Front_LevelLink_Callback_FindByLinkIndex(lpLevelLink link, void* data
 extern S32 Front_CalcSliderGameSpeed();
 extern S32 Front_CalcSliderCDVolume();
 
+extern void Front_UpdateOptionsSliders();
+
 extern void Front_Save_SetShouldClearUnlockedLevels(B32 state);
 extern void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer);
 extern void Front_Save_LoadAllSaveFiles();
 extern S32 Front_Save_GetLevelScore(U32 index, lpSaveData saveData);
+extern S32 Front_Save_GetSaveNumber();
 
 extern S32 Front_SaveMenu_ConfirmMessage_FUN_004354f0(const char* titleText, const char* message, const char* okText, const char* cancelText);
 
