@@ -2,6 +2,8 @@
 
 #include "platform.h"
 #include "config.h"
+#include "images.h"
+#include "text_window.h"
 
 typedef enum Panel_Type
 {
@@ -19,6 +21,8 @@ typedef enum Panel_Type
     Panel_Encyclopedia   = 11,
     Panel_Type_Count     = 12,
 } Panel_Type;
+
+#define Panel_RegisterName(p) (panelGlobs.panelName[p]=#p)
 
 typedef enum PanelButton_Type
 {
@@ -71,6 +75,79 @@ typedef enum PanelButton_Type
     PanelButton_Type_Count                   = 24,
 } PanelButton_Type;
 
+typedef enum PanelDataFlags
+{
+    PANELDATA_FLAG_NONE = 0,
+    PANELDATA_FLAG_UNK1 = 1,
+    PANELDATA_FLAG_UNK2 = 2,
+
+} PanelDataFlags;
+
+typedef struct PanelData
+{
+    lpImage imageOrFlic;
+    B32 isFlic;
+    Point2F xyOut;
+    Point2F xyIn;
+    Point2F xyOutIn;
+    U32 field_20;
+    void* buttonList;
+    U32 buttonCount;
+    PanelDataFlags flags;
+} PanelData, *lpPanelData;
+
+typedef struct PanelTextWindow
+{
+    lpTextWindow textWindow;
+    Point2F position;
+    lpPanelData panel;
+} PanelTextWindow, *lpPanelTextWindow;
+
+typedef enum Panel_GlobFlags
+{
+    PANEL_GLOB_FLAG_NONE = 0,
+} Panel_GlobFlags;
+
+typedef struct Panel_Globs
+{
+    char* panelName[12];
+    PanelData panelTable[12];
+    char* panelButtonName[12][24];
+    Panel_Type currentPanel;
+    PanelButton_Type currentButton;
+    lpPanelTextWindow infoTextWnd;
+    lpPanelTextWindow encyclopediaTextWnd;
+    lpImage crystalSmallImage; // Hard: "Interface\\RightPanel\\SmallCrystal.bmp"
+    lpImage crystalNoSmallImage; // Hard: "Interface\\RightPanel\\NoSmallCrystal.bmp"
+    lpImage crystalUsedImage; // Hard: "Interface\\RightPanel\\UsedCrystal.bmp"
+    U32 crystalQuota;
+    lpImage airMeterJuiceImage; // Hard: "Interface\\AirMeter\\msgpanel_air_juice.bmp"
+    lpImage airMeterNoAirImage; // Hard: "Interface\\AirMeter\\msgpanel_noair.bmp"
+    Point2F airMeterJuiceOffset; // Hard: (85, 6) Offset relative to top-left corner of MsgPanel
+    U32 airMeterJuiceLength; // Hard: 236
+    Point2F airMeterNoAirOffset; // Hard: (21, 0) Offset relative to top-left corner of MsgPanel
+    B32 airMeterOxygenLow; // Oxygen level is 10% or less.
+    lpImage cryOreSideBarImage; // Hard: "Interface\\RightPanel\\crystalsidebar_ore.bmp"
+    Point2F cryOreSideBarOffset; // Hard: (615, 434)
+    U32 cryOreMeterOffset; // Hard: 423
+    F32 cryOreMeterValue;
+    Point2I rotateCenter;
+    S32 rotateRadius;
+    Point2F rotateUpOffset;
+    Point2F rotateDownOffset;
+    Point2F rotateLeftOffset;
+    Point2F rotateRightOffset;
+    lpImage rotateUpImage;
+    lpImage rotateDownImage;
+    lpImage rotateLeftImage;
+    lpImage rotateRightImage;
+    Panel_GlobFlags flags;
+    //U32 reserved;
+    //U32 s_crystalShifts[2][6];
+} Panel_Globs;
+
+extern Panel_Globs panelGlobs;
+
 extern void Panel_Initialize();
 
 extern void Panel_RotationControl_Initialize(lpConfig config, const char* gameName);
@@ -82,6 +159,11 @@ extern void Panel_Button_SetFlags_10(Panel_Type panelType, PanelButton_Type butt
 
 extern void Panel_LoadInterfaceButtons_ScrollInfo();
 
+extern B32 Panel_GetPanelType(const char* panelName, Panel_Type* panelType);
+extern void Panel_LoadImage(const char* filename, Panel_Type panelType, PanelDataFlags flags);
+extern void Panel_SetArea(Panel_Type panelType, S32 xOut, S32 yOut, S32 xIn, S32 yIn);
+
 extern void Panel_FUN_0045a9f0(Panel_Type panelType, F32 elapsedAbs);
 
+extern void Panel_CryOreSideBar_ChangeOreMeter(B32 increment, U32 amount);
 extern void Panel_CryOreSideBar_Draw();

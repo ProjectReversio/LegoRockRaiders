@@ -970,7 +970,27 @@ void Lego_LoadTextMessages(lpConfig config)
 
 void Lego_LoadPanels(lpConfig config, U32 screenWidth, U32 screenHeight)
 {
-    // TODO: Implement Lego_LoadPanels
+    char buff[256];
+    sprintf(buff, "Panels%ix%i", screenWidth, screenHeight);
+    lpConfig conf = Config_FindArray(config, Config_BuildStringID(legoGlobs.gameName, buff, 0));
+
+    for (lpConfig i = conf; i; i = Config_GetNextItem(i))
+    {
+        Panel_Type panelType;
+        if (Panel_GetPanelType(i->itemName, &panelType) != 0)
+        {
+            strcpy(buff, i->dataString);
+
+            char* stringParts[10];
+            Util_Tokenize(buff, stringParts, ",");
+            Panel_LoadImage(stringParts[0], panelType, 4);
+            S32 yIn = atoi(stringParts[4]);
+            S32 xIn = atoi(stringParts[3]);
+            S32 yOut = atoi(stringParts[2]);
+            S32 xOut = atoi(stringParts[1]);
+            Panel_SetArea(panelType, xOut, yOut, xIn, yIn);
+        }
+    }
 }
 
 void Lego_LoadPanelButtons(lpConfig config, U32 screenWidth, U32 screenHeight)
