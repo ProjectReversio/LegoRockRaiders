@@ -110,7 +110,7 @@ void Panel_SetArea(Panel_Type panelType, S32 xOut, S32 yOut, S32 xIn, S32 yIn)
     panelGlobs.panelTable[panelType].xyOutIn.y = yIn;
 }
 
-void Panel_FUN_0045a9f0(Panel_Type panelType, F32 elapsedAbs)
+void Panel_DrawPanel(Panel_Type panelType, F32 elapsedAbs)
 {
     // TODO: Implement Panel_FUN_0045a9f0
 

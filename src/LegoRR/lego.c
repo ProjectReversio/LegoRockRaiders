@@ -738,28 +738,28 @@ B32 Lego_MainLoop(F32 elapsed)
     {
         if ((legoGlobs.flags1 & GAME1_RADARON) == GAME1_NONE)
         {
-            Panel_FUN_0045a9f0(Panel_RadarFill, elapsed);
+            Panel_DrawPanel(Panel_RadarFill, elapsed);
         }
-        Panel_FUN_0045a9f0(Panel_Radar, elapsed);
+        Panel_DrawPanel(Panel_Radar, elapsed);
 
         if ((((legoGlobs.flags1 & GAME1_RADARON) != GAME1_NONE) && ((legoGlobs.flags1 & GAME1_RADAR_TRACKOBJECTVIEW) != GAME1_NONE)) &&
             ((legoGlobs.flags1 & GAME1_RADAR_NOTRACKOBJECT) == GAME1_NONE))
         {
-            Panel_FUN_0045a9f0(Panel_RadarOverlay, elapsed);
+            Panel_DrawPanel(Panel_RadarOverlay, elapsed);
         }
-        Panel_FUN_0045a9f0(Panel_MessagesSide, elapsed);
-        Panel_FUN_0045a9f0(Panel_CameraControl, elapsed);
-        Panel_FUN_0045a9f0(Panel_TopPanel, elapsed);
-        Panel_FUN_0045a9f0(Panel_PriorityList, elapsed);
+        Panel_DrawPanel(Panel_MessagesSide, elapsed);
+        Panel_DrawPanel(Panel_CameraControl, elapsed);
+        Panel_DrawPanel(Panel_TopPanel, elapsed);
+        Panel_DrawPanel(Panel_PriorityList, elapsed);
         Priorities_Draw();
-        Panel_FUN_0045a9f0(Panel_Encyclopedia, elapsed);
+        Panel_DrawPanel(Panel_Encyclopedia, elapsed);
         Encyclopedia_Update(elapsed);
         if ((legoGlobs.flags2 & GAME2_INMENU) == GAME2_NONE)
         {
             Interface_FUN_0041b3c0();
         }
         Interface_FUN_0041b860(elapsed);
-        Panel_FUN_0045a9f0(Panel_CrystalSideBar, elapsed);
+        Panel_DrawPanel(Panel_CrystalSideBar, elapsed);
 
         F32 crystals = elapsed;
         F32 chargedCrystals = elapsed;
@@ -773,10 +773,10 @@ B32 Lego_MainLoop(F32 elapsed)
 
         // TODO: Implement Lego_MainLoop
 
-        Panel_FUN_0045a9f0(Panel_Information, elapsed);
+        Panel_DrawPanel(Panel_Information, elapsed);
         ScrollInfo_Update(FALSE);
         Info_DrawPanel(elapsed);
-        Panel_FUN_0045a9f0(Panel_InfoDock, elapsed);
+        Panel_DrawPanel(Panel_InfoDock, elapsed);
         Info_Draw(elapsed);
     }
 

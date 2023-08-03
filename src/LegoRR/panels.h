@@ -163,7 +163,7 @@ extern B32 Panel_GetPanelType(const char* panelName, Panel_Type* panelType);
 extern void Panel_LoadImage(const char* filename, Panel_Type panelType, PanelDataFlags flags);
 extern void Panel_SetArea(Panel_Type panelType, S32 xOut, S32 yOut, S32 xIn, S32 yIn);
 
-extern void Panel_FUN_0045a9f0(Panel_Type panelType, F32 elapsedAbs);
+extern void Panel_DrawPanel(Panel_Type panelType, F32 elapsedAbs);
 
 extern void Panel_CryOreSideBar_ChangeOreMeter(B32 increment, U32 amount);
 extern void Panel_CryOreSideBar_Draw();
