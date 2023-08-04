@@ -14,3 +14,8 @@ void Objective_Update(lpTextWindow textWnd, lpLego_Level level, F32 elapsedGamed
 
     // TODO: Implement Objective_Update
 }
+
+void Objective_SetEndTeleportEnabled(B32 on)
+{
+    // TODO: Implement Objective_SetEndTeleportEnabled
+}

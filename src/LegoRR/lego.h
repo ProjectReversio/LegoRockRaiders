@@ -32,9 +32,39 @@ typedef struct Lego_Level
 
     // TODO: Implement Lego_Level
 
-    TextureType BoulderAnimation; // (texture index, hardcoded: Rock, Lava, Ice)
+    U32 emergeCount;
+    U32 unused_rewardID; // Presumably used to lookup level rewards by some constant ID value.
+    U32 width;
+    U32 height;
+    F32 BlockSize;
+    F32 DigDepth;
+    F32 RoofHeight;
+    F32 RoughLevel;
+    Bool3 UseRoof;
+    Bool3 SafeCaverns;
+    F32 SelBoxHeight;
 
     // TODO: Implement Lego_Level
+
+    B32 StartFP;
+    B32 NoDrain;
+    F32 oxygenLevel; // (init: 100.0, Oxygen level?)
+    F32 OxygenRate;
+    F32 oxygenLevelMessage; // Tracks change in oxygen since the last message (new message after change of 5%).
+    F32 BuildingTolerance;
+    F32 BuildingMaxVariation;
+    F32 UpgradeTimes[20]; // [objType] (mult: 25.0, 1:Vehicle, 2:MiniFigure, 3:Building)
+    F32 TrainTime; // (mult: 25.0)
+    F32 EmergeTimeOut; // (default: 1500.0)
+    F32 SlugTime; // (default: 60.0, mult: 25.0 (applies to default))
+    S32 Slug; // (default: 20 (invalid), searches for object index by name, expects RockMonsterType)
+    char* FullName; // (replace '_' with ' ')
+    TextureType BoulderAnimation; // (texture index, hardcoded: Rock, Lava, Ice)
+    F32 MaxStolen;
+
+    // TODO: Implement Lego_Level
+
+    B32 IsStartTeleportEnabled;
 } Lego_Level, *lpLego_Level;
 
 typedef enum GameFlags1

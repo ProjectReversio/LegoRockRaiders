@@ -850,6 +850,129 @@ B32 Lego_LoadLevel(const char* levelName)
     else
         level->BoulderAnimation = TEXTURES_ROCK;
 
+    legoGlobs.FallinMultiplier = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "FallinMultiplier", 0));
+    if (legoGlobs.FallinMultiplier == 0)
+        legoGlobs.FallinMultiplier = 1;
+
+    level->BlockSize = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "blocksize", 0));
+    level->DigDepth = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "digdepth", 0));
+    level->UseRoof = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "useroof", 0));
+    level->RoofHeight = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "roofheight", 0));
+    level->RoughLevel = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "roughlevel", 0));
+
+    const char* surfaceMap = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "surfacemap", 0));
+    const char* preDugMap = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "predugmap", 0));
+    const char* terrainMap = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "terrainmap", 0));
+    const char* blockPointersMap = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "blockPointersMap", 0));
+    const char* cryOreMap = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "CryOreMap", 0));
+    const char* erodeMap = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "ErodeMap", 0));
+    const char* emergeMap = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "EmergeMap", 0));
+    const char* aiMap = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "AIMap", 0));
+    const char* pathMap = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "PathMap", 0));
+    const char* fallinMap = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "FallinMap", 0));
+    const char* textureSet = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "textureset", 0));
+
+    level->EmergeTimeOut = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "EmergeTimeOut", 0));
+    if (level->EmergeTimeOut == 0.0f)
+        level->EmergeTimeOut = 1500.0f;
+
+    const char* filenameObjectList = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "olistfile", 0));
+    const char* filenameEntityListFile = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "elistfile", 0));
+
+    level->SelBoxHeight = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "selboxheight", 0));
+
+    const char* filenamePTL = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "PTLFile", 0));
+    const char* filenameNERP = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "NERPFile", 0));
+    const char* filenameNERPMessage = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "NERPMessageFile", 0));
+    const char* nameEmergeCreature = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "EmergeCreature", 0));
+
+    level->SafeCaverns = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "SafeCaverns", 0));
+
+    const char* filenameIntroAVI = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "IntroAVI", 0));
+
+    level->StartFP = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "StartFP", 0)) == BOOL3_TRUE;
+    level->NoDrain = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "NoDrain", 0)) == BOOL3_TRUE;
+
+    level->OxygenRate = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "OxygenRate", 0));
+    level->OxygenRate *= 0.001f;
+
+    F32 upgradeTime = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "UpgradeTime", 0));
+    upgradeTime *= 25.0f;
+    for (S32 i = 0; i < 20; i++) // TODO: should use a define for the count
+        level->UpgradeTimes[i] = upgradeTime;
+
+    level->UpgradeTimes[2] = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "MinifigureUpgradeTime", 0));
+    if (level->UpgradeTimes[2] == 0.0f)
+        level->UpgradeTimes[2] = upgradeTime;
+    else
+        level->UpgradeTimes[2] *= 25.0f;
+
+    level->UpgradeTimes[1] = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "VehicleUpgradeTime", 0));
+    if (level->UpgradeTimes[1] == 0.0f)
+        level->UpgradeTimes[1] = upgradeTime;
+    else
+        level->UpgradeTimes[1] *= 25.0f;
+
+    level->UpgradeTimes[4] = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "BuildingUpgradeTime", 0));
+    if (level->UpgradeTimes[4] == 0.0f)
+        level->UpgradeTimes[4] = upgradeTime;
+    else
+        level->UpgradeTimes[4] *= 25.0f;
+
+    level->TrainTime = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "TrainTime", 0));
+    level->TrainTime *= 25.0f;
+
+    B32 noMultiSelect = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "NoMultiSelect", 0)) == BOOL3_TRUE;
+    if (noMultiSelect)
+        legoGlobs.flags2 |= GAME2_NOMULTISELECT;
+
+    B32 noAutoEat = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "NoAutoEat", 0)) == BOOL3_TRUE;
+    if (noAutoEat)
+        legoGlobs.flags2 |= GAME2_NOAUTOEAT;
+    else
+        legoGlobs.flags2 &= ~GAME2_NOAUTOEAT;
+
+    legoGlobs.EndGameAVI1 = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "EndGameAVI1", 0));
+    legoGlobs.EndGameAVI2 = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "EndGameAVI2", 0));
+
+    if (legoGlobs.RenameReplace != NULL)
+    {
+        B32 allowRename = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "AllowRename", 0)) == BOOL3_TRUE;
+        if (allowRename)
+            legoGlobs.flags2 |= GAME2_ALLOWRENAME;
+        else
+            legoGlobs.flags2 &= ~GAME2_ALLOWRENAME;
+    }
+
+    B32 recallOLObjects = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "RecallOLObjects", 0)) == BOOL3_TRUE;
+    if (recallOLObjects)
+        legoGlobs.flags2 |= GAME2_RECALLOLOBJECTS;
+    else
+        legoGlobs.flags2 &= ~GAME2_RECALLOLOBJECTS;
+
+    B32 generateSpiders = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "GenerateSpiders", 0)) == BOOL3_TRUE;
+    if (generateSpiders)
+        legoGlobs.flags2 |= GAME2_GENERATESPIDERS;
+    else
+        legoGlobs.flags2 &= ~GAME2_GENERATESPIDERS;
+
+    B32 disableToolTipSound = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "DisableToolTipSound", 0)) == BOOL3_TRUE;
+    if (disableToolTipSound)
+        legoGlobs.flags2 |= GAME2_DISABLETOOLTIPSOUND;
+    else
+        legoGlobs.flags2 &= ~GAME2_DISABLETOOLTIPSOUND;
+
+    B32 disableEndTeleport = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "DisableEndTeleport", 0)) == BOOL3_TRUE;
+    Objective_SetEndTeleportEnabled(!disableEndTeleport);
+
+    const char* dragBoxRGB = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "DragBoxRGB", 0));
+    if (dragBoxRGB != NULL)
+    {
+        // TODO: Implement Lego_LoadLevel
+
+        Mem_Free(dragBoxRGB);
+    }
+
     // TODO: Implement Lego_LoadLevel
 
     // TEMP:
