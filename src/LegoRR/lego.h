@@ -26,6 +26,15 @@ typedef enum TextureType
     TEXTURES_INVALID = -1,
 } TextureType;
 
+typedef enum LevelStatus
+{
+    LEVELSTATUS_INCOMPLETE = 0,
+    LEVELSTATUS_COMPLETE = 1,
+    LEVELSTATUS_FAILED = 2,
+    LEVELSTATUS_FAILED_CRYSTALS = 3,
+    LEVELSTATUS_FAILED_OTHER = 4,
+} LevelStatus;
+
 typedef struct Lego_Level
 {
     char* name; // (format: "Levels::level")
@@ -46,6 +55,21 @@ typedef struct Lego_Level
 
     // TODO: Implement Lego_Level
 
+    S32 crystals; // (init: 0) Total number of Crystals stored.
+    U32 unused_crystals_90; // (init: 0, unused) Presumably once for Crystals.
+    S32 crystalsPickedUp; // (init: 0) Used by NERPs:GetCrystalsPickedUp.
+    S32 crystalsDrained; // Crystals stored, but in-use powering buildings.
+    S32 crystalsStolen; // For checking MaxStolen failure condition.
+    S32 ore; // (init: 0) Total number of normal Ore stored. (EXCLUDES STUDS)
+    U32 unused_ore_a4; // (init: 0, unused) Presumably once for Ore.
+    S32 orePickedUp; // (init: 0) Used by NERPs:GetOrePickedUp.
+    S32 studs; // (init: 0) Total number of Studs stored. (1 stud == 5 ore)
+    S32 EmergeCreature; // (searches for Object ID by name, expects RockMonsterType)
+
+    char* nextLevelID; // (cfg: NextLevel)
+
+    // TODO: Implement Lego_Level
+
     B32 StartFP;
     B32 NoDrain;
     F32 oxygenLevel; // (init: 100.0, Oxygen level?)
@@ -61,9 +85,7 @@ typedef struct Lego_Level
     char* FullName; // (replace '_' with ' ')
     TextureType BoulderAnimation; // (texture index, hardcoded: Rock, Lava, Ice)
     F32 MaxStolen;
-
-    // TODO: Implement Lego_Level
-
+    LevelStatus status; // (init: 0) 2 is used for Crystal failure as well
     B32 IsStartTeleportEnabled;
 } Lego_Level, *lpLego_Level;
 

@@ -44,6 +44,7 @@
 #include "objective.h"
 #include "teleporter.h"
 #include "construction.h"
+#include "ptl.h"
 
 Lego_Globs legoGlobs;
 
@@ -973,19 +974,87 @@ B32 Lego_LoadLevel(const char* levelName)
         Mem_Free(dragBoxRGB);
     }
 
+    level->BuildingTolerance = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "BuildingTolerance", 0));
+    level->BuildingMaxVariation = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "BuildingMaxVariation", 0));
+    if (level->BuildingTolerance == 0.0f)
+        level->BuildingTolerance = 4.0f;
+    if (level->BuildingMaxVariation == 0.0f)
+        level->BuildingMaxVariation = 6.0f;
+
+    level->MaxStolen = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "MaxStolen", 0));
+
+    const char* slug = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "Slug", 0));
+    if (slug == NULL)
+    {
+        level->Slug = 20;
+    }
+    else
+    {
+        // TODO: Implement Lego_LoadLevel
+    }
+
     // TODO: Implement Lego_LoadLevel
 
-    // TEMP:
+    level->nextLevelID = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "nextlevel", 0));
+    level->FullName = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "FullName", 0));
+    if (level->FullName == NULL)
+    {
+        level->FullName = NULL; // This was like this in the decompile
+    } else
+    {
+        // TODO: Implement Lego_LoadLevel
+    }
+
+    Objective_LoadLevel(legoGlobs.config, legoGlobs.gameName, levelName, level, mainGlobs.appWidth, mainGlobs.appHeight);
+
+    // TODO: Implement Lego_LoadLevel
+
+    level->name = levelName;
+    level->IsStartTeleportEnabled = (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "DisableStartTeleport", 0)) != BOOL3_TRUE);
+
+    // TODO: Implement Lego_LoadLevel
+
+    level->crystals = 0;
+    level->ore = 0;
+    level->unused_crystals_90 = 0;
+    level->unused_ore_a4 = 0;
+    level->crystalsPickedUp = 0;
+    level->orePickedUp = 0;
+    level->status = LEVELSTATUS_INCOMPLETE;
+
+    legoGlobs.placeDestSmallTeleporter = NULL;
+    legoGlobs.placeDestBigTeleporter = NULL;
+
+    NERPsFile_LoadScriptFile(filenameNERP);
+    NERPsFile_LoadMessageFile(filenameNERPMessage);
+
+    if (PTL_Initialize(filenamePTL, legoGlobs.gameName))
+    {
+        // TODO: Implement Lego_LoadLevel
+
+        // TEMP:
+        Lego_SetMusicOn(TRUE);
+
+        // TODO: Implement Lego_LoadLevel
+
+        // TEMP:
+        return TRUE;
+    }
+
+    Mem_Free(level);
+
+    Mem_Free(surfaceMap);
+    Mem_Free(preDugMap);
+    Mem_Free(terrainMap);
+    Mem_Free(blockPointersMap);
+    Mem_Free(cryOreMap);
+    Mem_Free(erodeMap);
+    Mem_Free(emergeMap);
+
     Loader_Display_Loading_Bar(NULL);
-
-    // TODO: Implement Lego_LoadLevel
-
-    // TEMP:
-    Lego_SetMusicOn(TRUE);
-
-    // TODO: Implement Lego_LoadLevel
+    legoGlobs.currLevel = NULL;
     
-    return TRUE;
+    return FALSE;
 }
 
 void Lego_SetMusicOn(B32 isMusicOn)

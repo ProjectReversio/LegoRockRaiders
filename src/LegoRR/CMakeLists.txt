@@ -79,6 +79,7 @@ set(MAIN_SRC
     objective.c
     teleporter.c
     construction.c
+    ptl.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -159,6 +160,7 @@ set(MAIN_SRC
     objective.h
     teleporter.h
     construction.h
+    ptl.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

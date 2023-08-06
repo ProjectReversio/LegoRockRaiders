@@ -1,4 +1,5 @@
 #include "objective.h"
+#include "lego.h"
 
 void Objective_Update(lpTextWindow textWnd, lpLego_Level level, F32 elapsedGamed, F32 elapsedAbs)
 {
@@ -18,4 +19,9 @@ void Objective_Update(lpTextWindow textWnd, lpLego_Level level, F32 elapsedGamed
 void Objective_SetEndTeleportEnabled(B32 on)
 {
     // TODO: Implement Objective_SetEndTeleportEnabled
+}
+
+void Objective_LoadLevel(lpConfig config, const char* gameName, const char* levelName, struct Lego_Level* level, U32 screenWidth, U32 screenHeight)
+{
+    // TODO: Implement Objective_LoadLevel
 }
