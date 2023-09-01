@@ -1,5 +1,7 @@
 #include "lego_object.h"
 
+LegoObject_Globs objectGlobs = { NULL };
+
 void LegoObject_Initialize()
 {
     // TODO: Implement LegoObject_Initialize

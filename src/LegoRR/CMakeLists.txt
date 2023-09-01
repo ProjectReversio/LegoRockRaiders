@@ -80,6 +80,8 @@ set(MAIN_SRC
     teleporter.c
     construction.c
     ptl.c
+    electric_fence.c
+    spider_web.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -161,6 +163,8 @@ set(MAIN_SRC
     teleporter.h
     construction.h
     ptl.h
+    electric_fence.h
+    spider_web.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

@@ -45,6 +45,8 @@
 #include "teleporter.h"
 #include "construction.h"
 #include "ptl.h"
+#include "electric_fence.h"
+#include "spider_web.h"
 
 Lego_Globs legoGlobs;
 
@@ -1002,7 +1004,16 @@ B32 Lego_LoadLevel(const char* levelName)
         level->FullName = NULL; // This was like this in the decompile
     } else
     {
-        // TODO: Implement Lego_LoadLevel
+        U32 i = 0;
+        if (strlen(level->FullName) > 0)
+        {
+            do
+            {
+                if (level->FullName[i] == '_')
+                    level->FullName[i] = ' ';
+                i++;
+            } while (level->FullName[i] != '\0');
+        }
     }
 
     Objective_LoadLevel(legoGlobs.config, legoGlobs.gameName, levelName, level, mainGlobs.appWidth, mainGlobs.appHeight);
@@ -1011,9 +1022,8 @@ B32 Lego_LoadLevel(const char* levelName)
 
     level->name = levelName;
     level->IsStartTeleportEnabled = (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "DisableStartTeleport", 0)) != BOOL3_TRUE);
-
-    // TODO: Implement Lego_LoadLevel
-
+    level->oxygenLevelMessage = 100.0f;
+    level->oxygenLevel = 100.0f;
     level->crystals = 0;
     level->ore = 0;
     level->unused_crystals_90 = 0;
@@ -1030,15 +1040,99 @@ B32 Lego_LoadLevel(const char* levelName)
 
     if (PTL_Initialize(filenamePTL, legoGlobs.gameName))
     {
-        // TODO: Implement Lego_LoadLevel
+        char* stringParts[2];
+        //memset(stringParts, 0, sizeof(stringParts));
+        LegoObject_Type legoObjectType = LegoObject_None;
+        S32 terrainParam = 0;
+        S32 blockPointersParam = 0;
+        S32 cryOreParam = 0;
+        S32 pathParam = 0;
 
-        // TEMP:
-        Lego_SetMusicOn(TRUE);
+        if (surfaceMap != NULL && Util_Tokenize(surfaceMap, stringParts, ":") == 2)
+            atoi(stringParts[1]);
 
-        // TODO: Implement Lego_LoadLevel
+        if (preDugMap != NULL && Util_Tokenize(preDugMap, stringParts, ":") == 2)
+            legoObjectType = atoi(stringParts[1]);
 
-        // TEMP:
-        return TRUE;
+        if (terrainMap != NULL && Util_Tokenize(terrainMap, stringParts, ":") == 2)
+            terrainParam = atoi(stringParts[1]);
+
+        if (blockPointersMap != NULL && Util_Tokenize(blockPointersMap, stringParts, ":") == 2)
+            blockPointersParam = atoi(stringParts[1]);
+
+        if (cryOreMap != NULL && Util_Tokenize(cryOreMap, stringParts, ":") == 2)
+            cryOreParam = atoi(stringParts[1]);
+
+        if (pathMap != NULL && Util_Tokenize(pathMap, stringParts, ":") == 2)
+            pathParam = atoi(stringParts[1]);
+
+        if (fallinMap != NULL && Util_Tokenize(fallinMap, stringParts, ":") == 2)
+            atoi(stringParts[1]);
+
+        if (emergeMap != NULL && Util_Tokenize(emergeMap, stringParts, ":") == 2)
+            pathParam = atoi(stringParts[1]);
+
+        B32 success = Lego_LoadMapSet(level,
+                                      surfaceMap,
+                                      preDugMap, legoObjectType,
+                                      terrainMap, terrainParam,
+                                      blockPointersMap, blockPointersParam,
+                                      cryOreMap, cryOreParam,
+                                      erodeMap,
+                                      pathMap, pathParam,
+                                      textureSet,
+                                      emergeMap, aiMap, fallinMap);
+
+        if (success != 0)
+        {
+            Mem_Free(surfaceMap);
+            Mem_Free(preDugMap);
+            Mem_Free(terrainMap);
+            Mem_Free(blockPointersMap);
+            Mem_Free(cryOreMap);
+            Mem_Free(erodeMap);
+            Mem_Free(emergeMap);
+            Mem_Free(aiMap);
+            Mem_Free(fallinMap);
+
+            if (pathMap != NULL)
+                Mem_Free(pathMap);
+
+            ElectricFence_Restart(level);
+            SpiderWeb_Restart(level);
+            Objective_SetStatus(LEVELSTATUS_INCOMPLETE);
+            Objective_Update(legoGlobs.textWnd_80, legoGlobs.currLevel, 1.0f, 1.0f);
+
+            if (Lego_LoadOLObjectList(level, filenameObjectList) != 0)
+            {
+
+                // TODO: Implement Lego_LoadLevel
+
+                Loader_Display_Loading_Bar(NULL);
+
+                // TODO: Implement Lego_LoadLevel
+
+                if (level->StartFP == 0 || objectGlobs.minifigureObj_9cb8 == NULL)
+                {
+                    Lego_SetViewMode(ViewMode_Top, NULL, 0);
+                }
+                else
+                {
+                    Lego_SetViewMode(ViewMode_FP, objectGlobs.minifigureObj_9cb8, 1);
+
+                    // TODO: Implement Lego_LoadLevel
+                }
+
+                NERPs_InitBlockPointersTable(level);
+
+                if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "Precreate", 0)) == BOOL3_TRUE)
+                {
+                    // TODO: Implement Lego_LoadLevel
+                }
+
+                return TRUE;
+            }
+        }
     }
 
     Mem_Free(level);
@@ -1055,6 +1149,18 @@ B32 Lego_LoadLevel(const char* levelName)
     legoGlobs.currLevel = NULL;
     
     return FALSE;
+}
+
+B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* predugMap, S32 predugParam, const char* terrainMap, S32 terrainParam, const char* blockPointersMap, S32 blockPointersParam, const char* cryOreMap, S32 cryOreParam, const char* erodeMap, const char* pathMap, S32 pathParam, const char* textureSet, const char* emergeMap, const char* aiMap, const char* fallinMap)
+{
+    // TODO: Implement Lego_LoadMapSet
+    return TRUE;
+}
+
+B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename)
+{
+    // TODO: Implement Lego_LoadOLObjectList
+    return TRUE;
 }
 
 void Lego_SetMusicOn(B32 isMusicOn)
@@ -1094,6 +1200,11 @@ void Lego_SetSoundOn(B32 isSoundOn)
 void Lego_SetGameSpeed(F32 newGameSpeed)
 {
     // TODO: Implement Lego_SetGameSpeed
+}
+
+void Lego_SetViewMode(ViewMode viewMode, lpLegoObject liveObj, U32 cameraFrame)
+{
+    // TODO: Implement Lego_SetViewMode
 }
 
 void Lego_LoadSamples(lpConfig config, B32 noReduceSamples)

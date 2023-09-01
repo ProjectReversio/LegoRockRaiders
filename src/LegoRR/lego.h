@@ -436,12 +436,16 @@ extern B32 Lego_Shutdown_Quick();
 extern B32 Lego_MainLoop(F32 elapsed);
 
 extern B32 Lego_LoadLevel(const char* levelName);
+extern B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* predugMap, S32 predugParam, const char* terrainMap, S32 terrainParam, const char* blockPointersMap, S32 blockPointersParam, const char* cryOreMap, S32 cryOreParam, const char* erodeMap, const char* pathMap, S32 pathParam, const char* textureSet, const char* emergeMap, const char* aiMap, const char* fallinMap);
+extern B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename);
 
 extern void Lego_SetSoundOn(B32 isSoundOn);
 extern void Lego_SetMusicOn(B32 isMusicOn);
 extern void Lego_CDTrackPlayNextCallback();
 
 extern void Lego_SetGameSpeed(F32 newGameSpeed);
+
+extern void Lego_SetViewMode(ViewMode viewMode, lpLegoObject liveObj, U32 cameraFrame);
 
 extern void Lego_LoadSamples(lpConfig config, B32 noReduceSamples);
 extern void Lego_LoadSurfaceTypeDescriptions_sound(lpConfig config, const char* gameName);

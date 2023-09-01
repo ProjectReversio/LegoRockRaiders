@@ -38,6 +38,20 @@ typedef struct LegoObject
     // TODO: Implement LegoObject
 } LegoObject, *lpLegoObject;
 
+typedef struct LegoObject_Globs
+{
+    lpLegoObject listSet[32];
+    lpLegoObject freeList;
+
+    // TODO: Implement LegoObject_Globs
+
+    lpLegoObject minifigureObj_9cb8;
+
+    // TODO: Implement LegoObject_Globs
+} LegoObject_Globs;
+
+extern LegoObject_Globs objectGlobs;
+
 extern void LegoObject_Initialize();
 
 extern void LegoObject_TriggerFrameCallback(lpContainer cont, void* data);

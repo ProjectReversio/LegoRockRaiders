@@ -1,6 +1,11 @@
 #include "objective.h"
 #include "lego.h"
 
+void Objective_SetStatus(LevelStatus status)
+{
+    // TODO: Implement Objective_SetStatus
+}
+
 void Objective_Update(lpTextWindow textWnd, lpLego_Level level, F32 elapsedGamed, F32 elapsedAbs)
 {
     // TODO: Implement Objective_Update
