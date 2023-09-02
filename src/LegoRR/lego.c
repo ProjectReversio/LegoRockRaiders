@@ -1147,13 +1147,21 @@ B32 Lego_LoadLevel(const char* levelName)
 
     Loader_Display_Loading_Bar(NULL);
     legoGlobs.currLevel = NULL;
+
+    Error_Warn(TRUE, Error_Format("Failed to load level '%s'", levelName));
     
     return FALSE;
 }
 
 B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* predugMap, S32 predugParam, const char* terrainMap, S32 terrainParam, const char* blockPointersMap, S32 blockPointersParam, const char* cryOreMap, S32 cryOreParam, const char* erodeMap, const char* pathMap, S32 pathParam, const char* textureSet, const char* emergeMap, const char* aiMap, const char* fallinMap)
 {
+    level->map = Map3D_Create(legoGlobs.rootCont, surfaceMap, level->BlockSize, level->RoughLevel);
+
+    if (level->map == NULL)
+        return FALSE;
+
     // TODO: Implement Lego_LoadMapSet
+
     return TRUE;
 }
 

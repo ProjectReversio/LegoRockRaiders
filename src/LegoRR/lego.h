@@ -17,6 +17,7 @@
 #include "creature.h"
 #include "building.h"
 #include "upgrade.h"
+#include "map3d.h"
 
 typedef enum TextureType
 {
@@ -38,6 +39,7 @@ typedef enum LevelStatus
 typedef struct Lego_Level
 {
     char* name; // (format: "Levels::level")
+    lpMap3D map;
 
     // TODO: Implement Lego_Level
 

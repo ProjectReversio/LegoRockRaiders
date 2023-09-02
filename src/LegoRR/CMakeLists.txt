@@ -82,6 +82,7 @@ set(MAIN_SRC
     ptl.c
     electric_fence.c
     spider_web.c
+    map3d.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -165,6 +166,7 @@ set(MAIN_SRC
     ptl.h
     electric_fence.h
     spider_web.h
+    map3d.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h
