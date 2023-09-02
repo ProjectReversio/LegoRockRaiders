@@ -3,6 +3,16 @@
 #include "common.h"
 #include "container.h"
 
+#pragma pack(push, 2)
+typedef struct MapFileInfo
+{
+    char Signature[4]; // "MAP "
+    U32 fileSize;
+    Size2I dimensions;
+    U16 blocks[1];
+} MapFileInfo, *lpMapFileInfo;
+#pragma pack(pop)
+
 typedef struct Map3D
 {
     U32 blockWidth;
