@@ -151,3 +151,5 @@ typedef struct Map3D
 extern lpMap3D Map3D_Create(lpContainer root, const char* filename, F32 blockSize, F32 roughLevel);
 
 extern void Map3D_MapFileGetSpecs(lpMapFileInfo mapFileInfo, U32* width, U32* height);
+
+extern void Map3D_InitRoughness(lpMap3D map);

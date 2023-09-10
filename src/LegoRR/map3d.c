@@ -2,6 +2,7 @@
 #include "file.h"
 #include "mem.h"
 #include "material.h"
+#include "main.h"
 
 lpMap3D Map3D_Create(lpContainer root, const char* filename, F32 blockSize, F32 roughLevel)
 {
@@ -49,7 +50,38 @@ lpMap3D Map3D_Create(lpContainer root, const char* filename, F32 blockSize, F32 
         map->blocks3D = Mem_Alloc(sizeof(Map3D_Block) * map->gridWidth * map->gridHeight);
         if (map->blocks3D != NULL)
         {
-            // TODO: Implement Map3D_Create
+            U32 faceData[6];
+            faceData[0] = 0;
+            faceData[1] = 1;
+            faceData[2] = 3;
+            faceData[3] = 1;
+            faceData[4] = 2;
+            faceData[5] = 3;
+
+            if (map->blockWidth * map->blockHeight != 0)
+            {
+                U32 iter = 0;
+                do
+                {
+                    U32 group = Container_Mesh_AddGroup(map->mesh, 4, 2, 3, faceData);
+                    Container_Mesh_HideGroup(map->mesh, group, TRUE);
+                    Container_Mesh_SetQuality(map->mesh, group, Gouraud);
+
+                    iter++;
+                } while (iter < map->blockWidth * map->blockHeight);
+            }
+
+            if (map->gridHeight != 0)
+            {
+                // TODO: Implement Map3D_Create
+            }
+
+            Map3D_InitRoughness(map);
+
+            if (map->blockHeight != 0)
+            {
+                // TODO: Implement Map3D_Create
+            }
 
             Mem_Free(mapFileInfo);
             return map;
@@ -66,4 +98,9 @@ void Map3D_MapFileGetSpecs(lpMapFileInfo mapFileInfo, U32* width, U32* height)
 {
     *width = mapFileInfo->dimensions.width;
     *height = mapFileInfo->dimensions.height;
+}
+
+void Map3D_InitRoughness(lpMap3D map)
+{
+    // TODO: Implement Map3D_InitRoughness
 }

@@ -2,6 +2,7 @@
 
 #include "platform.h"
 #include "3DSound.h"
+#include "main.h"
 #include <d3drm.h>
 
 #define CONTAINER_MAXLISTS 20
@@ -223,6 +224,10 @@ extern lpContainer Container_MakeMesh2(lpContainer parent, Container_MeshType ty
 #define Container_MakeMeshTrans(r)                  Container_MakeMesh2((r), Container_MeshType_Transparent)
 #define Container_MakeMeshAdditive(r)               Container_MakeMesh2((r), Container_MeshType_Additive)
 #define Container_MakeMeshSubtractive(r)            Container_MakeMesh2((r), Container_MeshType_Subtractive)
+
+extern U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData);
+extern void Container_Mesh_HideGroup(lpContainer cont, U32 group, B32 hide);
+extern void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Quality quality);
 
 extern void Container_Hide2(lpContainer cont, B32 hide);
 extern void Container_Hide(lpContainer cont, B32 hide);

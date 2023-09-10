@@ -721,6 +721,23 @@ lpContainer Container_MakeMesh2(lpContainer parent, Container_MeshType type)
     return cont;
 }
 
+U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData)
+{
+    // TODO: Implement Container_Mesh_AddGroup
+
+    return D3DRMGROUP_ALLGROUPS;
+}
+
+void Container_Mesh_HideGroup(lpContainer cont, U32 group, B32 hide)
+{
+    // TODO: Implement Container_Mesh_HideGroup
+}
+
+void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Quality quality)
+{
+    // TODO: Implement Container_Mesh_SetQuality
+}
+
 void Container_Hide2(lpContainer cont, B32 hide)
 {
     if (hide)
