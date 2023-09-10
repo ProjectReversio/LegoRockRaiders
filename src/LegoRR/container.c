@@ -651,8 +651,74 @@ lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 
 
 lpContainer Container_MakeMesh2(lpContainer parent, Container_MeshType type)
 {
-    // TODO: Implement Container_MakeMesh2
-    return NULL;
+    lpContainer cont = Container_Create(parent);
+    LPDIRECT3DRMMESH mesh;
+
+    Container_DebugCheckOK(CONTAINER_DEBUG_NOTREQUIRED);
+
+    if (cont)
+    {
+        cont->type = Container_Mesh;
+
+        if (type == Container_MeshType_Transparent ||
+            type == Container_MeshType_Immediate ||
+            type == Container_MeshType_Additive ||
+            type == Container_MeshType_Subtractive)
+        {
+            U32 flags = MESH_FLAG_TRANSFORM_PARENTPOS;
+            lpMesh transmesh;
+
+            switch (type)
+            {
+            case Container_MeshType_Transparent:
+                flags |= MESH_FLAG_RENDER_ALPHATRANS;
+                break;
+            case Container_MeshType_Additive:
+                flags |= MESH_FLAG_RENDER_ALPHASA1;
+                break;
+            case Container_MeshType_Subtractive: // Not in LRR originally
+                flags |= MESH_FLAG_RENDER_ALPHASA0;
+                break;
+            }
+
+            transmesh = Mesh_CreateOnFrame(cont->activityFrame, NULL, flags, NULL, Mesh_Type_Norm);
+            Container_SetTypeData(cont, NULL, NULL, NULL, transmesh);
+        }
+        else
+        {
+            if (lpD3DRM()->lpVtbl->CreateMesh(lpD3DRM(), &mesh) == D3DRM_OK)
+            {
+                Container_NoteCreation(mesh);
+
+                cont->activityFrame->lpVtbl->AddVisual(cont->activityFrame, (struct IUnknown*) mesh);
+                Container_SetTypeData(cont, NULL, NULL, mesh, NULL);
+
+                if (type == Container_MeshType_SeperateMeshes)
+                {
+                    lpContainer_MeshAppData appdata = Mem_Alloc(sizeof(Container_MeshAppData));
+                    appdata->listSize = CONTAINER_MESHGROUPBLOCKSIZE;
+                    appdata->usedCount = 0;
+                    appdata->meshList = Mem_Alloc(sizeof(LPDIRECT3DRMMESH) * appdata->listSize);
+                    appdata->groupZeroHidden = FALSE;
+                    appdata->firstAddGroup = TRUE;
+                    mesh->lpVtbl->SetAppData(mesh, (U32) appdata);
+                }
+                else
+                {
+                    mesh->lpVtbl->SetAppData(mesh, 0);
+                }
+            } else
+            {
+                Error_Fatal(TRUE, "Cannot create mesh object");
+            }
+        }
+
+#ifdef _DEBUG
+        Container_Frame_FormatName(cont->masterFrame, "Mesh");
+#endif // _DEBUG
+    }
+
+    return cont;
 }
 
 void Container_Hide2(lpContainer cont, B32 hide)

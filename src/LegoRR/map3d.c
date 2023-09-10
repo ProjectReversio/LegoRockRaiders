@@ -41,8 +41,8 @@ lpMap3D Map3D_Create(lpContainer root, const char* filename, F32 blockSize, F32 
     for (U32 i = 0; i < 10; i++)
         map->transBlocks[i].groupID = D3DRMGROUP_ALLGROUPS; // (not created yet)
 
-    map->transMesh = Container_MakeMesh2(root, Container_MeshType_Transparent);
-    map->mesh = Container_MakeMesh2(root, Container_MeshType_Immediate);
+    map->transMesh = Container_MakeMeshTrans(root);
+    map->mesh = Container_MakeMeshImmediate(root);
 
     if (map->mesh != NULL)
     {

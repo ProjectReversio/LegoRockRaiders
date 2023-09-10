@@ -6,6 +6,7 @@
 
 #define CONTAINER_MAXLISTS 20
 #define CONTAINER_MAXTEXTURES 1000
+#define CONTAINER_MESHGROUPBLOCKSIZE 20
 #define CONTAINER_MAXVISUALS 4
 
 #ifdef _DEBUG
@@ -131,6 +132,13 @@ typedef struct Container_AppData
 
     lpSound3D_SoundFrameRecord soundList;
 } Container_AppData, *lpContainer_AppData;
+
+typedef struct Container_MeshAppData
+{
+    LPDIRECT3DRMMESH *meshList;
+    U32 usedCount, listSize;
+    B32 groupZeroHidden, firstAddGroup;
+} Container_MeshAppData, *lpContainer_MeshAppData;
 
 typedef void (*ContainerSoundTriggerCallback)(const char* sampleName, lpContainer cont, void* data);
 typedef void (*ContainerTriggerFrameCallback)(lpContainer cont, void* data);
