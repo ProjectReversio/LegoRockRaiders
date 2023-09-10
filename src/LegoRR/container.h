@@ -37,6 +37,16 @@ typedef enum Container_Type
     Container_TypeCount
 } Container_Type, *lpContainer_Type;
 
+typedef enum Container_MeshType
+{
+    Container_MeshType_Normal         = 0,
+    Container_MeshType_SeperateMeshes = 1,
+    Container_MeshType_Immediate      = 2,
+    Container_MeshType_Transparent    = 3,
+    Container_MeshType_Additive       = 4,
+    Container_MeshType_Subtractive    = 5,
+} Container_MeshType;
+
 typedef enum ContainerFlags
 {
     CONTAINER_FLAG_NONE = 0,
@@ -197,6 +207,14 @@ extern Container_Type Container_ParseTypeString(const char* str, B32* noTexture)
 
 extern lpContainer Container_Load(lpContainer parent, const char* filename, const char* typestr, B32 looping);
 extern lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 b);
+extern lpContainer Container_MakeMesh2(lpContainer parent, Container_MeshType type);
+
+#define Container_MakeMesh(r)                       Container_MakeMesh2((r), Container_MeshType_Normal)
+#define Container_MakeMeshSeparateGroups(r)         Container_MakeMesh2((r), Container_MeshType_SeperateMeshes)
+#define Container_MakeMeshImmediate(r)              Container_MakeMesh2((r), Container_MeshType_Immediate)
+#define Container_MakeMeshTrans(r)                  Container_MakeMesh2((r), Container_MeshType_Transparent)
+#define Container_MakeMeshAdditive(r)               Container_MakeMesh2((r), Container_MeshType_Additive)
+#define Container_MakeMeshSubtractive(r)            Container_MakeMesh2((r), Container_MeshType_Subtractive)
 
 extern void Container_Hide2(lpContainer cont, B32 hide);
 extern void Container_Hide(lpContainer cont, B32 hide);

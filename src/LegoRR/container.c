@@ -649,6 +649,12 @@ lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 
     return cont;
 }
 
+lpContainer Container_MakeMesh2(lpContainer parent, Container_MeshType type)
+{
+    // TODO: Implement Container_MakeMesh2
+    return NULL;
+}
+
 void Container_Hide2(lpContainer cont, B32 hide)
 {
     if (hide)

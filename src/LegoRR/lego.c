@@ -1148,7 +1148,7 @@ B32 Lego_LoadLevel(const char* levelName)
     Loader_Display_Loading_Bar(NULL);
     legoGlobs.currLevel = NULL;
 
-    Error_Warn(TRUE, Error_Format("Failed to load level '%s'", levelName));
+    Error_Fatal(TRUE, Error_Format("Failed to load level '%s'", levelName));
     
     return FALSE;
 }
