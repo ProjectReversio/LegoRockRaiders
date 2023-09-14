@@ -723,7 +723,88 @@ lpContainer Container_MakeMesh2(lpContainer parent, Container_MeshType type)
 
 U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData)
 {
-    // TODO: Implement Container_Mesh_AddGroup
+    U32 groupID;
+    LPDIRECT3DRMMESH mesh;
+    lpContainer_MeshAppData appdata;
+    lpMesh transmesh;
+
+    Container_DebugCheckOK(cont);
+
+    Error_Fatal(cont->type != Container_Mesh, "Container_Mesh_AddGroup() called with non mesh object");
+
+    transmesh = cont->typeData->transMesh;
+    if (transmesh)
+    {
+        groupID = Mesh_AddGroup(transmesh, vertexCount, faceCount, vPerFace, faceData);
+
+        return groupID;
+    }
+    else
+    {
+        Error_Fatal(vertexCount == 0, "Don't know if that will work!!!");
+
+        mesh = cont->typeData->mesh;
+        Error_Fatal(!mesh, "Container has no mesh object");
+
+        appdata = (lpContainer_MeshAppData) mesh->lpVtbl->GetAppData(mesh);
+        if (appdata)
+        {
+            if(!appdata->firstAddGroup)
+            {
+                // Make sure it doesn't crash
+                if (appdata->usedCount == appdata->listSize)
+                    return D3DRMGROUP_ALLGROUPS;
+
+                // Using separate meshes instead of groups...
+                if (lpD3DRM()->lpVtbl->CreateMesh(lpD3DRM(), &mesh) == D3DRM_OK)
+                {
+                    Container_NoteCreation(mesh);
+
+                    appdata->meshList[appdata->usedCount++] = mesh;
+                    cont->activityFrame->lpVtbl->AddVisual(cont->activityFrame, (struct IUnknown *) mesh);
+
+                    {
+                        // Set the msb if the group is added as a visual...
+                        U32 value = appdata->usedCount;
+                        value |= 0x80000000;
+                        mesh->lpVtbl->SetAppData(mesh, value);
+                    }
+
+                    if (appdata->usedCount == appdata->listSize)
+                    {
+                        LPDIRECT3DRMMESH *newList;
+                        newList = Mem_ReAlloc(appdata->meshList, sizeof(LPDIRECT3DRMMESH) * (appdata->listSize + CONTAINER_MESHGROUPBLOCKSIZE));
+                        if (newList)
+                        {
+                            appdata->listSize += CONTAINER_MESHGROUPBLOCKSIZE;
+                            appdata->meshList = newList;
+                        }
+                    }
+                } else
+                {
+                    Error_Warn(TRUE, "Cannot add separated mesh as group");
+                    return D3DRMGROUP_ALLGROUPS;
+                }
+            }
+            else
+            {
+                appdata->firstAddGroup = FALSE;
+            }
+        }
+
+        if (mesh->lpVtbl->AddGroup(mesh, vertexCount, faceCount, vPerFace, faceData, &groupID) == D3DRM_OK)
+        {
+            if (appdata)
+                return appdata->usedCount;
+            else
+                return groupID;
+        }
+        else
+        {
+            Error_Fatal(TRUE, "Unable to AddGroup");
+            return D3DRMGROUP_ALLGROUPS;
+        }
+    }
 
     return D3DRMGROUP_ALLGROUPS;
 }

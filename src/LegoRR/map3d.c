@@ -33,7 +33,7 @@ lpMap3D Map3D_Create(lpContainer root, const char* filename, F32 blockSize, F32 
     map->uvBlocksNum = 0;
     map->float_20 = 0.0f;
 
-    // THIS MATERIAL IS NEVER USED, AND IS NEVER RELEASED!!!
+    // TODO: THIS MATERIAL IS NEVER USED, AND IS NEVER RELEASED!!!
     map->material = Material_Create(1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
     memset(map->transBlocks, 0, sizeof(Map3D_TransitionBlock) * 10);
