@@ -1186,6 +1186,22 @@ S32 Mesh_AddGroup(lpMesh mesh, U32 vertexCount, U32 faceCount, U32 vPerFace, U32
     return mesh->groupCount - 1;
 }
 
+void Mesh_HideGroup(lpMesh mesh, U32 groupID, B32 hide)
+{
+    if (groupID < mesh->groupCount)
+    {
+        lpMesh_Group group;
+
+        Mesh_Debug_CheckIMDevice_Void();
+        group = &mesh->groupList[groupID];
+
+        if (hide)
+            group->flags |= MESH_FLAG_HIDDEN;
+        else
+            group->flags &= ~MESH_FLAG_HIDDEN;
+    }
+}
+
 //void Mesh_SetAmbientLight(F32 r, F32 g, F32 b)
 //{
 //    if (r > 1.0f)

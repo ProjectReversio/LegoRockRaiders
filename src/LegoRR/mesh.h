@@ -240,6 +240,8 @@ extern U32 Mesh_GetGroupCount(lpMesh mesh);
 
 extern S32 Mesh_AddGroup(lpMesh mesh, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData);
 
+extern void Mesh_HideGroup(lpMesh mesh, U32 groupID, B32 hide);
+
 //extern void Mesh_SetAmbientLight(F32 r, F32 g, F32 b);
 
 extern void Mesh_GetTextureUVsWrap(U32 vertexCount, Point3F vertices[], Point2F coords[], F32 sx, F32 sy, F32 sz, F32 px, F32 py, F32 pz, U32 flags);

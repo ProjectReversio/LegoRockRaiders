@@ -811,7 +811,65 @@ U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U3
 
 void Container_Mesh_HideGroup(lpContainer cont, U32 group, B32 hide)
 {
-    // TODO: Implement Container_Mesh_HideGroup
+    B32 hidden;
+    LPDIRECT3DRMMESH mesh, groupmesh;
+    LPDIRECT3DRMVISUAL visual;
+    lpContainer_MeshAppData appdata;
+    lpMesh transmesh;
+
+    Container_DebugCheckOK(cont);
+    Error_Fatal(cont->type != Container_Mesh, "Container_Mesh_HideGroup() called with non mesh object");
+    Error_Fatal(!cont->typeData, "Container has no typeData");
+
+    transmesh = cont->typeData->transMesh;
+    if (transmesh)
+    {
+        Mesh_HideGroup(transmesh, group, hide);
+    }
+    else
+    {
+        mesh = cont->typeData->mesh;
+        Error_Fatal(!mesh, "Container has no mesh object");
+
+        Container_Mesh_DebugCheckOK(cont, group);
+
+        appdata = (lpContainer_MeshAppData) mesh->lpVtbl->GetAppData(mesh);
+        if (appdata)
+        {
+            if (group != 0)
+            {
+                groupmesh = appdata->meshList[group - 1];
+                hidden = !(groupmesh->lpVtbl->GetAppData(groupmesh) & 0x80000000);
+                visual = (LPDIRECT3DRMVISUAL) groupmesh;
+                group = 0;
+            }
+            else
+            {
+                groupmesh = NULL;
+                hidden = appdata->groupZeroHidden;
+                visual = (LPDIRECT3DRMVISUAL) mesh;
+            }
+
+            if (hide && !hidden)
+                cont->activityFrame->lpVtbl->DeleteVisual(cont->activityFrame, (struct IUnknown *) visual);
+            else if (!hide && hidden)
+                cont->activityFrame->lpVtbl->AddVisual(cont->activityFrame, (struct IUnknown *) visual);
+
+            if (groupmesh)
+            {
+                U32 keep = groupmesh->lpVtbl->GetAppData(groupmesh) & 0x7fffffff;
+                if (hide)
+                    groupmesh->lpVtbl->SetAppData(groupmesh, keep);
+                else
+                    groupmesh->lpVtbl->SetAppData(groupmesh, keep | 0x80000000);
+            }
+            else
+            {
+                appdata->groupZeroHidden = hide;
+            }
+        }
+        //else Error_Fatal(TRUE, "Wrong mesh type");
+    }
 }
 
 void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Quality quality)
