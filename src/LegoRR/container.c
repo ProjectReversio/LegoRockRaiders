@@ -872,9 +872,59 @@ void Container_Mesh_HideGroup(lpContainer cont, U32 group, B32 hide)
     }
 }
 
-void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Quality quality)
+void Container_Mesh_SetQuality(lpContainer cont, U32 groupID, Graphics_Quality quality)
 {
-    // TODO: Implement Container_Mesh_SetQuality
+    U32 d3drmqual;
+    LPDIRECT3DRMMESH mesh;
+    lpMesh transmesh;
+
+    Error_Fatal(cont->type != Container_Mesh, "Container_Mesh_SetQuality() called with non mesh object");
+
+    transmesh = cont->typeData->transMesh;
+    if (transmesh)
+    {
+        Error_Warn(TRUE, "Not supported yet");
+    }
+    else
+    {
+        if (quality == Wireframe)
+            d3drmqual = D3DRMRENDER_WIREFRAME;
+        if (quality == UnlitFlat)
+            d3drmqual = D3DRMRENDER_UNLITFLAT;
+        if (quality == Flat)
+            d3drmqual = D3DRMRENDER_FLAT;
+        if (quality == Gouraud)
+            d3drmqual = D3DRMRENDER_GOURAUD;
+
+        Container_DebugCheckOK(cont);
+        Error_Fatal(!cont->typeData, "Container has no typeData");
+
+        mesh = cont->typeData->mesh;
+        Error_Fatal(!mesh, "Container has no mesh object");
+
+        Container_Mesh_DebugCheckOK(cont, groupID);
+
+        Container_Mesh_HandleSeparateMeshGroups(&mesh, &groupID);
+        cont->typeData->mesh->lpVtbl->SetGroupQuality(mesh, groupID, d3drmqual);
+    }
+}
+
+B32 Container_Mesh_HandleSeparateMeshGroups(LPDIRECT3DRMMESH *mesh, U32* group)
+{
+    lpContainer_MeshAppData appdata = (lpContainer_MeshAppData) (*mesh)->lpVtbl->GetAppData(*mesh);
+    if (appdata)
+    {
+        // Leave the default mesh if the group is zero and the (group-1)'th off the
+        // list if not...
+
+        if ((*group) != 0)
+            *mesh = appdata->meshList[(*group)-1];
+        (*group) = 0;
+
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 void Container_Hide2(lpContainer cont, B32 hide)

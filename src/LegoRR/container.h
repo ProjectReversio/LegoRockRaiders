@@ -229,6 +229,8 @@ extern U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCo
 extern void Container_Mesh_HideGroup(lpContainer cont, U32 group, B32 hide);
 extern void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Quality quality);
 
+extern B32 Container_Mesh_HandleSeparateMeshGroups(LPDIRECT3DRMMESH *mesh, U32* group);
+
 extern void Container_Hide2(lpContainer cont, B32 hide);
 extern void Container_Hide(lpContainer cont, B32 hide);
 
