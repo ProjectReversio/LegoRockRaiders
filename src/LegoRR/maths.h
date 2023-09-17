@@ -56,6 +56,7 @@ typedef struct Range2F
 } Range2F, *lpRange2F;
 
 extern S16 Maths_Rand();
+extern F32 Maths_RandRange(F32 low, F32 high);
 
 #define Maths_Vector3DLength(v) Maths_Vector3DModulus((v))
 

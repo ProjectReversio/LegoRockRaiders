@@ -100,6 +100,11 @@ void Map3D_MapFileGetSpecs(lpMapFileInfo mapFileInfo, U32* width, U32* height)
     *height = mapFileInfo->dimensions.height;
 }
 
+U16 Map3D_MapFileBlockValue(lpMapFileInfo mapFile, U32 bx, U32 by, U32 gridWidth)
+{
+    return mapFile->blocks[gridWidth * by + bx];
+}
+
 void Map3D_InitRoughness(lpMap3D map)
 {
     // TODO: Implement Map3D_InitRoughness

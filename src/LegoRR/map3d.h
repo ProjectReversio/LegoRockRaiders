@@ -152,4 +152,6 @@ extern lpMap3D Map3D_Create(lpContainer root, const char* filename, F32 blockSiz
 
 extern void Map3D_MapFileGetSpecs(lpMapFileInfo mapFileInfo, U32* width, U32* height);
 
+extern U16 Map3D_MapFileBlockValue(lpMapFileInfo mapFile, U32 bx, U32 by, U32 gridWidth);
+
 extern void Map3D_InitRoughness(lpMap3D map);
