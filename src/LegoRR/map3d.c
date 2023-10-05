@@ -73,7 +73,31 @@ lpMap3D Map3D_Create(lpContainer root, const char* filename, F32 blockSize, F32 
 
             if (map->gridHeight != 0)
             {
-                // TODO: Implement Map3D_Create
+                U32 yIter = 0;
+                do
+                {
+                    if (map->gridWidth != 0)
+                    {
+                        U32 xIter = 0;
+                        do
+                        {
+                            map->blocks3D[yIter * map->gridWidth + xIter].flags3D = MAP3DBLOCK_FLAG_UNK_20 | MAP3DBLOCK_FLAG_UNK_40;
+                            map->blocks3D[yIter * map->gridWidth + xIter].texture = TEXTURE_FLOOR_STD;
+                            map->blocks3D[yIter * map->gridWidth + xIter].heightValue = Map3D_MapFileBlockValue(mapFileInfo, xIter, yIter, map->gridWidth);
+
+                            F32 fVar8 = Maths_RandRange(0.0f, 1.0f);
+                            F32 fVar8_2 = Maths_RandRange(0.0f, 1.0f);
+                            F32 fVar9 = 1.0f / (F32)sqrt(fVar8 * fVar8 + fVar8_2 * fVar8_2);
+                            map->blocks3D[yIter * map->gridWidth + xIter].uvCoord.x = fVar9 * fVar8 * 0.3f;
+                            map->blocks3D[yIter * map->gridWidth + xIter].uvCoord.y = fVar9 * fVar8_2 * 0.3f;
+
+                            map->blocks3D[yIter * map->gridWidth + xIter].highlight = 0;
+
+                            xIter++;
+                        } while (xIter < map->gridWidth);
+                    }
+                    yIter++;
+                } while(yIter < map->gridHeight);
             }
 
             Map3D_InitRoughness(map);
