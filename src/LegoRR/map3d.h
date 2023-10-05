@@ -131,7 +131,7 @@ typedef struct Map3D
     F32 blockSize; // (cfg: BlockSize)
     F32 roughLevel; // (cfg: RoughLevel)
     Size2F worldDimensions_fnegx; // (-width, +height) * BlockSize / 2.0f (smallDimensions)
-    F32 float_20; // (some sort of maximum)
+    F32 float_20; // (some sort of maximum) (appears to be minimum z value?)
     lpContainer mesh; // Mesh for Map3D_Blocks
     lpMap3D_Block blocks3D; // [*:dimensions]
     Detail_TextureSet* textureSet;

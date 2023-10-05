@@ -159,7 +159,53 @@ U16 Map3D_MapFileBlockValue(lpMapFileInfo mapFile, U32 bx, U32 by, U32 gridWidth
 
 void Map3D_InitRoughness(lpMap3D map)
 {
-    // TODO: Implement Map3D_InitRoughness
+    Vertex vertices[4];
+
+    Point2F OFFSETS[4];
+
+    OFFSETS[0].x = 0.0f;
+    OFFSETS[0].y = 0.0f;
+    OFFSETS[1].x = 1.0f;
+    OFFSETS[1].y = 0.0f;
+    OFFSETS[2].x = 1.0f;
+    OFFSETS[2].y = 1.0f;
+    OFFSETS[3].x = 0.0f;
+    OFFSETS[3].y = 1.0f;
+
+    U32 y = 0;
+    if (map->blockHeight != 0)
+    {
+        do
+        {
+            U32 x = 0;
+            if (map->blockWidth != 0)
+            {
+                do
+                {
+                    Point2F* pOffset = OFFSETS;
+
+                    S32 i = 3;
+                    do
+                    {
+                        vertices[i].position.x = ((F32)x + pOffset->x) * map->blockSize + map->worldDimensions_fnegx.width;
+                        vertices[i].position.y = map->worldDimensions_fnegx.height - (pOffset->y + (F32)y) * map->blockSize;
+
+                        vertices[i].position.z = -((F32)(U32)map->blocks3D[(y + (S32)pOffset->y) * map->gridWidth + x + (S32)pOffset->x].heightValue * map->roughLevel);
+                        if (vertices[i].position.z < map->float_20)
+                            map->float_20 = vertices[i].position.z;
+
+                        pOffset++;
+                        i--;
+                    } while (i >= 0);
+
+                    Container_Mesh_SetVertices(map->mesh, y * map->blockWidth + x, 0, 4, vertices);
+
+                    x++;
+                } while (x < map->blockWidth);
+            }
+            y++;
+        } while (y < map->blockHeight);
+    }
 }
 
 // This seems to be used when the height difference of diagonal vertex points differs.
