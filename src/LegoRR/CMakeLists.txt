@@ -84,6 +84,7 @@ set(MAIN_SRC
     spider_web.c
     map3d.c
     material.c
+    water.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -169,6 +170,7 @@ set(MAIN_SRC
     spider_web.h
     map3d.h
     material.h
+    water.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

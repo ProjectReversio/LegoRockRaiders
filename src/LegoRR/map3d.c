@@ -288,5 +288,9 @@ void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by)
         // NOTE: index is shifted one after the previous call
         Maths_PlaneNormal(&map->blocks3D[by * map->gridWidth + bx].normalB, &vertices[1].position, &vertices[2].position, &vertices[3].position);
     }
+}
 
+void Map3D_SetEmissive(lpMap3D map, B32 on)
+{
+    // TODO: Implement Map3D_SetEmissive
 }

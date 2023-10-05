@@ -449,6 +449,8 @@ extern void Lego_SetGameSpeed(F32 newGameSpeed);
 
 extern void Lego_SetViewMode(ViewMode viewMode, lpLegoObject liveObj, U32 cameraFrame);
 
+extern void Lego_Goto(lpLegoObject liveObj, Point2I* blockPos, B32 smooth);
+
 extern void Lego_LoadSamples(lpConfig config, B32 noReduceSamples);
 extern void Lego_LoadSurfaceTypeDescriptions_sound(lpConfig config, const char* gameName);
 extern void Lego_LoadToolTipInfos(lpConfig config, const char* gameName);

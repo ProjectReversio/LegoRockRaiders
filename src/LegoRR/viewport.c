@@ -100,6 +100,18 @@ void Viewport_SetBackClip(lpViewport viewport, F32 dist)
         Error_Warn(TRUE, "Cannot set back clipping plane distance");
 }
 
+void Viewport_SetCamera(lpViewport vp, lpContainer cont)
+{
+    Viewport_CheckInit();
+
+    Error_Fatal(!vp || !cont, "NULL passed as viewport or container to Viewport_SetCamera()");
+
+    // Does it matter that a non-camera container can be used as a camera????
+
+    if (vp->lpVP->lpVtbl->SetCamera(vp->lpVP, cont->masterFrame) != D3DRM_OK)
+        Error_Warn(TRUE, "Cannot set container as camera");
+}
+
 lpContainer Viewport_GetCamera(lpViewport vp)
 {
     LPDIRECT3DRMFRAME3 frame;
@@ -125,6 +137,23 @@ lpContainer Viewport_GetCamera(lpViewport vp)
     }
 
     return camera;
+}
+
+void Viewport_SetField(lpViewport vp, F32 fov)
+{
+    Viewport_CheckInit();
+    Error_Fatal(!vp, "NULL passed to Viewport_SetField()");
+
+    vp->lpVP->lpVtbl->SetField(vp->lpVP, fov);
+    vp->smoothFOV = 0.0f;
+}
+
+F32 Viewport_GetField(lpViewport vp)
+{
+    Viewport_CheckInit();
+    Error_Fatal(!vp, "NULL passed to Viewport_GetField()");
+
+    return vp->lpVP->lpVtbl->GetField(vp->lpVP);
 }
 
 LPDIRECT3DRMFRAME3 Viewport_GetScene(lpViewport vp)

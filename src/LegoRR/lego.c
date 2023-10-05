@@ -47,6 +47,7 @@
 #include "ptl.h"
 #include "electric_fence.h"
 #include "spider_web.h"
+#include "water.h"
 
 Lego_Globs legoGlobs;
 
@@ -1212,7 +1213,34 @@ void Lego_SetGameSpeed(F32 newGameSpeed)
 
 void Lego_SetViewMode(ViewMode viewMode, lpLegoObject liveObj, U32 cameraFrame)
 {
-    // TODO: Implement Lego_SetViewMode
+    if (viewMode == ViewMode_FP)
+    {
+        // TODO: Implement Lego_SetViewMode
+    }
+    else if (viewMode == ViewMode_Top)
+    {
+        if (legoGlobs.objectFP != NULL)
+            Lego_Goto(legoGlobs.objectFP, NULL, FALSE);
+
+        legoGlobs.cameraFP->trackObject = NULL;
+        legoGlobs.objectFP = NULL;
+
+        Water_Debug_LogContainerMesh(FALSE);
+
+        Map3D_SetEmissive(legoGlobs.currLevel->map, FALSE);
+        Viewport_SetCamera(legoGlobs.viewMain, legoGlobs.cameraMain->contCam);
+        Sound3D_MakeListener(legoGlobs.cameraMain->contListener->masterFrame);
+        Sound3D_SetMinDistForAtten(legoGlobs.MinDistFor3DSoundsOnTopView);
+        Viewport_SetField(legoGlobs.viewMain, 0.5f);
+        Viewport_SetBackClip(legoGlobs.viewMain, legoGlobs.TVClipDist);
+    }
+
+    legoGlobs.viewMode = viewMode;
+}
+
+void Lego_Goto(lpLegoObject liveObj, Point2I* blockPos, B32 smooth)
+{
+    // TODO: Implement Lego_Goto
 }
 
 void Lego_LoadSamples(lpConfig config, B32 noReduceSamples)
