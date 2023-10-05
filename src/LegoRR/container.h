@@ -3,6 +3,7 @@
 #include "platform.h"
 #include "3DSound.h"
 #include "main.h"
+#include "common.h"
 #include <d3drm.h>
 
 #define CONTAINER_MAXLISTS 20
@@ -211,6 +212,9 @@ extern F32 Container_Frame_GetCurrTime(LPDIRECT3DRMFRAME3 frame);
 extern U32 Container_Frame_GetFrameCount(LPDIRECT3DRMFRAME3 frame);
 extern struct AnimClone* Container_Frame_GetAnimClone(LPDIRECT3DRMFRAME3 frame);
 extern U32 Container_Frame_GetTrigger(LPDIRECT3DRMFRAME3 frame);
+
+extern U32 Container_Mesh_GetVertices(lpContainer cont, U32 groupID, U32 index, U32 count, lpVertex retArray);
+extern U32 Container_Mesh_SetVertices(lpContainer cont, U32 groupID, U32 index, U32 count, lpVertex values);
 
 extern Container_Type Container_ParseTypeString(const char* str, B32* noTexture);
 

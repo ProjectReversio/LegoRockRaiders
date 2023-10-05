@@ -169,5 +169,22 @@ void Map3D_SetBlockRotated(lpMap3D map, U32 bx, U32 by, B32 on)
 
 void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by)
 {
-    // TODO: Implement Map3D_GenerateBlockPlaneNormals
+    Vertex vertices[4];
+
+    U32 width = map->blockWidth;
+
+    if (bx < width && by < map->blockHeight)
+    {
+        Container_Mesh_GetVertices(map->mesh, by * width + bx, 0, 4, vertices);
+        // (&surfMap->blocks3D[by * surfMap->gridWidth + bx].vector_0,
+        //   &vertices[0].position, &vertices[1].position, &vertices[2].position)
+
+        Maths_PlaneNormal(&map->blocks3D[by * map->gridWidth + bx].normalA, &vertices[0].position, &vertices[1].position, &vertices[3].position);
+        // (&surfMap->blocks3D[by * surfMap-gridWidth + bx].vector_c,
+        //   &vertices[1].position, &vertices[2].position, &vertices[3].position)
+
+        // NOTE: index is shifted one after the previous call
+        Maths_PlaneNormal(&map->blocks3D[by * map->gridWidth + bx].normalB, &vertices[1].position, &vertices[2].position, &vertices[3].position);
+    }
+
 }

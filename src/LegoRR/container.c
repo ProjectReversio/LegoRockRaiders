@@ -519,6 +519,20 @@ U32 Container_Frame_GetTrigger(LPDIRECT3DRMFRAME3 frame)
     return 0;
 }
 
+U32 Container_Mesh_GetVertices(lpContainer cont, U32 groupID, U32 index, U32 count, lpVertex retArray)
+{
+    // TODO: Implement Container_Mesh_GetVertices
+
+    return 0;
+}
+
+U32 Container_Mesh_SetVertices(lpContainer cont, U32 groupID, U32 index, U32 count, lpVertex values)
+{
+    // TODO: Implement Container_Mesh_SetVertices
+
+    return 0;
+}
+
 Container_Type Container_ParseTypeString(const char* str, B32* noTexture)
 {
     // For now, just check against one type...
