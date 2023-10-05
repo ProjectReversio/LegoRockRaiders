@@ -244,6 +244,9 @@ extern void Mesh_HideGroup(lpMesh mesh, U32 groupID, B32 hide);
 
 //extern void Mesh_SetAmbientLight(F32 r, F32 g, F32 b);
 
+extern void Mesh_GetVertices(lpMesh mesh, U32 groupID, U32 index, U32 count, lpVertex vertices);
+extern void Mesh_SetVertices(lpMesh mesh, U32 groupID, U32 index, U32 count, lpVertex vertices);
+
 extern void Mesh_GetTextureUVsWrap(U32 vertexCount, Point3F vertices[], Point2F coords[], F32 sx, F32 sy, F32 sz, F32 px, F32 py, F32 pz, U32 flags);
 extern void Mesh_SetVertices_VNT(lpMesh mesh, U32 groupID, U32 index, U32 count, Point3F vertices[], lpPoint3F normal[], Point2F textCoords[]);
 extern void Mesh_AlterGroupRenderFlags(lpMesh mesh, U32 groupID, U32 newFlags);

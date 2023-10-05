@@ -1220,6 +1220,46 @@ void Mesh_HideGroup(lpMesh mesh, U32 groupID, B32 hide)
 //    meshGlobs.ambientLight = ((U32) (r * 255.0f) << 16) | ((U32) (g * 255.0f) << 8) | ((U32) (b * 255.0f));
 //}
 
+void Mesh_GetVertices(lpMesh mesh, U32 groupID, U32 index, U32 count, lpVertex vertices)
+{
+    if (groupID < mesh->groupCount)
+    {
+        U32 loop;
+        lpMesh_Group group;
+
+        Mesh_Debug_CheckIMDevice_Void();
+        group = &mesh->groupList[groupID];
+
+        for (loop = 0; loop < count; loop++)
+        {
+            vertices[loop].position = group->vertices[loop + index].position;
+            vertices[loop].normal = group->vertices[loop + index].normal;
+            vertices[loop].tu = group->vertices[loop + index].tu;
+            vertices[loop].tv = group->vertices[loop + index].tv;
+        }
+    }
+}
+
+void Mesh_SetVertices(lpMesh mesh, U32 groupID, U32 index, U32 count, lpVertex vertices)
+{
+    if (groupID < mesh->groupCount)
+    {
+        U32 loop;
+        lpMesh_Group group;
+
+        Mesh_Debug_CheckIMDevice_Void();
+        group = &mesh->groupList[groupID];
+
+        for (loop = 0; loop < count; loop++)
+        {
+            group->vertices[loop + index].position = vertices[loop].position;
+            group->vertices[loop + index].normal = vertices[loop].normal;
+            group->vertices[loop + index].tu = vertices[loop].tu;
+            group->vertices[loop + index].tv = vertices[loop].tv;
+        }
+    }
+}
+
 void Mesh_GetTextureUVsWrap(U32 vertexCount, Point3F vertices[], Point2F coords[], F32 sx, F32 sy, F32 sz, F32 px, F32 py, F32 pz, U32 flags)
 {
     F32 x, y, z;

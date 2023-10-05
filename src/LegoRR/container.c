@@ -521,14 +521,67 @@ U32 Container_Frame_GetTrigger(LPDIRECT3DRMFRAME3 frame)
 
 U32 Container_Mesh_GetVertices(lpContainer cont, U32 groupID, U32 index, U32 count, lpVertex retArray)
 {
-    // TODO: Implement Container_Mesh_GetVertices
+    LPDIRECT3DRMMESH mesh;
+    lpMesh transmesh;
+
+    Container_DebugCheckOK(cont);
+
+    Error_Fatal(cont->type != Container_Mesh && cont->type != Container_LWO, "Container_Mesh_GetVertices() called with non mesh object");
+
+    transmesh = cont->typeData->transMesh;
+    if (transmesh)
+    {
+        Mesh_GetVertices(transmesh, groupID, index, count, retArray);
+    }
+    else
+    {
+        mesh = cont->typeData->mesh;
+        Error_Fatal(!mesh, "Container has no mesh object");
+
+        Container_Mesh_DebugCheckOK(cont, groupID);
+
+        Container_Mesh_HandleSeparateMeshGroups(&mesh, &groupID);
+
+        if (mesh->lpVtbl->GetVertices(mesh, groupID, index, count, (LPD3DRMVERTEX) retArray) != D3DRM_OK)
+        {
+            Error_Fatal(TRUE, "Unable to GetVertices");
+            return CONTAINER_ULONG_NULL;
+        }
+    }
 
     return 0;
 }
 
 U32 Container_Mesh_SetVertices(lpContainer cont, U32 groupID, U32 index, U32 count, lpVertex values)
 {
-    // TODO: Implement Container_Mesh_SetVertices
+    LPDIRECT3DRMMESH mesh;
+    lpMesh transmesh;
+
+    Container_DebugCheckOK(cont);
+
+    Error_Fatal(cont->type != Container_Mesh && cont->type != Container_LWO, "Container_Mesh_SetVertices() called with non mesh object");
+
+    transmesh = cont->typeData->transMesh;
+    if (transmesh)
+    {
+        Mesh_SetVertices(transmesh, groupID, index, count, values);
+    }
+    else
+    {
+        mesh = cont->typeData->mesh;
+        Error_Fatal(!mesh, "Container has no mesh object");
+
+        Container_Mesh_DebugCheckOK(cont, groupID);
+
+        Container_Mesh_HandleSeparateMeshGroups(&mesh, &groupID);
+
+        if (mesh->lpVtbl->SetVertices(mesh, groupID, index, count, (LPD3DRMVERTEX) values) != D3DRM_OK)
+        {
+            Error_Fatal(TRUE, "Unable to SetVertices");
+            return CONTAINER_ULONG_NULL;
+        }
+        // TODO: Implement Container_Mesh_SetVertices
+    }
 
     return 0;
 }
