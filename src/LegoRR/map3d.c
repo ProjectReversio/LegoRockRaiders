@@ -215,7 +215,58 @@ void Map3D_InitRoughness(lpMap3D map)
 // rotated = (abs(diffxy00_11) < std::abs(diffxy10_01));
 void Map3D_SetBlockRotated(lpMap3D map, U32 bx, U32 by, B32 on)
 {
-    // TODO: Implement Map3D_SetBlockRotated
+    if ((on != 0) != Map3D_IsBlockRotated(map, bx, by))
+    {
+        Vertex vertices[4];
+        Vertex vertexSwap;
+
+        U32 groupID = map->blockWidth * by + bx;
+        Container_Mesh_GetVertices(map->mesh, groupID, 0, 4, vertices);
+
+        if ((map->blocks3D[by * map->gridWidth + bx].flags3D & MAP3DBLOCK_FLAG_ROTATED) == MAP3DBLOCK_FLAG_NONE)
+        {
+            map->blocks3D[by * map->gridWidth + bx].flags3D |= MAP3DBLOCK_FLAG_ROTATED;
+
+            // Shift vertices up one
+            memcpy(&vertexSwap,  &vertices[3], sizeof(D3DRMVERTEX));
+            memcpy(&vertices[3], &vertices[2], sizeof(D3DRMVERTEX));
+            memcpy(&vertices[2], &vertices[1], sizeof(D3DRMVERTEX));
+            memcpy(&vertices[1], &vertices[0], sizeof(D3DRMVERTEX));
+            memcpy(&vertices[0], &vertexSwap,  sizeof(D3DRMVERTEX));
+        }
+        else
+        {
+            map->blocks3D[by * map->gridWidth + bx].flags3D &= ~MAP3DBLOCK_FLAG_ROTATED;
+
+            // Shift vertices down one
+            memcpy(&vertexSwap,  &vertices[0], sizeof(D3DRMVERTEX));
+            memcpy(&vertices[0], &vertices[1], sizeof(D3DRMVERTEX));
+            memcpy(&vertices[1], &vertices[2], sizeof(D3DRMVERTEX));
+            memcpy(&vertices[2], &vertices[3], sizeof(D3DRMVERTEX));
+            memcpy(&vertices[3], &vertexSwap,  sizeof(D3DRMVERTEX));
+        }
+
+        Container_Mesh_SetVertices(map->mesh, groupID, 0, 4, vertices);
+
+        Map3D_GenerateBlockPlaneNormals(map, bx, by);
+        // Perform action in a square: { { 0, 0 }, { 1, 0 },
+        //                               { 0, 1 }, { 1, 1 } }
+        Map3D_SetBlockVertexModified(map, bx, by);
+        Map3D_SetBlockVertexModified(map, bx + 1, by);
+        Map3D_SetBlockVertexModified(map, bx + 1, by + 1);
+        Map3D_SetBlockVertexModified(map, bx, by + 1);
+    }
+}
+
+B32 Map3D_IsBlockRotated(lpMap3D map, U32 bx, U32 by)
+{
+    return (map->blocks3D[by * map->gridWidth + bx].flags3D & MAP3DBLOCK_FLAG_ROTATED) != MAP3DBLOCK_FLAG_NONE;
+}
+
+void Map3D_SetBlockVertexModified(lpMap3D map, U32 vx, U32 vy)
+{
+    map->blocks3D[map->gridWidth * vy + vx].flags3D |= MAP3DBLOCK_FLAG_VERTEXMODIFIED;
+    map->flagsMap |= MAP3D_FLAG_VERTEXMODIFIED;
 }
 
 void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by)

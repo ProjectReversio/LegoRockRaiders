@@ -162,5 +162,8 @@ extern void Map3D_InitRoughness(lpMap3D map);
 // diffxy10_01 = (blocks3D[y][x+1].heightValue - blocks3D[y+1][x].heightValue)
 // rotated = (abs(diffxy00_11) < std::abs(diffxy10_01));
 extern void Map3D_SetBlockRotated(lpMap3D map, U32 bx, U32 by, B32 on);
+extern B32 Map3D_IsBlockRotated(lpMap3D map, U32 bx, U32 by);
+
+extern void Map3D_SetBlockVertexModified(lpMap3D map, U32 vx, U32 vy);
 
 extern void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by);
