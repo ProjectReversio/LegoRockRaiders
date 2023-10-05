@@ -155,3 +155,12 @@ extern void Map3D_MapFileGetSpecs(lpMapFileInfo mapFileInfo, U32* width, U32* he
 extern U16 Map3D_MapFileBlockValue(lpMapFileInfo mapFile, U32 bx, U32 by, U32 gridWidth);
 
 extern void Map3D_InitRoughness(lpMap3D map);
+
+// This seems to be used when the height difference of diagonal vertex points differs.
+//
+// diffxy00_11 = (blocks3D[y][x].heightValue - blocks3D[y+1][x+1].heightValue)
+// diffxy10_01 = (blocks3D[y][x+1].heightValue - blocks3D[y+1][x].heightValue)
+// rotated = (abs(diffxy00_11) < std::abs(diffxy10_01));
+extern void Map3D_SetBlockRotated(lpMap3D map, U32 bx, U32 by, B32 on);
+
+extern void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by);

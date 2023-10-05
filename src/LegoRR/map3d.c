@@ -104,7 +104,35 @@ lpMap3D Map3D_Create(lpContainer root, const char* filename, F32 blockSize, F32 
 
             if (map->blockHeight != 0)
             {
-                // TODO: Implement Map3D_Create
+                U32 yIter = 0;
+                do
+                {
+                    U32 xIter = 0;
+                    if (map->blockWidth != 0)
+                    {
+                        do
+                        {
+                            U32 iter = yIter * map->gridWidth + xIter;
+                            U32 iterNext = (yIter + 1) * map->gridWidth + xIter;
+
+                            // Compare crossed height differences
+                            // Condition is true when abs(x0y0 - x1y1) < diff(x1y0 - x0y1).
+                            S32 diffxy00_11 = map->blocks3D[iter].heightValue - map->blocks3D[iterNext + 1].heightValue;
+                            S32 diffxy10_01 = map->blocks3D[iter + 1].heightValue - map->blocks3D[iterNext].heightValue;
+                            // diffxy00_11 = (blocks3D[y][x].heightValue - blocks3D[y+1][x+1].heightValue)
+                            // diffxy10_01 = (blocks3D[y][x+1].heightValue - blocks3D[y+1][x].heightValue)
+
+                            if (abs(diffxy00_11) < abs(diffxy10_01))
+                                Map3D_SetBlockRotated(map, xIter, yIter, TRUE);
+                            else
+                                Map3D_GenerateBlockPlaneNormals(map, xIter, yIter);
+
+                            xIter++;
+                        } while (xIter < map->blockWidth);
+                    }
+
+                    yIter++;
+                } while(yIter < map->blockHeight);
             }
 
             Mem_Free(mapFileInfo);
@@ -132,4 +160,14 @@ U16 Map3D_MapFileBlockValue(lpMapFileInfo mapFile, U32 bx, U32 by, U32 gridWidth
 void Map3D_InitRoughness(lpMap3D map)
 {
     // TODO: Implement Map3D_InitRoughness
+}
+
+void Map3D_SetBlockRotated(lpMap3D map, U32 bx, U32 by, B32 on)
+{
+    // TODO: Implement Map3D_SetBlockRotated
+}
+
+void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by)
+{
+    // TODO: Implement Map3D_GenerateBlockPlaneNormals
 }
