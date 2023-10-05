@@ -162,6 +162,11 @@ void Map3D_InitRoughness(lpMap3D map)
     // TODO: Implement Map3D_InitRoughness
 }
 
+// This seems to be used when the height difference of diagonal vertex points differs.
+//
+// diffxy00_11 = (blocks3D[y][x].heightValue - blocks3D[y+1][x+1].heightValue)
+// diffxy10_01 = (blocks3D[y][x+1].heightValue - blocks3D[y+1][x].heightValue)
+// rotated = (abs(diffxy00_11) < std::abs(diffxy10_01));
 void Map3D_SetBlockRotated(lpMap3D map, U32 bx, U32 by, B32 on)
 {
     // TODO: Implement Map3D_SetBlockRotated
