@@ -97,3 +97,9 @@ void Camera_SetTiltRange(lpLegoCamera cam, F32 minTilt, F32 maxTilt)
 {
     // TODO: Implement Camera_SetTiltRange
 }
+
+void Camera_SetTopdownPosition(lpLegoCamera cam, F32 x, F32 y)
+{
+    if (cam->type == LegoCamera_Top)
+        Container_SetPosition(cam->cont2, NULL, x, y, 0.0f);
+}

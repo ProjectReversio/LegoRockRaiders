@@ -59,3 +59,5 @@ extern void Camera_InitCameraMovements(F32 cameraSpeed, F32 cameraDropOff, F32 c
 
 extern void Camera_SetZoomRange(lpLegoCamera cam, F32 minDist, F32 maxDist);
 extern void Camera_SetTiltRange(lpLegoCamera cam, F32 minTilt, F32 maxTilt);
+
+extern void Camera_SetTopdownPosition(lpLegoCamera cam, F32 x, F32 y);
