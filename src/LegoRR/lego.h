@@ -36,6 +36,13 @@ typedef enum LevelStatus
     LEVELSTATUS_FAILED_OTHER = 4,
 } LevelStatus;
 
+typedef struct Lego_Block
+{
+    // TODO: Implement Lego_Block
+    void* temp; // TEMP: put something here to avoid compile error
+    // TODO: Implement Lego_Block
+} Lego_Block, *lpLego_Block;
+
 typedef struct Lego_Level
 {
     char* name; // (format: "Levels::level")
@@ -69,6 +76,7 @@ typedef struct Lego_Level
     S32 EmergeCreature; // (searches for Object ID by name, expects RockMonsterType)
 
     char* nextLevelID; // (cfg: NextLevel)
+    lpLego_Block blocks;
 
     // TODO: Implement Lego_Level
 
@@ -440,6 +448,9 @@ extern B32 Lego_MainLoop(F32 elapsed);
 extern B32 Lego_LoadLevel(const char* levelName);
 extern B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* predugMap, S32 predugParam, const char* terrainMap, S32 terrainParam, const char* blockPointersMap, S32 blockPointersParam, const char* cryOreMap, S32 cryOreParam, const char* erodeMap, const char* pathMap, S32 pathParam, const char* textureSet, const char* emergeMap, const char* aiMap, const char* fallinMap);
 extern B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename);
+extern B32 Lego_LoadTextureSet(lpLego_Level level, const char* keyTexturePath);
+extern B32 Lego_LoadPreDugMap(lpLego_Level level, const char* filename, S32 modifier);
+extern B32 Lego_LoadTerrainMap(lpLego_Level level, const char* filename, S32 modifier);
 
 extern void Lego_SetSoundOn(B32 isSoundOn);
 extern void Lego_SetMusicOn(B32 isMusicOn);

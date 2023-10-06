@@ -1163,12 +1163,52 @@ B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* pred
 
     // TODO: Implement Lego_LoadMapSet
 
-    return TRUE;
+    if (Lego_LoadTextureSet(level, textureSet) != 0)
+    {
+        level->blocks = Mem_Alloc(level->height * level->width * sizeof(Lego_Block));
+        if (level->blocks != NULL)
+        {
+            // TODO: Implement Lego_LoadMapSet
+
+            if (Lego_LoadPreDugMap(level, predugMap, predugParam) != 0)
+            {
+                if (Lego_LoadTerrainMap(level, terrainMap, terrainParam) != 0)
+                {
+                    // TODO: Implement Lego_LoadMapSet
+
+                    return TRUE;
+                }
+            }
+        }
+    }
+
+    return FALSE;
 }
 
 B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename)
 {
     // TODO: Implement Lego_LoadOLObjectList
+    return TRUE;
+}
+
+B32 Lego_LoadTextureSet(lpLego_Level level, const char* keyTexturePath)
+{
+    // TODO: Implement Lego_LoadTextureSet
+
+    return TRUE;
+}
+
+B32 Lego_LoadPreDugMap(lpLego_Level level, const char* filename, S32 modifier)
+{
+    // TODO: Implement Lego_LoadPreDugMap
+
+    return TRUE;
+}
+
+B32 Lego_LoadTerrainMap(lpLego_Level level, const char* filename, S32 modifier)
+{
+    // TODO: Implement Lego_LoadTerrainMap
+
     return TRUE;
 }
 
