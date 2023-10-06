@@ -736,6 +736,28 @@ B32 Lego_MainLoop(F32 elapsed)
 
     // TODO: Implement Lego_MainLoop
 
+    Container_Hide(legoGlobs.ambientLight, FALSE);
+    if (legoGlobs.viewMode == ViewMode_Top)
+    {
+        if ((legoGlobs.flags1 & GAME1_FREEZEINTERFACE) == GAME1_NONE)
+            Container_Hide(legoGlobs.rootSpotlight, FALSE);
+
+        Container_Hide(legoGlobs.spotlightTop, FALSE);
+
+        Viewport_Clear(legoGlobs.viewMain, TRUE);
+        Viewport_Render(legoGlobs.viewMain, legoGlobs.rootCont, elapsed);
+
+        Container_Hide(legoGlobs.spotlightTop, TRUE);
+        Container_Hide(legoGlobs.rootSpotlight, TRUE);
+    }
+    else if (legoGlobs.viewMode == ViewMode_FP)
+    {
+        // TODO: Implement Lego_MainLoop
+    }
+    Container_Hide(legoGlobs.ambientLight, TRUE);
+
+    // TODO: Implement Lego_MainLoop
+
     Main_Finalize3D();
 
     // TODO: Implement Lego_MainLoop
