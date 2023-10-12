@@ -335,8 +335,8 @@ typedef struct Lego_Globs
     U32 recordObjsCount;
 
     Area2F radarScreenRect;
-    F32 tvTiltOrZoom_334;
-    Point2F tvFaceDirection_338;
+    F32 radarZoom;
+    Point2F radarCenter;
     F32 MedPolyRange;
     F32 HighPolyRange;
     S32 HPBlocks;
@@ -461,6 +461,8 @@ extern void Lego_SetGameSpeed(F32 newGameSpeed);
 extern void Lego_SetViewMode(ViewMode viewMode, lpLegoObject liveObj, U32 cameraFrame);
 
 extern void Lego_Goto(lpLegoObject liveObj, Point2I* blockPos, B32 smooth);
+
+extern B32 Lego_GetObjectByName(const char* objName, LegoObject_Type* outObjType, LegoObject_ID* outObjID, lpContainer* outModel);
 
 extern void Lego_LoadSamples(lpConfig config, B32 noReduceSamples);
 extern void Lego_LoadSurfaceTypeDescriptions_sound(lpConfig config, const char* gameName);

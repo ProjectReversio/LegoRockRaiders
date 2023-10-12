@@ -103,3 +103,36 @@ void Camera_SetTopdownPosition(lpLegoCamera cam, F32 x, F32 y)
     if (cam->type == LegoCamera_Top)
         Container_SetPosition(cam->cont2, NULL, x, y, 0.0f);
 }
+
+void Camera_SetRotation(lpLegoCamera cam, F32 yaw)
+{
+    if (((cam->flags & CAMERA_FLAG_ROTATIONRANGE) == CAMERA_FLAG_NONE ||
+        (cam->flags & CAMERA_FLAG_FREEMOVEMENT) != CAMERA_FLAG_NONE) ||
+        ((cam->rotationRange.min <= yaw && yaw <= cam->rotationRange.max)))
+    {
+        cam->rotation = yaw;
+        Container_SetOrientation(cam->cont2, NULL, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
+        Container_AddRotation(cam->cont2, Container_Combine_Before, 0.0f, 0.0f, 1.0f, -yaw);
+    }
+}
+
+void Camera_SetTilt(lpLegoCamera cam, F32 tilt)
+{
+    if (((cam->flags & CAMERA_FLAG_TILTRANGE) == CAMERA_FLAG_NONE ||
+        (cam->flags & CAMERA_FLAG_FREEMOVEMENT) != CAMERA_FLAG_NONE) ||
+        ((cam->tiltRange.min <= tilt && tilt <= cam->tiltRange.max)))
+    {
+        cam->tilt = tilt;
+        Container_SetOrientation(cam->cont4, cam->cont2, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
+        Container_AddRotation(cam->cont4, Container_Combine_Before, 1.0f, 0.0f, 0.0f, -tilt);
+    }
+}
+
+void Camera_TrackObject(lpLegoCamera cam, lpLegoObject liveObj, F32 trackZoomSpeed, F32 trackDist, F32 trackTilt, F32 trackRotationSpeed)
+{
+    cam->trackObject = liveObj;
+    cam->trackRadarZoomSpeed = trackZoomSpeed;
+    cam->trackRadarZoom = trackDist;
+    Camera_SetTilt(cam, trackTilt);
+    cam->trackRadarRotationSpeed = trackRotationSpeed;
+}

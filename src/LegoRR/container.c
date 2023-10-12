@@ -291,6 +291,17 @@ void Container_SetOrientation(lpContainer cont, lpContainer ref, F32 dirx, F32 d
     frame->lpVtbl->SetOrientation(frame, refFrame, dirx, diry, dirz, upx, upy, upz);
 }
 
+void Container_AddRotation(lpContainer cont, Container_Combine combine, F32 x, F32 y, F32 z, F32 angle)
+{
+    LPDIRECT3DRMFRAME3 frame;
+    Container_DebugCheckOK(cont);
+
+    frame = cont->masterFrame;
+    Error_Fatal(!frame, "Container has no masterFrame");
+
+    frame->lpVtbl->AddRotation(frame, combine, x, y, z, angle);
+}
+
 void Container_SetParent(lpContainer child, lpContainer parent)
 {
     // Pass NULL as the parent to unhook the Container...

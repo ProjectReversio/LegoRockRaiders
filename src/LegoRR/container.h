@@ -70,6 +70,13 @@ typedef enum Container_GlobFlags
     CONTAINER_GLOB_FLAG_TRIGGERENABLED = 0x40,
 } Container_GlobFlags;
 
+typedef enum Container_Combine
+{
+    Container_Combine_Replace = 0,
+    Container_Combine_Before  = 1,
+    Container_Combine_After   = 2,
+} Container_Combine;
+
 typedef struct Container_TypeData
 {
     char* name;
@@ -196,6 +203,7 @@ extern void Container_GetFrames(lpContainer cont, lpContainer ref, LPDIRECT3DRMF
 
 extern void Container_SetPosition(lpContainer cont, lpContainer ref, F32 x, F32 y, F32 z);
 extern void Container_SetOrientation(lpContainer cont, lpContainer ref, F32 dirx, F32 diry, F32 dirz, F32 upx, F32 upy, F32 upz);
+extern void Container_AddRotation(lpContainer cont, Container_Combine combine, F32 x, F32 y, F32 z, F32 angle);
 extern void Container_SetParent(lpContainer child, lpContainer parent);
 
 extern void Container_Frame_SafeAddChild(LPDIRECT3DRMFRAME3 parent, LPDIRECT3DRMFRAME3 child);

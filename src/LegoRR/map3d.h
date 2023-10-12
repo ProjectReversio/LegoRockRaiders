@@ -154,6 +154,8 @@ extern void Map3D_MapFileGetSpecs(lpMapFileInfo mapFileInfo, U32* width, U32* he
 
 extern U16 Map3D_MapFileBlockValue(lpMapFileInfo mapFile, U32 bx, U32 by, U32 gridWidth);
 
+extern B32 Map3D_BlockToWorldPos(lpMap3D map, U32 bx, U32 by, F32* outX, F32* outY);
+
 extern void Map3D_InitRoughness(lpMap3D map);
 
 // This seems to be used when the height difference of diagonal vertex points differs.

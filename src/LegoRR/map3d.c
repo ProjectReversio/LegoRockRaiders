@@ -157,6 +157,17 @@ U16 Map3D_MapFileBlockValue(lpMapFileInfo mapFile, U32 bx, U32 by, U32 gridWidth
     return mapFile->blocks[gridWidth * by + bx];
 }
 
+B32 Map3D_BlockToWorldPos(lpMap3D map, U32 bx, U32 by, F32* outX, F32* outY)
+{
+    if (bx < map->blockWidth && by < map->blockHeight)
+    {
+        *outX = map->blockSize * 0.5f + (F32)bx * map->blockSize + map->worldDimensions_fnegx.width;
+        *outY = map->worldDimensions_fnegx.height - (map->blockSize * 0.5f + (F32)by * map->blockSize);
+        return TRUE;
+    }
+    return FALSE;
+}
+
 void Map3D_InitRoughness(lpMap3D map)
 {
     Vertex vertices[4];

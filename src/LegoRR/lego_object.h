@@ -3,6 +3,7 @@
 #include "platform.h"
 #include "container.h"
 #include "config.h"
+#include "stats.h"
 
 typedef enum LegoObject_Type
 {
@@ -34,7 +35,8 @@ typedef U32 LegoObject_ID;
 
 typedef struct LegoObject
 {
-    void* temp;
+    // TODO: Implement LegoObject
+    lpObjectStats stats;
     // TODO: Implement LegoObject
 } LegoObject, *lpLegoObject;
 

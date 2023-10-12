@@ -621,7 +621,7 @@ B32 Lego_Initialize()
 
     Dust_Setup(legoGlobs.rootCont, "animtex\\dirt");
 
-    legoGlobs.tvTiltOrZoom_334 = 15.0f;
+    legoGlobs.radarZoom = 15.0f;
     legoGlobs.radarScreenRect.x = 16.0f;
     legoGlobs.radarScreenRect.y = 13.0f;
     legoGlobs.radarScreenRect.width = 151.0f;
@@ -1209,7 +1209,129 @@ B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* pred
 
 B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename)
 {
+    B32 firstTime = TRUE;
+
+    F32 objHealth;
+    Point2F worldPos;
+    F32 heading;
+    LegoObject_Type objType;
+    S32 objIndex;
+    lpContainer objSrcData;
+
+    B32 success = FALSE;
+    const char* drivingArray[200];
+    const char* drivenByName[200];
+    U32 i = 0;
+    lpLegoObject* objIter;
+    lpLegoObject objects[200];
+
+    lpConfig prop = Config_Load(filename);
+    if (prop != NULL)
+    {
+        objIter = objects;
+        memset(legoGlobs.recordObjs, 0, sizeof(legoGlobs.recordObjs));
+        legoGlobs.recordObjsCount = 0;
+
+        lpConfig conf = Config_FindArray(prop, Config_BuildStringID(legoGlobs.gameName, 0));
+        if (conf != NULL)
+        {
+            do
+            {
+                const char* objTypeName = Config_GetStringValue(prop, Config_BuildStringID(legoGlobs.gameName, conf->itemName, "type", 0));
+                if (objTypeName == NULL)
+                    break;
+
+                lpConfig xposItem = Config_FindItem(prop, Config_BuildStringID(legoGlobs.gameName, conf->itemName, "xpos", 0));
+                if (xposItem == NULL)
+                    break;
+
+                lpConfig yposItem = Config_FindItem(prop, Config_BuildStringID(legoGlobs.gameName, conf->itemName, "ypos", 0));
+                if (yposItem == NULL)
+                    break;
+
+                lpConfig headingItem = Config_FindItem(prop, Config_BuildStringID(legoGlobs.gameName, conf->itemName, "heading", 0));
+                if (headingItem == NULL)
+                    break;
+
+                F32 xpos = Config_GetFloatValue(prop, Config_BuildStringID(legoGlobs.gameName, conf->itemName, "xpos", 0));
+                F32 ypos = Config_GetFloatValue(prop, Config_BuildStringID(legoGlobs.gameName, conf->itemName, "ypos", 0));
+                F32 headingVal = Config_GetFloatValue(prop, Config_BuildStringID(legoGlobs.gameName, conf->itemName, "heading", 0));
+
+                F32 health = Config_GetFloatValue(prop, Config_BuildStringID(legoGlobs.gameName, conf->itemName, "health", 0));
+
+                objHealth = health;
+                if (objHealth == 0.0f)
+                    objHealth = 100.0f;
+
+                drivingArray[i] = Config_GetStringValue(prop, Config_BuildStringID(legoGlobs.gameName, conf->itemName, "driving", 0));
+                drivenByName[i] = Util_StrCpy(conf->itemName);
+
+                // TODO: Cleanup this mess of decompiled code
+                U64 uVar17 = (U64)(xpos - 1.0f);
+                U32 uVar10 = (U32)uVar17;
+                U64 uVar18 = (U64)(ypos - 1.0f);
+                U32 by = (U32)uVar18;
+
+                Map3D_BlockToWorldPos(level->map, uVar10, by, &worldPos.x, &worldPos.y);
+                worldPos.x += (((F32)xpos - 1.0f) - ((F32)(uVar17 & 0xffffffff) - -0.5f)) * level->BlockSize;
+                worldPos.y -= (((F32)ypos - 1.0f) - ((F32)(uVar18 & 0xffffffff) - -0.5f)) * level->BlockSize;
+                heading = (F32)headingVal * 0.005555556f * M_PI;
+                if (!Lego_GetObjectByName(objTypeName, &objType, &objIndex, &objSrcData))
+                    break;
+
+                lpLegoObject someObj = NULL;
+                if (objType == LegoObject_TVCamera)
+                {
+                    Camera_SetTopdownPosition(legoGlobs.cameraMain, worldPos.x, worldPos.y);
+                    Camera_SetRotation(legoGlobs.cameraMain, heading);
+                    Camera_SetTilt(legoGlobs.cameraMain, 0.8f);
+
+                    legoGlobs.radarCenter.x = worldPos.x;
+                    legoGlobs.radarCenter.y = worldPos.y;
+                    legoGlobs.radarZoom = 15.0f;
+                }
+                else
+                {
+                    // TODO: Implement Lego_LoadOLObjectList
+                }
+
+                *objIter = someObj;
+                if (someObj != NULL)
+                {
+                    if (firstTime)
+                    {
+                        F32 trackRotationSpeed = 0.01f;
+                        F32 trackTilt = 0.7f;
+                        F32 trackDist = StatsObject_GetTrackDist(someObj);
+                        Camera_TrackObject(legoGlobs.cameraTrack, someObj, 2.0f, trackDist, trackTilt, trackRotationSpeed);
+                    }
+                    firstTime = FALSE;
+
+                    // TODO: Implement Lego_LoadOLObjectList
+                }
+
+                Mem_Free(objTypeName);
+
+                i++;
+                objIter++;
+
+                conf = Config_GetNextItem(conf);
+            } while (conf != NULL);
+
+            // fail if break out of loop
+            success = conf == NULL;
+        }
+
+        Config_Free(prop);
+    }
+
+    if (!success)
+    {
+        return FALSE;
+    }
+
     // TODO: Implement Lego_LoadOLObjectList
+
     return TRUE;
 }
 
@@ -1303,6 +1425,39 @@ void Lego_SetViewMode(ViewMode viewMode, lpLegoObject liveObj, U32 cameraFrame)
 void Lego_Goto(lpLegoObject liveObj, Point2I* blockPos, B32 smooth)
 {
     // TODO: Implement Lego_Goto
+}
+
+B32 Lego_GetObjectByName(const char* objName, LegoObject_Type* outObjType, LegoObject_ID* outObjID, lpContainer* outModel)
+{
+    U32 index = 0;
+    *outObjID = 0;
+    if (legoGlobs.rockMonsterCount != 0)
+    {
+        // TODO: Implement Lego_GetObjectByName
+    }
+
+    if (_stricmp("tvcamera", objName) == 0)
+    {
+        *outObjType = LegoObject_TVCamera;
+        if (outModel != NULL)
+            *outModel = NULL;
+        return TRUE;
+    }
+
+    if (_stricmp("PowerCrystal", objName) == 0)
+    {
+        *outObjType = LegoObject_PowerCrystal;
+        if (outModel != NULL)
+            *outModel = legoGlobs.contCrystal;
+        return TRUE;
+    }
+
+    // TODO: Implement Lego_GetObjectByName
+
+    // TEMP: return true to make the level load anyway (until this function is completed)
+    return TRUE;
+
+    // return FALSE;
 }
 
 void Lego_LoadSamples(lpConfig config, B32 noReduceSamples)
