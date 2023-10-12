@@ -1498,7 +1498,113 @@ void Lego_LoadToolTipInfos(lpConfig config, const char* gameName)
 
 B32 Lego_LoadLighting()
 {
-    // TODO: Implement Lego_LoadLighting
+    F32 r, g, b;
+
+    // === SpotlightTop ===
+    if (!Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "topspotrgb", 0), &r, &g, &b))
+    {
+        return FALSE;
+    }
+
+    legoGlobs.spotlightTop = Container_MakeLight(legoGlobs.cameraMain->cont3, D3DRMLIGHT_SPOT, r, g, b);
+    if (legoGlobs.spotlightTop == NULL)
+    {
+        return FALSE;
+    }
+
+    Container_Light_SetSpotPenumbra(legoGlobs.spotlightTop, 0.85f);
+    Container_Light_SetSpotUmbra(legoGlobs.spotlightTop, 0.4f);
+    Container_SetPosition(legoGlobs.spotlightTop, legoGlobs.cameraMain->cont3, 200.0f, 140.0f, -130.0f);
+    Container_SetOrientation(legoGlobs.spotlightTop, legoGlobs.cameraMain->cont3, -1.0f, -0.8f, 0.75f, 0.0f, 1.0f, 0.0f);
+
+    // === SpotlightTrack ===
+
+    if (!Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "trackspotrgb", 0), &r, &g, &b))
+    {
+        return FALSE;
+    }
+
+    legoGlobs.spotlightTrack = Container_MakeLight(legoGlobs.cameraTrack->cont2, D3DRMLIGHT_SPOT, r, g, b);
+    if (legoGlobs.spotlightTrack == NULL)
+    {
+        return FALSE;
+    }
+
+    Container_SetPosition(legoGlobs.spotlightTrack, NULL, 0.0f, 0.0f, -150.0f);
+    Container_SetOrientation(legoGlobs.spotlightTrack, NULL, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
+
+    // === AmbientLight ===
+
+    if (!Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ambientrgb", 0), &r, &g, &b))
+    {
+        return FALSE;
+    }
+
+    legoGlobs.ambientLight = Container_MakeLight(legoGlobs.rootCont, D3DRMLIGHT_AMBIENT, r, g, b);
+    if (legoGlobs.ambientLight == NULL)
+    {
+        return FALSE;
+    }
+
+    // === PointLightFP ===
+
+    if (!Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "fplightrgb", 0), &r, &g, &b))
+    {
+        return FALSE;
+    }
+
+    legoGlobs.pointLightFP = Container_MakeLight(legoGlobs.cameraFP->contCam, D3DRMLIGHT_POINT, r, g, b);
+    if (legoGlobs.pointLightFP == NULL)
+    {
+        return FALSE;
+    }
+
+    // === DirLightFP ===
+
+    if (Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "fprotlightrgb", 0), &r, &g, &b))
+        legoGlobs.dirLightFP = Container_MakeLight(legoGlobs.cameraFP->contCam, D3DRMLIGHT_DIRECTIONAL, r, g, b);
+    else
+        legoGlobs.dirLightFP = NULL;
+
+    // === DirLightCallToArms ===
+
+    legoGlobs.dirLightCallToArms = Container_MakeLight(legoGlobs.cameraFP->contCam, D3DRMLIGHT_DIRECTIONAL, 1.0f, 0.0f, 0.0f);
+    if (legoGlobs.dirLightCallToArms == NULL)
+    {
+        return FALSE;
+    }
+
+    // === RootLight/RootSpotlight ===
+
+    legoGlobs.rootLight = Container_Create(Container_GetRoot());
+    legoGlobs.rootSpotlight = Container_MakeLight(legoGlobs.rootLight, D3DRMLIGHT_SPOT, 1.0f, 1.0f, 1.0f);
+    if (legoGlobs.rootSpotlight == NULL)
+    {
+        return FALSE;
+    }
+
+    // === Properties ===
+
+    LightEffects_Initialize(legoGlobs.rootSpotlight, legoGlobs.rootLight, 0.8f, 0.8f, 0.8f);
+
+    Container_SetOrientation(legoGlobs.rootSpotlight, NULL, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f);
+    Container_Light_SetSpotPenumbra(legoGlobs.rootSpotlight, 0.85f);
+    Container_Light_SetSpotUmbra(legoGlobs.rootSpotlight, 0.0f);
+
+    Container_Hide(legoGlobs.pointLightFP, TRUE);
+    if (legoGlobs.dirLightFP != NULL)
+        Container_Hide(legoGlobs.dirLightFP, TRUE);
+
+    Container_Hide(legoGlobs.spotlightTop, TRUE);
+    Container_Hide(legoGlobs.spotlightTrack, TRUE);
+    Container_Hide(legoGlobs.ambientLight, TRUE);
+    Container_Hide(legoGlobs.rootSpotlight, TRUE);
+    Container_Hide(legoGlobs.dirLightCallToArms, TRUE);
+
+    Container_Light_SetSpotRange(legoGlobs.spotlightTop, 2000.0f);
+    Container_Light_SetSpotRange(legoGlobs.spotlightTrack, 2000.0f);
+    Container_Light_SetSpotRange(legoGlobs.rootSpotlight, 2000.0f);
+
     return TRUE;
 }
 

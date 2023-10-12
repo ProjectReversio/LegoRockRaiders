@@ -345,6 +345,39 @@ void Container_SetParent(lpContainer child, lpContainer parent)
     }
 }
 
+B32 Container_Light_SetSpotPenumbra(lpContainer spotlight, F32 angle)
+{
+    Container_DebugCheckOK(spotlight);
+    Error_Fatal(spotlight->type != Container_Light, "Container is not a light");
+
+    if (spotlight->typeData->light->lpVtbl->SetPenumbra(spotlight->typeData->light, angle) == D3DRM_OK)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+B32 Container_Light_SetSpotUmbra(lpContainer spotlight, F32 angle)
+{
+    Container_DebugCheckOK(spotlight);
+    Error_Fatal(spotlight->type != Container_Light, "Container is not a light");
+
+    if (spotlight->typeData->light->lpVtbl->SetUmbra(spotlight->typeData->light, angle) == D3DRM_OK)
+        return TRUE;
+    else
+        return FALSE;
+}
+
+B32 Container_Light_SetSpotRange(lpContainer spotlight, F32 dist)
+{
+    Container_DebugCheckOK(spotlight);
+    Error_Fatal(spotlight->type != Container_Light, "Container is not a light");
+
+    if (spotlight->typeData->light->lpVtbl->SetRange(spotlight->typeData->light, dist) == D3DRM_OK)
+        return TRUE;
+    else
+        return FALSE;
+}
+
 void Container_Frame_SafeAddChild(LPDIRECT3DRMFRAME3 parent, LPDIRECT3DRMFRAME3 child)
 {
     // Stop addchild from corrupting the transformation matrix...

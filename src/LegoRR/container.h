@@ -206,6 +206,10 @@ extern void Container_SetOrientation(lpContainer cont, lpContainer ref, F32 dirx
 extern void Container_AddRotation(lpContainer cont, Container_Combine combine, F32 x, F32 y, F32 z, F32 angle);
 extern void Container_SetParent(lpContainer child, lpContainer parent);
 
+extern B32 Container_Light_SetSpotPenumbra(lpContainer spotlight, F32 angle);
+extern B32 Container_Light_SetSpotUmbra(lpContainer spotlight, F32 angle);
+extern B32 Container_Light_SetSpotRange(lpContainer spotlight, F32 dist);
+
 extern void Container_Frame_SafeAddChild(LPDIRECT3DRMFRAME3 parent, LPDIRECT3DRMFRAME3 child);
 
 extern void Container_GetPosition(lpContainer cont, lpContainer ref, lpPoint3F pos);
