@@ -53,6 +53,16 @@ typedef struct LegoCamera
     CameraFlags flags;
 } LegoCamera, *lpLegoCamera;
 
+typedef struct Camera_Globs
+{
+    F32 maxSpeed; // (cfg: CameraSpeed) maximum move speed of camera
+    F32 deceleration; // (cfg: CameraDropOff) movement deceleration
+    F32 acceleration; // (cfg: CameraAcceleration) movement acceleration
+    S32 mouseScrollIndent; // (cfg: MouseScrollIndent) area around window borders for mouse movement
+} Camera_Globs;
+
+extern Camera_Globs cameraGlobs;
+
 extern lpLegoCamera Camera_Create(lpContainer root, LegoCamera_Type camType);
 
 extern void Camera_InitCameraMovements(F32 cameraSpeed, F32 cameraDropOff, F32 cameraAcceleration, S32 mouseScrollIndent);

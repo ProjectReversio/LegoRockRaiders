@@ -302,6 +302,28 @@ void Container_AddRotation(lpContainer cont, Container_Combine combine, F32 x, F
     frame->lpVtbl->AddRotation(frame, combine, x, y, z, angle);
 }
 
+void Container_AddScale(lpContainer cont, Container_Combine combine, F32 x, F32 y, F32 z)
+{
+    LPDIRECT3DRMFRAME3 frame;
+    Container_DebugCheckOK(cont);
+
+    frame = cont->masterFrame;
+    Error_Fatal(!frame, "Container has no masterFrame");
+
+    frame->lpVtbl->AddScale(frame, combine, x, y, z);
+}
+
+void Container_AddTranslation(lpContainer cont, Container_Combine combine, F32 x, F32 y, F32 z)
+{
+    LPDIRECT3DRMFRAME3 frame;
+    Container_DebugCheckOK(cont);
+
+    frame = cont->masterFrame;
+    Error_Fatal(!frame, "Container has no masterFrame");
+
+    frame->lpVtbl->AddTranslation(frame, combine, x, y, z);
+}
+
 void Container_SetParent(lpContainer child, lpContainer parent)
 {
     // Pass NULL as the parent to unhook the Container...

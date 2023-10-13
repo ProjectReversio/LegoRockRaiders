@@ -204,6 +204,8 @@ extern void Container_GetFrames(lpContainer cont, lpContainer ref, LPDIRECT3DRMF
 extern void Container_SetPosition(lpContainer cont, lpContainer ref, F32 x, F32 y, F32 z);
 extern void Container_SetOrientation(lpContainer cont, lpContainer ref, F32 dirx, F32 diry, F32 dirz, F32 upx, F32 upy, F32 upz);
 extern void Container_AddRotation(lpContainer cont, Container_Combine combine, F32 x, F32 y, F32 z, F32 angle);
+extern void Container_AddScale(lpContainer cont, Container_Combine combine, F32 x, F32 y, F32 z);
+extern void Container_AddTranslation(lpContainer cont, Container_Combine combine, F32 x, F32 y, F32 z);
 extern void Container_SetParent(lpContainer child, lpContainer parent);
 
 extern B32 Container_Light_SetSpotPenumbra(lpContainer spotlight, F32 angle);

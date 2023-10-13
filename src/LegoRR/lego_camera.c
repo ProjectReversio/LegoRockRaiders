@@ -2,6 +2,8 @@
 #include "mem.h"
 #include "lego.h"
 
+Camera_Globs cameraGlobs = { 0 };
+
 lpLegoCamera Camera_Create(lpContainer root, LegoCamera_Type camType)
 {
     lpLegoCamera cam = Mem_Alloc(sizeof(LegoCamera));
@@ -86,17 +88,24 @@ lpLegoCamera Camera_Create(lpContainer root, LegoCamera_Type camType)
 
 void Camera_InitCameraMovements(F32 cameraSpeed, F32 cameraDropOff, F32 cameraAcceleration, S32 mouseScrollIndent)
 {
-    // TODO: Implement Camera_InitCameraMovements
+    cameraGlobs.maxSpeed = cameraSpeed;
+    cameraGlobs.deceleration = cameraDropOff;
+    cameraGlobs.acceleration = cameraAcceleration;
+    cameraGlobs.mouseScrollIndent = mouseScrollIndent;
 }
 
 void Camera_SetZoomRange(lpLegoCamera cam, F32 minDist, F32 maxDist)
 {
-    // TODO: Implement Camera_SetZoomRange
+    cam->flags |= CAMERA_FLAG_ZOOMRANGE;
+    cam->zoomRange.min = minDist;
+    cam->zoomRange.max = maxDist;
 }
 
 void Camera_SetTiltRange(lpLegoCamera cam, F32 minTilt, F32 maxTilt)
 {
-    // TODO: Implement Camera_SetTiltRange
+    cam->flags |= CAMERA_FLAG_TILTRANGE;
+    cam->tiltRange.min = minTilt;
+    cam->tiltRange.max = maxTilt;
 }
 
 void Camera_SetTopdownPosition(lpLegoCamera cam, F32 x, F32 y)
@@ -140,5 +149,18 @@ void Camera_TrackObject(lpLegoCamera cam, lpLegoObject liveObj, F32 trackZoomSpe
 
 void Camera_Update(lpLegoCamera cam, lpLego_Level level, F32 elapsedAbs, F32 elapsedGame)
 {
-    // TODO: Implement Camera_Update
+    Container_AddTranslation(cam->contCam, Container_Combine_Before, -cam->shakeVector.x, -cam->shakeVector.y, -cam->shakeVector.z);
+
+    if (cam->type == LegoCamera_Top)
+    {
+        // TODO: Implement Camera_Update
+    }
+    else if (cam->type == LegoCamera_FP)
+    {
+        // TODO: Implement Camera_Update
+    }
+    else if (cam->type == LegoCamera_Radar)
+    {
+        // TODO: Implement Camera_Update
+    }
 }
