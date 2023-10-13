@@ -1395,6 +1395,16 @@ B32 Lego_LoadTerrainMap(lpLego_Level level, const char* filename, S32 modifier)
     return TRUE;
 }
 
+lpLego_Level Lego_GetLevel()
+{
+    return legoGlobs.currLevel;
+}
+
+lpMap3D Lego_GetMap()
+{
+    return Lego_GetLevel()->map;
+}
+
 void Lego_SetMusicOn(B32 isMusicOn)
 {
     if (isMusicOn)

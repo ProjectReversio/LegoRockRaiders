@@ -454,6 +454,9 @@ extern B32 Lego_LoadTextureSet(lpLego_Level level, const char* keyTexturePath);
 extern B32 Lego_LoadPreDugMap(lpLego_Level level, const char* filename, S32 modifier);
 extern B32 Lego_LoadTerrainMap(lpLego_Level level, const char* filename, S32 modifier);
 
+extern lpLego_Level Lego_GetLevel();
+extern lpMap3D Lego_GetMap();
+
 extern void Lego_SetSoundOn(B32 isSoundOn);
 extern void Lego_SetMusicOn(B32 isMusicOn);
 extern void Lego_CDTrackPlayNextCallback();

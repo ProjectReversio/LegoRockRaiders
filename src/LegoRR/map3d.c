@@ -168,6 +168,31 @@ B32 Map3D_BlockToWorldPos(lpMap3D map, U32 bx, U32 by, F32* outX, F32* outY)
     return FALSE;
 }
 
+B32 Map3D_WorldToBlockPos(lpMap3D map, F32 x, F32 y, U32* outBx, U32* outBy, F32* outZ)
+{
+    // TODO: Implement Map3D_WorldToBlockPos
+
+    return FALSE;
+}
+
+B32 Map3D_WorldToBlockPos_NoZ(lpMap3D map, F32 x, F32 y, U32* outBx, U32* outBy)
+{
+    return Map3D_WorldToBlockPos(map, x, y, outBx, outBy, NULL);
+}
+
+F32 Map3D_GetWorldZ(lpMap3D map, F32 xPos, F32 yPos)
+{
+    // TODO: Implement Map3D_GetWorldZ
+    return 0.0f;
+}
+
+F32 Map3D_UnkCameraXYFunc_RetZunk(lpMap3D map, F32 xPos, F32 yPos)
+{
+    // TODO: Implement Map3D_UnkCameraXYFunc_RetZunk
+
+    return 0.0f;
+}
+
 void Map3D_InitRoughness(lpMap3D map)
 {
     Vertex vertices[4];

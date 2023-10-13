@@ -155,6 +155,10 @@ extern void Map3D_MapFileGetSpecs(lpMapFileInfo mapFileInfo, U32* width, U32* he
 extern U16 Map3D_MapFileBlockValue(lpMapFileInfo mapFile, U32 bx, U32 by, U32 gridWidth);
 
 extern B32 Map3D_BlockToWorldPos(lpMap3D map, U32 bx, U32 by, F32* outX, F32* outY);
+extern B32 Map3D_WorldToBlockPos(lpMap3D map, F32 x, F32 y, U32* outBx, U32* outBy, F32* outZ);
+extern B32 Map3D_WorldToBlockPos_NoZ(lpMap3D map, F32 x, F32 y, U32* outBx, U32* outBy);
+extern F32 Map3D_GetWorldZ(lpMap3D map, F32 xPos, F32 yPos);
+extern F32 Map3D_UnkCameraXYFunc_RetZunk(lpMap3D map, F32 xPos, F32 yPos);
 
 extern void Map3D_InitRoughness(lpMap3D map);
 

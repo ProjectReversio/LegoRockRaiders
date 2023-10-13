@@ -153,7 +153,48 @@ void Camera_Update(lpLegoCamera cam, lpLego_Level level, F32 elapsedAbs, F32 ela
 
     if (cam->type == LegoCamera_Top)
     {
-        // TODO: Implement Camera_Update
+        // Decelerate camera movement
+        Maths_Vector3DScale(&cam->moveVector, &cam->moveVector, cameraGlobs.deceleration);
+
+        Container_AddTranslation(cam->cont2, Container_Combine_After, cam->moveVector.x, cam->moveVector.y, cam->moveVector.z);
+
+        Point3F top_vecPos;
+        Container_GetPosition(cam->cont2, NULL, &top_vecPos);
+        Point3F top_vecDir;
+        Point3F top_vecUp;
+        Container_GetOrientation(cam->cont2, NULL, &top_vecDir, &top_vecUp);
+
+        U32 blockX, blockY;
+        if (Map3D_WorldToBlockPos_NoZ(level->map, top_vecPos.x, top_vecPos.y, &blockX, &blockY))
+        {
+            if (blockX < cameraGlobs.mouseScrollIndent || level->map->blockWidth - cameraGlobs.mouseScrollIndent <= blockX)
+                Container_AddTranslation(cam->cont2, Container_Combine_After, -cam->moveVector.x, 0.0f, 0.0f);
+            if (blockY < cameraGlobs.mouseScrollIndent || level->map->blockHeight - cameraGlobs.mouseScrollIndent <= blockY)
+                Container_AddTranslation(cam->cont2, Container_Combine_After, 0.0f, -cam->moveVector.y, 0.0f);
+
+            F32 worldZ = Map3D_GetWorldZ(level->map, top_vecPos.x, top_vecPos.y);
+            Container_SetPosition(cam->cont3, NULL, top_vecPos.x, top_vecPos.y, worldZ);
+            Container_SetOrientation(cam->cont3, NULL, top_vecUp.x, top_vecUp.y, 0.0f, 0.0f, 0.0f, -1.0f);
+
+            F32 unknownThing = Map3D_UnkCameraXYFunc_RetZunk(Lego_GetMap(), top_vecPos.x, top_vecPos.y);
+            Container_SetPosition(cam->contCam, cam->cont4, 0.0f, 0.0f, -(cam->zoom + -unknownThing));
+        }
+        else
+        {
+            // Cancel out moveVector ??
+            Container_AddTranslation(cam->cont2, Container_Combine_After, -cam->moveVector.x, -cam->moveVector.y, -cam->moveVector.z);
+        }
+
+        if (cam->shakeDuration <= cam->shakeTimer)
+        {
+            cam->shakeVector.x = 0.0f;
+            cam->shakeVector.y = 0.0f;
+            cam->shakeVector.z = 0.0f;
+        }
+        else
+        {
+            // TODO: Implement Camera_Update
+        }
     }
     else if (cam->type == LegoCamera_FP)
     {
