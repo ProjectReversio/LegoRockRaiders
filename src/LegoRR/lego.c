@@ -1305,15 +1305,12 @@ B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename)
                 drivingArray[i] = Config_GetStringValue(prop, Config_BuildStringID(legoGlobs.gameName, conf->itemName, "driving", 0));
                 drivenByName[i] = Util_StrCpy(conf->itemName);
 
-                // TODO: Cleanup this mess of decompiled code
-                U64 uVar17 = (U64)(xpos - 1.0f);
-                U32 uVar10 = (U32)uVar17;
-                U64 uVar18 = (U64)(ypos - 1.0f);
-                U32 by = (U32)uVar18;
+                U32 xInt = (U32)(U64)xpos - 1.0f;
+                U32 yInt = (U32)(U64)ypos - 1.0f;
 
-                Map3D_BlockToWorldPos(level->map, uVar10, by, &worldPos.x, &worldPos.y);
-                worldPos.x += (((F32)xpos - 1.0f) - ((F32)(uVar17 & 0xffffffff) - -0.5f)) * level->BlockSize;
-                worldPos.y -= (((F32)ypos - 1.0f) - ((F32)(uVar18 & 0xffffffff) - -0.5f)) * level->BlockSize;
+                Map3D_BlockToWorldPos(level->map, xInt, yInt, &worldPos.x, &worldPos.y);
+                worldPos.x += (((F32)xpos - 1.0f) - ((F32)xInt - -0.5f)) * level->BlockSize;
+                worldPos.y -= (((F32)ypos - 1.0f) - ((F32)yInt - -0.5f)) * level->BlockSize;
                 heading = (F32)headingVal * 0.005555556f * M_PI;
                 if (!Lego_GetObjectByName(objTypeName, &objType, &objIndex, &objSrcData))
                     break;

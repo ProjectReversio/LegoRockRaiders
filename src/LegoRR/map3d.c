@@ -168,14 +168,48 @@ B32 Map3D_BlockToWorldPos(lpMap3D map, U32 bx, U32 by, F32* outX, F32* outY)
     return FALSE;
 }
 
-B32 Map3D_WorldToBlockPos(lpMap3D map, F32 x, F32 y, U32* outBx, U32* outBy, F32* outZ)
+B32 Map3D_WorldToBlockPos(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy, F32* outZ)
 {
-    // TODO: Implement Map3D_WorldToBlockPos
+    // decompiled code
+    /*
+        longlong lVar4 = __ftol(((float10)in_x - (float10)(map->worldDimensions_fnegx).width) / (float10)map->blockSize);
+        int xPos = (int)lVar4;
+        lVar4 = __ftol(((float10)(map->worldDimensions_fnegx).height - (float10)in_y) / (float10)map->blockSize);
+        int yPos = (int)lVar4;
+    */
+
+    // TODO: Verify that this is correct
+    S32 xPos = (S32)(x - map->worldDimensions_fnegx.width / map->blockSize);
+    S32 yPos = (S32)((map->worldDimensions_fnegx.height - y) / map->blockSize);
+
+    if (outBx != NULL)
+        *outBx = xPos;
+    if (outBy != NULL)
+        *outBy = yPos;
+
+    if (-1 < xPos && xPos < (S32)map->blockWidth && -1 < yPos && yPos < (S32)map->blockHeight)
+    {
+        if (outZ != NULL)
+        {
+            F32 fVar1 = map->blockSize * 0.5f;
+            x = (x - ((F32)xPos * map->blockSize + map->worldDimensions_fnegx.width) / fVar1);
+            fVar1 = -((y - (map->worldDimensions_fnegx.height - (F32)yPos * map->blockSize)) / fVar1);
+            if (1.0f < x)
+                x = 2.0f - x;
+            if (1.0f < fVar1)
+                fVar1 = 2.0f - fVar1;
+            if (x < fVar1)
+                fVar1 = x;
+
+            *outZ = fVar1;
+        }
+        return TRUE;
+    }
 
     return FALSE;
 }
 
-B32 Map3D_WorldToBlockPos_NoZ(lpMap3D map, F32 x, F32 y, U32* outBx, U32* outBy)
+B32 Map3D_WorldToBlockPos_NoZ(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy)
 {
     return Map3D_WorldToBlockPos(map, x, y, outBx, outBy, NULL);
 }

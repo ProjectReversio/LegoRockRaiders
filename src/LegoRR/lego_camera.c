@@ -164,7 +164,7 @@ void Camera_Update(lpLegoCamera cam, lpLego_Level level, F32 elapsedAbs, F32 ela
         Point3F top_vecUp;
         Container_GetOrientation(cam->cont2, NULL, &top_vecDir, &top_vecUp);
 
-        U32 blockX, blockY;
+        S32 blockX, blockY;
         if (Map3D_WorldToBlockPos_NoZ(level->map, top_vecPos.x, top_vecPos.y, &blockX, &blockY))
         {
             if (blockX < cameraGlobs.mouseScrollIndent || level->map->blockWidth - cameraGlobs.mouseScrollIndent <= blockX)
