@@ -1309,8 +1309,8 @@ B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename)
                 U32 yInt = (U32)(U64)ypos - 1.0f;
 
                 Map3D_BlockToWorldPos(level->map, xInt, yInt, &worldPos.x, &worldPos.y);
-                worldPos.x += (((F32)xpos - 1.0f) - ((F32)xInt - -0.5f)) * level->BlockSize;
-                worldPos.y -= (((F32)ypos - 1.0f) - ((F32)yInt - -0.5f)) * level->BlockSize;
+                worldPos.x += (((F32)xpos - 1.0f) - ((F32)xInt + 0.5f)) * level->BlockSize;
+                worldPos.y -= (((F32)ypos - 1.0f) - ((F32)yInt + 0.5f)) * level->BlockSize;
                 heading = (F32)headingVal * 0.005555556f * M_PI;
                 if (!Lego_GetObjectByName(objTypeName, &objType, &objIndex, &objSrcData))
                     break;
