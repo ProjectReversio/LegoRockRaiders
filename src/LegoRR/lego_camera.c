@@ -1,5 +1,6 @@
 #include "lego_camera.h"
 #include "mem.h"
+#include "lego.h"
 
 lpLegoCamera Camera_Create(lpContainer root, LegoCamera_Type camType)
 {
@@ -135,4 +136,9 @@ void Camera_TrackObject(lpLegoCamera cam, lpLegoObject liveObj, F32 trackZoomSpe
     cam->trackRadarZoom = trackDist;
     Camera_SetTilt(cam, trackTilt);
     cam->trackRadarRotationSpeed = trackRotationSpeed;
+}
+
+void Camera_Update(lpLegoCamera cam, lpLego_Level level, F32 elapsedAbs, F32 elapsedGame)
+{
+    // TODO: Implement Camera_Update
 }

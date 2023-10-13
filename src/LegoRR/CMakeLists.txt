@@ -85,6 +85,7 @@ set(MAIN_SRC
     map3d.c
     material.c
     water.c
+    game_control.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -171,6 +172,7 @@ set(MAIN_SRC
     map3d.h
     material.h
     water.h
+    game_control.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

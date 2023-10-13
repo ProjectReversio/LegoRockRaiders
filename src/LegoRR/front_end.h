@@ -502,6 +502,7 @@ extern S32 Front_CalcSliderGameSpeed();
 extern S32 Front_CalcSliderCDVolume();
 
 extern void Front_UpdateOptionsSliders();
+extern void Front_UpdateSliderGameSpeed();
 
 extern void Front_Save_SetShouldClearUnlockedLevels(B32 state);
 extern void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer);

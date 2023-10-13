@@ -48,6 +48,7 @@
 #include "electric_fence.h"
 #include "spider_web.h"
 #include "water.h"
+#include "game_control.h"
 
 Lego_Globs legoGlobs;
 
@@ -726,13 +727,43 @@ B32 Lego_Shutdown_Quick()
 
 B32 Lego_MainLoop(F32 elapsed)
 {
+    F32 elapsedGame;
+
+    F32 elapsedAbs = elapsed;
+
+    // TODO: Implement Lego_MainLoop
+
+    if ((legoGlobs.flags1 & GAME1_FREEZEINTERFACE) != GAME1_NONE)
+        elapsed = 0.0f;
+
     // TODO: Implement Lego_MainLoop
 
     legoGlobs.elapsedAbs = elapsed;
+    if (legoGlobs.viewMode == ViewMode_FP && mainGlobs.programmerLevel < PROGRAMMER_MODE_2)
+        elapsedGame = elapsed;
+    else
+        elapsedGame = (F32)Lego_GetGameSpeed() * elapsed;
 
     // TODO: Implement Lego_MainLoop
 
-    // TODO: B32 dontExit = Lego_HandleKeys(...);
+    if ((legoGlobs.flags1 & GAME1_LEVELSTART) != GAME1_NONE)
+    {
+        elapsedGame = 1.0f;
+        legoGlobs.flags1 &= ~GAME1_LEVELSTART;
+    }
+
+    B32 keyDownT;
+    B32 keyDownR;
+    B32 keyDownAnyShift;
+    B32 dontExit = Lego_HandleKeys(elapsedGame, elapsed, &keyDownT, &keyDownR, &keyDownAnyShift);
+    if (!dontExit)
+        return FALSE;
+
+    // TODO: Implement Lego_MainLoop
+
+    Camera_Update(legoGlobs.cameraMain, legoGlobs.currLevel, elapsed, elapsedGame);
+    Camera_Update(legoGlobs.cameraTrack, legoGlobs.currLevel, elapsed, elapsedGame);
+    Camera_Update(legoGlobs.cameraFP, legoGlobs.currLevel, elapsed, elapsedGame);
 
     // TODO: Implement Lego_MainLoop
 
@@ -793,10 +824,10 @@ B32 Lego_MainLoop(F32 elapsed)
         F32 chargedCrystals = elapsed;
         if (legoGlobs.currLevel != NULL)
         {
-            // TODO: crystals = legoGlobs.currLevel->crystals;
-            // TODO: chargedCrystals = legoGlobs.currLevel->crystals - legoGlobs.currLevel->crystalsDrained;
+            crystals = legoGlobs.currLevel->crystals;
+            chargedCrystals = legoGlobs.currLevel->crystals - legoGlobs.currLevel->crystalsDrained;
         }
-        // TODO: Panel_Crystals_Draw((U32)crystals, (U32)chargedCrystals, elapsedGame_00);
+        // TODO: Panel_Crystals_Draw((U32)crystals, (U32)chargedCrystals, elapsedGame);
         Panel_CryOreSideBar_Draw();
 
         // TODO: Implement Lego_MainLoop
@@ -817,6 +848,14 @@ B32 Lego_MainLoop(F32 elapsed)
     // TODO: Objective_Update(legoGlobs.textWnd_80, legoGlobs.currLevel, elapsedGame_00, elapsedAbs);
 
     // TODO: Implement Lego_MainLoop
+
+    return TRUE;
+}
+
+// Returning FALSE will naturally exit the program (as handled by Lego_MainLoop).
+B32 Lego_HandleKeys(F32 elapsedGame, F32 elapsed, B32 *outKeyDownT, B32 *outKeyDownR, B32 *outKeyDownAnyShift)
+{
+    // TODO: Implement Lego_HandleKeys
 
     return TRUE;
 }
@@ -1392,7 +1431,22 @@ void Lego_SetSoundOn(B32 isSoundOn)
 
 void Lego_SetGameSpeed(F32 newGameSpeed)
 {
-    // TODO: Implement Lego_SetGameSpeed
+    if (legoGlobs.gameSpeed <= newGameSpeed || !gamectrlGlobs.isGameSpeedLocked)
+    {
+        Front_UpdateSliderGameSpeed();
+        legoGlobs.gameSpeed = newGameSpeed;
+        if (newGameSpeed < 0.0f)
+            legoGlobs.gameSpeed = 0.0f;
+
+        // Debug mode allows game speeds up to 300%
+        if (legoGlobs.gameSpeed > 3.0f)
+            legoGlobs.gameSpeed = 3.0f;
+    }
+}
+
+F32 Lego_GetGameSpeed()
+{
+    return legoGlobs.gameSpeed;
 }
 
 void Lego_SetViewMode(ViewMode viewMode, lpLegoObject liveObj, U32 cameraFrame)

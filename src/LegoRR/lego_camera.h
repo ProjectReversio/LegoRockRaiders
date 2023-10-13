@@ -65,3 +65,6 @@ extern void Camera_SetRotation(lpLegoCamera cam, F32 yaw);
 extern void Camera_SetTilt(lpLegoCamera cam, F32 tilt);
 
 extern void Camera_TrackObject(lpLegoCamera cam, lpLegoObject liveObj, F32 trackZoomSpeed, F32 trackDist, F32 trackTilt, F32 trackRotationSpeed);
+
+struct Lego_Level;
+extern void Camera_Update(lpLegoCamera cam, struct Lego_Level* level, F32 elapsedAbs, F32 elapsedGame);
