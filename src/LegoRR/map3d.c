@@ -364,3 +364,9 @@ void Map3D_SetEmissive(lpMap3D map, B32 on)
 {
     // TODO: Implement Map3D_SetEmissive
 }
+
+B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY, U32 *outBx, U32 *outBy, Point3F *outVector)
+{
+    // TODO: Implement Map3D_GetIntersections
+    return FALSE;
+}

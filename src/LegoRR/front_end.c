@@ -3107,6 +3107,12 @@ void Front_UpdateSliderGameSpeed()
     frontGlobs.menuVars[MENUVAR_SLIDER_GAMESPEED] = Front_CalcSliderGameSpeed();
 }
 
+B32 Front_Options_Update(F32 elapsed, Menu_ModalType modalType)
+{
+    // TODO: Implement Front_Options_Update
+    return FALSE;
+}
+
 void Front_Save_SetShouldClearUnlockedLevels(B32 state)
 {
     frontGlobs.shouldClearUnlockedLevels = state;

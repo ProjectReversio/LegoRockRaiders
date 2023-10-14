@@ -9,3 +9,8 @@ void Message_Debug_RegisterSelectedUnitHotkey(U8 key, Message_Type messageType, 
 {
     // TODO: Implement Message_Debug_RegisterSelectedUnitHotkey
 }
+
+B32 Message_AnyUnitSelected()
+{
+    return FALSE;
+}

@@ -447,6 +447,9 @@ extern B32 Lego_MainLoop(F32 elapsed);
 
 extern B32 Lego_HandleKeys(F32 elapsedGame, F32 elapsed, B32 *outKeyDownT, B32 *outKeyDownR, B32 *outKeyDownAnyShift);
 
+extern void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDownR, B32 keyDownAnyShift);
+extern void Lego_UpdateTopdownCamera(F32 elapsedAbs);
+
 extern B32 Lego_LoadLevel(const char* levelName);
 extern B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* predugMap, S32 predugParam, const char* terrainMap, S32 terrainParam, const char* blockPointersMap, S32 blockPointersParam, const char* cryOreMap, S32 cryOreParam, const char* erodeMap, const char* pathMap, S32 pathParam, const char* textureSet, const char* emergeMap, const char* aiMap, const char* fallinMap);
 extern B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename);

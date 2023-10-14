@@ -168,3 +168,9 @@ B32 Pointer_GetType(const char* name, Pointer_Type* pointerType)
 
     return TRUE;
 }
+
+void Pointer_Update(F32 elapsedAbs)
+{
+    if (pointerGlobs.timer > 0.0f)
+        pointerGlobs.timer -= elapsedAbs;
+}

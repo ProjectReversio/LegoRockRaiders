@@ -26,6 +26,13 @@ typedef enum MenuFlags
     MENU_FLAG_CANSCROLL = 0x2,
 } MenuFlags;
 
+typedef enum Menu_ModalType
+{
+    Menu_Modal_Paused  = 0,
+    Menu_Modal_Options = 1,
+    Menu_Modal_Count   = 2,
+} Menu_ModalType;
+
 typedef enum MenuItem_Type
 {
     MenuItem_Type_Cycle      = 0,
@@ -503,6 +510,8 @@ extern S32 Front_CalcSliderCDVolume();
 
 extern void Front_UpdateOptionsSliders();
 extern void Front_UpdateSliderGameSpeed();
+
+extern B32 Front_Options_Update(F32 elapsed, Menu_ModalType modalType);
 
 extern void Front_Save_SetShouldClearUnlockedLevels(B32 state);
 extern void Front_Save_GetLevelCompleteWithPoints(lpSaveData saveData, char* buffer);

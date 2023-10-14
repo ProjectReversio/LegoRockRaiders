@@ -94,3 +94,5 @@ extern void Pointer_SetCurrent_IfTimerFinished(Pointer_Type pointerType);
 extern void Pointer_DrawPointer(U32 mouseX, U32 mouseY);
 
 extern B32 Pointer_GetType(const char* name, Pointer_Type* pointerType);
+
+extern void Pointer_Update(F32 elapsedAbs);

@@ -4,6 +4,7 @@
 #include "container.h"
 #include "detail.h"
 #include "material.h"
+#include "viewport.h"
 
 #define MAP3D_MAXTEXTURES 128
 
@@ -175,3 +176,5 @@ extern void Map3D_SetBlockVertexModified(lpMap3D map, U32 vx, U32 vy);
 extern void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by);
 
 extern void Map3D_SetEmissive(lpMap3D map, B32 on);
+
+extern B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY, U32 *outBx, U32 *outBy, Point3F *outVector);

@@ -10,3 +10,8 @@ B32 LightEffects_Load(lpConfig config, const char* gameName)
     // TODO: Implement LightEffects_Load
     return FALSE;
 }
+
+void LightEffects_SetDimmerMode(B32 isDimoutMode)
+{
+    // TODO: Implement LightEffects_SetDimmerMode
+}

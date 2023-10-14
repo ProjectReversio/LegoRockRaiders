@@ -49,6 +49,7 @@
 #include "spider_web.h"
 #include "water.h"
 #include "game_control.h"
+#include "input.h"
 
 Lego_Globs legoGlobs;
 
@@ -767,6 +768,10 @@ B32 Lego_MainLoop(F32 elapsed)
 
     // TODO: Implement Lego_MainLoop
 
+    Lego_HandleWorld(elapsedAbs, elapsed, keyDownT, keyDownR, keyDownAnyShift);
+
+    // TODO: Implement Lego_MainLoop
+
     Container_Hide(legoGlobs.ambientLight, FALSE);
     if (legoGlobs.viewMode == ViewMode_Top)
     {
@@ -845,7 +850,28 @@ B32 Lego_MainLoop(F32 elapsed)
 
     // TODO: Implement
 
-    // TODO: Objective_Update(legoGlobs.textWnd_80, legoGlobs.currLevel, elapsedGame_00, elapsedAbs);
+    Objective_Update(legoGlobs.textWnd_80, legoGlobs.currLevel, elapsedGame, elapsedAbs);
+
+    // TODO: Implement Lego_MainLoop
+
+    if ((legoGlobs.flags1 & GAME1_PAUSED) == GAME1_NONE)
+    {
+        Pointer_Update(elapsedAbs);
+        if (legoGlobs.renameInput == NULL)
+            Pointer_DrawPointer(inputGlobs.msx, inputGlobs.msy);
+    }
+    else
+    {
+        if (!Front_IsFrontEndEnabled() || !Front_Options_Update(elapsed, Menu_Modal_Paused))
+        {
+            Pointer_Update(elapsedAbs);
+            Pointer_DrawPointer(inputGlobs.msx, inputGlobs.msy);
+        }
+        else
+        {
+            // TODO: Implement Lego_MainLoop
+        }
+    }
 
     // TODO: Implement Lego_MainLoop
 
@@ -858,6 +884,51 @@ B32 Lego_HandleKeys(F32 elapsedGame, F32 elapsed, B32 *outKeyDownT, B32 *outKeyD
     // TODO: Implement Lego_HandleKeys
 
     return TRUE;
+}
+
+void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDownR, B32 keyDownAnyShift)
+{
+    // TODO: Implement Lego_HandleWorld
+
+    if ((legoGlobs.flags1 & GAME1_FREEZEINTERFACE) != GAME1_NONE)
+    {
+        Pointer_SetCurrent_IfTimerFinished(Pointer_Standard);
+        legoGlobs.flags1 &= ~(GAME1_MULTISELECT|GAME1_UNK_200);
+
+        // TODO: Implement Lego_HandleWorld
+        return;
+    }
+
+    // TODO: Implement Lego_HandleWorld
+
+    U32 mouseBlockX, mouseBlockY;
+    Point3F mouseWorldPos;
+    B32 intersections = Map3D_GetIntersections(legoGlobs.currLevel->map, legoGlobs.viewMain, inputGlobs.msx, inputGlobs.msy, &mouseBlockX, &mouseBlockY, &mouseWorldPos);
+    if (intersections)
+    {
+       // TODO: Implement Lego_HandleWorld
+       Container_SetPosition(legoGlobs.rootLight, NULL, mouseWorldPos.x, mouseWorldPos.y, mouseWorldPos.z - 250.0f);
+    }
+    LightEffects_SetDimmerMode(!intersections);
+
+    // TODO: Implement Lego_HandleWorld
+
+    Pointer_Type currentPointer = Pointer_GetCurrentType();
+    if ((legoGlobs.flags1 & GAME1_MULTISELECT) == GAME1_NONE && Message_AnyUnitSelected())
+        Pointer_SetCurrent_IfTimerFinished(Pointer_Selected);
+    else
+        Pointer_SetCurrent_IfTimerFinished(Pointer_Standard);
+
+    // TODO: Implement Lego_HandleWorld
+
+    Lego_UpdateTopdownCamera(elapsedAbs);
+
+    // TODO: Implement Lego_HandleWorld
+}
+
+void Lego_UpdateTopdownCamera(F32 elapsedAbs)
+{
+    // TODO: Implement Lego_UpdateTopdownCamera
 }
 
 B32 Lego_LoadLevel(const char* levelName)
