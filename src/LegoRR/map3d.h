@@ -160,6 +160,9 @@ extern B32 Map3D_WorldToBlockPos(lpMap3D map, F32 x, F32 y, S32* outBx, S32* out
 extern B32 Map3D_WorldToBlockPos_NoZ(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy);
 extern F32 Map3D_GetWorldZ(lpMap3D map, F32 xPos, F32 yPos);
 extern F32 Map3D_UnkCameraXYFunc_RetZunk(lpMap3D map, F32 xPos, F32 yPos);
+extern B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY, U32 *outBx, U32 *outBy, Point3F *outVector);
+extern B32 Map3D_Intersections_Sub1_FUN_00450820(lpMap3D map, Point3F *rayOrigin, Point3F *ray, Point3F *outEndPoint, Point2I *outBlockPos, S32 unkCount);
+extern B32 Map3D_Intersections_Sub2_FUN_004518a0(lpMap3D map, U32 bx, U32 by, Point3F *rayOrigin, Point3F *ray, Point3F *outVector);
 
 extern void Map3D_InitRoughness(lpMap3D map);
 
@@ -176,5 +179,3 @@ extern void Map3D_SetBlockVertexModified(lpMap3D map, U32 vx, U32 vy);
 extern void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by);
 
 extern void Map3D_SetEmissive(lpMap3D map, B32 on);
-
-extern B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY, U32 *outBx, U32 *outBy, Point3F *outVector);

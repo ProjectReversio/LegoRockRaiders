@@ -48,6 +48,8 @@ extern void Viewport_SetBackClip(lpViewport viewport, F32 dist);
 extern void Viewport_SetCamera(lpViewport vp, lpContainer cont);
 extern lpContainer Viewport_GetCamera(lpViewport vp);
 
+extern void Viewport_InverseTransform(lpViewport vp, Point3F* dest, Point4F* src);
+
 extern void Viewport_SetField(lpViewport vp, F32 fov);
 extern F32 Viewport_GetField(lpViewport vp);
 

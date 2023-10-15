@@ -227,6 +227,67 @@ F32 Map3D_UnkCameraXYFunc_RetZunk(lpMap3D map, F32 xPos, F32 yPos)
     return 0.0f;
 }
 
+B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY, U32 *outBx, U32 *outBy, Point3F *outVector)
+{
+    Point2F mousePos;
+    Point2I blockPos;
+
+    mousePos.x = (F32)(U64)mouseX;
+    blockPos.x = mouseY;
+    blockPos.y = 0;
+    mousePos.y = (F32)(U64)mouseY;
+
+    Point4F xformMouseZ0;
+    Point4F xformMouseZ1;
+
+    // xformMouseZ0 = Point4F{mouseX, mouseY, 0.0, 1.0};
+    xformMouseZ0.x = mousePos.x;
+    xformMouseZ0.y = mousePos.y;
+    xformMouseZ0.z = 0.0f;
+    xformMouseZ0.w = 1.0f;
+
+    // xformMouseZ1 = Point4F{mouseX, mouseY, 1.0, 1.0};
+    xformMouseZ1.x = mousePos.x;
+    xformMouseZ1.y = mousePos.y;
+    xformMouseZ1.z = 1.0f;
+    xformMouseZ1.w = 1.0f;
+
+    Point3F rayOrigin;
+    Point3F ray;
+
+    Viewport_InverseTransform(view, &rayOrigin, &xformMouseZ0);
+    Viewport_InverseTransform(view, &ray, &xformMouseZ1);
+
+    F32 x = ray.x - rayOrigin.x;
+    F32 y = ray.y - rayOrigin.y;
+    F32 z = ray.z - rayOrigin.z;
+    F32 length = 1.0f / sqrtf(x * x + y * y + z * z);
+
+    ray.x = x * length;
+    ray.y = y * length;
+    ray.z = z * length;
+
+    if (!Map3D_Intersections_Sub1_FUN_00450820(map, &rayOrigin, &ray, outVector, &blockPos, 20))
+        return FALSE;
+
+    // Do a 2D loop in range: (-2, -2) -> (2, 2)
+
+    // TODO: Implement Map3D_GetIntersections
+    return FALSE;
+}
+
+B32 Map3D_Intersections_Sub1_FUN_00450820(lpMap3D map, Point3F *rayOrigin, Point3F *ray, Point3F *outEndPoint, Point2I *outBlockPos, S32 unkCount)
+{
+    // TODO: Implement Map3D_Intersections_Sub1_FUN_00450820
+    return FALSE;
+}
+
+B32 Map3D_Intersections_Sub2_FUN_004518a0(lpMap3D map, U32 bx, U32 by, Point3F *rayOrigin, Point3F *ray, Point3F *outVector)
+{
+    // TODO: Implement Map3D_Intersections_Sub2_FUN_004518a0
+    return FALSE;
+}
+
 void Map3D_InitRoughness(lpMap3D map)
 {
     Vertex vertices[4];
@@ -363,10 +424,4 @@ void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by)
 void Map3D_SetEmissive(lpMap3D map, B32 on)
 {
     // TODO: Implement Map3D_SetEmissive
-}
-
-B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY, U32 *outBx, U32 *outBy, Point3F *outVector)
-{
-    // TODO: Implement Map3D_GetIntersections
-    return FALSE;
 }

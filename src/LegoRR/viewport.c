@@ -139,6 +139,14 @@ lpContainer Viewport_GetCamera(lpViewport vp)
     return camera;
 }
 
+void Viewport_InverseTransform(lpViewport vp, Point3F* dest, Point4F* src)
+{
+    Viewport_CheckInit();
+    Error_Fatal(!vp, "NULL passed to Viewport_InverseTransform()");
+
+    vp->lpVP->lpVtbl->InverseTransform(vp->lpVP, (LPD3DVECTOR) dest, (LPD3DRMVECTOR4D) src);
+}
+
 void Viewport_SetField(lpViewport vp, F32 fov)
 {
     Viewport_CheckInit();
