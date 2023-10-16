@@ -95,6 +95,11 @@ inline lpPoint3F Maths_Vector3DSubtract(lpPoint3F r, lpPoint3F a, lpPoint3F b)
     return r;
 }
 
+inline F32 Maths_Vector3DDotProduct(lpPoint3F a, lpPoint3F b)
+{
+    return a->x * b->x + a->y * b->y + a->z * b->z;
+}
+
 inline lpPoint3F Maths_Vector3DAdd(lpPoint3F r, lpPoint3F a, lpPoint3F b)
 {
     r->x = a->x + b->x;
@@ -129,3 +134,9 @@ inline lpPoint3F Maths_Vector3DInterpolate(lpPoint3F result, lpPoint3F start, lp
     Maths_Vector3DAdd(result, start, result);
     return result;
 }
+
+extern B32 Maths_PointInsidePoly(lpPoint2F point, lpPoint2F fromList, lpPoint2F toList, U32 count);
+
+extern B32 Maths_RayPlaneIntersection(lpPoint3F endPoint, lpPoint3F rayOrigin, lpPoint3F ray, lpPoint3F planePoint, lpPoint3F planeNormal);
+extern B32 Maths_RayPlaneDistance(F32* dist, lpPoint3F rayOrigin, lpPoint3F ray, lpPoint3F planePoint, lpPoint3F planeNormal);
+extern void Maths_RayEndPoint(lpPoint3F endPoint, lpPoint3F rayOrigin, lpPoint3F ray, F32 dist);

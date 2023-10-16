@@ -216,7 +216,33 @@ B32 Map3D_WorldToBlockPos_NoZ(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy)
 
 F32 Map3D_GetWorldZ(lpMap3D map, F32 xPos, F32 yPos)
 {
-    // TODO: Implement Map3D_GetWorldZ
+    U32 bx;
+    U32 by;
+    if (Map3D_WorldToBlockPos_NoZ(map, xPos, yPos, &bx, &by))
+    {
+        Point3F positions[4];
+        if (!Map3D_GetBlockVertexPositions(map, bx, by, &positions))
+        {
+            if (map->blockSize <= (xPos - positions[0].x) + (positions[0].y - yPos))
+                positions[0].z = (positions[3].z - positions[2].z) + (positions[1].z - positions[2].z) + positions[2].z;
+            else
+                positions[2].z = (positions[3].z - positions[0].z) + (positions[1].z - positions[0].z) + positions[0].z;
+        }
+        else if (map->blockSize <= (positions[1].x - xPos) + (positions[1].y - yPos))
+        {
+            positions[1].z = (positions[2].z - positions[3].z) + (positions[0].z - positions[3].z) + positions[3].z;
+        }
+        else
+        {
+            positions[3].z = (positions[2].z - positions[1].z) + (positions[0].z - positions[1].z) + positions[1].z;
+        }
+
+        F32 f = (positions[2].z - positions[3].z) * ((positions[2].x - positions[3].x) / (xPos - positions[3].x)) + positions[3].z;
+
+        return ((positions[0].y - positions[3].y) / (yPos - positions[3].y)) *
+            (((positions[1].z - positions[0].z) * ((xPos - positions[0].x) / (positions[1].x - positions[0].x)) + positions[0].z) - f) + f;
+    }
+
     return 0.0f;
 }
 
@@ -271,20 +297,250 @@ B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY,
         return FALSE;
 
     // Do a 2D loop in range: (-2, -2) -> (2, 2)
+    Point3F vertPoses[4];
+    Point2I loopOffset;
+    loopOffset.y = -2;
+    do
+    {
+        loopOffset.x = -2;
+        do
+        {
+            if ((U32)(loopOffset.x + blockPos.x) < map->blockWidth && (U32)(blockPos.y + loopOffset.y) < map->blockHeight)
+            {
+                Map3D_GetBlockVertexPositions(map, loopOffset.x + blockPos.x, loopOffset.y + blockPos.y, vertPoses);
 
-    // TODO: Implement Map3D_GetIntersections
-    return FALSE;
+                Point3F* vector = vertPoses;
+                S32 i = 4;
+
+                Point4F xformPoly;
+                Point2F polyPoints[5];
+
+                do
+                {
+                    Viewport_Transform(view, &xformPoly, vector);
+
+                    vector++;
+                    i--;
+
+                    // TODO: Verify that this is correctly decompiled
+                    polyPoints[i].x = xformPoly.x / xformPoly.w;
+                    polyPoints[i].y = xformPoly.y / xformPoly.w;
+                } while (i != 0);
+
+                polyPoints[4].x = polyPoints[0].x;
+                polyPoints[4].y = polyPoints[0].y;
+
+                if (Maths_PointInsidePoly(&mousePos, polyPoints, &polyPoints[1], 4))
+                {
+                    *outBx = blockPos.x + loopOffset.x;
+                    *outBy = blockPos.y + loopOffset.y;
+                    Map3D_Intersections_Sub2_FUN_004518a0(map, *outBx, *outBy, &rayOrigin, &ray, outVector);
+                    return TRUE;
+                }
+            }
+            loopOffset.x++;
+        } while (loopOffset.x < 3);
+        loopOffset.y++;
+        if (2 < loopOffset.y)
+            return FALSE;
+    } while (TRUE);
 }
 
 B32 Map3D_Intersections_Sub1_FUN_00450820(lpMap3D map, Point3F *rayOrigin, Point3F *ray, Point3F *outEndPoint, Point2I *outBlockPos, S32 unkCount)
 {
-    // TODO: Implement Map3D_Intersections_Sub1_FUN_00450820
-    return FALSE;
+    Point3F planePoint;
+    Point3F planeNormal;
+
+    planePoint.x = 0.0f;
+    planePoint.y = 0.0f;
+    planePoint.z = -50.0f;
+
+    planeNormal.x = 0.0f;
+    planeNormal.y = 0.0f;
+    planeNormal.z = -1.0f;
+
+    if (unkCount != 0)
+    {
+        do
+        {
+            Maths_RayPlaneIntersection(outEndPoint, rayOrigin, ray, &planePoint, &planeNormal);
+            planePoint.z = Map3D_GetWorldZ(map, outEndPoint->x, outEndPoint->y);
+
+            unkCount--;
+        } while (unkCount != 0);
+    }
+
+    return Map3D_WorldToBlockPos_NoZ(map, outEndPoint->x, outEndPoint->y, &outBlockPos->x, &outBlockPos->y);
 }
 
 B32 Map3D_Intersections_Sub2_FUN_004518a0(lpMap3D map, U32 bx, U32 by, Point3F *rayOrigin, Point3F *ray, Point3F *outVector)
 {
-    // TODO: Implement Map3D_Intersections_Sub2_FUN_004518a0
+    Point2F points[4];
+
+    Point3F positions[4];
+    B32 rotated = Map3D_GetBlockVertexPositions(map, bx, by, positions);
+
+    B32 flag1 = FALSE;
+    B32 flag2 = FALSE;
+
+    Point3F normal;
+    normal.x = map->blocks3D[by * map->gridWidth + bx].normalA.x;
+    normal.y = map->blocks3D[by * map->gridWidth + bx].normalA.y;
+    normal.z = map->blocks3D[by * map->gridWidth + bx].normalA.z;
+
+    Point3F endPoint;
+    if (Maths_RayPlaneIntersection(&endPoint, rayOrigin, ray, &positions[0], &normal))
+    {
+        if (rotated)
+        {
+            points[1].x = positions[2].x;
+            points[1].y = positions[2].y;
+        }
+        else
+        {
+            points[1].x = positions[1].x;
+            points[1].y = positions[1].y;
+        }
+
+        Point2F endPointCopy;
+        endPointCopy.x = endPoint.x;
+        endPointCopy.y = endPoint.y;
+
+        if (Maths_PointInsidePoly(&endPointCopy, points, &points[1], 3))
+        {
+            flag1 = TRUE;
+        }
+    }
+
+    normal.x = map->blocks3D[by * map->gridWidth + bx].normalB.x;
+    normal.y = map->blocks3D[by * map->gridWidth + bx].normalB.y;
+    normal.z = map->blocks3D[by * map->gridWidth + bx].normalB.z;
+
+    Point3F endPoint2;
+    if (Maths_RayPlaneIntersection(&endPoint2, rayOrigin, ray, &positions[2], &normal))
+    {
+        if (rotated)
+        {
+            points[1].x = positions[1].x;
+            points[1].y = positions[1].y;
+            points[2].x = positions[2].x;
+            points[2].y = positions[2].y;
+            points[3].x = positions[0].x;
+            points[3].y = positions[0].y;
+        }
+        else
+        {
+            points[1].x = positions[2].x;
+            points[1].y = positions[3].y;
+            points[2].x = positions[3].x;
+            points[2].y = positions[3].y;
+            points[3].x = positions[1].x;
+            points[3].y = positions[1].y;
+        }
+
+        Point2F endPointCopy;
+        endPointCopy.x = endPoint2.x;
+        endPointCopy.y = endPoint2.y;
+
+        points[0].x = points[3].x;
+        points[0].y = points[3].y;
+
+        if (Maths_PointInsidePoly(&endPointCopy, points, &points[1], 3))
+        {
+            flag2 = TRUE;
+        }
+    }
+
+    if (flag1)
+    {
+        if (flag2)
+        {
+            F32 x1 = endPoint.x - rayOrigin->x;
+            F32 x2 = endPoint2.x - rayOrigin->x;
+            F32 y1 = endPoint.y - rayOrigin->y;
+            F32 y2 = endPoint2.y - rayOrigin->y;
+            F32 z1 = endPoint.z - rayOrigin->z;
+            F32 z2 = endPoint2.z - rayOrigin->z;
+            if (sqrtf(z1 * z1 + y1 * y1 + x1 * x1) < sqrtf(z2 * z2 + y2 * y2 + x2 * x2))
+            {
+                outVector->x = endPoint.x;
+                outVector->y = endPoint.y;
+                outVector->z = endPoint.z;
+
+                return TRUE;
+            }
+        }
+        else
+        {
+            if (flag1)
+            {
+                outVector->x = endPoint.x;
+                outVector->y = endPoint.y;
+                outVector->z = endPoint.z;
+
+                return TRUE;
+            }
+        }
+    }
+    else if (!flag2)
+    {
+        return FALSE;
+    }
+
+    outVector->x = endPoint2.x;
+    outVector->y = endPoint2.y;
+    outVector->z = endPoint2.z;
+
+    return TRUE;
+}
+
+B32 Map3D_GetBlockVertexPositions(lpMap3D map, U32 bx, U32 by, Point3F* outVertPositions)
+{
+    Vertex vertices[4];
+
+    if (bx < map->blockWidth && by < map->blockHeight)
+    {
+        Container_Mesh_GetVertices(map->mesh, by * map->blockWidth + bx, 0, 4, vertices);
+
+        if ((map->blocks3D[map->gridWidth * by + bx].flags3D & MAP3DBLOCK_FLAG_ROTATED) != MAP3DBLOCK_FLAG_NONE)
+        {
+            // Return vertices shifted down once.
+            outVertPositions[0].x = vertices[1].position.x;
+            outVertPositions[0].y = vertices[1].position.y;
+            outVertPositions[0].z = vertices[1].position.z;
+            outVertPositions[1].x = vertices[2].position.x;
+            outVertPositions[1].y = vertices[2].position.y;
+            outVertPositions[1].z = vertices[2].position.z;
+            outVertPositions[2].x = vertices[3].position.x;
+            outVertPositions[2].y = vertices[3].position.y;
+            outVertPositions[2].z = vertices[3].position.z;
+            outVertPositions[3].x = vertices[0].position.x;
+            outVertPositions[3].y = vertices[0].position.y;
+            outVertPositions[3].z = vertices[0].position.z;
+
+            return TRUE;
+        } else
+        {
+            // Return vertices in original position.
+            outVertPositions[0].x = vertices[0].position.x;
+            outVertPositions[0].y = vertices[0].position.y;
+            outVertPositions[0].z = vertices[0].position.z;
+            outVertPositions[1].x = vertices[1].position.x;
+            outVertPositions[1].y = vertices[1].position.y;
+            outVertPositions[1].z = vertices[1].position.z;
+            outVertPositions[2].x = vertices[2].position.x;
+            outVertPositions[2].y = vertices[2].position.y;
+            outVertPositions[2].z = vertices[2].position.z;
+            outVertPositions[3].x = vertices[3].position.x;
+            outVertPositions[3].y = vertices[3].position.y;
+            outVertPositions[3].z = vertices[3].position.z;
+
+            return FALSE;
+        }
+
+    }
+
+    // TODO: Originally this returned map->blockWidth which is really weird. Potential bug?
     return FALSE;
 }
 

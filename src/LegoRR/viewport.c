@@ -147,6 +147,14 @@ void Viewport_InverseTransform(lpViewport vp, Point3F* dest, Point4F* src)
     vp->lpVP->lpVtbl->InverseTransform(vp->lpVP, (LPD3DVECTOR) dest, (LPD3DRMVECTOR4D) src);
 }
 
+void Viewport_Transform(lpViewport vp, Point4F* dest, Point3F* src)
+{
+    Viewport_CheckInit();
+    Error_Fatal(!vp, "NULL passed to Viewport_Transform()");
+
+    vp->lpVP->lpVtbl->Transform(vp->lpVP, (LPD3DRMVECTOR4D) dest, (LPD3DVECTOR) src);
+}
+
 void Viewport_SetField(lpViewport vp, F32 fov)
 {
     Viewport_CheckInit();
