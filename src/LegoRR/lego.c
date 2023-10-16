@@ -768,7 +768,12 @@ B32 Lego_MainLoop(F32 elapsed)
 
     // TODO: Implement Lego_MainLoop
 
+    Lego_UnkUpdateMapsWorldUnk_FUN_004290d0(elapsed, FALSE);
+
+    // TODO: Implement Lego_MainLoop
+
     Lego_HandleWorld(elapsedAbs, elapsed, keyDownT, keyDownR, keyDownAnyShift);
+    Map3D_Update(legoGlobs.currLevel->map, elapsedGame);
 
     // TODO: Implement Lego_MainLoop
 
@@ -929,6 +934,11 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
 void Lego_UpdateTopdownCamera(F32 elapsedAbs)
 {
     // TODO: Implement Lego_UpdateTopdownCamera
+}
+
+void Lego_UnkUpdateMapsWorldUnk_FUN_004290d0(F32 elapsedAbs, B32 pass2)
+{
+    // TODO: Implement Lego_UnkUpdateMapsWorldUnk_FUN_004290d0
 }
 
 B32 Lego_LoadLevel(const char* levelName)

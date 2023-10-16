@@ -681,3 +681,8 @@ void Map3D_SetEmissive(lpMap3D map, B32 on)
 {
     // TODO: Implement Map3D_SetEmissive
 }
+
+void Map3D_Update(lpMap3D map, F32 elapsedGame)
+{
+    // TODO: Implement Map3D_Update
+}
