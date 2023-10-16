@@ -179,7 +179,7 @@ B32 Map3D_WorldToBlockPos(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy, F32
     */
 
     // TODO: Verify that this is correct
-    S32 xPos = (S32)(x - map->worldDimensions_fnegx.width / map->blockSize);
+    S32 xPos = (S32)((x - map->worldDimensions_fnegx.width) / map->blockSize);
     S32 yPos = (S32)((map->worldDimensions_fnegx.height - y) / map->blockSize);
 
     if (outBx != NULL)
