@@ -238,6 +238,33 @@ extern lpContainer Container_Load(lpContainer parent, const char* filename, cons
 extern lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 b);
 extern lpContainer Container_MakeMesh2(lpContainer parent, Container_MeshType type);
 
+inline U32 Container_GetRGBAColour(F32 r, F32 g, F32 b, F32 a)
+{
+    if (r > 1.0f)
+        r = 1.0f;
+    if (g > 1.0f)
+        g = 1.0f;
+    if (b > 1.0f)
+        b = 1.0f;
+    if (a > 1.0f)
+        a = 1.0f;
+
+    if (r < 0.0f)
+        r = 0.0f;
+    if (g < 0.0f)
+        g = 0.0f;
+    if (b < 0.0f)
+        b = 0.0f;
+    if (a < 0.0f)
+        a = 0.0f;
+
+    return D3DRGBA(r, g, b, a);
+}
+
+extern void Container_SetColourAlpha(lpContainer cont, F32 r, F32 g, F32 b, F32 a);
+
+#define Container_SetColour(c, r, g, b)             Container_SetColourAlpha((c), (r), (g), (b), 1.0f)
+
 #define Container_MakeMesh(r)                       Container_MakeMesh2((r), Container_MeshType_Normal)
 #define Container_MakeMeshSeparateGroups(r)         Container_MakeMesh2((r), Container_MeshType_SeperateMeshes)
 #define Container_MakeMeshImmediate(r)              Container_MakeMesh2((r), Container_MeshType_Immediate)

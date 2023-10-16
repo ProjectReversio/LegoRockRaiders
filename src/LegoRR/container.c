@@ -854,6 +854,28 @@ lpContainer Container_MakeMesh2(lpContainer parent, Container_MeshType type)
     return cont;
 }
 
+void Container_SetColourAlpha(lpContainer cont, F32 r, F32 g, F32 b, F32 a)
+{
+    D3DCOLOR colour;
+
+    Container_DebugCheckOK(cont);
+    Error_Fatal(!cont->typeData, "Container has no typeData");
+
+    colour = Container_GetRGBAColour(r, g, b, a);
+
+    if (cont->type == Container_Light)
+    {
+        Error_Fatal(!cont->typeData->light, "typedata has no light");
+        cont->typeData->light->lpVtbl->SetColor(cont->typeData->light, colour);
+
+        /// NEW GODS98: Feature not present in LegoRR
+        //if (cont->typeData->light->lpVtbl->GetType(cont->typeData->light) == D3DRMLIGHT_AMBIENT)
+        //    Mesh_SetAmbientLight(r, g, b);
+    }
+
+    // TODO: Implement Container_SetColourAlpha
+}
+
 U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData)
 {
     U32 groupID;
