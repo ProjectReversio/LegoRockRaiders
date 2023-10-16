@@ -646,7 +646,6 @@ U32 Container_Mesh_SetVertices(lpContainer cont, U32 groupID, U32 index, U32 cou
             Error_Fatal(TRUE, "Unable to SetVertices");
             return CONTAINER_ULONG_NULL;
         }
-        // TODO: Implement Container_Mesh_SetVertices
     }
 
     return 0;
@@ -872,8 +871,6 @@ void Container_SetColourAlpha(lpContainer cont, F32 r, F32 g, F32 b, F32 a)
         //if (cont->typeData->light->lpVtbl->GetType(cont->typeData->light) == D3DRMLIGHT_AMBIENT)
         //    Mesh_SetAmbientLight(r, g, b);
     }
-
-    // TODO: Implement Container_SetColourAlpha
 }
 
 U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData)
