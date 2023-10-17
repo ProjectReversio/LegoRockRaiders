@@ -686,3 +686,19 @@ void Map3D_Update(lpMap3D map, F32 elapsedGame)
 {
     // TODO: Implement Map3D_Update
 }
+
+void Map3D_UpdateAllBlockNormals(lpMap3D map)
+{
+    for (U32 vy = 0; vy < map->gridHeight; vy++)
+    {
+        for (U32 vx = 0; vx < map->gridWidth; vx++)
+        {
+            Map3D_UpdateBlockNormals(map, vx, vy);
+        }
+    }
+}
+
+void Map3D_UpdateBlockNormals(lpMap3D map, U32 bx, U32 by)
+{
+    // TODO: Implement Map3D_UpdateBlockNormals
+}

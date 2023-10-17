@@ -183,3 +183,6 @@ extern void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by);
 extern void Map3D_SetEmissive(lpMap3D map, B32 on);
 
 extern void Map3D_Update(lpMap3D map, F32 elapsedGame);
+
+extern void Map3D_UpdateAllBlockNormals(lpMap3D map);
+extern void Map3D_UpdateBlockNormals(lpMap3D map, U32 bx, U32 by);

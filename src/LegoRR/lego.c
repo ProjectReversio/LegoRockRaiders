@@ -1318,6 +1318,10 @@ B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* pred
                 {
                     // TODO: Implement Lego_LoadMapSet
 
+                    Map3D_UpdateAllBlockNormals(level->map);
+
+                    Water_Initialize(legoGlobs.rootCont, level);
+
                     return TRUE;
                 }
             }
