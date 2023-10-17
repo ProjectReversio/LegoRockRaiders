@@ -544,6 +544,62 @@ B32 Map3D_GetBlockVertexPositions(lpMap3D map, U32 bx, U32 by, Point3F* outVertP
     return FALSE;
 }
 
+B32 Map3D_GetBlockDirectionNormal(lpMap3D map, U32 bx, U32 by, Direction direction, Point3F* outNormal)
+{
+    if (bx < map->blockWidth && by < map->blockHeight)
+    {
+        Map3D_Block block3D = map->blocks3D[by * map->gridWidth + bx];
+
+        if ((block3D.flags3D & MAP3DBLOCK_FLAG_ROTATED) != MAP3DBLOCK_FLAG_NONE)
+            direction = (direction + 1) % DIRECTION_COUNT;
+
+        if (direction == DIRECTION_UP)
+            *outNormal = block3D.normalA;
+
+        if (direction == DIRECTION_DOWN)
+            *outNormal = block3D.normalB;
+
+        if (direction == DIRECTION_RIGHT || direction == DIRECTION_LEFT)
+        {
+            Maths_Vector3DAdd(outNormal, &block3D.normalB, &block3D.normalA);
+            Maths_Vector3DNormalize(outNormal);
+        }
+
+        return TRUE;
+    }
+
+    outNormal->x = 0.0f;
+    outNormal->y = 0.0f;
+    outNormal->z = 0.0f;
+    return FALSE;
+}
+
+void Map3D_SetBlockDirectionNormal(lpMap3D map, U32 bx, U32 by, Direction direction, Point3F* normal)
+{
+    D3DRMGROUPINDEX groupID = by * map->blockWidth + bx;
+    Vertex vertices[1];
+
+    if (bx < map->blockWidth && by < map->blockHeight)
+    {
+        if ((map->blocks3D[map->gridWidth * by + bx].flags3D & MAP3DBLOCK_FLAG_ROTATED) != MAP3DBLOCK_FLAG_NONE)
+            direction = (direction + 1) % DIRECTION_COUNT;
+
+        Container_Mesh_GetVertices(map->mesh, groupID, direction, 1, vertices);
+
+        vertices[0].normal.x = normal->x;
+        vertices[0].normal.y = normal->y;
+        vertices[0].normal.z = normal->z;
+
+        Container_Mesh_SetVertices(map->mesh, groupID, direction, 1, vertices);
+    }
+}
+
+B32 Map3D_BlockPairHasTextureMatch(lpMap3D map, U32 bx1, U32 by1, U32 bx2, U32 by2)
+{
+    // TODO: Implement Map3D_BlockPairHasTextureMatch
+    return FALSE;
+}
+
 void Map3D_InitRoughness(lpMap3D map)
 {
     Vertex vertices[4];
@@ -700,5 +756,78 @@ void Map3D_UpdateAllBlockNormals(lpMap3D map)
 
 void Map3D_UpdateBlockNormals(lpMap3D map, U32 bx, U32 by)
 {
-    // TODO: Implement Map3D_UpdateBlockNormals
+    Point2F blockOffsets[4];
+    blockOffsets[0].x = 0.0f;
+    blockOffsets[0].y = 0.0f;
+    blockOffsets[1].x = -1.0f;
+    blockOffsets[1].y = 0.0f;
+    blockOffsets[2].x = -1.0f;
+    blockOffsets[2].y = -1.0f;
+    blockOffsets[3].x = 0.0f;
+    blockOffsets[3].y = -1.0f;
+
+    Point3F vertNormalsOut[4];
+    vertNormalsOut[0].x = 0.0f;
+    vertNormalsOut[0].y = 0.0f;
+    vertNormalsOut[0].z = 0.0f;
+    vertNormalsOut[1].x = 0.0f;
+    vertNormalsOut[1].y = 0.0f;
+    vertNormalsOut[1].z = 0.0f;
+    vertNormalsOut[2].x = 0.0f;
+    vertNormalsOut[2].y = 0.0f;
+    vertNormalsOut[2].z = 0.0f;
+    vertNormalsOut[3].x = 0.0f;
+    vertNormalsOut[3].y = 0.0f;
+    vertNormalsOut[3].z = 0.0f;
+
+    Point3F vertNormalsIn[4];
+
+    S32 i = 4;
+    do
+    {
+        i--;
+
+        blockOffsets[i].x += (F32)bx;
+        blockOffsets[i].y += (F32)by;
+    } while (i != 0);
+
+
+    Direction idxGetIn = DIRECTION_UP;
+    do
+    {
+        Map3D_GetBlockDirectionNormal(map, (U32)(U64)blockOffsets[idxGetIn].x, (U32)(U64)blockOffsets[idxGetIn].y, idxGetIn, &vertNormalsIn[idxGetIn]);
+        idxGetIn++;
+    } while (idxGetIn < DIRECTION_COUNT);
+
+    S32 idxOut = 4;
+    do
+    {
+
+        idxOut--;
+        S32 idxIn = 4;
+        do
+        {
+            idxIn--;
+            if (!Map3D_BlockPairHasTextureMatch(map, blockOffsets[idxOut].x, blockOffsets[idxOut].y, blockOffsets[idxIn].x, blockOffsets[idxIn].y))
+            {
+                vertNormalsOut[idxOut].x += vertNormalsIn[idxIn].x;
+                vertNormalsOut[idxOut].y += vertNormalsIn[idxIn].y;
+                vertNormalsOut[idxOut].z += vertNormalsIn[idxIn].z;
+            }
+
+        } while (idxIn != 0);
+
+        F32 f = 1.0f / sqrtf(vertNormalsOut[idxOut].x * vertNormalsOut[idxOut].x + vertNormalsOut[idxOut].y * vertNormalsOut[idxOut].y + vertNormalsOut[idxOut].z * vertNormalsOut[idxOut].z);
+        vertNormalsOut[idxOut].x *= f;
+        vertNormalsOut[idxOut].y *= f;
+        vertNormalsOut[idxOut].z *= f;
+
+    } while (idxOut != 0);
+
+    Direction idxSetOut = 0;
+    do
+    {
+        Map3D_SetBlockDirectionNormal(map, (U32)(U64)blockOffsets[idxSetOut].x, (U32)(U64)blockOffsets[idxSetOut].y, idxSetOut, &vertNormalsOut[idxSetOut]);
+        idxSetOut++;
+    } while (idxSetOut < DIRECTION_COUNT);
 }

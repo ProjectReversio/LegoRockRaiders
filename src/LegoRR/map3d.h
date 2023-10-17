@@ -166,6 +166,11 @@ extern B32 Map3D_Intersections_Sub2_FUN_004518a0(lpMap3D map, U32 bx, U32 by, Po
 
 extern B32 Map3D_GetBlockVertexPositions(lpMap3D map, U32 bx, U32 by, Point3F* outVertPositions);
 
+extern B32 Map3D_GetBlockDirectionNormal(lpMap3D map, U32 bx, U32 by, Direction direction, Point3F* outNormal);
+extern void Map3D_SetBlockDirectionNormal(lpMap3D map, U32 bx, U32 by, Direction direction, Point3F* normal);
+
+extern B32 Map3D_BlockPairHasTextureMatch(lpMap3D map, U32 bx1, U32 by1, U32 bx2, U32 by2);
+
 extern void Map3D_InitRoughness(lpMap3D map);
 
 // This seems to be used when the height difference of diagonal vertex points differs.
