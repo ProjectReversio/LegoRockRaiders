@@ -248,6 +248,30 @@ F32 Map3D_GetWorldZ(lpMap3D map, F32 xPos, F32 yPos)
 
 F32 Map3D_UnkCameraXYFunc_RetZunk(lpMap3D map, F32 xPos, F32 yPos)
 {
+    S32 bx, by;
+    if (!Map3D_WorldToBlockPos_NoZ(map, xPos, yPos, &bx, &by))
+        return 0.0f;
+
+    Point2F OFFSETS[4];
+
+    OFFSETS[0].x = 0.0f;
+    OFFSETS[0].y = 0.0f;
+    OFFSETS[1].x = 1.0f;
+    OFFSETS[1].y = 0.0f;
+    OFFSETS[2].x = 1.0f;
+    OFFSETS[2].y = 1.0f;
+    OFFSETS[3].x = 0.0f;
+    OFFSETS[3].y = 1.0f;
+
+    S32 i = 4;
+    do
+    {
+        i--;
+
+        // TODO: Implement Map3D_UnkCameraXYFunc_RetZunk
+
+    } while (i != 0);
+
     // TODO: Implement Map3D_UnkCameraXYFunc_RetZunk
 
     return 0.0f;
@@ -596,7 +620,31 @@ void Map3D_SetBlockDirectionNormal(lpMap3D map, U32 bx, U32 by, Direction direct
 
 B32 Map3D_BlockPairHasTextureMatch(lpMap3D map, U32 bx1, U32 by1, U32 bx2, U32 by2)
 {
-    // TODO: Implement Map3D_BlockPairHasTextureMatch
+    if ((((by1 != by2 || bx1 != bx2) && bx1 < map->blockWidth) && ((by1 < map->blockHeight && bx2 < map->blockWidth))) && by2 < map->blockHeight)
+    {
+        SurfaceTexture tex1 = map->blocks3D[by1 * map->gridWidth + bx1].texture;
+        SurfaceTexture tex2 = map->blocks3D[by2 * map->gridWidth + bx2].texture;
+
+        // Find a texture coord match for the 2 block positions
+        if (tex1 != TEXTURE__INVALID && tex2 != TEXTURE__INVALID)
+        {
+            S32 i = 0;
+            if (map->texsNum[tex1] != 0)
+            {
+                do
+                {
+                    if (map->texsGrid[tex1][i] == tex2)
+                        return TRUE;
+
+                    i++;
+                } while (i < map->texsNum[tex1]);
+
+                return FALSE;
+            }
+        }
+
+    }
+
     return FALSE;
 }
 
