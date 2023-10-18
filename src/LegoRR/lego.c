@@ -880,6 +880,13 @@ B32 Lego_MainLoop(F32 elapsed)
 
     // TODO: Implement Lego_MainLoop
 
+    if ((legoGlobs.flags1 & GAME1_VERTEXMODE) != GAME1_NONE && legoGlobs.bool_c8 != 0)
+    {
+        // TODO: Implement Lego_MainLoop
+    }
+
+    // TODO: Implement Lego_MainLoop
+
     return TRUE;
 }
 
