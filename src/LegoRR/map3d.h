@@ -194,6 +194,9 @@ extern void Map3D_Update(lpMap3D map, F32 elapsedGame);
 extern void Map3D_UpdateAllBlockNormals(lpMap3D map);
 extern void Map3D_UpdateBlockNormals(lpMap3D map, U32 bx, U32 by);
 
+extern void Map3D_UpdateTextureUVs(lpMap3D map, F32 elapsedGame);
+extern void Map3D_UpdateFadeInTransitions(lpMap3D map, F32 elapsedGame);
+
 extern F32 Map3D_BlockSize(lpMap3D map);
 
 extern void Map3D_HideBlock(lpMap3D map, U32 bx, U32 by, BOOL hide);

@@ -22,8 +22,8 @@ lpMap3D Map3D_Create(lpContainer root, const char* filename, F32 blockSize, F32 
     Map3D_MapFileGetSpecs(mapFileInfo, &map->gridWidth, &map->gridHeight);
     map->blockWidth = map->gridWidth - 1;
     map->blockHeight = map->gridHeight - 1;
-    map->worldDimensions_fnegx.width = -((F32)(U64)(map->blockWidth) * blockSize * 0.5);
-    map->worldDimensions_fnegx.height = ((F32)(U64)(map->blockHeight) * blockSize * 0.5);
+    map->worldDimensions_fnegx.width = -((F32)(U64)(map->blockWidth) * blockSize * 0.5f);
+    map->worldDimensions_fnegx.height = ((F32)(U64)(map->blockHeight) * blockSize * 0.5f);
     map->textureSet = NULL;
 
     memset(map->texsNum, 0, MAP3D_MAXTEXTURES);
@@ -809,7 +809,36 @@ void Map3D_SetEmissive(lpMap3D map, B32 on)
 
 void Map3D_Update(lpMap3D map, F32 elapsedGame)
 {
-    // TODO: Implement Map3D_Update
+    if ((map->flagsMap & MAP3D_FLAG_VERTEXMODIFIED) != MAP3D_FLAG_NONE)
+    {
+        U32 by = 0;
+        if (map->gridHeight != 0)
+        {
+            do
+            {
+                U32 bx = 0;
+                if (map->gridWidth != 0)
+                {
+                    do
+                    {
+                        if ((map->blocks3D[by * map->gridWidth + bx].flags3D & MAP3DBLOCK_FLAG_VERTEXMODIFIED) != MAP3DBLOCK_FLAG_NONE)
+                        {
+                            Map3D_UpdateBlockNormals(map, bx, by);
+                            map->blocks3D[by * map->gridWidth + bx].flags3D &= ~MAP3DBLOCK_FLAG_VERTEXMODIFIED;
+                        }
+
+                        bx++;
+                    } while (bx < map->gridWidth);
+                }
+
+                by++;
+            } while (by < map->gridHeight);
+        }
+        map->flagsMap &= ~MAP3D_FLAG_VERTEXMODIFIED;
+    }
+
+    Map3D_UpdateTextureUVs(map, elapsedGame);
+    Map3D_UpdateFadeInTransitions(map, elapsedGame);
 }
 
 void Map3D_UpdateAllBlockNormals(lpMap3D map)
@@ -899,6 +928,16 @@ void Map3D_UpdateBlockNormals(lpMap3D map, U32 bx, U32 by)
         Map3D_SetBlockDirectionNormal(map, (U32)(U64)blockOffsets[idxSetOut].x, (U32)(U64)blockOffsets[idxSetOut].y, idxSetOut, &vertNormalsOut[idxSetOut]);
         idxSetOut++;
     } while (idxSetOut < DIRECTION_COUNT);
+}
+
+void Map3D_UpdateTextureUVs(lpMap3D map, F32 elapsedGame)
+{
+    // TODO: Implement Map3D_UpdateTextureUVs
+}
+
+void Map3D_UpdateFadeInTransitions(lpMap3D map, F32 elapsedGame)
+{
+    // TODO: Implement Map3D_UpdateFadeInTransitions
 }
 
 F32 Map3D_BlockSize(lpMap3D map)
