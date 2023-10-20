@@ -797,6 +797,11 @@ B32 Lego_MainLoop(F32 elapsed)
     }
     Container_Hide(legoGlobs.ambientLight, TRUE);
 
+    if (Panel_IsFlags_2_Not8(Panel_Radar))
+        legoGlobs.flags1 |= GAME1_RADARON;
+    else
+        legoGlobs.flags1 &= ~GAME1_RADARON;
+
     // TODO: Implement Lego_MainLoop
 
     Main_Finalize3D();

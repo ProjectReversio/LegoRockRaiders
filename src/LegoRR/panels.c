@@ -155,3 +155,12 @@ void Panel_CryOreSideBar_Draw()
         Image_DisplayScaled(panelGlobs.cryOreSideBarImage, NULL, &pos, &size);
     }
 }
+
+B32 Panel_IsFlags_2_Not8(Panel_Type panelType)
+{
+    PanelDataFlags flags = panelGlobs.panelTable[panelType].flags;
+    if (((flags & PANELDATA_FLAG_UNK2) != 0) && ((flags & PANELDATA_FLAG_UNK8) == 0))
+        return TRUE;
+
+    return FALSE;
+}

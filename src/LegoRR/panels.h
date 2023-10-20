@@ -80,6 +80,7 @@ typedef enum PanelDataFlags
     PANELDATA_FLAG_NONE = 0,
     PANELDATA_FLAG_UNK1 = 1,
     PANELDATA_FLAG_UNK2 = 2,
+    PANELDATA_FLAG_UNK8 = 8,
 
 } PanelDataFlags;
 
@@ -167,3 +168,5 @@ extern void Panel_DrawPanel(Panel_Type panelType, F32 elapsedAbs);
 
 extern void Panel_CryOreSideBar_ChangeOreMeter(B32 increment, U32 amount);
 extern void Panel_CryOreSideBar_Draw();
+
+extern B32 Panel_IsFlags_2_Not8(Panel_Type panelType);
