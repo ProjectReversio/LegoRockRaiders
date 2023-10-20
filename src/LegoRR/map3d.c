@@ -967,6 +967,15 @@ void Map3D_HideBlock(lpMap3D map, U32 bx, U32 by, BOOL hide)
     Container_Mesh_HideGroup(map->mesh, by * map->blockWidth + bx, hide);
 }
 
+void Map3D_HideVisibleBlocksList(lpMap3D map)
+{
+    for (U32 i = 0; i < map->visibleBlocksNum; i++)
+    {
+        Map3D_HideBlock(map, map->visibleBlocksTable[i].x, map->visibleBlocksTable[i].y, TRUE);
+    }
+    map->visibleBlocksNum = 0;
+}
+
 void Map3D_AddVisibleBlocksInRadius_AndDoCallbacks(lpMap3D map, S32 bx, S32 by, S32 radius, XYCallback callback)
 {
     if (-radius > radius)

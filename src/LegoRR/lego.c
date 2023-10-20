@@ -803,6 +803,10 @@ B32 Lego_MainLoop(F32 elapsed)
 
     // TODO: Implement Lego_MainLoop
 
+    Map3D_HideVisibleBlocksList(legoGlobs.currLevel->map);
+
+    // TODO: Implement Lego_MainLoop
+
     if ((legoGlobs.flags1 & GAME1_RENDERPANELS) != GAME1_NONE)
     {
         if ((legoGlobs.flags1 & GAME1_RADARON) == GAME1_NONE)
