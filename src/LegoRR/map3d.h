@@ -196,4 +196,6 @@ extern void Map3D_UpdateBlockNormals(lpMap3D map, U32 bx, U32 by);
 
 extern F32 Map3D_BlockSize(lpMap3D map);
 
+extern void Map3D_HideBlock(lpMap3D map, U32 bx, U32 by, BOOL hide);
+
 extern void Map3D_AddVisibleBlocksInRadius_AndDoCallbacks(lpMap3D map, S32 bx, S32 by, S32 radius, XYCallback callback);

@@ -906,7 +906,42 @@ F32 Map3D_BlockSize(lpMap3D map)
     return map->blockSize;
 }
 
+void Map3D_HideBlock(lpMap3D map, U32 bx, U32 by, BOOL hide)
+{
+    Container_Mesh_HideGroup(map->mesh, by * map->blockWidth + bx, hide);
+}
+
 void Map3D_AddVisibleBlocksInRadius_AndDoCallbacks(lpMap3D map, S32 bx, S32 by, S32 radius, XYCallback callback)
 {
-    // TODO: Implement Map3D_AddVisibleBlocksInRadius_AndDoCallbacks
+    if (-radius > radius)
+        return;
+
+    S32 abs_y = -radius + by;
+    S32 rel_y = -radius;
+    do
+    {
+        if (-radius <= radius)
+        {
+            S32 abs_x = -radius + bx;
+            S32 rel_x = -radius;
+            do
+            {
+                if ((((rel_x * rel_x + rel_y * rel_y <= radius * radius) && -1 < abs_x) && (abs_x < (S32)map->blockWidth)) && ((-1 < abs_y && (abs_y < (S32)map->blockHeight))))
+                {
+                    Map3D_HideBlock(map, abs_x, abs_y, FALSE);
+                    if (callback != NULL)
+                        callback(abs_x, abs_y);
+
+                    map->visibleBlocksTable[map->visibleBlocksNum].x = (S16)rel_x + (S16)bx;
+                    map->visibleBlocksTable[map->visibleBlocksNum].y = (S16)rel_y + (S16)by;
+                    map->visibleBlocksNum++;
+                }
+                rel_x++;
+                abs_x++;
+            } while (rel_x <= radius);
+        }
+
+        rel_y++;
+        abs_y++;
+    } while (rel_y <= radius);
 }
