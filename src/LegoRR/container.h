@@ -275,6 +275,7 @@ extern void Container_SetColourAlpha(lpContainer cont, F32 r, F32 g, F32 b, F32 
 extern U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData);
 extern void Container_Mesh_HideGroup(lpContainer cont, U32 group, B32 hide);
 extern void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Quality quality);
+extern void Container_Mesh_SetEmissive(lpContainer cont, U32 groupID, F32 r, F32 g, F32 b);
 
 extern B32 Container_Mesh_HandleSeparateMeshGroups(LPDIRECT3DRMMESH *mesh, U32* group);
 

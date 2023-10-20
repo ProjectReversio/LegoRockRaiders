@@ -804,7 +804,24 @@ void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by)
 
 void Map3D_SetEmissive(lpMap3D map, B32 on)
 {
-    // TODO: Implement Map3D_SetEmissive
+    if (on && (map->flagsMap & MAP3D_FLAG_EMISSIVE_4) == MAP3D_FLAG_NONE)
+    {
+        for (U32 i = 0; i < map->uvBlocksNum; i++)
+        {
+            Coord2U coords = map->uvBlocksTable[i];
+            Container_Mesh_SetEmissive(map->mesh, coords.y * map->blockWidth + coords.x, 0.3f, 0.3f, 0.3f);
+        }
+        map->flagsMap |= MAP3D_FLAG_EMISSIVE_4;
+    }
+    else if (!on && (map->flagsMap & MAP3D_FLAG_EMISSIVE_4) != MAP3D_FLAG_NONE)
+    {
+        for (U32 i = 0; i < map->uvBlocksNum; i++)
+        {
+            Coord2U coords = map->uvBlocksTable[i];
+            Container_Mesh_SetEmissive(map->mesh, coords.y * map->blockWidth + coords.x, 0.0f, 0.0f, 0.0f);
+        }
+        map->flagsMap &= ~MAP3D_FLAG_EMISSIVE_4;
+    }
 }
 
 void Map3D_Update(lpMap3D map, F32 elapsedGame)

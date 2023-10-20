@@ -1061,6 +1061,20 @@ void Container_Mesh_SetQuality(lpContainer cont, U32 groupID, Graphics_Quality q
     }
 }
 
+void Container_Mesh_SetEmissive(lpContainer cont, U32 groupID, F32 r, F32 g, F32 b)
+{
+    lpMesh transmesh;
+
+    Container_DebugCheckOK(cont);
+    Error_Fatal(cont->type != Container_Mesh && cont->type != Container_LWO, "Container_Mesh_SetEmissive() called with non mesh object");
+
+    transmesh = cont->typeData->transMesh;
+    if (transmesh)
+    {
+        Mesh_SetGroupEmissive(transmesh, groupID, r, g, b);
+    }
+}
+
 B32 Container_Mesh_HandleSeparateMeshGroups(LPDIRECT3DRMMESH *mesh, U32* group)
 {
     lpContainer_MeshAppData appdata = (lpContainer_MeshAppData) (*mesh)->lpVtbl->GetAppData(*mesh);
