@@ -900,3 +900,13 @@ void Map3D_UpdateBlockNormals(lpMap3D map, U32 bx, U32 by)
         idxSetOut++;
     } while (idxSetOut < DIRECTION_COUNT);
 }
+
+F32 Map3D_BlockSize(lpMap3D map)
+{
+    return map->blockSize;
+}
+
+void Map3D_AddVisibleBlocksInRadius_AndDoCallbacks(lpMap3D map, S32 bx, S32 by, S32 radius, XYCallback callback)
+{
+    // TODO: Implement Map3D_AddVisibleBlocksInRadius_AndDoCallbacks
+}

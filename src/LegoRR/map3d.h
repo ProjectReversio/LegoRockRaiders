@@ -8,6 +8,8 @@
 
 #define MAP3D_MAXTEXTURES 128
 
+typedef void (*XYCallback)(S32 x, S32 y);
+
 typedef enum SurfaceTexture
 {
     TEXTURE_FLOOR_STD = 0x0,
@@ -191,3 +193,7 @@ extern void Map3D_Update(lpMap3D map, F32 elapsedGame);
 
 extern void Map3D_UpdateAllBlockNormals(lpMap3D map);
 extern void Map3D_UpdateBlockNormals(lpMap3D map, U32 bx, U32 by);
+
+extern F32 Map3D_BlockSize(lpMap3D map);
+
+extern void Map3D_AddVisibleBlocksInRadius_AndDoCallbacks(lpMap3D map, S32 bx, S32 by, S32 radius, XYCallback callback);

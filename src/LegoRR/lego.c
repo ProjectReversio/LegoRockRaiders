@@ -943,9 +943,51 @@ void Lego_UpdateTopdownCamera(F32 elapsedAbs)
     // TODO: Implement Lego_UpdateTopdownCamera
 }
 
+void Lego_XYCallback_AddVisibleSmoke(S32 bx, S32 by)
+{
+    // TODO: Implement Lego_XYCallback_AddVisibleSmoke
+}
+
 void Lego_UnkUpdateMapsWorldUnk_FUN_004290d0(F32 elapsedAbs, B32 pass2)
 {
-    // TODO: Implement Lego_UnkUpdateMapsWorldUnk_FUN_004290d0
+    if (!pass2)
+    {
+        if (legoGlobs.viewMode == ViewMode_Top)
+        {
+            Point3F pos;
+            Container_GetPosition(legoGlobs.cameraMain->cont2, NULL, &pos);
+
+            Point2I blockPos;
+            Map3D_WorldToBlockPos_NoZ(legoGlobs.currLevel->map, pos.x, pos.y, &blockPos.x, &blockPos.y);
+
+            Point3F pos2;
+            Container_GetOrientation(legoGlobs.cameraMain->contCam, NULL, &pos2, NULL);
+            F32 blockSize = Map3D_BlockSize(Lego_GetMap());
+            blockSize *= 3.0f;
+
+            pos2.x *= blockSize;
+            pos2.y *= blockSize;
+            pos2.z *= blockSize;
+
+            pos.x += pos2.x;
+            pos.y += pos2.y;
+            pos.z += pos2.z;
+
+            Map3D_WorldToBlockPos_NoZ(legoGlobs.currLevel->map, pos.x, pos.y, &blockPos.x, &blockPos.y);
+            Map3D_AddVisibleBlocksInRadius_AndDoCallbacks(legoGlobs.currLevel->map, blockPos.x, blockPos.y, 8, Lego_XYCallback_AddVisibleSmoke);
+        }
+        else if (legoGlobs.viewMode == ViewMode_FP)
+        {
+            // TODO: Implement Lego_UnkUpdateMapsWorldUnk_FUN_004290d0
+        }
+    } else if ((legoGlobs.flags1 & GAME1_RADARON) != GAME1_NONE && (legoGlobs.flags1 & GAME1_RADAR_TRACKOBJECTVIEW) != GAME1_NONE)
+    {
+        Point3F pos;
+        Container_GetPosition(legoGlobs.cameraTrack->cont2, NULL, &pos);
+        Point2I blockPos;
+        Map3D_WorldToBlockPos_NoZ(legoGlobs.currLevel->map, pos.x, pos.y, &blockPos.x, &blockPos.y);
+        Map3D_AddVisibleBlocksInRadius_AndDoCallbacks(legoGlobs.currLevel->map, blockPos.x, blockPos.y, 2, NULL);
+    }
 }
 
 B32 Lego_LoadLevel(const char* levelName)
