@@ -450,6 +450,8 @@ extern B32 Lego_HandleKeys(F32 elapsedGame, F32 elapsed, B32 *outKeyDownT, B32 *
 extern void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDownR, B32 keyDownAnyShift);
 extern void Lego_UpdateTopdownCamera(F32 elapsedAbs);
 
+extern void Lego_MainView_MouseTransform(U32 mouseX, U32 mouseY, F32 *outXPos, F32* outYPos);
+
 extern void Lego_XYCallback_AddVisibleSmoke(S32 bx, S32 by);
 
 extern void Lego_UnkUpdateMapsWorldUnk_FUN_004290d0(F32 elapsedAbs, B32 pass2);

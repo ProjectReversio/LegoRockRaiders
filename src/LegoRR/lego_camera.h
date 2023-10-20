@@ -4,6 +4,7 @@
 #include "maths.h"
 #include "container.h"
 #include "lego_object.h"
+#include "map3d.h"
 
 typedef enum LegoCamera_Type
 {
@@ -74,7 +75,13 @@ extern void Camera_SetTopdownPosition(lpLegoCamera cam, F32 x, F32 y);
 extern void Camera_SetRotation(lpLegoCamera cam, F32 yaw);
 extern void Camera_SetTilt(lpLegoCamera cam, F32 tilt);
 
+extern B32 Camera_GetTopdownWorldPos(lpLegoCamera cam, lpMap3D surfMap, Point3F* outWorldPos);
+
 extern void Camera_TrackObject(lpLegoCamera cam, lpLegoObject liveObj, F32 trackZoomSpeed, F32 trackDist, F32 trackTilt, F32 trackRotationSpeed);
 
 struct Lego_Level;
 extern void Camera_Update(lpLegoCamera cam, struct Lego_Level* level, F32 elapsedAbs, F32 elapsedGame);
+
+extern void Camera_Move(lpLegoCamera cam, Point3F *refDir, F32 elapsedAbs);
+
+extern void Camera_StopMovement(lpLegoCamera cam);

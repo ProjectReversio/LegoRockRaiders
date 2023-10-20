@@ -940,7 +940,80 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
 
 void Lego_UpdateTopdownCamera(F32 elapsedAbs)
 {
+    if (legoGlobs.viewMode != ViewMode_Top)
+        return;
+
     // TODO: Implement Lego_UpdateTopdownCamera
+    // TODO: handle tutorial
+    //if (tutorial)
+    //    return;
+
+    if (((legoGlobs.MouseScrollBorder <= inputGlobs.msx && legoGlobs.MouseScrollBorder <= inputGlobs.msy) &&
+        inputGlobs.msx <= (S32)(mainGlobs.appWidth - legoGlobs.MouseScrollBorder)) && inputGlobs.msy <= (S32)(mainGlobs.appHeight - legoGlobs.MouseScrollBorder))
+    {
+        // Stop camera moving if mouse isn't in the scroll indent region around the window border.
+        Camera_StopMovement(legoGlobs.cameraMain);
+        return;
+    }
+
+    Point3F camWorldPos;
+    Camera_GetTopdownWorldPos(legoGlobs.cameraMain, legoGlobs.currLevel->map, &camWorldPos);
+
+    Point3F mouseWorldPos;
+    Lego_MainView_MouseTransform(inputGlobs.msx, inputGlobs.msy, &mouseWorldPos.x, &mouseWorldPos.y);
+
+    Point3F mouseCamWorldPos;
+    mouseCamWorldPos.x = mouseWorldPos.x - camWorldPos.x;
+    mouseCamWorldPos.y = mouseWorldPos.y - camWorldPos.y;
+    camWorldPos.z = 0.0f;
+    mouseWorldPos.z = 0.0f;
+    mouseCamWorldPos.z = 0.0f;
+
+    Camera_Move(legoGlobs.cameraMain, &mouseCamWorldPos, elapsedAbs);
+}
+
+void Lego_MainView_MouseTransform(U32 mouseX, U32 mouseY, F32 *outXPos, F32* outYPos)
+{
+    // TODO: Cleanup Decompiled code
+
+    Point3F local_4c;
+    Point3F local_40;
+    Point3F local_34;
+    Point3F local_28;
+    Point3F local_1c;
+    Point4F local_10;
+
+    local_28.x = 0.0f;
+    local_28.y = 0.0f;
+    local_28.z = 0.0f;
+
+    local_4c.x = (F32)mouseY;
+    local_4c.y = 0.0f;
+
+    local_34.x = 0.0f;
+    local_34.y = 0.0f;
+    local_34.z = -1.0f;
+
+    local_10.x = (F32)(U64)mouseX;
+    local_10.y = (F32)(U64)mouseY;
+    local_10.z = 0.0f;
+    local_10.w = 1.0f;
+
+    Viewport_InverseTransform(legoGlobs.viewMain,&local_40,&local_10);
+    local_10.z = 1.0f;
+    local_10.w = 1.0f;
+    local_10.x = (F32)(U64)mouseX;
+    local_10.y = (F32)(U64)mouseY;
+
+    Viewport_InverseTransform(legoGlobs.viewMain,&local_4c,&local_10);
+    local_4c.x = local_4c.x - local_40.x;
+    local_4c.y = local_4c.y - local_40.y;
+    local_4c.z = local_4c.z - local_40.z;
+
+    if (Maths_RayPlaneIntersection(&local_1c,&local_40,&local_4c,&local_28,&local_34)) {
+        *outXPos = local_1c.x;
+        *outYPos = local_1c.y;
+    }
 }
 
 void Lego_XYCallback_AddVisibleSmoke(S32 bx, S32 by)

@@ -138,6 +138,17 @@ void Camera_SetTilt(lpLegoCamera cam, F32 tilt)
     }
 }
 
+B32 Camera_GetTopdownWorldPos(lpLegoCamera cam, lpMap3D surfMap, Point3F* outWorldPos)
+{
+    if (cam->type == LegoCamera_Top)
+    {
+        Container_GetPosition(cam->cont2, NULL, outWorldPos);
+        outWorldPos->z = Map3D_GetWorldZ(surfMap, outWorldPos->x, outWorldPos->y);
+    }
+
+    return TRUE;
+}
+
 void Camera_TrackObject(lpLegoCamera cam, lpLegoObject liveObj, F32 trackZoomSpeed, F32 trackDist, F32 trackTilt, F32 trackRotationSpeed)
 {
     cam->trackObject = liveObj;
@@ -204,4 +215,30 @@ void Camera_Update(lpLegoCamera cam, lpLego_Level level, F32 elapsedAbs, F32 ela
     {
         // TODO: Implement Camera_Update
     }
+}
+
+void Camera_Move(lpLegoCamera cam, Point3F *refDir, F32 elapsedAbs)
+{
+    Maths_Vector3DNormalize(refDir);
+
+    // Add (acceleration * timeDelta) to current speed.
+    // (note that moveSpeed itself does not contain time info,
+    //  which is the best way to handle it)
+    cam->moveSpeed = elapsedAbs * cameraGlobs.acceleration + cam->moveSpeed;
+
+    if (cam->moveSpeed > cameraGlobs.maxSpeed)
+        cam->moveSpeed = cameraGlobs.maxSpeed;
+
+    F32 moveDist = cam->moveSpeed * elapsedAbs;
+
+    // Set length of direction vector to moveDist
+    Maths_Vector3DScale(refDir, refDir, moveDist);
+
+    // Add directional movement to cam->moveVector
+    Maths_Vector3DAdd(&cam->moveVector, &cam->moveVector, refDir);
+}
+
+void Camera_StopMovement(lpLegoCamera cam)
+{
+    cam->moveSpeed = 0.0f;
 }
