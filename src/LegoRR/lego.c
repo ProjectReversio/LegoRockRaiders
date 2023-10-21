@@ -889,6 +889,22 @@ B32 Lego_MainLoop(F32 elapsed)
 
     // TODO: Implement Lego_MainLoop
 
+
+    // TEMP: For Debug
+    {
+        Point3F debugCameraPos;
+        //Camera_GetTopdownWorldPos(legoGlobs.cameraMain, legoGlobs.currLevel->map, &debugCameraPos);
+        Container_GetPosition(legoGlobs.cameraMain->contCam, NULL, &debugCameraPos);
+        Font_PrintF(legoGlobs.bmpToolTipFont, 10, 10, "Camera Position: (%f,%f,%f)", debugCameraPos.x, debugCameraPos.y,
+                    debugCameraPos.z);
+
+        Point3F lightPos;
+        Container_GetPosition(legoGlobs.rootLight, NULL, &lightPos);
+        Font_PrintF(legoGlobs.bmpToolTipFont, 10, 20, "Light Position: (%f,%f,%f)", lightPos.x, lightPos.y, lightPos.z);
+    }
+
+    // TODO: Implement Lego_MainLoop
+
     if ((legoGlobs.flags1 & GAME1_VERTEXMODE) != GAME1_NONE && legoGlobs.bool_c8 != 0)
     {
         // TODO: Implement Lego_MainLoop
@@ -970,6 +986,7 @@ void Lego_UpdateTopdownCamera(F32 elapsedAbs)
 
     Point3F mouseWorldPos;
     Lego_MainView_MouseTransform(inputGlobs.msx, inputGlobs.msy, &mouseWorldPos.x, &mouseWorldPos.y);
+
 
     Point3F mouseCamWorldPos;
     mouseCamWorldPos.x = mouseWorldPos.x - camWorldPos.x;
@@ -1815,6 +1832,13 @@ B32 Lego_LoadLighting()
     if (!Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "ambientrgb", 0), &r, &g, &b))
     {
         return FALSE;
+    }
+
+    // TEMP: Force ambient to be bright
+    {
+        r = 1.0f;
+        g = 1.0f;
+        b = 1.0f;
     }
 
     legoGlobs.ambientLight = Container_MakeLight(legoGlobs.rootCont, D3DRMLIGHT_AMBIENT, r, g, b);
