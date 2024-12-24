@@ -80,7 +80,7 @@ void Panel_LoadImage(const char* filename, Panel_Type panelType, PanelDataFlags 
     if (panelGlobs.panelTable[panelType].imageOrFlic != NULL)
     {
         panelGlobs.panelTable[panelType].isFlic = FALSE;
-        Image_SetupTrans(panelGlobs.panelTable[panelType].imageOrFlic, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+        Image_SetupTrans(panelGlobs.panelTable[panelType].imageOrFlic, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
         panelGlobs.panelTable[panelType].flags |= PANELDATA_FLAG_UNK1;
         return;
     }
