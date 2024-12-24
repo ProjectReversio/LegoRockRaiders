@@ -192,8 +192,15 @@ B32 Map3D_WorldToBlockPos(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy, F32
         if (outZ != NULL)
         {
             F32 fVar1 = map->blockSize * 0.5f;
-            x = (x - ((F32)xPos * map->blockSize + map->worldDimensions_fnegx.width) / fVar1);
-            fVar1 = -((y - (map->worldDimensions_fnegx.height - (F32)yPos * map->blockSize)) / fVar1);
+            F32 tmp = (F32)xPos * map->blockSize;
+            tmp = tmp + map->worldDimensions_fnegx.width;
+            x = (x - tmp);
+            x = x / fVar1;
+            tmp = (F32)yPos * map->blockSize;
+            tmp = map->worldDimensions_fnegx.height - tmp;
+            tmp = y - tmp;
+            tmp = tmp / fVar1;
+            fVar1 = -tmp;
             if (1.0f < x)
                 x = 2.0f - x;
             if (1.0f < fVar1)
@@ -211,7 +218,7 @@ B32 Map3D_WorldToBlockPos(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy, F32
 
 B32 Map3D_WorldToBlockPos_NoZ(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy)
 {
-    return Map3D_WorldToBlockPos(map, x, y, outBx, outBy, NULL);
+    return Map3D_WorldToBlockPos(map, x, y, outBx, outBy, (S32)&outBy);
 }
 
 F32 Map3D_GetWorldZ(lpMap3D map, F32 xPos, F32 yPos)
