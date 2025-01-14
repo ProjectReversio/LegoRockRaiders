@@ -50,6 +50,7 @@
 #include "water.h"
 #include "game_control.h"
 #include "input.h"
+#include "level.h"
 #include "map_shared.h"
 
 Lego_Globs legoGlobs;
@@ -1454,12 +1455,49 @@ B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* pred
 
     // TODO: Implement Lego_LoadMapSet
 
+    level->width = level->map->gridWidth;
+    level->height = level->map->gridHeight;
+    ElectricFence_Restart(level);
+    SpiderWeb_Restart(level);
+
+    if (level->UseRoof != BOOL3_FALSE)
+    {
+        // TODO: Implement Lego_LoadMapSet
+    }
+
     if (Lego_LoadTextureSet(level, textureSet) != 0)
     {
         level->blocks = Mem_Alloc(level->height * level->width * sizeof(Lego_Block));
         if (level->blocks != NULL)
         {
-            // TODO: Implement Lego_LoadMapSet
+            memset(level->blocks, 0, level->height * level->width * sizeof(Lego_Block));
+
+            // TODO: Clean this up
+            if (level->height != 0)
+            {
+                U32 y = 0;
+                do
+                {
+                    U32 x = 0;
+                    if (level->width != 0)
+                    {
+                        do
+                        {
+                            level->blocks[y * level->width + x].predug = Lego_PredugType_Wall;
+                            level->blocks[y * level->width + x].texture = TEXTURE_FLOOR_STD;
+                            level->blocks[y * level->width + x].terrain = Lego_SurfaceType8_Tunnel;
+                            level->blocks[y * level->width + x].flags1 = BLOCK1_NONE;
+                            level->blocks[y * level->width + x].direction = 0;
+                            level->blocks[y * level->width + x].activity = NULL;
+                            level->blocks[y * level->width + x].damage = 0.0f;
+                            level->blocks[y * level->width + x].randomness = Maths_Rand();
+
+                            x++;
+                        } while (x < level->width);
+                    }
+                    y++;
+                } while (y < level->height);
+            }
 
             if (Lego_LoadPreDugMap(level, predugMap, predugParam) != 0)
             {

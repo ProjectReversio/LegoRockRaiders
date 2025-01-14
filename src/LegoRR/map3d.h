@@ -185,6 +185,9 @@ extern B32 Map3D_IsBlockRotated(lpMap3D map, U32 bx, U32 by);
 
 extern void Map3D_SetBlockVertexModified(lpMap3D map, U32 vx, U32 vy);
 
+extern void Map3D_MoveBlockDirectionVertex(lpMap3D map, U32 bx, U32 by, Direction direction, Point3F* vertDist);
+extern void Map3D_MoveBlockVertices(lpMap3D map, U32 bx, U32 by, F32 zDist);
+
 extern void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by);
 
 extern void Map3D_SetEmissive(lpMap3D map, B32 on);

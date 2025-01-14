@@ -159,6 +159,19 @@ typedef enum Lego_ErodeType
     Lego_ErodeType_Source_VeryFast   = 10,
 } Lego_ErodeType;
 
+typedef struct Lego_BlockActivity
+{
+    lpContainer cont;
+    Point2I blockPos;
+    
+    // TODO: Implement Lego_BlockActivity
+
+    struct Lego_BlockActivity* next;
+    struct Lego_BlockActivity* previous;
+    B32 staticEffect; // (0 = reinforcement, 1 = recharge seam twinkle?)
+
+} Lego_BlockActivity, *lpLego_BlockActivity;
+
 typedef struct Lego_Block
 {
     Lego_PredugType predug;
@@ -175,6 +188,7 @@ typedef struct Lego_Block
     // TODO: Implement Lego_Block
 
     F32 damage;
+    Lego_BlockActivity* activity;
 
     // TODO: Implement Lego_Block
 

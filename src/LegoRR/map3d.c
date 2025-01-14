@@ -1,4 +1,6 @@
 #include "map3d.h"
+
+#include "error.h"
 #include "file.h"
 #include "mem.h"
 #include "material.h"
@@ -786,6 +788,62 @@ void Map3D_SetBlockVertexModified(lpMap3D map, U32 vx, U32 vy)
 {
     map->blocks3D[map->gridWidth * vy + vx].flags3D |= MAP3DBLOCK_FLAG_VERTEXMODIFIED;
     map->flagsMap |= MAP3D_FLAG_VERTEXMODIFIED;
+}
+
+void Map3D_MoveBlockDirectionVertex(lpMap3D map, U32 bx, U32 by, Direction direction, Point3F* vertDist)
+{
+    D3DRMGROUPINDEX groupID = by * map->blockWidth + bx;
+    Vertex vertices[1];
+
+    if (bx < map->blockWidth && by < map->blockHeight)
+    {
+        if ((map->blocks3D[map->gridWidth * by + bx].flags3D & MAP3DBLOCK_FLAG_ROTATED) != 0)
+            direction = direction + DIRECTION_RIGHT & DIRECTION_LEFT;
+        Container_Mesh_GetVertices(map->mesh, groupID, direction, 1, vertices);
+
+        vertices[0].position.x += vertDist[0].x;
+        vertices[0].position.y += vertDist[0].y;
+        vertices[0].position.z += vertDist[0].z;
+
+        Container_Mesh_SetVertices(map->mesh, groupID, direction, 1, vertices);
+    }
+}
+
+void Map3D_MoveBlockVertices(lpMap3D map, U32 bx, U32 by, F32 zDist)
+{
+    Point3F vertDists[1];
+    vertDists[0].x = 0.0f;
+    vertDists[0].y = 0.0f;
+    vertDists[0].z = zDist;
+
+    Point2F OFFSETS_M1[4];
+    OFFSETS_M1[0].x = 0.0f;
+    OFFSETS_M1[0].y = 0.0f;
+    OFFSETS_M1[1].x = -1.0f;
+    OFFSETS_M1[1].y = 0.0f;
+    OFFSETS_M1[2].x = -1.0f;
+    OFFSETS_M1[2].y = -1.0f;
+    OFFSETS_M1[3].x = 0.0f;
+    OFFSETS_M1[3].y = -1.0f;
+
+    for (U32 i = 0; i < 4; i++)
+    {
+        OFFSETS_M1[i].x += (F32)bx;
+        OFFSETS_M1[i].y += (F32)by;
+    }
+
+    for (U32 i = 0; i < DIRECTION_COUNT; i++)
+    {
+        Map3D_MoveBlockDirectionVertex(map, OFFSETS_M1[i].x, OFFSETS_M1[i].y, (Direction)i, vertDists);
+    }
+
+    for (U32 y = by - 1; y <= by; y++)
+    {
+        for (U32 x = bx - 1; x <= bx; x++)
+        {
+            Map3D_GenerateBlockPlaneNormals(map, x, y);
+        }
+    }
 }
 
 void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by)
