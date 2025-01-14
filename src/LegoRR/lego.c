@@ -52,6 +52,7 @@
 #include "input.h"
 #include "level.h"
 #include "map_shared.h"
+#include "roof.h"
 
 Lego_Globs legoGlobs;
 
@@ -1453,7 +1454,20 @@ B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* pred
     if (level->map == NULL)
         return FALSE;
 
-    // TODO: Implement Lego_LoadMapSet
+    level->radarMap = RadarMap_Create(level->map, &legoGlobs.radarScreenRect, legoGlobs.radarZoom);
+
+    Map3D_SetPerspectiveCorrectionAll(level->map, TRUE);
+
+    // It seems this entire chain of calls is redundant, as they all cause the exact same effect.
+    //
+    // Original code likely was assigning roof textures for each surface type.
+    //  (But all surface types use the same texture, so we get this.)
+    Map3D_SetTextureNoFade(level->map, TEXTURE_ROOF_STD);
+    Map3D_SetTextureNoFade(level->map, TEXTURE_ROOF_STD);
+    Map3D_SetTextureNoFade(level->map, TEXTURE_ROOF_STD);
+    Map3D_SetTextureNoFade(level->map, TEXTURE_ROOF_STD);
+    Map3D_SetTextureNoFade(level->map, TEXTURE_ROOF_STD);
+    Map3D_SetTextureNoFade(level->map, TEXTURE_ROOF_STD);
 
     level->width = level->map->gridWidth;
     level->height = level->map->gridHeight;
@@ -1462,7 +1476,9 @@ B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* pred
 
     if (level->UseRoof != BOOL3_FALSE)
     {
-        // TODO: Implement Lego_LoadMapSet
+        Roof_Initialize(legoGlobs.rootCont, level->width, level->height);
+        // Roof is only visible in FirstPerson view, make sure we start with it hidden
+        Roof_Hide(TRUE);
     }
 
     if (Lego_LoadTextureSet(level, textureSet) != 0)
@@ -1503,7 +1519,23 @@ B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* pred
             {
                 if (Lego_LoadTerrainMap(level, terrainMap, terrainParam) != 0)
                 {
-                    // TODO: Implement Lego_LoadMapSet
+                    Lego_LoadCryOreMap(level, cryOreMap, cryOreParam);
+                    Lego_LoadErodeMap(level, erodeMap);
+                    Lego_LoadPathMap(level, pathMap, pathParam);
+                    Lego_LoadEmergeMap(level, emergeMap);
+                    Lego_LoadAIMap(level, aiMap);
+                    Lego_LoadFallinMap(level, fallinMap);
+
+                    if (Lego_LoadBlockPointersMap(level, blockPointersMap, blockPointersParam) != 0)
+                        level->hasBlockPointers = TRUE;
+
+                    for (U32 y = 0; y < level->height; y++)
+                    {
+                        for (U32 x = 0; x < level->width; x++)
+                        {
+                            Level_BlockUpdateSurface(level, x, y, TRUE);
+                        }
+                    }
 
                     Map3D_UpdateAllBlockNormals(level->map);
 
@@ -1723,6 +1755,48 @@ B32 Lego_LoadTerrainMap(lpLego_Level level, const char* filename, S32 modifier)
     // TODO: Implement Lego_LoadTerrainMap
 
     return TRUE;
+}
+
+B32 Lego_LoadCryOreMap(lpLego_Level level, const char* filename, S32 modifier)
+{
+    // TODO: Implement Lego_LoadCryOreMap
+    return TRUE;
+}
+
+B32 Lego_LoadErodeMap(lpLego_Level level, const char* filename)
+{
+    // TODO: Implement Lego_LoadErodeMap
+    return TRUE;
+}
+
+B32 Lego_LoadPathMap(lpLego_Level level, const char* filename, S32 modifier)
+{
+    // TODO: Implement Lego_LoadPathMap
+    return TRUE;
+}
+
+B32 Lego_LoadEmergeMap(lpLego_Level level, const char* filename)
+{
+    // TODO: Implement Lego_LoadEmergeMap
+    return TRUE;
+}
+
+B32 Lego_LoadAIMap(lpLego_Level level, const char* filename)
+{
+    // TODO: Implement Lego_LoadAIMap
+    return TRUE;
+}
+
+B32 Lego_LoadFallinMap(lpLego_Level level, const char* filename)
+{
+    // TODO: Implement Lego_LoadFallinMap
+    return TRUE;
+}
+
+B32 Lego_LoadBlockPointersMap(lpLego_Level level, const char* filename, S32 modifier)
+{
+    // TODO: Implement Lego_LoadBlockPointersMap
+    return FALSE;
 }
 
 lpLego_Level Lego_GetLevel()

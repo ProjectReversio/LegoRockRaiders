@@ -867,6 +867,17 @@ void Map3D_GenerateBlockPlaneNormals(lpMap3D map, U32 bx, U32 by)
     }
 }
 
+void Map3D_SetPerspectiveCorrectionAll(lpMap3D map, B32 on)
+{
+    for (U32 y = 0; y < map->blockHeight; y++)
+    {
+        for (U32 x = 0; x < map->blockWidth; x++)
+        {
+            Container_Mesh_SetPerspectiveCorrection(map->mesh, y * map->blockWidth + x, on);
+        }
+    }
+}
+
 void Map3D_SetEmissive(lpMap3D map, B32 on)
 {
     if (on && (map->flagsMap & MAP3D_FLAG_EMISSIVE_4) == MAP3D_FLAG_NONE)
@@ -1020,6 +1031,13 @@ void Map3D_UpdateTextureUVs(lpMap3D map, F32 elapsedGame)
 void Map3D_UpdateFadeInTransitions(lpMap3D map, F32 elapsedGame)
 {
     // TODO: Implement Map3D_UpdateFadeInTransitions
+}
+
+// Initialisation function only.
+// States a textureNo. cannot use fade transitions.
+void Map3D_SetTextureNoFade(lpMap3D map, SurfaceTexture texture)
+{
+    map->texsNoFade[texture] = TRUE;
 }
 
 F32 Map3D_BlockSize(lpMap3D map)

@@ -277,6 +277,8 @@ extern void Container_Mesh_HideGroup(lpContainer cont, U32 group, B32 hide);
 extern void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Quality quality);
 extern void Container_Mesh_SetEmissive(lpContainer cont, U32 groupID, F32 r, F32 g, F32 b);
 
+extern void Container_Mesh_SetPerspectiveCorrection(lpContainer cont, U32 group, B32 on);
+
 extern B32 Container_Mesh_HandleSeparateMeshGroups(LPDIRECT3DRMMESH *mesh, U32* group);
 
 extern void Container_Hide2(lpContainer cont, B32 hide);

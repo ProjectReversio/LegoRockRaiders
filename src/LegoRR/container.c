@@ -1075,6 +1075,36 @@ void Container_Mesh_SetEmissive(lpContainer cont, U32 groupID, F32 r, F32 g, F32
     }
 }
 
+void Container_Mesh_SetPerspectiveCorrection(lpContainer cont, U32 group, B32 on)
+{
+    LPDIRECT3DRMMESH mesh;
+    lpMesh transmesh;
+
+    Container_DebugCheckOK(cont);
+    Error_Fatal(cont->type != Container_Mesh && cont->type != Container_LWO, "Container_Mesh_SetPerspectiveCorrection() called with non mesh object");
+
+    transmesh = cont->typeData->transMesh;
+    if (transmesh)
+    {
+        Error_Warn(TRUE, "Not yet implemented for immediate mode meshes");
+    }
+    else
+    {
+        mesh = cont->typeData->mesh;
+
+        Error_Fatal(!mesh, "Container has no mesh object");
+
+        Container_Mesh_DebugCheckOK(cont, groupID);
+
+        Container_Mesh_HandleSeparateMeshGroups(&mesh, &group);
+
+        if (on)
+            mesh->lpVtbl->SetGroupMapping(mesh, group, D3DRMMAP_PERSPCORRECT);
+        else
+            mesh->lpVtbl->SetGroupMapping(mesh, group, 0);
+    }
+}
+
 B32 Container_Mesh_HandleSeparateMeshGroups(LPDIRECT3DRMMESH *mesh, U32* group)
 {
     lpContainer_MeshAppData appdata = (lpContainer_MeshAppData) (*mesh)->lpVtbl->GetAppData(*mesh);

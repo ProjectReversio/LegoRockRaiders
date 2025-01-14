@@ -1,8 +1,15 @@
 #pragma once
 
 #include "platform.h"
+#include "maths.h"
 
 struct Lego_Level;
+
+typedef struct BlockPointer
+{
+    Point2I blockPos;
+    struct BlockPointer* next;
+} BlockPointer, *lpBlockPointer;
 
 extern void NERPs_SetHasNextButton(B32 hasNextButton);
 

@@ -4,6 +4,12 @@
 #include "maths.h"
 #include <windows.h>
 
+typedef struct Draw_Rect
+{
+    Area2F rect;
+    F32 r, g, b;
+} Draw_Rect, *lpDraw_Rect;
+
 typedef enum Draw_GlobFlags
 {
     DRAW_GLOB_FLAG_NONE = 0,

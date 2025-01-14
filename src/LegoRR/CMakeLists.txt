@@ -88,6 +88,7 @@ set(MAIN_SRC
     game_control.c
     map_shared.c
     level.c
+    roof.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -177,6 +178,7 @@ set(MAIN_SRC
     game_control.h
     map_shared.h
     level.h
+    roof.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

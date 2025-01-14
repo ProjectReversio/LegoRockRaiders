@@ -18,6 +18,8 @@
 #include "building.h"
 #include "upgrade.h"
 #include "map3d.h"
+#include "nerps.h"
+#include "radarmap.h"
 
 typedef enum TextureType
 {
@@ -163,7 +165,7 @@ typedef struct Lego_BlockActivity
 {
     lpContainer cont;
     Point2I blockPos;
-    
+
     // TODO: Implement Lego_BlockActivity
 
     struct Lego_BlockActivity* next;
@@ -230,6 +232,8 @@ typedef struct Lego_Level
 
     // TODO: Implement Lego_Level
 
+    lpRadarMap radarMap;
+    Lego_BlockActivity* blockActLast;
     S32 crystals; // (init: 0) Total number of Crystals stored.
     U32 unused_crystals_90; // (init: 0, unused) Presumably once for Crystals.
     S32 crystalsPickedUp; // (init: 0) Used by NERPs:GetCrystalsPickedUp.
@@ -246,6 +250,8 @@ typedef struct Lego_Level
 
     // TODO: Implement Lego_Level
 
+    B32 hasBlockPointers;
+    BlockPointer* blockPointers[56];
     B32 StartFP;
     B32 NoDrain;
     F32 oxygenLevel; // (init: 100.0, Oxygen level?)
@@ -628,6 +634,13 @@ extern B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename);
 extern B32 Lego_LoadTextureSet(lpLego_Level level, const char* keyTexturePath);
 extern B32 Lego_LoadPreDugMap(lpLego_Level level, const char* filename, S32 modifier);
 extern B32 Lego_LoadTerrainMap(lpLego_Level level, const char* filename, S32 modifier);
+extern B32 Lego_LoadCryOreMap(lpLego_Level level, const char* filename, S32 modifier);
+extern B32 Lego_LoadErodeMap(lpLego_Level level, const char* filename);
+extern B32 Lego_LoadPathMap(lpLego_Level level, const char* filename, S32 modifier);
+extern B32 Lego_LoadEmergeMap(lpLego_Level level, const char* filename);
+extern B32 Lego_LoadAIMap(lpLego_Level level, const char* filename);
+extern B32 Lego_LoadFallinMap(lpLego_Level level, const char* filename);
+extern B32 Lego_LoadBlockPointersMap(lpLego_Level level, const char* filename, S32 modifier);
 
 extern lpLego_Level Lego_GetLevel();
 extern lpMap3D Lego_GetMap();
