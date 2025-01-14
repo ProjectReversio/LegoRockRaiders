@@ -30,12 +30,15 @@ extern void Mem_Shutdown(B32 freeAll);
 
 #ifdef _DEBUG
 extern void* Mem_AllocDebug(U32 size, U32 line, const char* file);
+extern U32 Mem_AllocHandleDebug(U32 size, U32 line, const char* file);
 #endif
 
 inline void* Mem_Alloc(U32 size)
 {
     return malloc(size);
 }
+
+extern U32 Mem_AllocHandle(U32 size);
 
 inline void* Mem_ReAlloc(void* addr, U32 size)
 {
@@ -46,3 +49,6 @@ inline void Mem_Free(void* addr)
 {
     free(addr);
 }
+
+extern void Mem_FreeHandle(U32 handle);
+extern void* Mem_AddressHandle(U32 handle);

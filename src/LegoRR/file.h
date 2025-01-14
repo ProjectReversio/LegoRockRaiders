@@ -101,6 +101,7 @@ extern S32 File_Flush(lpFile file);
 
 extern void* File_LoadBinary(const char* filename, U32* sizeptr);
 extern void* File_LoadASCII(const char* filename, U32* sizeptr);
+extern U32 File_LoadBinaryHandle(const char* filename, U32* sizeptr);
 extern void* File_Load(const char*  filename, U32* sizeptr, B32 binary);
 
 extern void File_SetLoadCallback(void (*callback)(const char* filename, U32 filesize, void* data), void* data);

@@ -535,7 +535,40 @@ void* File_LoadASCII(const char* filename, U32* sizeptr)
     return File_Load(filename, sizeptr, FALSE);
 }
 
-void* File_Load(const char*  filename, U32* sizeptr, B32 binary)
+U32 File_LoadBinaryHandle(const char* filename, U32* sizeptr)
+{
+    lpFile ifp;
+    U32 size;
+    U32 handle;
+    U8* buffer;
+
+    if ((ifp = File_Open(filename, "rb")))
+    {
+        File_Seek(ifp, 0, File_SeekEnd);
+        size = File_Tell(ifp);
+
+        if (fileGlobs.loadCallback)
+            fileGlobs.loadCallback(filename, size, fileGlobs.loadCallbackData);
+
+        if ((handle = Mem_AllocHandle(size)) != -1)
+        {
+            buffer = Mem_AddressHandle(handle);
+            File_Seek(ifp, 0, File_SeekSet);
+            File_Read(buffer, sizeof(U8), size, ifp);
+
+            if (sizeptr != NULL)
+                *sizeptr = size;
+
+            File_Close(ifp);
+            return handle;
+        }
+        File_Close(ifp);
+    }
+
+    return -1;
+}
+
+void* File_Load(const char* filename, U32* sizeptr, B32 binary)
 {
     lpFile ifp;
     U32 size;

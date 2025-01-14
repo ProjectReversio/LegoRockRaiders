@@ -50,6 +50,7 @@
 #include "water.h"
 #include "game_control.h"
 #include "input.h"
+#include "map_shared.h"
 
 Lego_Globs legoGlobs;
 
@@ -1613,7 +1614,68 @@ B32 Lego_LoadTextureSet(lpLego_Level level, const char* keyTexturePath)
 
 B32 Lego_LoadPreDugMap(lpLego_Level level, const char* filename, S32 modifier)
 {
-    // TODO: Implement Lego_LoadPreDugMap
+    if (filename == NULL)
+        return FALSE;
+
+    U32 handle = File_LoadBinaryHandle(filename, NULL);
+    if (handle == -1)
+        return FALSE;
+
+    U32 width, height;
+    MapShared_GetDimensions(handle, &width, &height);
+
+    if (width == level->width && height == level->height)
+    {
+        if (height != 1 && height != 2)
+        {
+            U32 by = 1;
+            U32 w = width;
+            U32 h = height;
+            do
+            {
+                U32 bx = 1;
+                if (w != 1 && w != 2)
+                {
+                    do
+                    {
+                        U32 block = MapShared_GetBlock(handle, bx, by);
+                        S32 modi = block - modifier;
+                        if (modi == 1 || modi == 3)
+                        {
+                            Level_DestroyWall(level, bx, by, TRUE);
+
+                            // TODO: Implement Lego_LoadPreDugMap
+                        }
+                        else if (modi == 2 || modi == 4)
+                        {
+                            level->blocks[(S32)(bx + by * level->width)].flags1 |= BLOCK1_HIDDEN;
+                        }
+
+                        if (modi == 3)
+                        {
+                            level->blocks[(S32)(bx + by * level->width)].flags2 |= BLOCK2_SLUGHOLE_EXPOSED;
+
+                            Point2I blockPos;
+                            blockPos.x = bx;
+                            blockPos.y = by;
+                            LegoObject_RegisterSlimySlugHole(&blockPos);
+                        }
+
+                        if (modi == 4)
+                        {
+                            level->blocks[(S32)(bx + by * level->width)].flags2 |= BLOCK2_SLUGHOLE_HIDDEN;
+                        }
+
+                        bx++;
+                    } while (bx < w - 1);
+                }
+
+                by++;
+            } while (by < h - 1);
+        }
+    }
+
+    Mem_FreeHandle(handle);
 
     return TRUE;
 }

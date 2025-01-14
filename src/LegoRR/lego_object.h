@@ -64,3 +64,5 @@ extern void Object_LoadToolTipIcons(lpConfig config);
 extern void LegoObject_LoadObjTtsSFX(lpConfig config, const char* gameName);
 
 extern void LegoObject_SetLevelEnding(B32 ending);
+
+extern void LegoObject_RegisterSlimySlugHole(Point2I* blockPos);

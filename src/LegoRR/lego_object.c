@@ -31,3 +31,8 @@ void LegoObject_SetLevelEnding(B32 ending)
 {
     // TODO: Implement LegoObject_SetLevelEnding
 }
+
+void LegoObject_RegisterSlimySlugHole(Point2I* blockPos)
+{
+    // TODO: Implement LegoObject_RegisterSlimySlugHole
+}

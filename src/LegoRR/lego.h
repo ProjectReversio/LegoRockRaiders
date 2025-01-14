@@ -36,11 +36,163 @@ typedef enum LevelStatus
     LEVELSTATUS_FAILED_OTHER = 4,
 } LevelStatus;
 
+typedef enum BlockFlags1
+{
+    BLOCK1_NONE                = 0,
+    BLOCK1_RUBBLE_LOW          = 0x1,
+    BLOCK1_RUBBLE_MEDIUM       = 0x2,
+    BLOCK1_RUBBLE_FULL         = 0x3,
+    BLOCK1_SURVEYED            = 0x4,
+    BLOCK1_FLOOR               = 0x8,
+    BLOCK1_WALL                = 0x10,
+    BLOCK1_REINFORCED          = 0x20,
+    BLOCK1_INCORNER            = 0x40,
+    BLOCK1_OUTCORNER           = 0x80,
+    BLOCK1_HIGHPOLY            = 0x100,
+    BLOCK1_NOTHOT              = 0x200,
+    BLOCK1_BUILDINGSOLID       = 0x400,
+    BLOCK1_ROCKFALLFX          = 0x800,
+    BLOCK1_LANDSLIDING         = 0x1000,
+    BLOCK1_DIAGONAL            = 0x2000,
+    BLOCK1_SMOKE               = 0x4000,
+    BLOCK1_BUILDINGPATH        = 0x8000,
+    BLOCK1_HIDDEN              = 0x20000,
+    BLOCK1_DESTROYEDCONNECTION = 0x40000,
+    BLOCK1_BUSY_FLOOR          = 0x80000,
+    BLOCK1_FOUNDATION          = 0x100000,
+    BLOCK1_CLEARED             = 0x200000,
+    BLOCK1_EXPOSEDFLOORCHECKS  = 0x400000,
+    BLOCK1_DIGREQUEST          = 0x800000,
+    BLOCK1_UNUSED_PATHTYPE     = 0x1000000,
+    BLOCK1_EXPOSED             = 0x4000000,
+    BLOCK1_BUSY_WALL           = 0x8000000,
+    BLOCK1_DOZERCLEARING       = 0x10000000,
+    BLOCK1_PATH                = 0x20000000,
+    BLOCK1_LAYEDPATH           = 0x40000000,
+    BLOCK1_ERODEACTIVE         = 0x80000000,
+} BlockFlags1;
+
+typedef enum BlockFlags2
+{
+    BLOCK2_NONE              = 0,
+    BLOCK2_GENERATEPOWER     = 0x1,
+    BLOCK2_DRAINPOWER_TEMP   = 0x2,
+    BLOCK2_TOOLSTORE         = 0x4,
+    BLOCK2_FENCEREQUEST      = 0x8,
+    BLOCK2_ERODELOCKED       = 0x10,
+    BLOCK2_SLUGHOLE_EXPOSED  = 0x20,
+    BLOCK2_EMERGE_POINT      = 0x40,
+    BLOCK2_EMERGE_TRIGGER    = 0x80,
+    BLOCK2_POWERED           = 0x100,
+    BLOCK2_SLUGHOLE_HIDDEN   = 0x200,
+    BLOCK2_PATHSBUILTCOUNTED = 0x400,
+} BlockFlags2;
+
+typedef enum Lego_PredugType // : U8
+{
+    Lego_PredugType_Wall             = 0,
+    Lego_PredugType_Cavern_Exposed   = 1,
+    Lego_PredugType_Cavern_Hidden    = 2,
+    Lego_PredugType_SlugHole_Exposed = 3,
+    Lego_PredugType_SlugHole_Hidden  = 4,
+} Lego_PredugType;
+
+typedef enum Lego_SurfaceType8 // : U8
+{
+    Lego_SurfaceType8_Tunnel        = 0,
+    Lego_SurfaceType8_Immovable     = 1,
+    Lego_SurfaceType8_Hard          = 2,
+    Lego_SurfaceType8_Medium        = 3,
+    Lego_SurfaceType8_Loose         = 4,
+    Lego_SurfaceType8_Soil          = 5,
+    Lego_SurfaceType8_Lava          = 6,
+    Lego_SurfaceType8_Water         = 7,
+    Lego_SurfaceType8_OreSeam       = 8,
+    Lego_SurfaceType8_Lake          = 9,
+    Lego_SurfaceType8_CrystalSeam   = 10,
+    Lego_SurfaceType8_RechargeSeam  = 11,
+    Lego_SurfaceType8_Rubble        = 12,
+    Lego_SurfaceType8_Reinforcement = 13,
+    Lego_SurfaceType8_Path          = 14,
+    Lego_SurfaceType8_SlugHole      = 15,
+    Lego_SurfaceType8_Undiscovered  = 16,
+    Lego_SurfaceType8_Cavern        = 17,
+} Lego_SurfaceType8;
+
+typedef enum Lego_CryOreType
+{
+    Lego_CryOreType_None           = 0,
+    Lego_CryOreType_Crystal_Lv0_1  = 1,
+    Lego_CryOreType_Ore_Lv0_1      = 2,
+    Lego_CryOreType_Crystal_Lv1_1  = 3,
+    Lego_CryOreType_Ore_Lv1_1      = 4,
+    Lego_CryOreType_Crystal_Lv0_3  = 5,
+    Lego_CryOreType_Ore_Lv0_3      = 6,
+    Lego_CryOreType_Crystal_Lv1_3  = 7,
+    Lego_CryOreType_Ore_Lv1_3      = 8,
+    Lego_CryOreType_Crystal_Lv0_5  = 9,
+    Lego_CryOreType_Ore_Lv0_5      = 10,
+    Lego_CryOreType_Crystal_Lv1_5  = 11,
+    Lego_CryOreType_Ore_Lv1_5      = 12,
+    Lego_CryOreType_Crystal_Lv0_10 = 13,
+    Lego_CryOreType_Ore_Lv0_10     = 14,
+    Lego_CryOreType_Crystal_Lv1_10 = 15,
+    Lego_CryOreType_Ore_Lv01_10    = 16,
+    Lego_CryOreType_Crystal_Lv0_25 = 17,
+    Lego_CryOreType_Ore_Lv0_25     = 18,
+    Lego_CryOreType_Crystal_Lv1_25 = 19,
+    Lego_CryOreType_Ore_Lv1_25     = 20,
+} Lego_CryOreType;
+
+typedef enum Lego_ErodeType
+{
+    Lego_ErodeType_None              = 0,
+    Lego_ErodeType_Adjacent_VerySlow = 1,
+    Lego_ErodeType_Source_VerySlow   = 2,
+    Lego_ErodeType_Adjacent_Slow     = 3,
+    Lego_ErodeType_Source_Slow       = 4,
+    Lego_ErodeType_Adjacent_Medium   = 5,
+    Lego_ErodeType_Source_Medium     = 6,
+    Lego_ErodeType_Adjacent_Fast     = 7,
+    Lego_ErodeType_Source_Fast       = 8,
+    Lego_ErodeType_Adjacent_VeryFast = 9,
+    Lego_ErodeType_Source_VeryFast   = 10,
+} Lego_ErodeType;
+
 typedef struct Lego_Block
 {
+    Lego_PredugType predug;
+    SurfaceTexture texture;
+    Lego_SurfaceType8 terrain;
+    U8 direction; // clockwise (does not determine corner/wall type)
+    U8 blockpointer;
+    Lego_CryOreType cryOre;
+    Lego_ErodeType erodeSpeed;
+    U8 erodeLevel; // 0 = low, 1 = med, 2 = high, 3 = max, 4 = lava
+    BlockFlags1 flags1;
+    BlockFlags2 flags2;
+
     // TODO: Implement Lego_Block
-    void* temp; // TEMP: put something here to avoid compile error
+
+    F32 damage;
+
     // TODO: Implement Lego_Block
+
+    S16 randomness; // (sometimes sign-extended)
+    U16 seamDigCount; // Number of times a seam has been dug (destroyed at 4).
+    U32 numLandSlides;
+    U32 clickCount;
+    S32 generateCrystals;
+    S32 generateOre;
+    U8 aiNode;
+
+    // TODO: Implement Lego_Block
+
+    B32 fallinUpper; // (fallin upper: 1 if fallin > 4)
+    S32 fallinIntensity; // (fallin scale: 1-4)
+    F32 fallinTimer; // (randomized with full fallin value)
+    B32 tutoHighlightState; // Tutorial block highlight color (false = tutorial color, true = normal)
+
 } Lego_Block, *lpLego_Block;
 
 typedef struct Lego_Level
