@@ -900,6 +900,11 @@ void Map3D_SetEmissive(lpMap3D map, B32 on)
     }
 }
 
+void Map3D_SetTextureSet(lpMap3D map, Detail_TextureSet* textureSet)
+{
+    map->textureSet = textureSet;
+}
+
 void Map3D_Update(lpMap3D map, F32 elapsedGame)
 {
     if ((map->flagsMap & MAP3D_FLAG_VERTEXMODIFIED) != MAP3D_FLAG_NONE)

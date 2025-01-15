@@ -194,6 +194,8 @@ extern void Map3D_SetPerspectiveCorrectionAll(lpMap3D map, B32 on);
 
 extern void Map3D_SetEmissive(lpMap3D map, B32 on);
 
+extern void Map3D_SetTextureSet(lpMap3D map, Detail_TextureSet* textureSet);
+
 extern void Map3D_Update(lpMap3D map, F32 elapsedGame);
 
 extern void Map3D_UpdateAllBlockNormals(lpMap3D map);

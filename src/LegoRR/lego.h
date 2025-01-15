@@ -232,6 +232,11 @@ typedef struct Lego_Level
 
     // TODO: Implement Lego_Level
 
+    Size2I textureSetSize; // surface texture width and height
+    Detail_TextureSet* textureSet;
+
+    // TODO: Implement Lego_Level
+
     lpRadarMap radarMap;
     Lego_BlockActivity* blockActLast;
     S32 crystals; // (init: 0) Total number of Crystals stored.
@@ -669,6 +674,9 @@ extern B32 Lego_LoadVehicleTypes();
 extern B32 Lego_LoadMiniFigureTypes();
 extern B32 Lego_LoadRockMonsterTypes();
 extern B32 Lego_LoadBuildingTypes();
+
+extern void Lego_InitTextureMappings(lpMap3D map);
+extern B32 Lego_LoadDetailMeshes(lpLego_Level level, const char* meshBaseName);
 
 extern void Lego_LoadObjectNames(lpConfig config);
 extern void Lego_LoadObjectTheNames(lpConfig config);

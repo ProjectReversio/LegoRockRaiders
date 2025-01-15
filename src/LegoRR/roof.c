@@ -11,3 +11,10 @@ void Roof_Hide(B32 hide)
 {
     // TODO: Implement Roof_Hide
 }
+
+B32 Roof_SetTexture(const char* filename)
+{
+    // TODO: Implement Roof_SetTexture
+
+    return TRUE;
+}

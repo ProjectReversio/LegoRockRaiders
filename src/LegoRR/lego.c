@@ -1677,7 +1677,43 @@ B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename)
 
 B32 Lego_LoadTextureSet(lpLego_Level level, const char* keyTexturePath)
 {
-    // TODO: Implement Lego_LoadTextureSet
+
+    S32 surfTextureWidth = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, keyTexturePath, "surftextwidth", 0));
+    if (surfTextureWidth == 0)
+        return FALSE;
+    S32 surfTextureHeight = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, keyTexturePath, "surftextheight", 0));
+    if (surfTextureHeight == 0)
+        return FALSE;
+
+    level->textureSetSize.width = surfTextureWidth;
+    level->textureSetSize.height = surfTextureHeight;
+
+    Lego_InitTextureMappings(level->map);
+    Map3D_UpdateAllBlockNormals(level->map);
+
+    const char* meshbasename = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, keyTexturePath, "meshbasename", 0));
+    if (meshbasename == NULL)
+        return FALSE;
+
+    const char* texturebasename = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, keyTexturePath, "texturebasename", 0));
+    if (texturebasename == NULL)
+        return FALSE;
+
+    level->textureSet = Detail_LoadTextureSet(texturebasename, level->textureSetSize.width, level->textureSetSize.height);
+    if (level->textureSet == NULL)
+        return FALSE;
+
+    Map3D_SetTextureSet(level->map, level->textureSet);
+
+    if (Lego_LoadDetailMeshes(level, meshbasename) == 0)
+        return FALSE;
+
+    const char* rooftexture = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, keyTexturePath, "rooftexture", 0));
+    if (rooftexture == NULL)
+        return FALSE;
+
+    if (Roof_SetTexture(rooftexture) == 0)
+        return FALSE;
 
     return TRUE;
 }
@@ -2122,6 +2158,17 @@ B32 Lego_LoadRockMonsterTypes()
 B32 Lego_LoadBuildingTypes()
 {
     // TODO: Implement Lego_LoadBuildingTypes
+    return TRUE;
+}
+
+void Lego_InitTextureMappings(lpMap3D map)
+{
+    // TODO: Implement Lego_InitTextureMappings
+}
+
+B32 Lego_LoadDetailMeshes(lpLego_Level level, const char* meshBaseName)
+{
+    // TODO: Implement Lego_LoadDetailMeshes
     return TRUE;
 }
 
