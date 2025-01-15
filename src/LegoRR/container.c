@@ -11,6 +11,8 @@
 #include "bmp.h"
 #include "dxbug.h"
 
+#define CONTAINER_DISABLEFRAMESETTINGS
+
 extern Container_Globs containerGlobs = { NULL };
 
 #define CONTAINER_NULLSTRING			"NULL"
@@ -979,6 +981,64 @@ lpContainer_Texture Container_LoadTexture2(const char* fname, B32 immediate, U32
     }
 
     return NULL;
+}
+
+void Container_Mesh_SetTexture(lpContainer cont, U32 groupID, lpContainer_Texture itext)
+{
+    LPDIRECT3DRMTEXTURE3 texture;
+    LPDIRECT3DRMMESH mesh;
+    LPDIRECT3DRMTEXTURE text1;
+    HRESULT r;
+    lpMesh transmesh;
+
+    if (itext)
+        texture = itext->texture;
+    else
+        texture = NULL;
+
+    Container_DebugCheckOK(cont);
+
+    Error_Fatal(cont->type != Container_Mesh && cont->type != Container_LWO, "Container_Mesh_SetTexture() called with non mesh object");
+
+    transmesh = cont->typeData->transMesh;
+    if (transmesh)
+    {
+        Error_Fatal(itext && itext->surface != NULL && itext->texture == NULL, "Texture is required to be created by Mesh_LoadTexture()");
+        Mesh_SetGroupTexture(transmesh, groupID, itext);
+    }
+    else
+    {
+        Container_Mesh_DebugCheckOK(cont, groupID);
+
+        mesh = cont->typeData->mesh;
+        Error_Fatal(!mesh, "Container has no mesh object");
+
+        Container_Mesh_HandleSeparateMeshGroups(&mesh, &groupID);
+
+        if (texture)
+        {
+            r = texture->lpVtbl->QueryInterface(texture, &IID_IDirect3DRMTexture, &text1);
+            Error_Fatal(r, "Unable to query texture1");
+        }
+        else
+        {
+            text1 = NULL;
+        }
+
+        if (mesh->lpVtbl->SetGroupTexture(mesh, groupID, text1) == D3DRM_OK)
+        {
+#ifndef CONTAINER_DISABLEFRAMESETTINGS
+            cont->activityFrame->lpVtbl->SetMaterialMode(cont->activityFrame, D3DRMMATERIAL_FROMMESH);
+#endif // CONTAINER_DISABLEFRAMESETTINGS
+        }
+        else
+        {
+            Error_Fatal(TRUE, "Unable to SetGroupTexture");
+        }
+
+        if (text1)
+            text1->lpVtbl->Release(text1);
+    }
 }
 
 U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData)

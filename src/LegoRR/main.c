@@ -739,3 +739,8 @@ U32 Main_GetTime()
 {
     return timeGetTime();
 }
+
+MainCLFlags Main_GetCLFlags()
+{
+    return mainGlobs.clFlags;
+}

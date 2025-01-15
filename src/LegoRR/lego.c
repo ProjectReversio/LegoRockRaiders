@@ -1956,11 +1956,14 @@ B32 Lego_GetObjectByName(const char* objName, LegoObject_Type* outObjType, LegoO
         return TRUE;
     }
 
-    *outObjType = LegoObject_None;
+    // TODO: Implement Lego_GetObjectByName
 
+    // TEMP: {
+    *outObjType = LegoObject_None;
     if (outModel != NULL) {
         *outModel = NULL;
     }
+    // }
 
     // TODO: Implement Lego_GetObjectByName
 

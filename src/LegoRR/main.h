@@ -141,6 +141,8 @@ extern void Main_DisableTextureManagement();
 
 extern U32 Main_GetTime();
 
+extern MainCLFlags Main_GetCLFlags();
+
 inline HWND Main_hWnd() { return mainGlobs.hWnd; }
 inline HINSTANCE Main_hInst() { return mainGlobs.hInst; }
 inline void Main_SetFogMethod(U32 m) { mainGlobs.fogMethod = m; }

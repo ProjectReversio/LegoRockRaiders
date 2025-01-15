@@ -36,3 +36,8 @@ void LegoObject_RegisterSlimySlugHole(Point2I* blockPos)
 {
     // TODO: Implement LegoObject_RegisterSlimySlugHole
 }
+
+void LegoObject_IncLevelPathsBuilt(B32 incCurrent)
+{
+    // TODO: Implement LegoObject_IncLevelPathsBuilt
+}

@@ -1066,6 +1066,46 @@ void Map3D_SetTextureNoFade(lpMap3D map, SurfaceTexture texture)
     map->texsNoFade[texture] = TRUE;
 }
 
+void Map3D_SetBlockTexture(lpMap3D map, U32 bx, U32 by, SurfaceTexture newTexture, Direction direction)
+{
+    if (bx < map->blockWidth && by < map->blockHeight)
+    {
+        U32 groupID = by * map->blockWidth + bx;
+        Direction DIRECTIONS[4] = { DIRECTION_RIGHT, DIRECTION_LEFT, DIRECTION_DOWN, DIRECTION_UP };
+
+        lpContainer_Texture texture = Detail_GetTexture(map->textureSet, newTexture);
+        map->blocks3D[by * map->gridWidth + bx].texture = newTexture;
+        if ((map->blocks3D[by * map->gridWidth + bx].flags3D & MAP3DBLOCK_FLAG_ROTATED) != MAP3DBLOCK_FLAG_NONE)
+            direction++;
+        Container_Mesh_SetTexture(map->mesh, groupID, texture);
+
+        if ((map->blocks3D[by * map->gridWidth + bx].flags3D & MAP3DBLOCK_FLAG_UVWOBBLES) == MAP3DBLOCK_FLAG_NONE)
+        {
+            Vertex vertices[4];
+            Container_Mesh_GetVertices(map->mesh, groupID, 0, 4, vertices);
+            for (U32 i = 0; i < 4; i++)
+            {
+                Direction dir = DIRECTIONS[i - direction & 3];
+                vertices[i].tu = (F32)(U32)(dir >> 1); // dir / 2
+                vertices[i].tv = (F32)(U32)(dir & 1); // dir % 2 == 1
+            }
+            Container_Mesh_SetVertices(map->mesh, groupID, 0, 4, vertices);
+        }
+    }
+}
+
+void Map3D_SetBlockFadeInTexture(lpMap3D map, U32 bx, U32 by, SurfaceTexture newTexture, Direction direction)
+{
+    // TODO: Implement Map3D_SetBlockFadeInTexture
+
+    Map3D_SetBlockTexture(map, bx, by, newTexture, direction);
+}
+
+void Map3D_ClearBlockHighlight(lpMap3D map, S32 bx, S32 by)
+{
+    // TODO: Implement Map3D_ClearBlockHighlight
+}
+
 F32 Map3D_BlockSize(lpMap3D map)
 {
     return map->blockSize;

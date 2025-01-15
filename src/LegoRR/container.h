@@ -277,6 +277,8 @@ extern void Container_SetColourAlpha(lpContainer cont, F32 r, F32 g, F32 b, F32 
 
 extern lpContainer_Texture Container_LoadTexture2(const char* fname, B32 immediate, U32* width, U32* height);
 
+extern void Container_Mesh_SetTexture(lpContainer cont, U32 groupID, lpContainer_Texture itext);
+
 extern U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData);
 extern void Container_Mesh_HideGroup(lpContainer cont, U32 group, B32 hide);
 extern void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Quality quality);

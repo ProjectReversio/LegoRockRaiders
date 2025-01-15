@@ -208,6 +208,11 @@ extern void Map3D_AddTextureMapping(lpMap3D map, SurfaceTexture texA, SurfaceTex
 
 extern void Map3D_SetTextureNoFade(lpMap3D map, SurfaceTexture texture);
 
+extern void Map3D_SetBlockTexture(lpMap3D map, U32 bx, U32 by, SurfaceTexture newTexture, Direction direction);
+extern void Map3D_SetBlockFadeInTexture(lpMap3D map, U32 bx, U32 by, SurfaceTexture newTexture, Direction direction);
+
+extern void Map3D_ClearBlockHighlight(lpMap3D map, S32 bx, S32 by);
+
 extern F32 Map3D_BlockSize(lpMap3D map);
 
 extern void Map3D_HideBlock(lpMap3D map, U32 bx, U32 by, BOOL hide);

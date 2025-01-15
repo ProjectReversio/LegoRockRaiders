@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "map3d.h"
 #include "mem.h"
 
 void Dust_Setup(lpContainer cont, const char* path)
@@ -38,4 +39,12 @@ Detail_TextureSet* Detail_LoadTextureSet(const char* textureBaseName, U32 width,
     }
 
     return textureSet;
+}
+
+lpContainer_Texture Detail_GetTexture(lpDetail_TextureSet textureSet, SurfaceTexture texture)
+{
+    if (textureSet != NULL)
+        return textureSet->gridSurfaces[(texture & 0xF) * textureSet->gridSize.width + (U32)(texture >> 4)];
+
+    return NULL;
 }
