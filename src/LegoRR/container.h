@@ -272,6 +272,11 @@ extern void Container_SetColourAlpha(lpContainer cont, F32 r, F32 g, F32 b, F32 
 #define Container_MakeMeshAdditive(r)               Container_MakeMesh2((r), Container_MeshType_Additive)
 #define Container_MakeMeshSubtractive(r)            Container_MakeMesh2((r), Container_MeshType_Subtractive)
 
+#define Container_LoadTexture(f, w, h)              Container_LoadTexture2((f), FALSE, (w), (h))
+#define Container_LoadTextureImmediate(f, w, h)     Container_LoadTexture2((f), TRUE, (w), (h))
+
+extern lpContainer_Texture Container_LoadTexture2(const char* fname, B32 immediate, U32* width, U32* height);
+
 extern U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData);
 extern void Container_Mesh_HideGroup(lpContainer cont, U32 group, B32 hide);
 extern void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Quality quality);

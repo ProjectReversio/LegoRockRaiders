@@ -1038,6 +1038,27 @@ void Map3D_UpdateFadeInTransitions(lpMap3D map, F32 elapsedGame)
     // TODO: Implement Map3D_UpdateFadeInTransitions
 }
 
+void Map3D_AddTextureMapping(lpMap3D map, SurfaceTexture texA, SurfaceTexture texB)
+{
+    U32 texANum = map->texsNum[texA];
+
+    // check if mapping has already been created. If so, end operation
+    for (U32 i = 0; i < texANum; i++)
+    {
+        // mapping already exists at index?
+        if (map->texsGrid[texA][i] == texB)
+            return;
+    }
+
+    // mapping not found, add texB to end of texA[] list
+    map->texsGrid[texA][texANum] = texB;
+    map->texsNum[texA]++;
+
+    // now create the reverse mapping, add texA to end of texB[] list
+    map->texsGrid[texB][map->texsNum[texB]] = texA;
+    map->texsNum[texB]++;
+}
+
 // Initialisation function only.
 // States a textureNo. cannot use fade transitions.
 void Map3D_SetTextureNoFade(lpMap3D map, SurfaceTexture texture)

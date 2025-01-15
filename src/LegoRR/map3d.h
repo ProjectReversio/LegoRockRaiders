@@ -204,6 +204,8 @@ extern void Map3D_UpdateBlockNormals(lpMap3D map, U32 bx, U32 by);
 extern void Map3D_UpdateTextureUVs(lpMap3D map, F32 elapsedGame);
 extern void Map3D_UpdateFadeInTransitions(lpMap3D map, F32 elapsedGame);
 
+extern void Map3D_AddTextureMapping(lpMap3D map, SurfaceTexture texA, SurfaceTexture texB);
+
 extern void Map3D_SetTextureNoFade(lpMap3D map, SurfaceTexture texture);
 
 extern F32 Map3D_BlockSize(lpMap3D map);

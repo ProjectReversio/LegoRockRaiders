@@ -2163,7 +2163,145 @@ B32 Lego_LoadBuildingTypes()
 
 void Lego_InitTextureMappings(lpMap3D map)
 {
-    // TODO: Implement Lego_InitTextureMappings
+    SurfaceTexture reinWalls[5];
+    SurfaceTexture inCorners[5];
+    SurfaceTexture reinInCorners[5];
+    SurfaceTexture outCorners[5];
+    SurfaceTexture reinOutCorners[5];
+    SurfaceTexture diagonalWalls[5];
+    SurfaceTexture roofTypes[6];
+    SurfaceTexture forwardWalls[16];
+    SurfaceTexture floorTypes[31];
+
+    roofTypes[0] = TEXTURE_ROOF_STD;
+    roofTypes[1] = TEXTURE_ROOF_STD;
+    roofTypes[2] = TEXTURE_ROOF_STD;
+    roofTypes[3] = TEXTURE_ROOF_STD;
+    roofTypes[4] = TEXTURE_ROOF_STD;
+    roofTypes[5] = TEXTURE_ROOF_STD;
+
+    forwardWalls[0] = TEXTURE_WALL_IMM;
+    forwardWalls[1] = TEXTURE_WALL_HARD;
+    forwardWalls[2] = TEXTURE_WALL_MED;
+    forwardWalls[3] = TEXTURE_WALL_LOOSE;
+    forwardWalls[4] = TEXTURE_WALL_SOIL;
+    forwardWalls[5] = TEXTURE_WALL_ORESEAM;
+    forwardWalls[6] = TEXTURE_WALL_CRYSTALSEAM;
+    forwardWalls[7] = TEXTURE_WALL_RECHARGESEAM;
+    forwardWalls[8] = TEXTURE_WALL_IMM;
+    forwardWalls[9] = TEXTURE_WALL_HARD;
+    forwardWalls[10] = TEXTURE_WALL_MED;
+    forwardWalls[11] = TEXTURE_WALL_LOOSE;
+    forwardWalls[12] = TEXTURE_WALL_SOIL;
+    forwardWalls[13] = TEXTURE_WALL_ORESEAM;
+    forwardWalls[14] = TEXTURE_WALL_CRYSTALSEAM;
+    forwardWalls[15] = TEXTURE_WALL_RECHARGESEAM;
+
+    floorTypes[0] = TEXTURE_FLOOR_STD;
+    floorTypes[1] = TEXTURE_FLOOR_STD;
+    floorTypes[2] = TEXTURE_FLOOR_STD;
+    floorTypes[3] = TEXTURE_FLOOR_STD;
+    floorTypes[4] = TEXTURE_FLOOR_LAVA;
+    floorTypes[5] = TEXTURE_FLOOR_LAVA_NOTHOT;
+    floorTypes[6] = TEXTURE_FLOOR_WATER;
+    floorTypes[7] = TEXTURE_FLOOR_STD;
+    floorTypes[8] = TEXTURE_FLOOR_PATH_FOUNDATION;
+    floorTypes[9] = TEXTURE_FLOOR_POWERED_FOUNDATION;
+    floorTypes[10] = TEXTURE_FLOOR_RUBBLE_MAX;
+    floorTypes[11] = TEXTURE_FLOOR_RUBBLE_HIGH;
+    floorTypes[12] = TEXTURE_FLOOR_RUBBLE_MED;
+    floorTypes[13] = TEXTURE_FLOOR_RUBBLE_LOW;
+    floorTypes[14] = TEXTURE_FLOOR_ERODE_LOW;
+    floorTypes[15] = TEXTURE_FLOOR_ERODE_MED;
+    floorTypes[16] = TEXTURE_FLOOR_ERODE_HIGH;
+    floorTypes[17] = TEXTURE_FLOOR_ERODE_MAX;
+    floorTypes[18] = TEXTURE_FLOOR_07;
+    floorTypes[19] = TEXTURE_FLOOR_PATH_LAYED;
+    floorTypes[20] = TEXTURE_FLOOR_PATH_4SIDES;
+    floorTypes[21] = TEXTURE_FLOOR_PATH_2SIDES;
+    floorTypes[22] = TEXTURE_FLOOR_PATH_CORNER;
+    floorTypes[23] = TEXTURE_FLOOR_PATH_3SIDES;
+    floorTypes[24] = TEXTURE_FLOOR_PATH_1SIDES;
+    floorTypes[25] = TEXTURE_FLOOR_POWERED_4SIDES;
+    floorTypes[26] = TEXTURE_FLOOR_POWERED_2SIDES;
+    floorTypes[27] = TEXTURE_FLOOR_POWERED_CORNER;
+    floorTypes[28] = TEXTURE_FLOOR_POWERED_3SIDES;
+    floorTypes[29] = TEXTURE_FLOOR_POWERED_1SIDES;
+    floorTypes[30] = TEXTURE_FLOOR_SLUGHOLE;
+
+    reinWalls[0] = TEXTURE_REINWALL_IMM;
+    reinWalls[1] = TEXTURE_REINWALL_HARD;
+    reinWalls[2] = TEXTURE_REINWALL_MED;
+    reinWalls[3] = TEXTURE_REINWALL_LOOSE;
+    reinWalls[4] = TEXTURE_REINWALL_SOIL;
+
+    inCorners[0] = TEXTURE_INCORNER_IMM;
+    inCorners[1] = TEXTURE_INCORNER_HARD;
+    inCorners[2] = TEXTURE_INCORNER_MED;
+    inCorners[3] = TEXTURE_INCORNER_LOOSE;
+    inCorners[4] = TEXTURE_INCORNER_SOIL;
+
+    reinInCorners[0] = TEXTURE_INCORNER_IMM;
+    reinInCorners[1] = TEXTURE_INCORNER_HARD;
+    reinInCorners[2] = TEXTURE_INCORNER_MED;
+    reinInCorners[3] = TEXTURE_INCORNER_LOOSE;
+    reinInCorners[4] = TEXTURE_INCORNER_SOIL;
+
+    outCorners[0] = TEXTURE_OUTCORNER_IMM;
+    outCorners[1] = TEXTURE_OUTCORNER_HARD;
+    outCorners[2] = TEXTURE_OUTCORNER_MED;
+    outCorners[3] = TEXTURE_OUTCORNER_LOOSE;
+    outCorners[4] = TEXTURE_OUTCORNER_SOIL;
+
+    reinOutCorners[0] = TEXTURE_OUTCORNER_IMM;
+    reinOutCorners[1] = TEXTURE_OUTCORNER_HARD;
+    reinOutCorners[2] = TEXTURE_OUTCORNER_MED;
+    reinOutCorners[3] = TEXTURE_OUTCORNER_LOOSE;
+    reinOutCorners[4] = TEXTURE_OUTCORNER_SOIL;
+
+    diagonalWalls[0] = TEXTURE_DIAGONAL_STD;
+    diagonalWalls[1] = TEXTURE_DIAGONAL_STD;
+    diagonalWalls[2] = TEXTURE_DIAGONAL_STD;
+    diagonalWalls[3] = TEXTURE_DIAGONAL_STD;
+    diagonalWalls[4] = TEXTURE_DIAGONAL_STD;
+
+    for (U32 i = 0; i < 31; i++)
+    {
+        SurfaceTexture floorTex = floorTypes[i];
+        for (U32 j = 0; j < 16; j++)
+            Map3D_AddTextureMapping(map, floorTex, forwardWalls[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, floorTex, reinWalls[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, floorTex, inCorners[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, floorTex, reinInCorners[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, floorTex, outCorners[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, floorTex, reinOutCorners[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, floorTex, diagonalWalls[j]);
+    }
+
+    for (U32 i = 0; i < 6; i++)
+    {
+        SurfaceTexture roofTex = roofTypes[i];
+        for (U32 j = 0; j < 16; j++)
+            Map3D_AddTextureMapping(map, roofTex, forwardWalls[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, roofTex, reinWalls[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, roofTex, inCorners[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, roofTex, reinInCorners[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, roofTex, outCorners[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, roofTex, reinOutCorners[j]);
+        for (U32 j = 0; j < 5; j++)
+            Map3D_AddTextureMapping(map, roofTex, diagonalWalls[j]);
+    }
 }
 
 B32 Lego_LoadDetailMeshes(lpLego_Level level, const char* meshBaseName)

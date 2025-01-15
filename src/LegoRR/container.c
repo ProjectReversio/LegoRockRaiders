@@ -873,6 +873,114 @@ void Container_SetColourAlpha(lpContainer cont, F32 r, F32 g, F32 b, F32 a)
     }
 }
 
+lpContainer_Texture Container_LoadTexture2(const char* fname, B32 immediate, U32* width, U32* height)
+{
+    LPDIRECT3DRMTEXTURE3 texture = NULL;
+    const char* path = File_VerifyFilename(fname);
+    lpContainer_Texture newText;
+    U32 decalColour;
+    HRESULT r;
+
+    // This malloc() (not Mem_Alloc()) is deliberate...
+    if ((newText = malloc(sizeof(Container_Texture))))
+    {
+        //#ifdef CONTAINER_USEOWNTEXTURELOAD
+        if (immediate)
+        {
+            LPDIRECTDRAWSURFACE surf1;
+            LPDIRECTDRAWSURFACE4 surf;
+            PALETTEENTRY entry;
+
+            if ((surf = Container_LoadTextureSurface(fname, immediate, width, height, NULL)))
+            {
+                Error_Debug(Error_Format("Loaded texture %s\n", path));
+
+                if (surf->lpVtbl->QueryInterface(surf, &IID_IDirectDrawSurface, &surf1) == D3DRM_OK)
+                {
+                    if (lpD3DRM()->lpVtbl->CreateTextureFromSurface(lpD3DRM(), surf1, &texture))
+                    {
+                        Container_NoteCreation(texture);
+                        surf1->lpVtbl->Release(surf1);
+
+                        if (Container_GetDecalColour(fname, &decalColour))
+                        {
+                            LPDIRECTDRAWPALETTE palette;
+                            surf->lpVtbl->GetPalette(surf, &palette);
+
+                            palette->lpVtbl->GetEntries(palette, 0, decalColour, 1, &entry);
+                            palette->lpVtbl->Release(palette);
+
+                            texture->lpVtbl->SetDecalTransparency(texture, TRUE);
+                            texture->lpVtbl->SetDecalTransparentColor(texture, RGB_MAKE(entry.peRed, entry.peGreen, entry.peBlue));
+                        }
+
+                        newText->texture = texture;
+                        newText->surface = surf;
+                        texture->lpVtbl->SetAppData(texture, (U32) newText);
+
+                        return newText;
+                    }
+
+                    surf1->lpVtbl->Release(surf1);
+                }
+
+                surf->lpVtbl->Release(surf);
+            }
+
+        } else
+        //#else // CONTAINER_USEOWNTEXTURELOAD
+        {
+            if ((r = lpD3DRM()->lpVtbl->LoadTexture(lpD3DRM(), path, &texture)))
+            {
+                LPD3DRMIMAGE image;
+                U32 r, g, b;
+                Container_NoteCreation(texture);
+
+                Error_Debug(Error_Format("Loaded texture %s\n", path));
+                Error_LogLoad(TRUE, path);
+
+                if ((image = texture->lpVtbl->GetImage(texture)))
+                {
+                    if (Container_GetDecalColour(fname, &decalColour))
+                    {
+                        r = image->palette[decalColour].red;
+                        g = image->palette[decalColour].green;
+                        b = image->palette[decalColour].blue;
+                        texture->lpVtbl->SetDecalTransparency(texture, TRUE);
+                        texture->lpVtbl->SetDecalTransparentColor(texture, RGB_MAKE(r, g, b));
+                    }
+
+                    if (width)
+                        *width = image->width;
+                    if (height)
+                        *height = image->height;
+                }
+
+                newText->texture = texture;
+                newText->surface = NULL;
+                texture->lpVtbl->SetAppData(texture, (U32)newText);
+
+            } else
+            {
+                if (r == D3DRMERR_FILENOTFOUND)
+                {
+                    Error_Warn(TRUE, Error_Format("Invalid filename specified \"%s\"", path));
+                    Error_LogLoadError(TRUE, Error_Format("%d\t%s", Error_LoadError_InvalidFName, path));
+                } else
+                {
+                    Error_LogLoadError(TRUE, Error_Format("%d\t%s", Error_LoadError_RMTexture, path));
+                    Error_Warn(TRUE, Error_Format("Cannot open file %s", path));
+                }
+            }
+        }
+        //#endif // CONTAINER_USEOWNTEXTURELOAD
+
+        free(newText);
+    }
+
+    return NULL;
+}
+
 U32 Container_Mesh_AddGroup(lpContainer cont, U32 vertexCount, U32 faceCount, U32 vPerFace, U32* faceData)
 {
     U32 groupID;
