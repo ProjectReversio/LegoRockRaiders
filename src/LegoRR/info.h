@@ -11,5 +11,7 @@ extern void Info_DrawPanel(F32 elapsedAbs);
 
 extern void Info_Draw(F32 elapsedAbs);
 
+extern void Info_SetFlag4(B32 state);
+
 // TODO: Should this be in info.h?
 extern void ScrollInfo_Update(B32 index);

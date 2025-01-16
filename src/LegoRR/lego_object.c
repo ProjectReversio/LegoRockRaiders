@@ -41,3 +41,21 @@ void LegoObject_IncLevelPathsBuilt(B32 incCurrent)
 {
     // TODO: Implement LegoObject_IncLevelPathsBuilt
 }
+
+B32 LegoObject_RunThroughListsSkipUpgradeParts(LegoObject_RunThroughListsCallback callback, void* search)
+{
+    // TODO: Implement LegoObject_RunThroughListsSkipUpgradeParts
+    return FALSE;
+}
+
+lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, LegoObject_ID objID)
+{
+    // TODO: Implement LegoObject_Create
+    return NULL;
+}
+
+B32 LegoObject_Remove(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_Remove
+    return FALSE;
+}

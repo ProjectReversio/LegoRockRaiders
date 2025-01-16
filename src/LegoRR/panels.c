@@ -156,6 +156,11 @@ void Panel_CryOreSideBar_Draw()
     }
 }
 
+void Panel_Crystals_LoadRewardQuota(lpConfig config, const char* gameName, const char* levelName)
+{
+    // TODO: Implement Panel_Crystals_LoadRewardQuota
+}
+
 B32 Panel_IsFlags_2_Not8(Panel_Type panelType)
 {
     PanelDataFlags flags = panelGlobs.panelTable[panelType].flags;

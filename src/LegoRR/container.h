@@ -261,6 +261,11 @@ inline U32 Container_GetRGBAColour(F32 r, F32 g, F32 b, F32 a)
     return D3DRGBA(r, g, b, a);
 }
 
+inline U32 Container_GetRGBColour(F32 r, F32 g, F32 b)
+{
+    return Container_GetRGBAColour(r, g, b, 1.0f);
+}
+
 extern void Container_SetColourAlpha(lpContainer cont, F32 r, F32 g, F32 b, F32 a);
 
 #define Container_SetColour(c, r, g, b)             Container_SetColourAlpha((c), (r), (g), (b), 1.0f)
@@ -285,6 +290,12 @@ extern void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Qual
 extern void Container_Mesh_SetEmissive(lpContainer cont, U32 groupID, F32 r, F32 g, F32 b);
 
 extern void Container_Mesh_SetPerspectiveCorrection(lpContainer cont, U32 group, B32 on);
+
+extern void Container_EnableFog(B32 on);
+extern void Container_SetFogColour(F32 r, F32 g, F32 b);
+extern void Container_GetFogColour(F32* r, F32* g, F32* b);
+extern void Container_SetFogMode(U32 mode);
+extern void Container_SetFogParams(F32 start, F32 end, F32 density);
 
 extern B32 Container_Mesh_HandleSeparateMeshGroups(LPDIRECT3DRMMESH *mesh, U32* group);
 

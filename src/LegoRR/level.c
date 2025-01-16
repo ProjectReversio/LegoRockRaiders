@@ -339,3 +339,9 @@ void Level_Block_LowerRoofVertices(lpLego_Level level, U32 bx, U32 by)
 {
     // TODO: Implement Level_Block_LowerRoofVertices
 }
+
+B32 Level_AddCryOreToToolStore(lpLegoObject liveObj, SearchAddCryOre_c* search)
+{
+    // TODO: Implement Level_AddCryOreToToolStore
+    return FALSE;
+}

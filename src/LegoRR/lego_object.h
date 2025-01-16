@@ -3,6 +3,7 @@
 #include "platform.h"
 #include "container.h"
 #include "config.h"
+#include "creature.h"
 #include "stats.h"
 
 typedef enum LegoObject_Type
@@ -68,3 +69,10 @@ extern void LegoObject_SetLevelEnding(B32 ending);
 extern void LegoObject_RegisterSlimySlugHole(Point2I* blockPos);
 
 extern void LegoObject_IncLevelPathsBuilt(B32 incCurrent);
+
+typedef B32 (LegoObject_RunThroughListsCallback)(lpLegoObject obj, void* search);
+
+extern B32 LegoObject_RunThroughListsSkipUpgradeParts(LegoObject_RunThroughListsCallback callback, void* search);
+
+extern lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, LegoObject_ID objID);
+extern B32 LegoObject_Remove(lpLegoObject liveObj);

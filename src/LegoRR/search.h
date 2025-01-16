@@ -28,3 +28,10 @@ typedef struct SearchLevelLinkFindIndex_10
     S32 currentIndex; // Current index in linked list.
     S32 resultIndex; // Link index of found result, should end up equal to searchIndex, or 0 on failure.
 } SearchLevelLinkFindIndex_10, *lpSearchLevelLinkFindIndex_10;
+
+typedef struct SearchAddCryOre_c
+{
+    U32 field_0;
+    U32 crystalCount;
+    U32 oreCount; // normal ore
+} SearchAddCryOre_c, *lpSearchAddCryOre_c;

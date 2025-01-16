@@ -134,6 +134,8 @@ extern U32 Main_GetWindowsBitDepth();
 extern void Main_SetupDisplay(B32 fullScreen, U32 xPos, U32 yPos, U32 width, U32 height);
 extern B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRECTDRAWSURFACE4 backSurf, B32 doubleBuffered);
 
+extern void Main_Setup3D(Graphics_Quality renderQuality, B32 dither, B32 linearFilter, B32 mipMap, B32 mipMapLinear, B32 blendTransparency, B32 sortTransparency);
+
 extern void Main_ChangeRenderState(D3DRENDERSTATETYPE dwRenderStateType, U32 dwRenderState);
 extern void Main_RestoreStates(B32 force);
 
@@ -146,6 +148,7 @@ extern MainCLFlags Main_GetCLFlags();
 inline HWND Main_hWnd() { return mainGlobs.hWnd; }
 inline HINSTANCE Main_hInst() { return mainGlobs.hInst; }
 inline void Main_SetFogMethod(U32 m) { mainGlobs.fogMethod = m; }
+inline U32 Main_GetFogMethod() { return mainGlobs.fogMethod; }
 inline ProgrammerMode Main_ProgrammerMode() { return mainGlobs.programmerLevel; }
 inline LPDIRECT3DRM3 lpD3DRM() { return mainGlobs.lpD3DRM; }
 inline LPDIRECT3DRMDEVICE3 lpDevice() { return mainGlobs.device; }

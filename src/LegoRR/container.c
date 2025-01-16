@@ -1273,6 +1273,42 @@ void Container_Mesh_SetPerspectiveCorrection(lpContainer cont, U32 group, B32 on
     }
 }
 
+void Container_EnableFog(B32 on)
+{
+    containerGlobs.rootContainer->masterFrame->lpVtbl->SetSceneFogEnable(containerGlobs.rootContainer->masterFrame, on);
+
+    if (on)
+        containerGlobs.rootContainer->masterFrame->lpVtbl->SetSceneBackground(containerGlobs.rootContainer->masterFrame, containerGlobs.fogColor);
+    else
+        containerGlobs.rootContainer->masterFrame->lpVtbl->SetSceneBackground(containerGlobs.rootContainer->masterFrame, 0);
+}
+
+void Container_SetFogColour(F32 r, F32 g, F32 b)
+{
+    containerGlobs.fogColor = Container_GetRGBColour(r, g, b);
+    containerGlobs.rootContainer->masterFrame->lpVtbl->SetSceneFogColor(containerGlobs.rootContainer->masterFrame, containerGlobs.fogColor);
+}
+
+void Container_GetFogColour(F32* r, F32* g, F32* b)
+{
+    *r = RGB_GETRED(containerGlobs.fogColor) / 255.0f;
+    *g = RGB_GETGREEN(containerGlobs.fogColor) / 255.0f;
+    *b = RGB_GETBLUE(containerGlobs.fogColor) / 255.0f;
+}
+
+void Container_SetFogMode(U32 mode)
+{
+    containerGlobs.rootContainer->masterFrame->lpVtbl->SetSceneFogMode(containerGlobs.rootContainer->masterFrame, mode);
+
+    // 3Dfx requires table fog and software requires vertex fog...
+    containerGlobs.rootContainer->masterFrame->lpVtbl->SetSceneFogMethod(containerGlobs.rootContainer->masterFrame, Main_GetFogMethod());
+}
+
+void Container_SetFogParams(F32 start, F32 end, F32 density)
+{
+    containerGlobs.rootContainer->masterFrame->lpVtbl->SetSceneFogParams(containerGlobs.rootContainer->masterFrame, start, end, density);
+}
+
 B32 Container_Mesh_HandleSeparateMeshGroups(LPDIRECT3DRMMESH *mesh, U32* group)
 {
     lpContainer_MeshAppData appdata = (lpContainer_MeshAppData) (*mesh)->lpVtbl->GetAppData(*mesh);

@@ -601,7 +601,7 @@ typedef struct Lego_Globs
     lpTextWindow DialogTextWndCancel;
     const char* CreditsTextFile;
     const char* CreditsBackAVI;
-    const char* lanUpgradeLevel_name[16];
+    const char* langUpgradeLevel_name[16];
     S32 BuildingUpgradeCostOre;
     S32 BuildingUpgradeCostStuds;
     const char* renameInput;
@@ -688,3 +688,10 @@ extern void Lego_LoadTextMessages(lpConfig config);
 extern void Lego_LoadPanels(lpConfig config, U32 screenWidth, U32 screenHeight);
 extern void Lego_LoadPanelButtons(lpConfig config, U32 screenWidth, U32 screenHeight);
 extern void Lego_LoadTutorialIcon(lpConfig config);
+
+// This is an old method for playing movies.
+// It supports playing a movie that isn't just in the center of the screen
+//  (which can be seen by setting certain Level CFG AVI properties).
+// All movie playback seen in LegoRR is done by Front_PlayMovie (which supports
+//  skipping, and scales to screen, but not playing at a specified position).
+extern void Lego_PlayMovie_old(const char* fName, Point2F* optScreenPt);

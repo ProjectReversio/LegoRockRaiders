@@ -684,6 +684,37 @@ B32 Main_SetupDirect3D(lpGraphics_Device dev, LPDIRECTDRAW ddraw1, LPDIRECTDRAWS
     return FALSE;
 }
 
+void Main_Setup3D(Graphics_Quality renderQuality, B32 dither, B32 linearFilter, B32 mipMap, B32 mipMapLinear, B32 blendTransparency, B32 sortTransparency)
+{
+    D3DRMRENDERQUALITY quality = D3DRMRENDER_WIREFRAME;
+
+    if (renderQuality == Flat)
+        quality = D3DRMRENDER_FLAT;
+    if (renderQuality == UnlitFlat)
+        quality = D3DRMRENDER_UNLITFLAT;
+    if (renderQuality == Gouraud)
+        quality = D3DRMRENDER_GOURAUD;
+
+    D3DRMTEXTUREQUALITY texQuality;
+    if (linearFilter == 0)
+        texQuality = D3DRMTEXTURE_NEAREST;
+    else if (mipMap == 0)
+        texQuality = D3DRMTEXTURE_LINEAR;
+    else
+    {
+        // TODO: Verify this is correct
+        texQuality = mipMapLinear ? D3DRMTEXTURE_LINEARMIPLINEAR : D3DRMTEXTURE_MIPLINEAR;
+        mainGlobs.flags |= MAIN_FLAG_MIPMAPENABLED;
+    }
+
+    if (mainGlobs.device != NULL)
+    {
+        mainGlobs.device->lpVtbl->SetDither(mainGlobs.device, dither);
+        mainGlobs.device->lpVtbl->SetQuality(mainGlobs.device, quality);
+        mainGlobs.device->lpVtbl->SetTextureQuality(mainGlobs.device, texQuality);
+    }
+}
+
 void Main_ChangeRenderState(D3DRENDERSTATETYPE dwRenderStateType, U32 dwRenderState)
 {
     lpMain_StateChangeData data;

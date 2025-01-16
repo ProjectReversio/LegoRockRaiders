@@ -20,6 +20,11 @@ void Info_Draw(F32 elapsedAbs)
     // TODO: Implement Info_Draw
 }
 
+void Info_SetFlag4(B32 state)
+{
+    // TODO: Implement Info_SetFlag4
+}
+
 void ScrollInfo_Update(B32 index)
 {
     // TODO: Implement ScrollInfo_Update

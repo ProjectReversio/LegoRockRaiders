@@ -169,4 +169,6 @@ extern void Panel_DrawPanel(Panel_Type panelType, F32 elapsedAbs);
 extern void Panel_CryOreSideBar_ChangeOreMeter(B32 increment, U32 amount);
 extern void Panel_CryOreSideBar_Draw();
 
+extern void Panel_Crystals_LoadRewardQuota(lpConfig config, const char* gameName, const char* levelName);
+
 extern B32 Panel_IsFlags_2_Not8(Panel_Type panelType);

@@ -46,6 +46,8 @@
 #include "construction.h"
 #include "ptl.h"
 #include "electric_fence.h"
+#include "erode.h"
+#include "fallin.h"
 #include "spider_web.h"
 #include "water.h"
 #include "game_control.h"
@@ -53,6 +55,7 @@
 #include "level.h"
 #include "map_shared.h"
 #include "roof.h"
+#include "search.h"
 
 Lego_Globs legoGlobs;
 
@@ -1265,7 +1268,15 @@ B32 Lego_LoadLevel(const char* levelName)
     const char* dragBoxRGB = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "DragBoxRGB", 0));
     if (dragBoxRGB != NULL)
     {
-        // TODO: Implement Lego_LoadLevel
+        const char* parts[10];
+        S32 partCount = Util_Tokenize(dragBoxRGB, parts, ":");
+
+        if (partCount == 3)
+        {
+            legoGlobs.DragBoxRGB.red = atoi(parts[0]) * 0.003921569f;
+            legoGlobs.DragBoxRGB.green = atoi(parts[1]) * 0.003921569f;
+            legoGlobs.DragBoxRGB.blue = atoi(parts[2]) * 0.003921569f;
+        }
 
         Mem_Free(dragBoxRGB);
     }
@@ -1286,10 +1297,62 @@ B32 Lego_LoadLevel(const char* levelName)
     }
     else
     {
-        // TODO: Implement Lego_LoadLevel
+        LegoObject_Type slugType;
+        if (Lego_GetObjectByName(slug, &slugType, (LegoObject_ID*)&level->Slug, NULL) != 0)
+        {
+            level->SlugTime = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "SlugTime", 0));
+            if (level->SlugTime == 0.0f)
+                level->SlugTime = 60.0f;
+            level->SlugTime *= 25.0f;
+
+            F32 initialSlugTime = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "InitialSlugTime", 0));
+            if (initialSlugTime == 0.0f)
+                initialSlugTime = 60.0f;
+
+            legoGlobs.InitialSlugTime = initialSlugTime * 25.0f;
+        }
     }
 
-    // TODO: Implement Lego_LoadLevel
+    const char* rockFallStyle = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "RockFallStyle", 0));
+    U32 rockFallStyleNum;
+    Effect_GetRockFallStyle(rockFallStyle, &rockFallStyleNum);
+    Effect_SetRockFallStyle(rockFallStyleNum);
+
+    legoGlobs.IsFallinsEnabled = (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "noFallins", 0)) != BOOL3_TRUE);
+
+    Panel_Crystals_LoadRewardQuota(legoGlobs.config, legoGlobs.gameName, levelName);
+
+    LegoObject_Type emergeCreatureType;
+    Lego_GetObjectByName(nameEmergeCreature, &emergeCreatureType, (LegoObject_ID*)&level->EmergeCreature, NULL);
+
+    if (!Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "FogColourRGB", 0), &legoGlobs.FogColourRGB.red, &legoGlobs.FogColourRGB.green, &legoGlobs.FogColourRGB.blue))
+    {
+        legoGlobs.flags1 &= ~GAME1_FOGCOLOURRGB;
+    }
+    else
+    {
+        if (!Config_GetRGBValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "HighFogColourRGB", 0), &legoGlobs.HighFogColourRGB.red, &legoGlobs.HighFogColourRGB.green, &legoGlobs.HighFogColourRGB.blue))
+        {
+            legoGlobs.flags1 &= ~GAME1_HIGHFOGCOLOURRGB;
+        }
+        else
+        {
+            legoGlobs.flags1 |= GAME1_HIGHFOGCOLOURRGB;
+            legoGlobs.float_364 = 1.0f;
+
+            F32 fogRate = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "FogRate", 0));
+            if (fogRate == 0.0f)
+                legoGlobs.FogRate = 1500.0f;
+            else
+                legoGlobs.FogRate = fogRate * 25.0f;
+        }
+
+        Container_SetFogColour(legoGlobs.FogColourRGB.red, legoGlobs.FogColourRGB.green, legoGlobs.FogColourRGB.blue);
+        Container_SetFogMode(D3DRMFOGMETHOD_TABLE);
+        Container_SetFogParams(0.0f, legoGlobs.currLevel->BlockSize * legoGlobs.FPClipBlocks, 0.0032f);
+
+        legoGlobs.flags1 |= GAME1_FOGCOLOURRGB;
+    }
 
     level->nextLevelID = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "nextlevel", 0));
     level->FullName = Config_GetStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "FullName", 0));
@@ -1312,7 +1375,25 @@ B32 Lego_LoadLevel(const char* levelName)
 
     Objective_LoadLevel(legoGlobs.config, legoGlobs.gameName, levelName, level, mainGlobs.appWidth, mainGlobs.appHeight);
 
-    // TODO: Implement Lego_LoadLevel
+    F32 erodeTriggerTime = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "ErodeTriggerTime", 0));
+    if (erodeTriggerTime == 0.0f)
+        erodeTriggerTime = 10.0f;
+
+    F32 erodeErodeTime = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "ErodeErodeTime", 0));
+    if (erodeErodeTime == 0.0f)
+        erodeErodeTime = 5.0f;
+
+    F32 erodeLockTime = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "ErodeLockTime", 0));
+    if (erodeLockTime == 0.0f)
+        erodeLockTime = 60.0f;
+
+    Erode_Initialize(erodeTriggerTime, erodeErodeTime, erodeLockTime);
+
+    S32 numberOfLandSlidesTillCaveIn = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "NumberOfLandSlidesTillCaveIn", 0));
+    if (numberOfLandSlidesTillCaveIn == 0)
+        numberOfLandSlidesTillCaveIn = 3;
+
+    Fallin_Initialize(numberOfLandSlidesTillCaveIn);
 
     level->name = levelName;
     level->IsStartTeleportEnabled = (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "DisableStartTeleport", 0)) != BOOL3_TRUE);
@@ -1399,12 +1480,21 @@ B32 Lego_LoadLevel(const char* levelName)
 
             if (Lego_LoadOLObjectList(level, filenameObjectList) != 0)
             {
-
-                // TODO: Implement Lego_LoadLevel
+                SearchAddCryOre_c searchAddCryOre;
+                searchAddCryOre.crystalCount = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "InitialCrystals", 0));
+                searchAddCryOre.oreCount = Config_GetIntValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "InitialOre", 0));
+                LegoObject_RunThroughListsSkipUpgradeParts(Level_AddCryOreToToolStore, &searchAddCryOre);
 
                 Loader_Display_Loading_Bar(NULL);
 
-                // TODO: Implement Lego_LoadLevel
+                Point2F coords;
+                coords.x = 350.0f;
+                coords.y = 70.0f;
+                Lego_PlayMovie_old(filenameIntroAVI, &coords);
+
+                AITask_Game_SetNoGather(Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "NoGather", 0)) == BOOL3_TRUE);
+
+                Info_SetFlag4(TRUE);
 
                 if (level->StartFP == 0 || objectGlobs.minifigureObj_9cb8 == NULL)
                 {
@@ -1413,15 +1503,26 @@ B32 Lego_LoadLevel(const char* levelName)
                 else
                 {
                     Lego_SetViewMode(ViewMode_FP, objectGlobs.minifigureObj_9cb8, 1);
-
-                    // TODO: Implement Lego_LoadLevel
+                    Message_AddMessageAction(Message_Select, objectGlobs.minifigureObj_9cb8, 0, NULL);
+                    Interface_OpenMenu_FUN_0041b200(Interface_Menu_FP, NULL);
                 }
 
                 NERPs_InitBlockPointersTable(level);
 
                 if (Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, levelName, "Precreate", 0)) == BOOL3_TRUE)
                 {
-                    // TODO: Implement Lego_LoadLevel
+                    // TODO: What is the point of this?
+
+                    LegoObject* objects[10];
+                    for (S32 i = 0; i < 10; i++)
+                    {
+                        objects[i] = LegoObject_Create(legoGlobs.miniFigureData, LegoObject_MiniFigure, 0);
+                    }
+
+                    for (S32 i = 0; i < 10; i++)
+                    {
+                        LegoObject_Remove(objects[i]);
+                    }
                 }
 
                 return TRUE;
@@ -2130,8 +2231,34 @@ B32 Lego_LoadLighting()
 
 B32 Lego_LoadGraphicsSettings()
 {
-    // TODO: Implement Lego_LoadGraphicsSettings
-    return TRUE;
+    legoGlobs.FPClipBlocks = Config_GetFloatValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "fpclipblocks", 0));
+    if (legoGlobs.FPClipBlocks != 0.0f)
+    {
+        const char* qualityStr = Config_GetTempStringValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "quality", 0));
+        if (qualityStr == NULL)
+            return FALSE;
+
+        if (stricmp("gouraud", qualityStr) == 0)
+            legoGlobs.quality = Gouraud;
+        else if (stricmp("flat", qualityStr) == 0)
+            legoGlobs.quality = Flat;
+        else if (stricmp("wireframe", qualityStr) == 0)
+            legoGlobs.quality = Wireframe;
+        else
+            return FALSE;
+
+        Bool3 dither = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "dither", 0));
+        Bool3 filter = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "filter", 0));
+        Bool3 blend = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "blend", 0));
+        Bool3 sort = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "sort", 0));
+        Bool3 mipmap = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "mipmap", 0));
+        Bool3 linearMipmap = Config_GetBoolValue(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "Main", "linearmipmap", 0));
+
+        Main_Setup3D(legoGlobs.quality, dither == BOOL3_TRUE, filter == BOOL3_TRUE, mipmap == BOOL3_TRUE, linearMipmap == BOOL3_TRUE, blend == BOOL3_TRUE, sort == BOOL3_TRUE);
+
+        return TRUE;
+    }
+    return FALSE;
 }
 
 B32 Lego_LoadUpgradeTypes()
@@ -2381,4 +2508,14 @@ void Lego_LoadPanelButtons(lpConfig config, U32 screenWidth, U32 screenHeight)
 void Lego_LoadTutorialIcon(lpConfig config)
 {
     // TODO: Implement Lego_LoadTutorialIcon
+}
+
+// This is an old method for playing movies.
+// It supports playing a movie that isn't just in the center of the screen
+//  (which can be seen by setting certain Level CFG AVI properties).
+// All movie playback seen in LegoRR is done by Front_PlayMovie (which supports
+//  skipping, and scales to screen, but not playing at a specified position).
+void Lego_PlayMovie_old(const char* fName, Point2F* optScreenPt)
+{
+    // TODO: Implement Lego_PlayMovie_old
 }
