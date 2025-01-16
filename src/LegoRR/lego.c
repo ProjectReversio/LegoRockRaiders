@@ -901,18 +901,34 @@ B32 Lego_MainLoop(F32 elapsed)
         Point3F debugCameraPos;
         //Camera_GetTopdownWorldPos(legoGlobs.cameraMain, legoGlobs.currLevel->map, &debugCameraPos);
         Container_GetPosition(legoGlobs.cameraMain->contCam, NULL, &debugCameraPos);
-        Font_PrintF(legoGlobs.bmpToolTipFont, 10, 10, "Camera Position: (%f,%f,%f)", debugCameraPos.x, debugCameraPos.y,
+        Font_PrintF(legoGlobs.bmpToolTipFont, 10, 50, "Camera Position: (%f,%f,%f)", debugCameraPos.x, debugCameraPos.y,
                     debugCameraPos.z);
 
         Point3F lightPos;
         Container_GetPosition(legoGlobs.rootLight, NULL, &lightPos);
-        Font_PrintF(legoGlobs.bmpToolTipFont, 10, 20, "Light Position: (%f,%f,%f)", lightPos.x, lightPos.y, lightPos.z);
+        Font_PrintF(legoGlobs.bmpToolTipFont, 10, 60, "Light Position: (%f,%f,%f)", lightPos.x, lightPos.y, lightPos.z);
     }
 
     // TODO: Implement Lego_MainLoop
 
+#ifdef LEGORR_FORCE_DEV_MODE
+    if ((legoGlobs.flags1 & GAME1_DEBUG_SHOWVERTEXMODE) == GAME1_NONE)
+        legoGlobs.flags1 |= GAME1_DEBUG_SHOWVERTEXMODE;
+#endif
+    if ((legoGlobs.flags1 & GAME1_DEBUG_SHOWVERTEXMODE) != GAME1_NONE)
+    {
+        const char* txt = "Vertex";
+        if ((legoGlobs.flags1 & GAME1_VERTEXMODE) == GAME1_NONE)
+            txt = "Block";
+        Font_PrintF(legoGlobs.bmpDesktopFont, 10, 10, "%s mode", txt);
+    }
+
     if ((legoGlobs.flags1 & GAME1_VERTEXMODE) != GAME1_NONE && legoGlobs.bool_c8 != 0)
     {
+        // TODO: Implement Lego_MainLoop
+        //Point3F vec;
+        //Map3D_GetBlockFirstVertexPosition(legoGlobs.currLevel->map, legoGlobs.pointi_c0.x, legoGlobs.pointi_c0.y, &vec);
+        //Viewport_Transform(legoGlobs.viewMain, ???, &vec);
         // TODO: Implement Lego_MainLoop
     }
 
