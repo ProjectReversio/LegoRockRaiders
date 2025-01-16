@@ -289,6 +289,8 @@ extern void Container_Mesh_HideGroup(lpContainer cont, U32 group, B32 hide);
 extern void Container_Mesh_SetQuality(lpContainer cont, U32 group, Graphics_Quality quality);
 extern void Container_Mesh_SetEmissive(lpContainer cont, U32 groupID, F32 r, F32 g, F32 b);
 
+extern void Container_Mesh_SetColourAlpha(lpContainer cont, U32 groupID, F32 r, F32 g, F32 b, F32 a);
+
 extern void Container_Mesh_SetPerspectiveCorrection(lpContainer cont, U32 group, B32 on);
 
 extern void Container_EnableFog(B32 on);

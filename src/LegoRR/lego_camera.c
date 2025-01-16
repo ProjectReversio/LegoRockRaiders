@@ -160,14 +160,17 @@ void Camera_TrackObject(lpLegoCamera cam, lpLegoObject liveObj, F32 trackZoomSpe
 
 void Camera_Update(lpLegoCamera cam, lpLego_Level level, F32 elapsedAbs, F32 elapsedGame)
 {
-    /*// TEMP
+    /*// TEMP:
+    // Position: 60.0, -468.03326, -202.04495
+    // Orientation: 0.0, 0.7173561, 0.6967067
     static F32 r = 160.0f;
     Container_SetPosition(cam->contCam, NULL, 40.0f, 40.0f, -20.0f);
+    //Container_SetPosition(cam->contCam, NULL, 60.0f, -468.03326f, -202.04495f);
     //r += 1.0f * elapsedAbs;
     F32 rot = r;
     rot *= M_PI / 180.0f; // convert to radians
     Container_AddRotation(cam->contCam, Container_Combine_Replace, 1.0f, 0.0f, 0.0f, rot);// * elapsedAbs);
-    //Container_SetOrientation(cam->contCam, NULL, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+    //Container_SetOrientation(cam->contCam, NULL, 0.0f, 0.7173561f, 0.6967067f, 0.0f, 0.0f, 1.0f);
 
     return;*/
     Container_AddTranslation(cam->contCam, Container_Combine_Before, -cam->shakeVector.x, -cam->shakeVector.y, -cam->shakeVector.z);

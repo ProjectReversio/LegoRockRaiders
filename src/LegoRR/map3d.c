@@ -1030,12 +1030,116 @@ void Map3D_UpdateBlockNormals(lpMap3D map, U32 bx, U32 by)
 
 void Map3D_UpdateTextureUVs(lpMap3D map, F32 elapsedGame)
 {
-    // TODO: Implement Map3D_UpdateTextureUVs
+    if (elapsedGame <= 0.001f)
+        return;
+
+    Point2F OFFSETS_F[4] = {
+        {0.0f, 1.0f},
+        {1.0f, 1.0f},
+        {1.0f, 0.0f},
+        {0.0f, 0.0f},
+    };
+
+    const Point2I OFFSETS_I[4] = {
+        {0, 0},
+        {1, 0},
+        {1, 1},
+        {0, 1},
+    };
+
+    if (map->uvBlocksNum == 0)
+        return;
+
+    F32 v1 = 50.0f / elapsedGame;
+    F32 v2 = 1.0f / (v1 + 1.0f);
+
+    Vertex vertices[4];
+
+    for (U32 i = 0; i < map->uvBlocksNum; i++)
+    {
+        // TODO: Clean this up
+        U32 sx = map->uvBlocksTable[i].x;
+        U32 sy = map->uvBlocksTable[i].y;
+        U32 groupID = map->blockWidth * sy + sx;
+        U32 flags3D = map->blocks3D[sy * map->gridWidth + sx].flags3D;
+        Container_Mesh_GetVertices(map->mesh, groupID, 0, 4, vertices);
+
+        for (U32 j = 0; j < 4; j++)
+        {
+            U32 dirOff = i;
+            if ((flags3D & MAP3DBLOCK_FLAG_ROTATED) != MAP3DBLOCK_FLAG_NONE)
+                dirOff = i + 1 & 3;
+
+            U32 syOff = sy * OFFSETS_I[j].y;
+            U32 sxOff = syOff * map->gridWidth + sx + OFFSETS_I[j].x;
+
+            Point2F randUV;
+            randUV.x = map->blocks3D[sxOff].uvCoord.x + OFFSETS_F[j].x;
+            randUV.y = map->blocks3D[sxOff].uvCoord.y + OFFSETS_F[j].y;
+
+            F32 tu = vertices[dirOff].tu;
+            F32 tv = vertices[dirOff].tv;
+
+            F32 v3 = sqrtf((tv - randUV.y) * (tv - randUV.y) + (tu - randUV.x) * (tu - randUV.x));
+            Point2F baseUV;
+            baseUV.x = randUV.x;
+            baseUV.y = randUV.y;
+
+            // TODO: What the heck is this if statement doing?
+            if (v3 <= 0.36f && (baseUV.x = tu, baseUV.y = tv, v3 < 0.05f))
+            {
+                F32 r1 = Maths_RandRange(0.0f, 1.0f);
+                F32 r2 = Maths_RandRange(0.0f, 1.0f);
+
+                Point2F* uv = &map->blocks3D[syOff * map->gridWidth + sx + OFFSETS_I[j].x].uvCoord;
+
+                F32 nv1 = 1.0f / sqrtf(r2 * r2 + r1 * r1);
+                F32 nv2 = (uv->x + nv1 * r1) * 0.3f;
+                F32 nv3 = (uv->y + (nv1 * r2)) * 0.3f;
+
+                randUV.x = nv2 + OFFSETS_F[j].x;
+                randUV.y = nv3 + OFFSETS_F[j].y;
+                uv->x = nv2;
+                uv->y = nv3;
+            }
+
+            vertices[dirOff].tu = v2 * (v1 * baseUV.x + randUV.x);
+            vertices[dirOff].tv = v2 * (v1 * baseUV.y + randUV.y);
+        }
+
+        Container_Mesh_SetVertices(map->mesh, groupID, 0, 4, vertices);
+    }
 }
 
 void Map3D_UpdateFadeInTransitions(lpMap3D map, F32 elapsedGame)
 {
-    // TODO: Implement Map3D_UpdateFadeInTransitions
+    Vertex vertices[4];
+
+    for (U32 i = 0; i < 10; i++)
+    {
+        if (map->transBlocks[i].flags & MAP3DTRANS_FLAG_USED)
+        {
+            Container_Mesh_GetVertices(map->mesh, map->blockWidth * map->transBlocks[i].blockPos.y + map->transBlocks[i].blockPos.x, 0, 4, vertices);
+
+            for (U32 j = 0; j < 4; j++)
+            {
+                vertices[j].tu = map->transBlocks[i].uvCoords[j].x;
+                vertices[j].tv = map->transBlocks[i].uvCoords[j].y;
+            }
+
+            Container_Mesh_SetVertices(map->transMesh, map->transBlocks[i].groupID, 0, 4, vertices);
+
+            Container_Mesh_SetColourAlpha(map->transMesh, map->transBlocks[i].groupID, 1.0f, 1.0f, 1.0f, 1.0f - map->transBlocks[i].timer);
+
+            map->transBlocks[i].timer -= elapsedGame * -0.04f;
+
+            if (map->transBlocks[i].timer > 1.0f)
+            {
+                Container_Mesh_HideGroup(map->transMesh, map->transBlocks[i].groupID, TRUE);
+                map->transBlocks[i].flags &= ~MAP3DTRANS_FLAG_USED;
+            }
+        }
+    }
 }
 
 void Map3D_AddTextureMapping(lpMap3D map, SurfaceTexture texA, SurfaceTexture texB)
