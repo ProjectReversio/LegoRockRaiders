@@ -208,23 +208,23 @@ void Camera_Update(lpLegoCamera cam, lpLego_Level level, F32 elapsedAbs, F32 ela
             // Cancel out moveVector ??
             Container_AddTranslation(cam->cont2, Container_Combine_After, -cam->moveVector.x, -cam->moveVector.y, -cam->moveVector.z);
         }
-
-        if (cam->shakeDuration <= cam->shakeTimer)
-        {
-            cam->shakeVector.x = 0.0f;
-            cam->shakeVector.y = 0.0f;
-            cam->shakeVector.z = 0.0f;
-        }
-        else
-        {
-            // TODO: Implement Camera_Update
-        }
     }
     else if (cam->type == LegoCamera_FP)
     {
         // TODO: Implement Camera_Update
     }
     else if (cam->type == LegoCamera_Radar)
+    {
+        // TODO: Implement Camera_Update
+    }
+
+    if (cam->shakeDuration <= cam->shakeTimer)
+    {
+        cam->shakeVector.x = 0.0f;
+        cam->shakeVector.y = 0.0f;
+        cam->shakeVector.z = 0.0f;
+    }
+    else
     {
         // TODO: Implement Camera_Update
     }

@@ -274,37 +274,30 @@ F32 Map3D_UnkCameraXYFunc_RetZunk(lpMap3D map, F32 xPos, F32 yPos)
 
     Point3F offsets2[4];
 
-    S32 i = 4;
-    do
+    for (S32 i = 0; i < 4; i++)
     {
-        i--;
-
-        offsets2[i].x = (OFFSETS[i].x + (F32) bx) * map->blockSize + map->worldDimensions_fnegx.width;
-        offsets2[i].y = map->worldDimensions_fnegx.height - ((OFFSETS[i].y + (F32) by) * map->blockSize);
+        offsets2[i].x = map->worldDimensions_fnegx.width  + (OFFSETS[i].x + (F32) bx) *  map->blockSize;
+        offsets2[i].y = map->worldDimensions_fnegx.height + (OFFSETS[i].y + (F32) by) * -map->blockSize;
 
         // TODO: Verify this is correct
         S32 iVar = (by + (S32) OFFSETS[i].y) * map->gridWidth + bx;
         F32 heightValue = map->blocks3D[iVar + (S32) OFFSETS[i].x].heightValue;
         offsets2[i].z = -(heightValue * map->roughLevel);
-
-    } while (i != 0);
+    }
 
     F32 f;
     if (map->blockSize <= (offsets2[1].x - xPos) + (offsets2[1].y - yPos))
     {
-        f = offsets2[3].z;
         offsets2[1].z = (offsets2[2].z - offsets2[3].z) + (offsets2[0].z - offsets2[3].z) + offsets2[3].z;
     }
     else
     {
-        f = (offsets2[2].z - offsets2[1].z) + (offsets2[0].z - offsets2[1].z) + offsets2[1].z;
+        offsets2[3].z = (offsets2[2].z - offsets2[1].z) + (offsets2[0].z - offsets2[1].z) + offsets2[1].z;
     }
 
-    f = (offsets2[2].z - f) * ((offsets2[2].x - offsets2[3].x) / (xPos - offsets2[3].x)) + f;
+    f = (offsets2[2].z - offsets2[3].z) * ((xPos - offsets2[3].x) / (offsets2[2].x - offsets2[3].x)) + offsets2[3].z;
 
-    // TODO: Verify this is correct
-    return ((offsets2[0].y - offsets2[3].y) / (yPos - offsets2[3].y)) *
-        (((offsets2[1].z - offsets2[0].z) * ((xPos - offsets2[0].x) / (offsets2[1].x - offsets2[0].x)) + offsets2[0].z) - f) + f;
+    return ((yPos - offsets2[3].y) / (offsets2[0].y - offsets2[3].y)) * (((offsets2[1].z - offsets2[0].z) * ((xPos - offsets2[0].x) / (offsets2[1].x - offsets2[0].x)) + offsets2[0].z) - f) + f;
 }
 
 B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY, U32 *outBx, U32 *outBy, Point3F *outVector)
