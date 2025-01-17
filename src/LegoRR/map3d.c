@@ -1047,9 +1047,9 @@ void Map3D_UpdateTextureUVs(lpMap3D map, F32 elapsedGame)
 
         for (U32 j = 0; j < 4; j++)
         {
-            U32 dirOff = i;
+            U32 dirOff = j;
             if ((flags3D & MAP3DBLOCK_FLAG_ROTATED) != MAP3DBLOCK_FLAG_NONE)
-                dirOff = i + 1 & 3;
+                dirOff = j + 1 & 3;
 
             U32 syOff = sy * OFFSETS_I[j].y;
             U32 sxOff = syOff * map->gridWidth + sx + OFFSETS_I[j].x;
