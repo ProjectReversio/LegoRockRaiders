@@ -1181,7 +1181,54 @@ void Map3D_SetBlockTexture(lpMap3D map, U32 bx, U32 by, SurfaceTexture newTextur
 
 void Map3D_SetBlockFadeInTexture(lpMap3D map, U32 bx, U32 by, SurfaceTexture newTexture, Direction direction)
 {
-    // TODO: Implement Map3D_SetBlockFadeInTexture
+    U32 faceData[6] = { 0, 1, 3, 1, 2, 3 };
+
+    Vertex vertices[4];
+
+    U32 transFlags[3];
+
+    SurfaceTexture oldTexture = map->blocks3D[by * map->gridWidth + bx].texture;
+    if (oldTexture != newTexture && !map->texsNoFade[oldTexture])
+    {
+        for (U32 i = 0; i < 10; i++)
+        {
+            Map3D_TransitionBlock* transBlock = &map->transBlocks[i];
+            if ((transBlock->flags & MAP3DTRANS_FLAG_USED) == MAP3DTRANS_FLAG_NONE)
+            {
+                if (transBlock->groupID == D3DRMGROUP_ALLGROUPS)
+                {
+                    // First-time creation for transBlock Mesh Group
+                    transBlock->groupID = Container_Mesh_AddGroup(map->transMesh, 4, 2, 3, faceData);
+                }
+                else
+                {
+                    // Otherwise, unhide Mesh group
+                    Container_Mesh_HideGroup(map->transMesh, transBlock->groupID, FALSE);
+                }
+
+                Container_Mesh_GetVertices(map->mesh, by * map->blockWidth + bx, 0, 4, vertices);
+                for (U32 j = 0; j < 4; j++)
+                {
+                    transBlock->uvCoords[j].x = vertices[j].tu;
+                    transBlock->uvCoords[j].y = vertices[j].tv;
+                }
+
+                lpContainer_Texture ref_itext = Detail_GetTexture(map->textureSet, map->blocks3D[by * map->gridWidth + bx].texture);
+                Container_Mesh_SetTexture(map->transMesh, transBlock->groupID, ref_itext);
+
+                // TODO: What is this padding?
+                //transFlags[0] = transBlock->padding1[0];
+                //transFlags[1] = transBlock->padding1[1];
+                //transFlags[2] = transBlock->padding1[2];
+                transBlock->blockPos.x = bx;
+                transBlock->blockPos.y = by;
+                transBlock->timer = 0.05f;
+                transBlock->flags |= MAP3DTRANS_FLAG_USED;
+
+                break;
+            }
+        }
+    }
 
     Map3D_SetBlockTexture(map, bx, by, newTexture, direction);
 }
