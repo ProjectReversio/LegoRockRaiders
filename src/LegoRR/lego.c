@@ -942,6 +942,77 @@ B32 Lego_HandleKeys(F32 elapsedGame, F32 elapsed, B32 *outKeyDownT, B32 *outKeyD
 {
     // TODO: Implement Lego_HandleKeys
 
+    if ((legoGlobs.flags1 & (GAME1_FREEZEINTERFACE | GAME1_LEVELENDING)) == GAME1_NONE)
+    {
+        // TODO: Implement Lego_HandleKeys
+
+        if ((legoGlobs.flags2 & GAME2_ALLOWDEBUGKEYS) != GAME2_NONE)
+        {
+            // Toggle sound On/Off.
+            if (Input_IsKeyPressed(KEY_S))
+            {
+                if ((legoGlobs.flags1 & GAME1_USESFX) == GAME1_NONE)
+                {
+                    Lego_SetSoundOn(TRUE);
+                    SFX_Random_PlaySoundNormal(SFX_AmbientLoop, TRUE);
+                }
+                else
+                {
+                    Lego_SetSoundOn(FALSE);
+                }
+
+                const char* txt = "ON";
+                if ((legoGlobs.flags1 & GAME1_USESFX) == GAME1_NONE)
+                    txt = "OFF";
+                TextWindow_PrintF(legoGlobs.textWnd_80, "\nSound Effects: %s", txt);
+            }
+
+            // Toggle music On/Off.
+            if (Input_IsKeyPressed(KEY_M))
+            {
+                Lego_SetMusicOn((legoGlobs.flags1 & GAME1_USEMUSIC) == GAME1_NONE);
+                const char* txt = "ON";
+                if ((legoGlobs.flags1 & GAME1_USEMUSIC) == GAME1_NONE)
+                    txt = "OFF";
+                TextWindow_PrintF(legoGlobs.textWnd_80, "\nMusic: %s", txt);
+            }
+        }
+
+        // TODO: Implement Lego_HandleKeys
+    }
+
+    // TODO: Implement Lego_HandleKeys
+
+    B32 gotoNextLevel = FALSE;
+
+    B32 lastLeftMouseButtonDown = FALSE;
+    if (gamectrlGlobs.handleKeysLastLeftMouseButtonDown != 0 && inputGlobs.mslb == FALSE)
+        lastLeftMouseButtonDown = TRUE;
+
+    B32 spaceKeyHeld;
+    if (Input_IsKeyUp(KEY_SPACE) && !Input_IsKeyReleased(KEY_SPACE))
+        spaceKeyHeld = FALSE;
+    else
+        spaceKeyHeld = TRUE;
+
+    B32 objHandleKeys = Objective_HandleKeys(spaceKeyHeld, lastLeftMouseButtonDown, &gotoNextLevel);
+
+    // TODO: Implement Lego_HandleKeys
+
+    gamectrlGlobs.handleKeysLastLeftMouseButtonDown = inputGlobs.mslb;
+    if (gotoNextLevel)
+        return FALSE;
+
+    if ((legoGlobs.flags2 & GAME2_ALLOWDEBUGKEYS) != GAME2_NONE)
+    {
+        // TODO: Implement Lego_HandleKeys
+    }
+
+    if ((mainGlobs.flags & MAIN_FLAG_DEBUGCOMPLETE) == MAIN_FLAG_NONE)
+        return TRUE;
+
+    // TODO: Implement Lego_HandleKeys
+
     return TRUE;
 }
 
@@ -1950,6 +2021,12 @@ B32 Lego_LoadBlockPointersMap(lpLego_Level level, const char* filename, S32 modi
 {
     // TODO: Implement Lego_LoadBlockPointersMap
     return FALSE;
+}
+
+B32 Lego_EndLevel()
+{
+    // TODO: Implement Lego_EndLevel
+    return TRUE;
 }
 
 lpLego_Level Lego_GetLevel()

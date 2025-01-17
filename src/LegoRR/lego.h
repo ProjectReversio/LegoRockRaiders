@@ -647,6 +647,8 @@ extern B32 Lego_LoadAIMap(lpLego_Level level, const char* filename);
 extern B32 Lego_LoadFallinMap(lpLego_Level level, const char* filename);
 extern B32 Lego_LoadBlockPointersMap(lpLego_Level level, const char* filename, S32 modifier);
 
+extern B32 Lego_EndLevel();
+
 extern lpLego_Level Lego_GetLevel();
 extern lpMap3D Lego_GetMap();
 
