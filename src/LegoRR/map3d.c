@@ -686,39 +686,27 @@ void Map3D_InitRoughness(lpMap3D map)
     OFFSETS[3].x = 0.0f;
     OFFSETS[3].y = 1.0f;
 
-    U32 y = 0;
-    if (map->blockHeight != 0)
+    for (U32 y = 0; y < map->blockHeight; y++)
     {
-        do
+        for (U32 x = 0; x < map->blockWidth; x++)
         {
-            U32 x = 0;
-            if (map->blockWidth != 0)
+            for (U32 i = 0; i < 4; i++)
             {
-                do
-                {
-                    Point2F* pOffset = OFFSETS;
+                S32 ox = x + (S32)OFFSETS[i].x;
+                S32 oy = y + (S32)OFFSETS[i].y;
 
-                    S32 i = 3;
-                    do
-                    {
-                        vertices[i].position.x = ((F32)x + pOffset->x) * map->blockSize + map->worldDimensions_fnegx.width;
-                        vertices[i].position.y = map->worldDimensions_fnegx.height - (pOffset->y + (F32)y) * map->blockSize;
+                vertices[i].position.x = map->worldDimensions_fnegx.width  + (F32)ox *  map->blockSize;
+                vertices[i].position.y = map->worldDimensions_fnegx.height + (F32)oy * -map->blockSize;
 
-                        vertices[i].position.z = -((F32)(U32)map->blocks3D[(y + (S32)pOffset->y) * map->gridWidth + x + (S32)pOffset->x].heightValue * map->roughLevel);
-                        if (vertices[i].position.z < map->float_20)
-                            map->float_20 = vertices[i].position.z;
+                Map3D_Block block = map->blocks3D[oy * map->gridWidth + ox];
 
-                        pOffset++;
-                        i--;
-                    } while (i >= 0);
-
-                    Container_Mesh_SetVertices(map->mesh, y * map->blockWidth + x, 0, 4, vertices);
-
-                    x++;
-                } while (x < map->blockWidth);
+                vertices[i].position.z = -((F32)(U32)block.heightValue * map->roughLevel);
+                if (vertices[i].position.z < map->float_20)
+                    map->float_20 = vertices[i].position.z;
             }
-            y++;
-        } while (y < map->blockHeight);
+
+            Container_Mesh_SetVertices(map->mesh, y * map->blockWidth + x, 0, 4, vertices);
+        }
     }
 }
 

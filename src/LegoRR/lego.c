@@ -2247,13 +2247,6 @@ B32 Lego_LoadLighting()
         return FALSE;
     }
 
-    // TEMP: Force ambient to be bright
-    {
-        r = 1.0f;
-        g = 1.0f;
-        b = 1.0f;
-    }
-
     legoGlobs.ambientLight = Container_MakeLight(legoGlobs.rootCont, D3DRMLIGHT_AMBIENT, r, g, b);
     if (legoGlobs.ambientLight == NULL)
     {
