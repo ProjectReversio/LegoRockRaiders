@@ -899,7 +899,7 @@ lpContainer_Texture Container_LoadTexture2(const char* fname, B32 immediate, U32
 
                 if (surf->lpVtbl->QueryInterface(surf, &IID_IDirectDrawSurface, &surf1) == D3DRM_OK)
                 {
-                    if (lpD3DRM()->lpVtbl->CreateTextureFromSurface(lpD3DRM(), surf1, &texture))
+                    if (lpD3DRM()->lpVtbl->CreateTextureFromSurface(lpD3DRM(), surf1, &texture) == D3DRM_OK)
                     {
                         Container_NoteCreation(texture);
                         surf1->lpVtbl->Release(surf1);
