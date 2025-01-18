@@ -59,6 +59,15 @@
 
 Lego_Globs legoGlobs;
 
+extern const ColourRGBF c_wallHighlightColours[6] = {
+    {1.0f, 1.0f, 1.0f}, // None
+    {0.5f, 0.5f, 0.5f}, // Dig
+    {1.0f, 0.5f, 0.4f}, // Dynamite
+    {0.5f, 1.0f, 0.5f}, // Reinforce
+    {0.4f, 0.5f, 1.0f}, // Selected
+    {0.6f, 0.6f, 0.0f}, // Tutorial
+};
+
 B32 Gods_Go(const char* programName)
 {
     memset(&legoGlobs, 0, sizeof(legoGlobs));

@@ -172,14 +172,7 @@ typedef enum WallHighlightType
     WALLHIGHLIGHT_TUTORIAL  = 5,
 } WallHighlightType;
 
-const ColourRGBF c_wallHighlightColours[6] = {
-    {1.0f, 1.0f, 1.0f}, // None
-    {0.5f, 0.5f, 0.5f}, // Dig
-    {1.0f, 0.5f, 0.4f}, // Dynamite
-    {0.5f, 1.0f, 0.5f}, // Reinforce
-    {0.4f, 0.5f, 1.0f}, // Selected
-    {0.6f, 0.6f, 0.0f}, // Tutorial
-};
+extern const ColourRGBF c_wallHighlightColours[6];
 
 typedef struct Lego_BlockActivity
 {
