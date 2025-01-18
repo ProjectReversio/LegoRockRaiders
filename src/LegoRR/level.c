@@ -294,9 +294,9 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
             F32 xPos, yPos, zPos, zPos2;
             Map3D_BlockVertexToWorldPos(map, bx, by, &xPos, &yPos, &zPos);
             Map3D_BlockVertexToWorldPos(map, bx + 1U, by + 1U, &xPos, &yPos, &zPos2);
-            U32 diff = (U32)(zPos - zPos2);
+            F32 diff = zPos - zPos2;
 
-            Map3D_BlockVertexToWorldPos(map, bx + 1U, by + 1U, &xPos, &yPos, &zPos);
+            Map3D_BlockVertexToWorldPos(map, bx + 1U, by, &xPos, &yPos, &zPos);
             Map3D_BlockVertexToWorldPos(map, bx, by + 1U, &xPos, &yPos, &zPos2);
 
             Map3D_SetBlockRotated(map, bx, by, fabs(zPos - zPos2) < fabs(diff));
