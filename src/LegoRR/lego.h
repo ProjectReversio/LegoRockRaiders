@@ -162,6 +162,25 @@ typedef enum Lego_ErodeType
     Lego_ErodeType_Source_VeryFast   = 10,
 } Lego_ErodeType;
 
+typedef enum WallHighlightType
+{
+    WALLHIGHLIGHT_NONE      = 0,
+    WALLHIGHLIGHT_DIG       = 1,
+    WALLHIGHLIGHT_DYNAMITE  = 2,
+    WALLHIGHLIGHT_REINFORCE = 3,
+    WALLHIGHLIGHT_SELECTED  = 4,
+    WALLHIGHLIGHT_TUTORIAL  = 5,
+} WallHighlightType;
+
+const ColourRGBF c_wallHighlightColours[6] = {
+    {1.0f, 1.0f, 1.0f}, // None
+    {0.5f, 0.5f, 0.5f}, // Dig
+    {1.0f, 0.5f, 0.4f}, // Dynamite
+    {0.5f, 1.0f, 0.5f}, // Reinforce
+    {0.4f, 0.5f, 1.0f}, // Selected
+    {0.6f, 0.6f, 0.0f}, // Tutorial
+};
+
 typedef struct Lego_BlockActivity
 {
     lpContainer cont;

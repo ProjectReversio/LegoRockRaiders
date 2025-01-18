@@ -43,4 +43,6 @@ extern void Interface_FUN_0041b3c0();
 
 extern void Interface_FUN_0041b860(F32 elapsedAbs);
 
+extern void Interface_SelectBlock(Interface_MenuType menuType, Point2I* blockPos);
+
 extern void Interface_OpenMenu_FUN_0041b200(Interface_MenuType menuType, Point2I* blockPos);

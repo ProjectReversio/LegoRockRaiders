@@ -214,6 +214,9 @@ extern void Map3D_SetTextureNoFade(lpMap3D map, SurfaceTexture texture);
 extern void Map3D_SetBlockTexture(lpMap3D map, U32 bx, U32 by, SurfaceTexture newTexture, Direction direction);
 extern void Map3D_SetBlockFadeInTexture(lpMap3D map, U32 bx, U32 by, SurfaceTexture newTexture, Direction direction);
 
+extern void Map3D_Block_SetColour(lpMap3D map, S32 bx, S32 by, B32 setColour, F32 r, F32 g, F32 b);
+extern enum WallHighlightType Map3D_GetBlockHighlight(lpMap3D map, S32 bx, S32 by);
+extern enum WallHighlightType Map3D_SetBlockHighlight(lpMap3D map, S32 bx, S32 by, enum WallHighlightType highlightType);
 extern void Map3D_ClearBlockHighlight(lpMap3D map, S32 bx, S32 by);
 
 extern F32 Map3D_BlockSize(lpMap3D map);

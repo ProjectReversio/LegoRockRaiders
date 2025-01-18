@@ -35,7 +35,16 @@ void Interface_FUN_0041b860(F32 elapsedAbs)
     // TODO: Implement Interface_FUN_0041b860
 }
 
+void Interface_SelectBlock(Interface_MenuType menuType, Point2I* blockPos)
+{
+    // TODO: Implement Interface_SelectBlock
+}
+
 void Interface_OpenMenu_FUN_0041b200(Interface_MenuType menuType, Point2I* blockPos)
 {
+    // TODO: Implement Interface_OpenMenu_FUN_0041b200
+
+    Interface_SelectBlock(menuType, blockPos);
+
     // TODO: Implement Interface_OpenMenu_FUN_0041b200
 }

@@ -2,6 +2,7 @@
 
 #include "error.h"
 #include "file.h"
+#include "lego.h"
 #include "mem.h"
 #include "material.h"
 #include "main.h"
@@ -1285,9 +1286,42 @@ void Map3D_SetBlockFadeInTexture(lpMap3D map, U32 bx, U32 by, SurfaceTexture new
     Map3D_SetBlockTexture(map, bx, by, newTexture, direction);
 }
 
+void Map3D_Block_SetColour(lpMap3D map, S32 bx, S32 by, B32 setColour, F32 r, F32 g, F32 b)
+{
+    U32 groupID = map->blockWidth * by + bx;
+
+    if (setColour)
+    {
+        Container_Mesh_SetColourAlpha(map->mesh, groupID, r, g, b, 1.0f);
+        return;
+    }
+
+    Container_Mesh_SetColourAlpha(map->mesh, groupID, 1.0f, 1.0f, 1.0f, 1.0f);
+    map->blocks3D[map->gridWidth * by + bx].highlight = WALLHIGHLIGHT_NONE;
+}
+
+WallHighlightType Map3D_GetBlockHighlight(lpMap3D map, S32 bx, S32 by)
+{
+    return map->blocks3D[map->gridWidth * by + bx].highlight;
+}
+
+WallHighlightType Map3D_SetBlockHighlight(lpMap3D map, S32 bx, S32 by, WallHighlightType highlightType)
+{
+    S32 idx = map->gridWidth * by + bx;
+    U8 oldHighlight = map->blocks3D[idx].highlight;
+
+    map->blocks3D[idx].highlight = highlightType;
+    ColourRGBF colour = c_wallHighlightColours[highlightType];
+    Map3D_Block_SetColour(map, bx, by, TRUE, colour.red, colour.green, colour.blue);
+
+    return oldHighlight;
+}
+
 void Map3D_ClearBlockHighlight(lpMap3D map, S32 bx, S32 by)
 {
-    // TODO: Implement Map3D_ClearBlockHighlight
+    // clear block colour
+    Map3D_Block_SetColour(map, bx, by, FALSE, 1.0f, 1.0f, 1.0f);
+    map->blocks3D[map->gridWidth * by + bx].highlight = WALLHIGHLIGHT_NONE;
 }
 
 F32 Map3D_BlockSize(lpMap3D map)
