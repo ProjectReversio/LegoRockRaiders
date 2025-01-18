@@ -125,6 +125,9 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
         if (blocks[(by + DIRECTIONS[i].y) * level->width + (bx + DIRECTIONS[i].x)].predug == Lego_PredugType_Cavern_Exposed)
         {
             // TODO: Verify this is correct
+            unknown2 = i;
+
+            // TODO: Verify this is correct
             exposedCaverns++;
         }
         else
@@ -132,7 +135,6 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
             // TODO: Verify this is correct
             unknown = i + 1;
         }
-        unknown2 = i;
     }
 
     BlockFlags1 ogFlags = blocks[blockIndex].flags1;
@@ -260,7 +262,7 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
 
                 blocks[blockIndex].flags1 = ogFlags & ~(BLOCK1_FLOOR | BLOCK1_WALL | BLOCK1_REINFORCED | BLOCK1_INCORNER | BLOCK1_OUTCORNER | BLOCK1_DIAGONAL) | (BLOCK1_SURVEYED | BLOCK1_WALL | BLOCK1_INCORNER);
 
-                blocks[blockIndex].direction = (U8)unknown2 + 2U & 3;
+                blocks[blockIndex].direction = (unknown2 + 2) % 4;
 
                 // TODO: Implement Level_BlockUpdateSurface
             }
