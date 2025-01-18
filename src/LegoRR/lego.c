@@ -1933,19 +1933,19 @@ B32 Lego_LoadPreDugMap(lpLego_Level level, const char* filename, S32 modifier)
                     do
                     {
                         U32 block = MapShared_GetBlock(handle, bx, by);
-                        S32 modi = block - modifier;
-                        if (modi == 1 || modi == 3)
+                        Lego_SurfaceType8 terrain = block - modifier;
+                        if (terrain == Lego_SurfaceType8_Immovable || terrain == Lego_SurfaceType8_Medium)
                         {
                             Level_DestroyWall(level, bx, by, TRUE);
 
                             // TODO: Implement Lego_LoadPreDugMap
                         }
-                        else if (modi == 2 || modi == 4)
+                        else if (terrain == Lego_SurfaceType8_Hard || terrain == Lego_SurfaceType8_Loose)
                         {
                             level->blocks[(S32)(bx + by * level->width)].flags1 |= BLOCK1_HIDDEN;
                         }
 
-                        if (modi == 3)
+                        if (terrain == Lego_SurfaceType8_Medium)
                         {
                             level->blocks[(S32)(bx + by * level->width)].flags2 |= BLOCK2_SLUGHOLE_EXPOSED;
 
@@ -1955,7 +1955,7 @@ B32 Lego_LoadPreDugMap(lpLego_Level level, const char* filename, S32 modifier)
                             LegoObject_RegisterSlimySlugHole(&blockPos);
                         }
 
-                        if (modi == 4)
+                        if (terrain == Lego_SurfaceType8_Loose)
                         {
                             level->blocks[(S32)(bx + by * level->width)].flags2 |= BLOCK2_SLUGHOLE_HIDDEN;
                         }
@@ -1976,7 +1976,44 @@ B32 Lego_LoadPreDugMap(lpLego_Level level, const char* filename, S32 modifier)
 
 B32 Lego_LoadTerrainMap(lpLego_Level level, const char* filename, S32 modifier)
 {
-    // TODO: Implement Lego_LoadTerrainMap
+    U32 memHandle = File_LoadBinaryHandle(filename, NULL);
+    if (memHandle == -1)
+        return FALSE;
+
+    U32 width, height;
+    MapShared_GetDimensions(memHandle, &width, &height);
+
+    if (width != level->width || height != level->height)
+    {
+        Mem_FreeHandle(memHandle);
+        return FALSE;
+    }
+
+    for (U32 y = 0; y < height; y++)
+    {
+        for (U32 x = 0; x < width; x++)
+        {
+            U32 block = MapShared_GetBlock(memHandle, x, y);
+            Lego_SurfaceType8 terrain = block - modifier;
+
+            // Soil SurfaceType was removed, change to Dirt
+            if (terrain == Lego_SurfaceType8_Soil)
+                terrain = Lego_SurfaceType8_Loose;
+
+            level->blocks[x + y * level->width].terrain = terrain;
+
+            if (terrain == Lego_SurfaceType8_Lava)
+            {
+                level->blocks[x + y * level->width].erodeLevel = 4;
+            }
+            else if (terrain == Lego_SurfaceType8_RechargeSeam)
+            {
+                // TODO: Implement Lego_LoadTerrainMap
+            }
+        }
+    }
+
+    Mem_FreeHandle(memHandle);
 
     return TRUE;
 }

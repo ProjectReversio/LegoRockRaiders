@@ -20,6 +20,7 @@
 #include "map3d.h"
 #include "nerps.h"
 #include "radarmap.h"
+#include "smoke.h"
 
 typedef enum TextureType
 {
@@ -191,8 +192,7 @@ typedef struct Lego_Block
 
     F32 damage;
     Lego_BlockActivity* activity;
-
-    // TODO: Implement Lego_Block
+    lpSmoke smoke;
 
     S16 randomness; // (sometimes sign-extended)
     U16 seamDigCount; // Number of times a seam has been dug (destroyed at 4).

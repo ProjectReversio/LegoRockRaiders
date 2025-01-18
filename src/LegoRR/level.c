@@ -1,5 +1,8 @@
 #include "level.h"
 
+#include "erode.h"
+#include "smoke.h"
+
 B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
 {
     Point2I ANGLES[8];
@@ -113,6 +116,7 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
 
     U32 exposedCaverns = 0;
     U32 unknown = 0;
+    U32 unknown2 = 0;
 
     // Get surrounding blocks for orientation?
     for (U32 i = 0; i < 4; i++)
@@ -128,6 +132,7 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
             // TODO: Verify this is correct
             unknown = i + 1;
         }
+        unknown2 = i;
     }
 
     BlockFlags1 ogFlags = blocks[blockIndex].flags1;
@@ -136,18 +141,191 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
 
     if (exposedCaverns == 4)
     {
+        Point2I blockPos = { bx, by };
+
+        blocks[blockIndex].flags1 = ogFlags & ~(BLOCK1_FLOOR | BLOCK1_WALL | BLOCK1_REINFORCED | BLOCK1_INCORNER | BLOCK1_OUTCORNER | BLOCK1_DIAGONAL) | (BLOCK1_SURVEYED | BLOCK1_FLOOR);
+        blocks[blockIndex].direction = DIRECTION_UP;
+
+        if ((ogFlags & BLOCK1_FLOOR) == BLOCK1_NONE)
+        {
+            // TODO: Implement Level_BlockUpdateSurface
+        }
+
+        if ((blocks[blockIndex].flags1 & BLOCK1_EXPOSEDFLOORCHECKS) == BLOCK1_NONE)
+        {
+            // TODO: Implement Level_BlockUpdateSurface
+        }
+
         // TODO: Implement Level_BlockUpdateSurface
+
+        if (blocks[blockIndex].terrain == Lego_SurfaceType8_Lava || (ogFlags = blocks[blockIndex].flags1, (ogFlags & BLOCK1_ERODEACTIVE) != BLOCK1_NONE))
+        {
+            Erode_Block_FUN_0040ed80(&blockPos, TRUE);
+
+            if ((blocks[blockIndex].flags1 & BLOCK1_NOTHOT) == BLOCK1_NONE)
+            {
+                if (blocks[blockIndex].erodeLevel == 4)
+                {
+                    blocks[blockIndex].texture = TEXTURE_FLOOR_LAVA;
+                    Map3D_SetBlockUVWobbles(level->map, bx, by, TRUE);
+                    if ((blocks[blockIndex].flags1 & BLOCK1_SMOKE) == BLOCK1_NONE)
+                    {
+                        // TODO: Implement Level_BlockUpdateSurface
+                    }
+                    else
+                    {
+                        Smoke_Hide(blocks[blockIndex].smoke, FALSE);
+                    }
+                }
+                else
+                {
+                    Map3D_SetBlockUVWobbles(level->map, bx, by, FALSE);
+                    switch (blocks[blockIndex].erodeLevel)
+                    {
+                        case 0:
+                            blocks[blockIndex].texture = TEXTURE_FLOOR_ERODE_LOW;
+                        break;
+                        case 1:
+                            blocks[blockIndex].texture = TEXTURE_FLOOR_ERODE_MED;
+                        break;
+                        case 2:
+                            blocks[blockIndex].texture = TEXTURE_FLOOR_ERODE_HIGH;
+                        break;
+                        case 3:
+                            blocks[blockIndex].texture = TEXTURE_FLOOR_ERODE_MAX;
+                        break;
+                    }
+                    // TODO: Implement Level_BlockUpdateSurface
+                }
+            }
+            else
+            {
+                Map3D_SetBlockUVWobbles(level->map, bx, by, FALSE);
+                blocks[blockIndex].texture = TEXTURE_FLOOR_LAVA_NOTHOT;
+
+                if ((blocks[blockIndex].flags1 & BLOCK1_SMOKE) != BLOCK1_NONE)
+                {
+                    Smoke_Hide(blocks[blockIndex].smoke, TRUE);
+                }
+            }
+        }
+        else if (blocks[blockIndex].terrain == Lego_SurfaceType8_Lake)
+        {
+            blocks[blockIndex].texture = TEXTURE_FLOOR_WATER;
+            Map3D_SetBlockUVWobbles(level->map, bx, by, TRUE);
+        }
+        else if ((ogFlags & BLOCK1_FOUNDATION) == BLOCK1_NONE)
+        {
+            // TODO: Implement Level_BlockUpdateSurface
+        }
+        else if ((blocks[blockIndex].flags2 & BLOCK2_POWERED) == BLOCK2_NONE)
+        {
+            blocks[blockIndex].texture = TEXTURE_FLOOR_PATH_FOUNDATION;
+        }
+        else
+        {
+            blocks[blockIndex].texture = TEXTURE_FLOOR_POWERED_FOUNDATION;
+        }
+
+        goto somelabel2;
     }
 
     if (exposedCaverns != 2)
     {
         if (exposedCaverns == 1 || exposedCaverns == 3)
         {
+            blocks[blockIndex].flags1 = ogFlags & ~(BLOCK1_FLOOR | BLOCK1_WALL | BLOCK1_REINFORCED | BLOCK1_INCORNER | BLOCK1_OUTCORNER | BLOCK1_DIAGONAL) | (BLOCK1_SURVEYED | BLOCK1_WALL);
+
+            if (exposedCaverns == 1)
+            {
+                switch (blocks[blockIndex].terrain)
+                {
+                    case Lego_SurfaceType8_Immovable:
+                    case Lego_SurfaceType8_Water:
+                        blocks[blockIndex].texture = TEXTURE_INCORNER_IMM;
+                    break;
+                    case Lego_SurfaceType8_Hard:
+                        blocks[blockIndex].texture = TEXTURE_INCORNER_HARD;
+                    break;
+                    case Lego_SurfaceType8_Medium:
+                        blocks[blockIndex].texture = TEXTURE_INCORNER_MED;
+                    break;
+                    case Lego_SurfaceType8_Loose:
+                        blocks[blockIndex].texture = TEXTURE_INCORNER_LOOSE;
+                    break;
+                    case Lego_SurfaceType8_Soil:
+                        blocks[blockIndex].texture = TEXTURE_INCORNER_SOIL;
+                    break;
+                }
+
+                blocks[blockIndex].flags1 = ogFlags & ~(BLOCK1_FLOOR | BLOCK1_WALL | BLOCK1_REINFORCED | BLOCK1_INCORNER | BLOCK1_OUTCORNER | BLOCK1_DIAGONAL) | (BLOCK1_SURVEYED | BLOCK1_WALL | BLOCK1_INCORNER);
+
+                blocks[blockIndex].direction = (U8)unknown2 + 2U & 3;
+
+                // TODO: Implement Level_BlockUpdateSurface
+            }
+            else if (exposedCaverns == 3)
+            {
+                switch (blocks[blockIndex].terrain)
+                {
+                    case Lego_SurfaceType8_Immovable:
+                    case Lego_SurfaceType8_Water:
+                        blocks[blockIndex].texture = TEXTURE_OUTCORNER_IMM;
+                    break;
+                    case Lego_SurfaceType8_Hard:
+                        blocks[blockIndex].texture = TEXTURE_OUTCORNER_HARD;
+                    break;
+                    case Lego_SurfaceType8_Medium:
+                        blocks[blockIndex].texture = TEXTURE_OUTCORNER_MED;
+                    break;
+                    case Lego_SurfaceType8_Loose:
+                        blocks[blockIndex].texture = TEXTURE_OUTCORNER_LOOSE;
+                    break;
+                    case Lego_SurfaceType8_Soil:
+                        blocks[blockIndex].texture = TEXTURE_OUTCORNER_SOIL;
+                    break;
+                }
+                // TODO: Implement Level_BlockUpdateSurface
+
+                blocks[blockIndex].direction = (U8)unknown;
+                blocks[blockIndex].flags1 |= BLOCK1_OUTCORNER;
+            }
+
+            F32 xPos, yPos, zPos, zPos2;
+            Map3D_BlockVertexToWorldPos(map, bx, by, &xPos, &yPos, &zPos);
+            Map3D_BlockVertexToWorldPos(map, bx + 1U, by + 1U, &xPos, &yPos, &zPos2);
+            U32 diff = (U32)(zPos - zPos2);
+
+            Map3D_BlockVertexToWorldPos(map, bx + 1U, by + 1U, &xPos, &yPos, &zPos);
+            Map3D_BlockVertexToWorldPos(map, bx, by + 1U, &xPos, &yPos, &zPos2);
+
+            Map3D_SetBlockRotated(map, bx, by, fabs(zPos - zPos2) < fabs(diff));
+
             // TODO: Implement Level_BlockUpdateSurface
+
+            goto somelabel2;
         }
         else
         {
-            // TODO: Implement Level_BlockUpdateSurface
+            if ((ogFlags & BLOCK1_SURVEYED) != BLOCK1_NONE)
+            {
+                switch (blocks[blockIndex].terrain)
+                {
+                    case Lego_SurfaceType8_Immovable:
+                    case Lego_SurfaceType8_Hard:
+                    case Lego_SurfaceType8_Medium:
+                    case Lego_SurfaceType8_Loose:
+                    case Lego_SurfaceType8_Soil:
+                        break;
+                    default:
+                        blocks[blockIndex].direction = DIRECTION_UP;
+                        goto somelabel2;
+                }
+            }
+
+            blocks[blockIndex].texture = TEXTURE_ROOF_STD;
+            blocks[blockIndex].direction = DIRECTION_UP;
+            goto somelabel2;
         }
     }
 

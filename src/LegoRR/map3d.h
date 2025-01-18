@@ -160,6 +160,7 @@ extern U16 Map3D_MapFileBlockValue(lpMapFileInfo mapFile, U32 bx, U32 by, U32 gr
 extern B32 Map3D_BlockToWorldPos(lpMap3D map, U32 bx, U32 by, F32* outX, F32* outY);
 extern B32 Map3D_WorldToBlockPos(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy, F32* outZ);
 extern B32 Map3D_WorldToBlockPos_NoZ(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy);
+extern void Map3D_BlockVertexToWorldPos(lpMap3D map, U32 bx, U32 by, F32* outXPos, F32* outYPos, F32* outZPos);
 extern F32 Map3D_GetWorldZ(lpMap3D map, F32 xPos, F32 yPos);
 extern F32 Map3D_UnkCameraXYFunc_RetZunk(lpMap3D map, F32 xPos, F32 yPos);
 extern B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY, U32 *outBx, U32 *outBy, Point3F *outVector);
@@ -182,6 +183,8 @@ extern void Map3D_InitRoughness(lpMap3D map);
 // rotated = (abs(diffxy00_11) < std::abs(diffxy10_01));
 extern void Map3D_SetBlockRotated(lpMap3D map, U32 bx, U32 by, B32 on);
 extern B32 Map3D_IsBlockRotated(lpMap3D map, U32 bx, U32 by);
+
+extern void Map3D_SetBlockUVWobbles(lpMap3D map, U32 bx, U32 by, B32 on);
 
 extern void Map3D_SetBlockVertexModified(lpMap3D map, U32 vx, U32 vy);
 

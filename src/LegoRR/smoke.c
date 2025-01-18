@@ -10,3 +10,8 @@ void Smoke_LoadTextures(const char* dirname, const char* basename, U32 textureCo
 {
     // TODO: Implement Smoke_LoadTextures
 }
+
+void Smoke_Hide(lpSmoke smoke, B32 hide)
+{
+    // TODO: Implement Smoke_Hide
+}

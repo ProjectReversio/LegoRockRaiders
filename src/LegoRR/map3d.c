@@ -223,6 +223,53 @@ B32 Map3D_WorldToBlockPos_NoZ(lpMap3D map, F32 x, F32 y, S32* outBx, S32* outBy)
     return Map3D_WorldToBlockPos(map, x, y, outBx, outBy, (S32)&outBy);
 }
 
+void Map3D_BlockVertexToWorldPos(lpMap3D map, U32 bx, U32 by, F32* outXPos, F32* outYPos, F32* outZPos)
+{
+    Vertex vertices[1];
+
+    if (map->gridWidth <= bx)
+        return;
+    if (map->gridHeight <= by)
+        return;
+
+    S32 index = 0;
+    if (bx == map->blockWidth)
+    {
+        if (by == map->blockHeight)
+        {
+            bx--;
+            by--;
+            index = 2;
+            goto theend;
+        }
+        if (bx == map->blockWidth)
+        {
+            bx--;
+            index = 1;
+            goto theend;
+        }
+    }
+
+    if (by == map->blockHeight)
+    {
+        by--;
+        index = -1;
+    }
+
+theend:
+
+    if ((map->blocks3D[by * map->gridWidth + bx].flags3D & MAP3DBLOCK_FLAG_ROTATED) != MAP3DBLOCK_FLAG_NONE)
+        index++;
+
+    if (index == -1)
+        index = 3;
+
+    Container_Mesh_GetVertices(map->mesh, by * map->blockWidth + bx, index, 1, vertices);
+    *outXPos = vertices[0].position.x;
+    *outYPos = vertices[0].position.y;
+    *outZPos = vertices[0].position.z;
+}
+
 F32 Map3D_GetWorldZ(lpMap3D map, F32 xPos, F32 yPos)
 {
     U32 bx;
@@ -763,6 +810,11 @@ void Map3D_SetBlockRotated(lpMap3D map, U32 bx, U32 by, B32 on)
 B32 Map3D_IsBlockRotated(lpMap3D map, U32 bx, U32 by)
 {
     return (map->blocks3D[by * map->gridWidth + bx].flags3D & MAP3DBLOCK_FLAG_ROTATED) != MAP3DBLOCK_FLAG_NONE;
+}
+
+void Map3D_SetBlockUVWobbles(lpMap3D map, U32 bx, U32 by, B32 on)
+{
+    // TODO: Implement Map3D_SetBlockUVWobbles
 }
 
 void Map3D_SetBlockVertexModified(lpMap3D map, U32 vx, U32 vy)
