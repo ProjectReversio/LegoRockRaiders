@@ -815,7 +815,19 @@ B32 Map3D_IsBlockRotated(lpMap3D map, U32 bx, U32 by)
 
 void Map3D_SetBlockUVWobbles(lpMap3D map, U32 bx, U32 by, B32 on)
 {
-    // TODO: Implement Map3D_SetBlockUVWobbles
+    if (!on)
+    {
+        // TODO: Implement Map3D_SetBlockUVWobbles
+    }
+    else if ((map->blocks3D[by * map->gridWidth + bx].flags3D & MAP3DBLOCK_FLAG_UVWOBBLES) == MAP3DBLOCK_FLAG_NONE)
+    {
+        map->uvBlocksTable[map->uvBlocksNum].x = bx;
+        map->uvBlocksTable[map->uvBlocksNum].y = by;
+
+        map->uvBlocksNum++;
+
+        map->blocks3D[by * map->gridWidth + bx].flags3D |= MAP3DBLOCK_FLAG_UVWOBBLES;
+    }
 }
 
 void Map3D_SetBlockVertexModified(lpMap3D map, U32 vx, U32 vy)
