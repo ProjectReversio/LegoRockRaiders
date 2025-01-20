@@ -436,6 +436,64 @@ void Container_GetOrientation(lpContainer cont, lpContainer ref, lpPoint3F dir, 
         *up = vup;
 }
 
+B32 Container_SetActivity(lpContainer cont, const char* actname)
+{
+    LPDIRECT3DRMFRAME3 frame, currFrame;
+    B32 result = FALSE;
+    const char* currAnimName, *name, *freeAddr = NULL;
+
+    Container_DebugCheckOK(cont);
+
+    if (cont->type == Container_FromActivity)
+    {
+        if ((frame = Container_Frame_Find(cont, actname, 1)))
+        {
+            if (cont->typeData != NULL)
+            {
+                if (cont->typeData->name != NULL)
+                {
+                    currAnimName = cont->typeData->name;
+                    if ((currFrame = Container_Frame_Find(cont, currAnimName, 0)))
+                    {
+                        Container_Frame_SafeAddChild(cont->hiddenFrame, currFrame);
+                    }
+                    freeAddr = currAnimName;
+                }
+                else
+                {
+                    Error_Warn(TRUE, "container has no typedata name");
+                }
+            }
+
+            Container_Frame_SafeAddChild(cont->activityFrame, frame);
+            name = Mem_Alloc(strlen(actname) + 1);
+            strcpy(name, actname);
+            Container_SetTypeData(cont, name, NULL, NULL, NULL);
+
+            result = TRUE;
+
+            // Flag that the sample should be played on the next SetTime...
+            cont->flags |= CONTAINER_FLAG_TRIGGERSAMPLE;
+
+            if (freeAddr)
+                Mem_Free(freeAddr);
+        }
+        else
+        {
+            result = FALSE;
+            Error_Warn(!Container_Frame_Find(cont, actname, 0), Error_Format("Unknown activity (\"%s\") passed to Container_SetActivity()", actname));
+        }
+
+        // Notify the game that the activity has changed...
+
+#pragma message("Is the activity change callback required?")
+        if (cont->activityCallback)
+            cont->activityCallback(cont, cont->activityCallbackData);
+    }
+
+    return result;
+}
+
 F32 Container_GetAnimationTime(lpContainer cont)
 {
     LPDIRECT3DRMFRAME3 frame;
@@ -446,11 +504,21 @@ F32 Container_GetAnimationTime(lpContainer cont)
 
     if (cont->type == Container_FromActivity)
     {
-        // TODO: Implement Container_GetAnimationTime
+        Error_Fatal(!cont->typeData, "Container has no typeData");
+
+        currAnimName = cont->typeData->name;
+        if ((frame = Container_Frame_Find(cont, currAnimName, 0)))
+            time = Container_Frame_GetCurrTime(frame);
+        else
+            Error_Warn(TRUE, "Couldn't find frame (thus AnimationSet) to SetTime() on");
     }
     else if (cont->type == Container_Anim)
     {
         time = Container_Frame_GetCurrTime(cont->activityFrame);
+    }
+    else
+    {
+        //Error_Fatal(TRUE, "Container_SetTime() called with non-animation type container");
     }
 
     return time;
@@ -468,6 +536,30 @@ F32 Container_SetAnimationTime(lpContainer cont, F32 time)
 
     if (cont->type == Container_FromActivity)
     {
+        Error_Fatal(!cont->typeData, "Container has no typeData");
+
+        currAnimName = cont->typeData->name;
+
+        if ((frame = Container_Frame_Find(cont, currAnimName, 0)))
+        {
+            animClone = Container_Frame_GetAnimClone(frame);
+
+            if (cont->flags & CONTAINER_FLAG_TRIGGERSAMPLE)
+            {
+                const char* sound;
+                if ((sound = Container_Frame_GetSample(frame)))
+                {
+                    if (containerGlobs.soundTriggerCallback && (containerGlobs.flags & CONTAINER_GLOB_FLAG_TRIGGERENABLED))
+                        containerGlobs.soundTriggerCallback(sound, cont, containerGlobs.soundTriggerData);
+                }
+
+                cont->flags &= ~CONTAINER_FLAG_TRIGGERSAMPLE;
+            }
+        } else
+        {
+            Error_Warn(TRUE, "Couldn't find frame (thus AnimationSet) to SetTime() on");
+        }
+
         // TODO: Implement Container_SetAnimationTime
     }
     else if (cont->type == Container_Anim)
@@ -573,6 +665,16 @@ lpAnimClone Container_Frame_GetAnimClone(LPDIRECT3DRMFRAME3 frame)
     Error_Fatal(!appData, "AppData not set on frame");
     if (appData)
         return appData->animClone;
+
+    return NULL;
+}
+
+const char* Container_Frame_GetSample(LPDIRECT3DRMFRAME3 frame)
+{
+    Container_AppData *appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    Error_Fatal(!appData, "AppData not set on frame");
+    if (appData)
+            return appData->activitySample;
 
     return NULL;
 }

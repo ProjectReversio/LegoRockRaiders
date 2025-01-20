@@ -54,6 +54,7 @@
 #include "input.h"
 #include "level.h"
 #include "map_shared.h"
+#include "object_recall.h"
 #include "roof.h"
 #include "search.h"
 
@@ -1829,7 +1830,44 @@ B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename)
                 }
                 else
                 {
-                    // TODO: Implement Lego_LoadOLObjectList
+                    BlockFlags1 flags1;
+                    if (xInt < legoGlobs.currLevel->width - 1 && yInt < legoGlobs.currLevel->height - 1)
+                        flags1 = legoGlobs.currLevel->blocks[yInt * legoGlobs.currLevel->width + xInt].flags1 & BLOCK1_FLOOR;
+                    else
+                        flags1 = BLOCK1_NONE;
+
+                    if (flags1 == BLOCK1_NONE)
+                    {
+                        Point2F hiddenWorldPos;
+                        hiddenWorldPos.x = worldPos.x;
+                        hiddenWorldPos.y = worldPos.y;
+                        HiddenObject_Add(objSrcData, objType, objIndex, &hiddenWorldPos, heading, objHealth, drivenByName[i], drivingArray[i]);
+                    }
+                    else if (objType == LegoObject_Building)
+                    {
+                        Point2I shapeTranslation;
+                        shapeTranslation.x = xInt;
+                        shapeTranslation.y = yInt;
+
+                        U32 shapeCount;
+                        Point2I* shapePoints = Building_GetShapePoints(&legoGlobs.buildingData[objIndex], &shapeCount);
+
+                        // TODO: Verify and cleanup this code
+                        S64 num = (S64)(heading * 0.15915494f * 8.0f);
+                        U32 rotation = ((U32)num & 1) + (U32)num >> 1;;
+
+                        Point2I* shapeBlocks = SelectPlace_TransformShapePoints(&shapeTranslation, shapePoints, shapeCount, rotation);
+
+                        lpLegoObject building = Construction_SpawnBuilding(objIndex, &shapeTranslation, rotation, shapeBlocks, shapeCount, level->IsStartTeleportEnabled);
+                        if (building != NULL)
+                        {
+                            LegoObject_FUN_00438720(building);
+                        }
+                    }
+                    else
+                    {
+                        someObj = LegoObject_Create((void**)objSrcData, objType, objIndex);
+                    }
                 }
 
                 *objIter = someObj;
@@ -1844,7 +1882,46 @@ B32 Lego_LoadOLObjectList(lpLego_Level level, const char* filename)
                     }
                     firstTime = FALSE;
 
-                    // TODO: Implement Lego_LoadOLObjectList
+                    if (objType != LegoObject_Building)
+                    {
+                        LegoObject_SetPositionAndHeading(someObj, worldPos.x, worldPos.y, heading, TRUE);
+                    }
+
+                    if (objType == LegoObject_PowerCrystal || objType == LegoObject_Ore || objType == LegoObject_Dynamite || objType == LegoObject_Barrier)
+                    {
+                        AITask_DoCollect(someObj, 0.0f);
+                    }
+
+                    if (objectGlobs.minifigureObj_9cb8 == NULL && someObj->type == LegoObject_MiniFigure)
+                    {
+                        objectGlobs.minifigureObj_9cb8 = someObj;
+                    }
+
+                    if (legoGlobs.recordObjsCount < 10)
+                    {
+                        legoGlobs.recordObjs[legoGlobs.recordObjsCount] = someObj;
+                        legoGlobs.recordObjsCount++;
+                    }
+
+                    someObj->flags4 |= LIVEOBJ4_DONTSHOWHELPWINDOW;
+                    someObj->health = objHealth;
+                    HelpWindow_RecallDependencies(someObj->type, someObj->id, 0, TRUE);
+                    if ((legoGlobs.flags2 & GAME2_RECALLOLOBJECTS) != GAME2_NONE)
+                        ObjectRecall_RecallMiniFigure(someObj);
+
+                    LegoObject_RegisterVehicle__callsForWater(someObj);
+
+                    if (objType == LegoObject_SpiderWeb)
+                    {
+                        someObj->flags3 |= LIVEOBJ3_UNK_10000;
+                        Container_SetActivity(someObj->other, "FlapInWind");
+                        Container_SetAnimationTime(someObj->other, 0.0f);
+                        SpiderWeb_Add(xInt, yInt, someObj);
+                    }
+                    else if (objType == LegoObject_ElectricFence)
+                    {
+                        ElectricFence_CreateFence(someObj);
+                    }
                 }
 
                 Mem_Free(objTypeName);
@@ -2419,8 +2496,41 @@ B32 Lego_LoadRockMonsterTypes()
 
 B32 Lego_LoadBuildingTypes()
 {
-    // TODO: Implement Lego_LoadBuildingTypes
-    return TRUE;
+    legoGlobs.buildingCount = 0;
+;
+    for (lpConfig c = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "BuildingTypes", 0)); c != NULL; c = Config_GetNextItem(c))
+    {
+        legoGlobs.buildingCount++;
+    }
+
+    if (legoGlobs.buildingCount != 0 && (legoGlobs.buildingData = Mem_Alloc(legoGlobs.buildingCount * sizeof(BuildingModel)), legoGlobs.buildingData != NULL))
+    {
+        legoGlobs.buildingName = Mem_Alloc(legoGlobs.buildingCount * 4);
+        if (legoGlobs.buildingName != NULL)
+        {
+            lpConfig conf = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "BuildingTypes", 0));
+            B32 unkBool;
+            U32 i = 0;
+            while (conf != NULL && (unkBool = Building_Load(&legoGlobs.buildingData[i], i, legoGlobs.rootCont, conf->dataString, legoGlobs.gameName), unkBool != FALSE))
+            {
+                Building_Hide(&legoGlobs.buildingData[i], TRUE);
+
+                // TODO: Implement Lego_LoadBuildingTypes
+
+                conf = Config_GetNextItem(conf);
+            }
+
+            if (conf == NULL)
+            {
+                return TRUE;
+            }
+
+            Mem_Free(legoGlobs.buildingName);
+        }
+        Mem_Free(legoGlobs.buildingData);
+    }
+
+    return FALSE;
 }
 
 void Lego_InitTextureMappings(lpMap3D map)

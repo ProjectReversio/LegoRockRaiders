@@ -217,6 +217,8 @@ extern void Container_Frame_SafeAddChild(LPDIRECT3DRMFRAME3 parent, LPDIRECT3DRM
 extern void Container_GetPosition(lpContainer cont, lpContainer ref, lpPoint3F pos);
 extern void Container_GetOrientation(lpContainer cont, lpContainer ref, lpPoint3F dir, lpPoint3F up);
 
+extern B32 Container_SetActivity(lpContainer cont, const char* actname);
+
 extern F32 Container_GetAnimationTime(lpContainer cont);
 extern F32 Container_SetAnimationTime(lpContainer cont, F32 time);
 
@@ -227,6 +229,7 @@ extern LPDIRECT3DRMFRAME3 Container_Frame_Find(lpContainer cont, const char* fin
 extern F32 Container_Frame_GetCurrTime(LPDIRECT3DRMFRAME3 frame);
 extern U32 Container_Frame_GetFrameCount(LPDIRECT3DRMFRAME3 frame);
 extern struct AnimClone* Container_Frame_GetAnimClone(LPDIRECT3DRMFRAME3 frame);
+extern const char* Container_Frame_GetSample(LPDIRECT3DRMFRAME3 frame);
 extern U32 Container_Frame_GetTrigger(LPDIRECT3DRMFRAME3 frame);
 
 extern U32 Container_Mesh_GetVertices(lpContainer cont, U32 groupID, U32 index, U32 count, lpVertex retArray);

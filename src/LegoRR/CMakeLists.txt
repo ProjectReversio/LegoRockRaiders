@@ -91,6 +91,7 @@ set(MAIN_SRC
     roof.c
     erode.c
     fallin.c
+    object_recall.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -183,6 +184,7 @@ set(MAIN_SRC
     roof.h
     erode.h
     fallin.h
+    object_recall.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h
