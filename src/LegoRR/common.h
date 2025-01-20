@@ -12,6 +12,8 @@ typedef enum Direction
     DIRECTION_COUNT = 4,
 } Direction;
 
+#define DIRECTION_OPPOSITE(dir) ((dir + 2) % DIRECTION_COUNT)
+
 typedef struct Coord2U
 {
     U16 x;

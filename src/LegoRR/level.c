@@ -115,25 +115,24 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
     }
 
     U32 exposedCaverns = 0;
-    U32 unknown = 0;
-    U32 unknown2 = 0;
+    Direction nonExposedCavernsDirections[4] = {0};
+    U32 nonExposedCavernCount = 0;
+    Direction lastExposedCavernDirection = 0;
 
     // Get surrounding blocks for orientation?
-    for (U32 i = 0; i < 4; i++)
+    for (Direction i = 0; i < 4; i++)
     {
-        // TODO: Verify this is correct
         if (blocks[(by + DIRECTIONS[i].y) * level->width + (bx + DIRECTIONS[i].x)].predug == Lego_PredugType_Cavern_Exposed)
         {
-            // TODO: Verify this is correct
-            unknown2 = i;
+            lastExposedCavernDirection = i;
 
-            // TODO: Verify this is correct
             exposedCaverns++;
         }
         else
         {
-            // TODO: Verify this is correct
-            unknown = i + 1;
+            nonExposedCavernsDirections[nonExposedCavernCount] = i;
+
+            nonExposedCavernCount++;
         }
     }
 
@@ -262,7 +261,7 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
 
                 blocks[blockIndex].flags1 = ogFlags & ~(BLOCK1_FLOOR | BLOCK1_WALL | BLOCK1_REINFORCED | BLOCK1_INCORNER | BLOCK1_OUTCORNER | BLOCK1_DIAGONAL) | (BLOCK1_SURVEYED | BLOCK1_WALL | BLOCK1_INCORNER);
 
-                blocks[blockIndex].direction = (unknown2 + 2) % 4;
+                blocks[blockIndex].direction = DIRECTION_OPPOSITE(lastExposedCavernDirection);
 
                 // TODO: Implement Level_BlockUpdateSurface
             }
@@ -289,7 +288,7 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
                 }
                 // TODO: Implement Level_BlockUpdateSurface
 
-                blocks[blockIndex].direction = (U8)unknown;
+                blocks[blockIndex].direction = nonExposedCavernsDirections[0];
                 blocks[blockIndex].flags1 |= BLOCK1_OUTCORNER;
             }
 
@@ -331,6 +330,8 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
         }
     }
 
+    //if (exposedCaverns == 2)
+
     blocks[blockIndex].flags1 = newFlags | (BLOCK1_SURVEYED | BLOCK1_WALL);
 
     const Point2I DIRECTIONS2[6] = {
@@ -344,23 +345,32 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
 
     Direction dir;
 
-    for (U32 i = 0; i < 6; i++)
+    U32 i = 0;
+    while (DIRECTIONS2[i].x != nonExposedCavernsDirections[0] || DIRECTIONS2[i].y != nonExposedCavernsDirections[1])
     {
-        // TODO: Verify this is correct and figure out what it's trying to do
-        if (DIRECTIONS2[i].x == (bx & 0xFF) && DIRECTIONS2[i].y == ((U32)bx >> 8 & 0xFF))
+        i++;
+
+        if (i >= 6)
         {
-            dir = (U8)level->width;
+            dir = bx;
             goto somelabel;
         }
     }
 
-    dir = (U8)bx;
+    dir = i;
 
 somelabel:
     if (dir > 3)
     {
-        if (blocks[blockIndex].texture - 1 < 5)
-            blocks[blockIndex].texture = TEXTURE_DIAGONAL_STD;
+        switch (blocks[blockIndex].terrain)
+        {
+            case Lego_SurfaceType8_Immovable:
+            case Lego_SurfaceType8_Hard:
+            case Lego_SurfaceType8_Medium:
+            case Lego_SurfaceType8_Loose:
+            case Lego_SurfaceType8_Soil:
+                blocks[blockIndex].texture = TEXTURE_DIAGONAL_STD;
+        }
 
         blocks[blockIndex].flags1 &= ~(BLOCK1_FLOOR | BLOCK1_INCORNER | BLOCK1_OUTCORNER);
         blocks[blockIndex].flags1 |= (BLOCK1_SURVEYED | BLOCK1_WALL | BLOCK1_DIAGONAL);
