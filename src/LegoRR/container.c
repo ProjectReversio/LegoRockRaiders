@@ -635,8 +635,58 @@ U32 Container_GetAnimationFrames(lpContainer cont)
 
 LPDIRECT3DRMFRAME3 Container_Frame_Find(lpContainer cont, const char* findName, U32 hidden)
 {
-    // TODO: Implement Container_Frame_Find
-    return NULL;
+    LPDIRECT3DRMFRAME3 frame, childFrame, foundFrame = NULL;
+    LPDIRECT3DRMFRAME frame1;
+    LPDIRECT3DRMFRAMEARRAY children;
+    U32 count, loop, nameLen;
+    char tempString[UTIL_DEFSTRINGLEN];
+    const char* name;
+    HRESULT r;
+
+    if (hidden)
+        frame = cont->hiddenFrame;
+    else
+        frame = cont->activityFrame;
+
+    if (frame->lpVtbl->GetChildren(frame, &children) == D3DRM_OK)
+    {
+        count = children->lpVtbl->GetSize(children);
+        Error_Warn(!count, "Can't find any children on frame");
+
+        for (loop = 0; loop < count; loop++)
+        {
+            children->lpVtbl->GetElement(children, loop, &frame1);
+
+            r = frame1->lpVtbl->QueryInterface(frame1, &IID_IDirect3DRMFrame3, &childFrame);
+            Error_Fatal(r, "Error getting frame3");
+            frame1->lpVtbl->Release(frame1);
+
+            childFrame->lpVtbl->GetName(childFrame, &nameLen, NULL);
+            if (nameLen)
+            {
+                name = Mem_Alloc(nameLen + 1);
+                childFrame->lpVtbl->GetName(childFrame, &nameLen, name);
+
+                sprintf(tempString, "%s_%s", CONTAINER_ACTIVITYFRAMEPREFIX, findName);
+                if (stricmp(name, tempString) == 0)
+                    foundFrame = childFrame;
+                Mem_Free(name);
+            }
+
+            r = childFrame->lpVtbl->Release(childFrame);
+
+            if (foundFrame)
+                break;
+        }
+
+        r = children->lpVtbl->Release(children);
+    }
+    else
+    {
+        Error_Fatal(TRUE, "GetChildren() call failed");
+    }
+
+    return foundFrame;
 }
 
 F32 Container_Frame_GetCurrTime(LPDIRECT3DRMFRAME3 frame)
