@@ -427,7 +427,7 @@ B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY,
         }
     }
 
-    //Error_Warn(TRUE, "Map3D_GetIntersections(): shouldn't reach here!");
+    Error_Warn(TRUE, "Map3D_GetIntersections(): this code should never be reached!");
     return FALSE;
 }
 
