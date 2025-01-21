@@ -3,10 +3,8 @@
 #include "platform.h"
 #include "container.h"
 #include "config.h"
-#include "creature.h"
 #include "stats.h"
 #include "upgrade.h"
-#include "vehicle.h"
 
 typedef enum LegoObject_Type
 {
@@ -222,9 +220,9 @@ typedef struct LegoObject
     LegoObject_Type type;
     LegoObject_ID id;
     const char* customName; // max size is 11 (NOT null-terminated)
-    VehicleModel* vehicle; // Model for vehicle objects only.
-    CreatureModel* miniFigure; // Model for mini-figure objects only.
-    CreatureModel* rockMonster; // Model for monster objects only.
+    struct VehicleModel* vehicle; // Model for vehicle objects only.
+    struct CreatureModel* miniFigure; // Model for mini-figure objects only.
+    struct CreatureModel* rockMonster; // Model for monster objects only.
     struct BuildingModel* building; // Model for building objects only.
     lpContainer other; // Model for simple objects only.
     Upgrade_PartModel* upgradePart; // First upgrade part model in linked list of parts.

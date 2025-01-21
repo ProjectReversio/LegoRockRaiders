@@ -44,6 +44,7 @@
 #include "objective.h"
 #include "teleporter.h"
 #include "construction.h"
+#include "dummy.h"
 #include "ptl.h"
 #include "electric_fence.h"
 #include "erode.h"
@@ -2250,11 +2251,20 @@ void Lego_Goto(lpLegoObject liveObj, Point2I* blockPos, B32 smooth)
 
 B32 Lego_GetObjectByName(const char* objName, LegoObject_Type* outObjType, LegoObject_ID* outObjID, lpContainer* outModel)
 {
-    U32 index = 0;
     *outObjID = 0;
-    if (legoGlobs.rockMonsterCount != 0)
+
+    for (U32 i = 0; i < legoGlobs.rockMonsterCount; i++)
     {
-        // TODO: Implement Lego_GetObjectByName
+        if (_stricmp(legoGlobs.rockMonsterName[i], objName) == 0)
+        {
+            *outObjType = LegoObject_RockMonster;
+            *outObjID = i;
+            if (outModel == NULL)
+                return TRUE;
+
+            *outModel = (lpContainer)&legoGlobs.rockMonsterData[i];
+            return TRUE;
+        }
     }
 
     if (_stricmp("tvcamera", objName) == 0)
@@ -2273,21 +2283,173 @@ B32 Lego_GetObjectByName(const char* objName, LegoObject_Type* outObjType, LegoO
         return TRUE;
     }
 
-    // TODO: Implement Lego_GetObjectByName
-
-    // TEMP: {
-    *outObjType = LegoObject_None;
-    if (outModel != NULL) {
-        *outModel = NULL;
+    if (_stricmp("Ore", objName) == 0)
+    {
+        *outObjType = LegoObject_Ore;
+        *outObjID = 0;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contOresTable[0];
+            return TRUE;
+        }
     }
-    // }
 
-    // TODO: Implement Lego_GetObjectByName
+    if (_stricmp("ProcessedOre", objName) == 0)
+    {
+        *outObjType = LegoObject_Ore;
+        *outObjID = 1;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contOresTable[1];
+            return TRUE;
+        }
+    }
 
-    // TEMP: return true to make the level load anyway (until this function is completed)
+    if (_stricmp("Boulder", objName) == 0)
+    {
+        *outObjType = LegoObject_Boulder;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contBoulder;
+            return TRUE;
+        }
+    }
+
+    if (_stricmp("Pusher", objName) == 0)
+    {
+        *outObjType = LegoObject_Pusher;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contPusher;
+            return TRUE;
+        }
+    }
+
+    if (_stricmp("LaserShot", objName) == 0)
+    {
+        *outObjType = LegoObject_LaserShot;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contLaserShot;
+            return TRUE;
+        }
+    }
+
+    if (_stricmp("Freezer", objName) == 0)
+    {
+        *outObjType = LegoObject_Freezer;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contFreezer;
+            return TRUE;
+        }
+    }
+
+    if (_stricmp("Dynamite", objName) == 0)
+    {
+        *outObjType = LegoObject_Dynamite;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contDynamite;
+            return TRUE;
+        }
+    }
+
+    if (_stricmp("ElectricFence", objName) == 0)
+    {
+        *outObjType = LegoObject_ElectricFence;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contElectricFence;
+            return TRUE;
+        }
+    }
+
+    if (_stricmp("SpiderWeb", objName) == 0)
+    {
+        *outObjType = LegoObject_SpiderWeb;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contSpiderWeb;
+            return TRUE;
+        }
+    }
+
+    if (_stricmp("Barrier", objName) == 0)
+    {
+        *outObjType = LegoObject_Barrier;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contBarrier;
+            return TRUE;
+        }
+    }
+
+    if (_stricmp("OohScary", objName) == 0)
+    {
+        *outObjType = LegoObject_OohScary;
+        if (outModel != NULL)
+        {
+            *outModel = legoGlobs.contOohScary;
+            return TRUE;
+        }
+    }
+
+    if (_stricmp("Path", objName) == 0)
+    {
+        *outObjType = LegoObject_Path;
+        if (outModel != NULL)
+        {
+            *outModel = NULL;
+            return TRUE;
+        }
+    }
+
+    for (U32 i = 0; i < legoGlobs.vehicleCount; i++)
+    {
+        if (_stricmp(legoGlobs.vehicleName[i], objName) == 0)
+        {
+            *outObjType = LegoObject_Vehicle;
+            *outObjID = i;
+            if (outModel == NULL)
+                return TRUE;
+
+            *outModel = (lpContainer)&legoGlobs.vehicleData[i];
+            return TRUE;
+        }
+    }
+
+    for (U32 i = 0; i < legoGlobs.miniFigureCount; i++)
+    {
+        if (_stricmp(legoGlobs.miniFigureName[i], objName) == 0)
+        {
+            *outObjType = LegoObject_MiniFigure;
+            *outObjID = i;
+            if (outModel == NULL)
+                return TRUE;
+
+            *outModel = (lpContainer)&legoGlobs.miniFigureData[i];
+            return TRUE;
+        }
+    }
+
+    U32 index = 0;
+    if (legoGlobs.buildingCount == 0)
+        return FALSE;
+
+    while (_stricmp(legoGlobs.buildingName[index], objName) != 0)
+    {
+        index++;
+        if (index >= legoGlobs.buildingCount)
+            return FALSE;
+    }
+
+    *outObjType = LegoObject_Building;
+    *outObjID = index;
+    if (outModel != NULL)
+        *outModel = (lpContainer)&legoGlobs.buildingData[index];
+
     return TRUE;
-
-    // return FALSE;
 }
 
 void Lego_LoadSamples(lpConfig config, B32 noReduceSamples)
@@ -2478,20 +2640,126 @@ B32 Lego_LoadUpgradeTypes()
 
 B32 Lego_LoadVehicleTypes()
 {
-    // TODO: Implement Lego_LoadVehicleTypes
-    return TRUE;
+    legoGlobs.vehicleCount = 0;
+    for (lpConfig c = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "VehicleTypes", 0)); c != NULL; c = Config_GetNextItem(c))
+    {
+        legoGlobs.vehicleCount++;
+    }
+
+    if (legoGlobs.vehicleCount != 0 && (legoGlobs.vehicleData = Mem_Alloc(legoGlobs.vehicleCount * sizeof(VehicleModel)), legoGlobs.vehicleData != NULL))
+    {
+        legoGlobs.vehicleName = Mem_Alloc(legoGlobs.vehicleCount * 4);
+        if (legoGlobs.vehicleName != NULL)
+        {
+            lpConfig conf = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "VehicleTypes", 0));
+            B32 unkBool;
+            U32 i = 0;
+            while (conf != NULL && (unkBool = Vehicle_Load(&legoGlobs.vehicleData[i], i, legoGlobs.rootCont, conf->dataString, legoGlobs.gameName), unkBool != FALSE))
+            {
+                Vehicle_Hide(&legoGlobs.vehicleData[i], TRUE);
+
+                legoGlobs.vehicleName[i] = Mem_Alloc(strlen(conf->itemName) + 1);
+                strcpy(legoGlobs.vehicleName[i], conf->itemName);
+
+                conf = Config_GetNextItem(conf);
+
+                i++;
+            }
+
+            if (conf == NULL)
+            {
+                return TRUE;
+            }
+
+            Mem_Free(legoGlobs.vehicleName);
+        }
+        Mem_Free(legoGlobs.vehicleData);
+    }
+
+    return FALSE;
 }
 
 B32 Lego_LoadMiniFigureTypes()
 {
-    // TODO: Implement Lego_LoadMiniFigureTypes
-    return TRUE;
+    legoGlobs.miniFigureCount = 0;
+    for (lpConfig c = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "MiniFigureTypes", 0)); c != NULL; c = Config_GetNextItem(c))
+    {
+        legoGlobs.miniFigureCount++;
+    }
+
+    if (legoGlobs.miniFigureCount != 0 && (legoGlobs.miniFigureData = Mem_Alloc(legoGlobs.miniFigureCount * sizeof(CreatureModel)), legoGlobs.miniFigureData != NULL))
+    {
+        legoGlobs.miniFigureName = Mem_Alloc(legoGlobs.miniFigureCount * 4);
+        if (legoGlobs.miniFigureName != NULL)
+        {
+            lpConfig conf = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "MiniFigureTypes", 0));
+            B32 unkBool;
+            U32 i = 0;
+            while (conf != NULL && (unkBool = Creature_Load(&legoGlobs.miniFigureData[i], i, legoGlobs.rootCont, conf->dataString, legoGlobs.gameName), unkBool != FALSE))
+            {
+                Object_Hide(&legoGlobs.miniFigureData[i], TRUE);
+
+                legoGlobs.miniFigureName[i] = Mem_Alloc(strlen(conf->itemName) + 1);
+                strcpy(legoGlobs.miniFigureName[i], conf->itemName);
+
+                conf = Config_GetNextItem(conf);
+
+                i++;
+            }
+
+            if (conf == NULL)
+            {
+                return TRUE;
+            }
+
+            Mem_Free(legoGlobs.miniFigureName);
+        }
+        Mem_Free(legoGlobs.miniFigureData);
+    }
+
+    return FALSE;
 }
 
 B32 Lego_LoadRockMonsterTypes()
 {
-    // TODO: Implement Lego_LoadRockMonsterTypes
-    return TRUE;
+    legoGlobs.rockMonsterCount = 0;
+    ;
+    for (lpConfig c = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "RockMonsterTypes", 0)); c != NULL; c = Config_GetNextItem(c))
+    {
+        legoGlobs.rockMonsterCount++;
+    }
+
+    if (legoGlobs.rockMonsterCount != 0 && (legoGlobs.rockMonsterData = Mem_Alloc(legoGlobs.rockMonsterCount * sizeof(CreatureModel)), legoGlobs.rockMonsterData != NULL))
+    {
+        legoGlobs.rockMonsterName = Mem_Alloc(legoGlobs.rockMonsterCount * 4);
+        if (legoGlobs.rockMonsterName != NULL)
+        {
+            lpConfig conf = Config_FindArray(legoGlobs.config, Config_BuildStringID(legoGlobs.gameName, "RockMonsterTypes", 0));
+            B32 unkBool;
+            U32 i = 0;
+            while (conf != NULL && (unkBool = Creature_Load(&legoGlobs.rockMonsterData[i], i, legoGlobs.rootCont, conf->dataString, legoGlobs.gameName), unkBool != FALSE))
+            {
+                Object_Hide(&legoGlobs.rockMonsterData[i], TRUE);
+
+                legoGlobs.rockMonsterName[i] = Mem_Alloc(strlen(conf->itemName) + 1);
+                strcpy(legoGlobs.rockMonsterName[i], conf->itemName);
+
+                conf = Config_GetNextItem(conf);
+
+                i++;
+            }
+
+            if (conf == NULL)
+            {
+                return TRUE;
+            }
+
+            Mem_Free(legoGlobs.rockMonsterName);
+        }
+        Mem_Free(legoGlobs.rockMonsterData);
+    }
+
+    return FALSE;
 }
 
 B32 Lego_LoadBuildingTypes()
@@ -2515,9 +2783,12 @@ B32 Lego_LoadBuildingTypes()
             {
                 Building_Hide(&legoGlobs.buildingData[i], TRUE);
 
-                // TODO: Implement Lego_LoadBuildingTypes
+                legoGlobs.buildingName[i] = Mem_Alloc(strlen(conf->itemName) + 1);
+                strcpy(legoGlobs.buildingName[i], conf->itemName);
 
                 conf = Config_GetNextItem(conf);
+
+                i++;
             }
 
             if (conf == NULL)
