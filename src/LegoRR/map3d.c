@@ -392,35 +392,26 @@ B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY,
         return FALSE;
 
     // Do a 2D loop in range: (-2, -2) -> (2, 2)
-    Point3F vertPoses[4];
-    Point2I loopOffset;
-    loopOffset.y = -2;
-    do
+    for (S32 ny = -2; ny < 3; ny++)
     {
-        loopOffset.x = -2;
-        do
+        for (S32 nx = -2; nx < 3; nx++)
         {
+            Point2I loopOffset = {nx, ny};
             if ((U32)(loopOffset.x + blockPos.x) < map->blockWidth && (U32)(blockPos.y + loopOffset.y) < map->blockHeight)
             {
+                Point3F vertPoses[4];
                 Map3D_GetBlockVertexPositions(map, loopOffset.x + blockPos.x, loopOffset.y + blockPos.y, vertPoses);
-
-                Point3F* vector = vertPoses;
-                S32 i = 4;
 
                 Point4F xformPoly;
                 Point2F polyPoints[5];
 
-                do
+                for (U32 i = 0; i < 4; i++)
                 {
-                    Viewport_Transform(view, &xformPoly, vector);
+                    Viewport_Transform(view, &xformPoly, &vertPoses[i]);
 
-                    vector++;
-                    i--;
-
-                    // TODO: Verify that this is correctly decompiled
                     polyPoints[i].x = xformPoly.x / xformPoly.w;
                     polyPoints[i].y = xformPoly.y / xformPoly.w;
-                } while (i != 0);
+                }
 
                 polyPoints[4].x = polyPoints[0].x;
                 polyPoints[4].y = polyPoints[0].y;
@@ -433,12 +424,11 @@ B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY,
                     return TRUE;
                 }
             }
-            loopOffset.x++;
-        } while (loopOffset.x < 3);
-        loopOffset.y++;
-        if (2 < loopOffset.y)
-            return FALSE;
-    } while (TRUE);
+        }
+    }
+
+    //Error_Warn(TRUE, "Map3D_GetIntersections(): shouldn't reach here!");
+    return FALSE;
 }
 
 B32 Map3D_Intersections_Sub1_FUN_00450820(lpMap3D map, Point3F *rayOrigin, Point3F *ray, Point3F *outEndPoint, Point2I *outBlockPos, S32 unkCount)
