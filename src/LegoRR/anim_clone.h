@@ -28,3 +28,7 @@ extern B32 AnimClone_FrameCountCallback(LPDIRECT3DRMFRAME3 frame, void* data);
 extern B32 AnimClone_SetupFrameArrayCallback(LPDIRECT3DRMFRAME3 frame, void* p);
 
 extern void AnimClone_SetTime(lpAnimClone clone, F32 time, F32* oldTime);
+
+extern void AnimClone_CreateCopy(LPDIRECT3DRMFRAME3 orig, LPDIRECT3DRMFRAME3 clone, B32 lws);
+
+extern lpAnimClone AnimClone_Make(lpAnimClone orig, LPDIRECT3DRMFRAME3 parent, U32* frameCount);

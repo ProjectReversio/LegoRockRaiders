@@ -3,6 +3,8 @@
 #include "platform.h"
 #include "container.h"
 #include "config.h"
+#include "meshLOD.h"
+#include "meshpoly.h"
 #include "stats.h"
 #include "upgrade.h"
 
@@ -304,3 +306,5 @@ extern lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, 
 extern B32 LegoObject_Remove(lpLegoObject liveObj);
 
 extern void HiddenObject_Add(void* objModel, LegoObject_Type objType, LegoObject_ID objID, Point2F* worldPos, F32 heading, F32 health, const char* thisOLName, const char* drivingOLName);
+
+extern lpMeshLOD LegoObject_LoadMeshLOD(lpConfig act, const char* gameName, const char* dirname, LOD_PolyLevel polyLOD, U32 numCameraFrames);

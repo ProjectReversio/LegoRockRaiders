@@ -436,6 +436,43 @@ void Container_GetOrientation(lpContainer cont, lpContainer ref, lpPoint3F dir, 
         *up = vup;
 }
 
+B32 Container_AddActivity2(lpContainer cont, const char* filename, const char* actname, F32 transCo, U32 trigger, const char* sample, struct AnimClone* origClone, B32 lws, B32 looping)
+{
+    LPDIRECT3DRMFRAME3 newFrame;
+    char xFile[UTIL_DEFSTRINGLEN];
+    U32 frameCount;
+    lpAnimClone animClone;
+
+    sprintf(xFile, "%s.%s", filename, containerGlobs.extensionNames[Container_Anim]);
+
+    if (lpD3DRM()->lpVtbl->CreateFrame(lpD3DRM(), cont->hiddenFrame, &newFrame) == D3DRM_OK)
+    {
+        Container_NoteCreation(newFrame);
+
+        // Set the name of the parent to the animation set.
+        // Freed when the container is destroyed
+
+        // This will also set the appData's pointer to the name...
+        Container_Frame_FormatName(newFrame, "%s_%s", CONTAINER_ACTIVITYFRAMEPREFIX, actname);
+
+        // Load in the AnimationSet.
+        if (origClone == NULL)
+            animClone = Container_LoadAnimSet(xFile, newFrame, &frameCount, lws, looping);
+        else
+            animClone = AnimClone_Make(origClone, newFrame, &frameCount);
+
+        Container_Frame_SetAppData(newFrame, cont, animClone, filename, &frameCount, NULL, NULL, &transCo, sample, NULL, &trigger);
+
+        return TRUE;
+    }
+    else
+    {
+        Error_Warn(TRUE, "Unable to create frame for new activity");
+    }
+
+    return FALSE;
+}
+
 B32 Container_SetActivity(lpContainer cont, const char* actname)
 {
     LPDIRECT3DRMFRAME3 frame, currFrame;
@@ -819,7 +856,7 @@ Container_Type Container_ParseTypeString(const char* str, B32* noTexture)
     {
         strcpy(string, str);
         argc = Util_Tokenize(string, argv, ":");
-        if (argc > 1 && stricmp(argv[1], "NOTEXTURE") == 0)
+        if (argc > 1 && _stricmp(argv[1], "NOTEXTURE") == 0)
             *noTexture = TRUE;
         else
             *noTexture = FALSE;
@@ -828,7 +865,7 @@ Container_Type Container_ParseTypeString(const char* str, B32* noTexture)
         {
             if (containerGlobs.typeName[loop] != NULL)
             {
-                if (stricmp(containerGlobs.typeName[loop], string) == 0)
+                if (_stricmp(containerGlobs.typeName[loop], string) == 0)
                     return loop;
             }
         }
@@ -858,7 +895,121 @@ lpContainer Container_Load(lpContainer parent, const char* filename, const char*
 
     if (type == Container_FromActivity)
     {
-        // TODO: Implement Container_Load
+        const char* argv[20];
+        U32 argc;
+
+        Error_Fatal(!containerGlobs.gameName, "Need to set game name in Container_Initialize() in order to load from Activity File");
+
+        // The name of the 'FromActivity' container defines the directory
+        // in which all of the files will be located.
+
+        strcpy(baseDir, name);
+        argc = Util_Tokenize(name, argv, "\\");
+        sprintf(tempString, "%s\\%s.%s", baseDir, argv[argc - 1], containerGlobs.extensionNames[Container_FromActivity]);
+
+        Error_Debug(Error_Format("Loading activity file \"%s\"\n", tempString));
+
+        if ((rootConf = Config_Load(tempString)))
+        {
+            char tempString2[UTIL_DEFSTRINGLEN];
+
+            sprintf(tempString, "%s%s%s", containerGlobs.gameName, CONFIG_SEPARATOR, ACTIVITY_ACTIVITYSTRING);
+            Error_Debug(Error_Format("Searching for \"%s\" in activity file\n", tempString));
+            if ((conf = Config_FindArray(rootConf, tempString)))
+            {
+                cont = Container_Create(parent);
+                cont->type = type;
+
+                while (conf)
+                {
+                    const char *fileStr, *sampleStr;
+                    F32 transCo;
+                    U32 trigger;
+                    B32 lws = FALSE, looping;
+                    const char* itemName = conf->itemName;
+                    //lpSound sample;
+
+                    if ((*itemName != '!') || !(mainGlobs.flags & MAIN_FLAG_REDUCEANIMATION))
+                    {
+                        if (*itemName == '!')
+                            itemName++;
+
+                        sprintf(tempString2, "%s%s%s%s%s", containerGlobs.gameName, CONFIG_SEPARATOR, conf->dataString, CONFIG_SEPARATOR, ACTIVITY_FILESTRING);
+
+                        if ((fileStr = Config_GetTempStringValue(rootConf, tempString2)))
+                        {
+                            sprintf(tempString, "%s\\%s", baseDir, fileStr);
+                            sprintf(tempString2, "%s%s%s%s%s", containerGlobs.gameName, CONFIG_SEPARATOR, conf->dataString, CONFIG_SEPARATOR, ACTIVITY_TRANSCOSTRING);
+
+                            //if (Config_FindItem(rootConf, tempString2))
+                            //{
+                            transCo = Config_GetFloatValue(rootConf, tempString2);
+                            sprintf(tempString2, "%s%s%s%s%s", containerGlobs.gameName, CONFIG_SEPARATOR, conf->dataString, CONFIG_SEPARATOR, ACTIVITY_TRIGGERSTRING);
+                            trigger = Config_GetIntValue(rootConf, tempString2);
+                            sprintf(tempString2, "%s%s%s%s%s", containerGlobs.gameName, CONFIG_SEPARATOR, conf->dataString, CONFIG_SEPARATOR, "LWSFILE");
+                            lws = Config_GetBoolValue(rootConf, tempString2) == BOOL3_TRUE;
+                            sprintf(tempString2, "%s%s%s%s%s", containerGlobs.gameName, CONFIG_SEPARATOR, conf->dataString, CONFIG_SEPARATOR, "LOOPING");
+                            if (Config_GetBoolValue(rootConf, tempString2) == BOOL3_FALSE)
+                                looping = FALSE;
+                            else
+                                looping = TRUE;
+
+                            // Get the activity sample...
+
+                            sprintf(tempString2, "%s%s%s%s%s", containerGlobs.gameName, CONFIG_SEPARATOR, conf->dataString, CONFIG_SEPARATOR, ACTIVITY_SAMPLESTRING);
+                            sampleStr = Config_GetStringValue(rootConf, tempString2);
+                            // if (sampleStr)
+                            // {
+                            //     sprintf(tempString2, "%s\\%s", baseDir, fileStr);
+                            //     if ((sample = Sound_Load(tempString2)) == NULL)
+                            //         Error_Fatal(TRUE, "Cannot load sample");
+                            // }
+                            // else
+                            // {
+                            //     sample = NULL;
+                            // }
+
+                            if (Container_AddActivity(cont, tempString, itemName, transCo, trigger, sampleStr, NULL, lws, looping))
+                            {
+                                if (!cont->typeData)
+                                    Container_SetActivity(cont, itemName);
+                            }
+                            else
+                            {
+                                Error_Fatal(TRUE, Error_Format("Unable to load Activity \"%s\" from \"%s\"", itemName, tempString));
+                            }
+
+                            //}
+                            //else
+                            //{
+                            //    Error_Fatal(TRUE, Error_Format("Cannot get \"%s\" value from activity file", tempString2));
+                            //}
+                        }
+                        else
+                        {
+                            Error_Fatal(TRUE, Error_Format("Unable to get item \"%s\" from activity file", tempString2));
+                        }
+                    }
+
+                    conf = Config_GetNextItem(conf);
+                }
+            }
+            else
+            {
+                Error_Fatal(TRUE, Error_Format("Cannot Find Activity List %s", tempString));
+            }
+
+            sprintf(tempString, "%s%s%s", containerGlobs.gameName, CONFIG_SEPARATOR, CONTAINER_SCALESTRING);
+            scale = Config_GetFloatValue(rootConf, tempString);
+            if (scale != 0.0f)
+                cont->activityFrame->lpVtbl->AddScale(cont->activityFrame, D3DRMCOMBINE_REPLACE, scale, scale, scale);
+
+            Config_Free(rootConf);
+        }
+        else
+        {
+            Error_Warn(TRUE, Error_Format("Cannot Find File %s", tempString));
+        }
     } else if (type == Container_Frame)
     {
         // TODO: Implement Container_Load
@@ -1627,6 +1778,7 @@ lpAnimClone Container_LoadAnimSet(const char* fname, LPDIRECT3DRMFRAME3 frame, U
     } else
     {
         // TODO: Implement Container_LoadAnimSet
+        Error_Warn(TRUE, "Container_LoadAnimSet(): non-lws Not Implemented Yet"); // TEMP:
     }
 
     return animClone;

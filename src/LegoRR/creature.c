@@ -1,8 +1,72 @@
 #include "creature.h"
 
+#include <stdio.h>
+
+#include "activities.h"
+#include "meshLOD.h"
+#include "utils.h"
+
 B32 Creature_Load(lpCreatureModel creature, LegoObject_ID objID, lpContainer root, const char* filename, const char* gameName)
 {
-    // TODO: Implement Creature_Load
+    char buffName[1024];
+    strcpy(buffName, filename);
 
-    return TRUE;
+    char* stringParts[100];
+    U32 partCount = Util_Tokenize(buffName, stringParts, "\\");
+    if (partCount > 1)
+    {
+        // TODO: Clean this up
+        char** sp = stringParts;
+        S32 i = (S32)partCount - 1;
+        do
+        {
+            sp++;
+            i--;
+            (*sp)[-1] = '\\';
+        } while (i != 0);
+    }
+
+    char buffPath[1024];
+    sprintf(buffPath, "%s\\%s.%s", buffName, stringParts[partCount - 1], ACTIVITY_FILESUFFIX);
+
+    lpConfig prop = Config_Load(buffPath);
+    if (prop == NULL)
+        return FALSE;
+
+    B32 result = FALSE;
+
+    creature->contAct = Container_Load(root, filename, "ACT", TRUE);
+    if (creature->contAct != NULL)
+    {
+        creature->cameraNullName = Config_GetStringValue(prop, Config_BuildStringID(gameName, "CameraNullName", 0));
+        if (creature->cameraNullName == NULL)
+        {
+            creature->cameraNullFrames = 0;
+        }
+        else
+        {
+            creature->cameraNullFrames = Config_GetIntValue(prop, Config_BuildStringID(gameName, "CameraNullFrames", 0));
+            creature->cameraFlipDir = Config_GetBoolValue(prop, Config_BuildStringID(gameName, "CameraFlipDir", 0));
+        }
+
+        creature->drillNullName = Config_GetStringValue(prop, Config_BuildStringID(gameName, "DrillNullName", 0));
+        creature->footStepNullName = Config_GetStringValue(prop, Config_BuildStringID(gameName, "FootStepNullName", 0));
+        creature->carryNullName = Config_GetStringValue(prop, Config_BuildStringID(gameName, "CarryNullName", 0));
+        creature->throwNullName = Config_GetStringValue(prop, Config_BuildStringID(gameName, "ThrowNullName", 0));
+        creature->depositNullName = Config_GetStringValue(prop, Config_BuildStringID(gameName, "DepositNullName", 0));
+
+        creature->objID = objID;
+
+        creature->polyMedium = LegoObject_LoadMeshLOD(prop, gameName, filename, LOD_MediumPoly, 1);
+        creature->polyHigh = LegoObject_LoadMeshLOD(prop, gameName, filename, LOD_HighPoly, 1);
+        creature->polyFP = LegoObject_LoadMeshLOD(prop, gameName, filename, LOD_FPPoly, creature->cameraNullFrames);
+
+        creature->flags = CREATURE_FLAG_SOURCE;
+
+        result = TRUE;
+    }
+
+    Config_Free(prop);
+
+    return result;
 }

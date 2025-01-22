@@ -1,4 +1,6 @@
 #include "anim_clone.h"
+
+#include "error.h"
 #include "mem.h"
 
 lpAnimClone AnimClone_RegisterLws(lpLws_Info scene, LPDIRECT3DRMFRAME3 root, U32 frameCount)
@@ -120,4 +122,50 @@ void AnimClone_SetTime(lpAnimClone clone, F32 time, F32* oldTime)
         else
             clone->animSet->lpVtbl->SetTime(clone->animSet, time);
     }
+}
+
+void AnimClone_CreateCopy(LPDIRECT3DRMFRAME3 orig, LPDIRECT3DRMFRAME3 clone, B32 lws)
+{
+    // TODO: Implement AnimClone_CreateCopy
+    Error_Warn(TRUE, "AnimClone_CreateCopy(): Not yet implemented"); // TEMP:
+}
+
+lpAnimClone AnimClone_Make(lpAnimClone orig, LPDIRECT3DRMFRAME3 parent, U32* frameCount)
+{
+    lpAnimClone clone = Mem_Alloc(sizeof(AnimClone));
+    AnimClone data;
+
+    // Setup from the first frame...
+    if (orig->lws)
+    {
+        //Lws_SetTime(orig->scene, 0.0f);
+        *clone = *orig;
+        clone->scene = Lws_Clone(orig->scene, parent);
+        clone->clonedFrom = NULL;
+        if (frameCount)
+            *frameCount = orig->frameCount;
+    }
+    else
+    {
+        memset(clone, 0, sizeof(AnimClone));
+        orig->animSet->lpVtbl->SetTime(orig->animSet, 0.0f);
+        clone->animSet = NULL;
+
+        clone->clonedFrom = orig;
+        lpD3DRM()->lpVtbl->CreateFrame(lpD3DRM(), parent, &clone->root);
+        Container_NoteCreation(clone->root);
+        clone->partArray = Mem_Alloc(sizeof(LPDIRECT3DRMFRAME3) * orig->partCount);
+
+        AnimClone_CreateCopy(orig->root, clone->root, orig->lws);
+        clone->partCount = orig->partCount;
+        if (frameCount)
+            *frameCount = orig->frameCount;
+
+        data.partArray = clone->partArray;
+        data.partCount = 0;
+        AnimClone_WalkTree(clone->root, 0, AnimClone_SetupFrameArrayCallback, &data);
+    }
+
+    return clone;
+
 }

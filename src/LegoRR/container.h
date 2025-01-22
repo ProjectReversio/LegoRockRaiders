@@ -9,6 +9,7 @@
 #define CONTAINER_ULONG_NULL (-1)
 
 #define CONTAINER_ACTIVITYFRAMEPREFIX "ActFrame"
+#define CONTAINER_SCALESTRING "SCALE"
 
 #define CONTAINER_MAXLISTS 20
 #define CONTAINER_MAXTEXTURES 1000
@@ -219,6 +220,11 @@ extern void Container_Frame_SafeAddChild(LPDIRECT3DRMFRAME3 parent, LPDIRECT3DRM
 extern void Container_GetPosition(lpContainer cont, lpContainer ref, lpPoint3F pos);
 extern void Container_GetOrientation(lpContainer cont, lpContainer ref, lpPoint3F dir, lpPoint3F up);
 
+extern B32 Container_AddActivity2(lpContainer cont, const char* fname, const char* actname, F32 transCo, U32 trigger, const char* sample, struct AnimClone* origClone, B32 lws, B32 looping);
+inline B32 Container_AddActivity(lpContainer cont, const char* fname, const char* actname, F32 transCo, U32 trigger, const char* sample, struct AnimClone* animClone, B32 lws, B32 looping)
+{
+    return Container_AddActivity2(cont, fname, actname, transCo, trigger, sample, animClone, lws, looping);
+}
 extern B32 Container_SetActivity(lpContainer cont, const char* actname);
 
 extern F32 Container_GetAnimationTime(lpContainer cont);

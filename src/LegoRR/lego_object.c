@@ -87,3 +87,9 @@ void HiddenObject_Add(void* objModel, LegoObject_Type objType, LegoObject_ID obj
 {
     // TODO: Implement HiddenObject_Add
 }
+
+lpMeshLOD LegoObject_LoadMeshLOD(lpConfig act, const char* gameName, const char* dirname, LOD_PolyLevel polyLOD, U32 numCameraFrames)
+{
+    // TODO: Implement LegoObject_LoadMeshLOD
+    return NULL;
+}

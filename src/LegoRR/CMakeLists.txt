@@ -93,6 +93,8 @@ set(MAIN_SRC
     fallin.c
     object_recall.c
     dummy.c
+    meshpoly.c
+    meshLOD.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -187,6 +189,8 @@ set(MAIN_SRC
     fallin.h
     object_recall.h
     dummy.h
+    meshpoly.h
+    meshLOD.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h

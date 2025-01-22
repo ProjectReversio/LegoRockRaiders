@@ -814,3 +814,51 @@ inline lpMesh Lws_GetNodeMesh(lpLws_Info scene, lpLws_Node node)
 
     return mesh;
 }
+
+lpLws_Info Lws_Clone(lpLws_Info scene, LPDIRECT3DRMFRAME3 parent)
+{
+    lpLws_Info clone = Mem_Alloc(sizeof(Lws_Info));
+    lpLws_Node root, node;
+    lpMesh mesh;
+    U16 frameCount = 0, loop;
+    LPDIRECT3DRMFRAME3 nodeParent;
+    Matrix4F mat;
+
+    if (scene->clonedFrom)
+        scene = scene->clonedFrom;
+
+    memset(clone, 0, sizeof(Lws_Info));
+    *clone = *scene;
+    clone->referenceCount = 1;
+
+    clone->frameList = Mem_Alloc(sizeof(LPDIRECT3DRMFRAME3) * clone->nodeCount);
+
+    for (root = clone->masterNode; root; root = root->next)
+    {
+        Lws_CreateFrames(clone, root, parent, &frameCount);
+    }
+
+    for (loop = 0; loop < clone->nodeCount; loop++)
+    {
+        node = &clone->nodeList[loop];
+
+        // Copy the transformation...
+        scene->frameList[loop]->lpVtbl->GetParent(scene->frameList[loop], &nodeParent);
+        scene->frameList[loop]->lpVtbl->GetTransform(scene->frameList[loop], nodeParent, mat);
+        nodeParent->lpVtbl->Release(nodeParent);
+        clone->frameList[loop]->lpVtbl->AddTransform(clone->frameList[loop], D3DRMCOMBINE_REPLACE, mat);
+
+        if (!(node->flags & LWSNODE_FLAG_NULL))
+        {
+            mesh = Lws_GetNodeMesh(scene, node);
+            Mesh_Clone(mesh, clone->frameList[node->frameIndex]);
+        }
+    }
+
+    clone->clonedFrom = scene;
+    scene->referenceCount++;
+
+    Lws_SetTime(clone, 0.0f);
+
+    return clone;
+}
