@@ -918,6 +918,8 @@ B32 Lego_MainLoop(F32 elapsed)
         Point3F lightPos;
         Container_GetPosition(legoGlobs.rootLight, NULL, &lightPos);
         Font_PrintF(legoGlobs.bmpToolTipFont, 10, 60, "Light Position: (%f,%f,%f)", lightPos.x, lightPos.y, lightPos.z);
+
+        Font_PrintF(legoGlobs.bmpToolTipFont, 10, 70, "Mouse Position: (%d,%d)", inputGlobs.msx, inputGlobs.msy);
     }
 
     // TODO: Implement Lego_MainLoop
@@ -1044,7 +1046,11 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
 
     U32 mouseBlockX, mouseBlockY;
     Point3F mouseWorldPos;
+#ifdef LEGORR_DEBUG_FORCE_INTERSECTION_BUG
+    B32 intersections = Map3D_GetIntersections(legoGlobs.currLevel->map, legoGlobs.viewMain, 100, 82, &mouseBlockX, &mouseBlockY, &mouseWorldPos);
+#else
     B32 intersections = Map3D_GetIntersections(legoGlobs.currLevel->map, legoGlobs.viewMain, inputGlobs.msx, inputGlobs.msy, &mouseBlockX, &mouseBlockY, &mouseWorldPos);
+#endif
     if (intersections)
     {
        // TODO: Implement Lego_HandleWorld
@@ -1071,6 +1077,11 @@ void Lego_UpdateTopdownCamera(F32 elapsedAbs)
 {
     if (legoGlobs.viewMode != ViewMode_Top)
         return;
+
+#ifdef LEGORR_DEBUG_FORCE_INTERSECTION_BUG
+    Camera_StopMovement(legoGlobs.cameraMain);
+    return;
+#endif
 
     // TODO: Implement Lego_UpdateTopdownCamera
     // TODO: handle tutorial

@@ -24,6 +24,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     B32 nosound = FALSE;
     B32 insistOnCD = FALSE;
 
+#ifndef LEGORR_NO_MUTEX
     char mutexName[128];
     sprintf(mutexName, "%s Mutex", "Lego Rock Raiders");
     CreateMutexA(NULL, TRUE, mutexName);
@@ -32,6 +33,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         //MessageBoxA(NULL, "Lego Rock Raiders is already running.", "Error", MB_OK | MB_ICONERROR);
         return 0; // App is already running
     }
+#endif
 
     // TODO: Cleanup this messy decompiled code
     LPSTR cmd;

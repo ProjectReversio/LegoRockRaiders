@@ -30,6 +30,9 @@
 // Define me to force a specific program name only for wad files.
 //#define LEGORR_FORCE_PROGRAM_NAME_WAD_ONLY
 
+// Define me for Multi-instance support
+//#define LEGORR_NO_MUTEX
+
 // Define the program name to use when forcing a specific program name.
 #define LEGORR_FORCED_PROGRAM_NAME "LegoRR"
 
@@ -51,6 +54,11 @@
     #define LEGORR_FORCE_PROGRAM_NAME_WAD_ONLY
 
     #define LEGORR_FIX_CLION_CONSOLE_OUTPUT
+
+    #define LEGORR_NO_MUTEX
+
+    // TEMP: For debug
+    //#define LEGORR_DEBUG_FORCE_INTERSECTION_BUG
 
     //#define LEGORR_DEBUG_LOADER
 

@@ -294,9 +294,9 @@ F32 Map3D_GetWorldZ(lpMap3D map, F32 xPos, F32 yPos)
             positions[3].z = (positions[2].z - positions[1].z) + (positions[0].z - positions[1].z) + positions[1].z;
         }
 
-        F32 f = (positions[2].z - positions[3].z) * ((positions[2].x - positions[3].x) / (xPos - positions[3].x)) + positions[3].z;
+        F32 f = (positions[2].z - positions[3].z) * ((xPos - positions[3].x) / (positions[2].x - positions[3].x)) + positions[3].z;
 
-        return ((positions[0].y - positions[3].y) / (yPos - positions[3].y)) *
+        return ((yPos - positions[3].y) / (positions[0].y - positions[3].y)) *
             (((positions[1].z - positions[0].z) * ((xPos - positions[0].x) / (positions[1].x - positions[0].x)) + positions[0].z) - f) + f;
     }
 
