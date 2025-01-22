@@ -516,7 +516,7 @@ B32 Map3D_Intersections_Sub2_FUN_004518a0(lpMap3D map, U32 bx, U32 by, Point3F *
         else
         {
             points[1].x = positions[2].x;
-            points[1].y = positions[3].y;
+            points[1].y = positions[2].y;
             points[2].x = positions[3].x;
             points[2].y = positions[3].y;
             points[3].x = positions[1].x;
