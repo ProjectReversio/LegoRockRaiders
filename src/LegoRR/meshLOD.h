@@ -28,7 +28,15 @@ typedef struct MeshLOD
     struct MeshLOD* next;
 } MeshLOD, *lpMeshLOD;
 
+extern lpMeshLOD MeshLOD_Create(lpMeshLOD optPrevMeshLOD, const char* partName, const char* dirname, const char* meshName, U32 setID);
+
 // Creates a MeshLOD struct pointing to a non-existent Mesh.
 // AKA, when a part is configured as NULL in the .ae file.
 extern lpMeshLOD MeshLOD_CreateEmpty(lpMeshLOD optPrevMeshLOD, const char* partName, U32 setID);
-extern lpMeshLOD MeshLOD_Create(lpMeshLOD optPrevMeshLOD, const char* partName, const char* dirname, const char* meshName, U32 setID);
+
+extern lpMeshLOD MeshLOD_Clone(lpMeshLOD srcMeshLOD);
+
+extern void MeshLOD_SwapTarget(lpMeshLOD meshLOD, lpContainer contActTarget, B32 restore, U32 setID);
+extern void MeshLOD_RemoveTargets(lpMeshLOD meshLOD);
+
+extern void MeshLOD_Free(lpMeshLOD meshLOD);
