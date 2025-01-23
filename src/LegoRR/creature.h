@@ -2,7 +2,6 @@
 
 #include "platform.h"
 #include "lego_object.h"
-#include "meshpoly.h"
 
 typedef enum CreatureFlags
 {

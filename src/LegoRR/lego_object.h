@@ -4,7 +4,6 @@
 #include "container.h"
 #include "config.h"
 #include "meshLOD.h"
-#include "meshpoly.h"
 #include "stats.h"
 #include "upgrade.h"
 
