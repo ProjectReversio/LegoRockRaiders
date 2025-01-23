@@ -648,6 +648,22 @@ F32 Container_SetAnimationTime(lpContainer cont, F32 time)
     return overrun;
 }
 
+U32 Container_GetAnimFileFrameCount(const char* fileData)
+{
+    U32 count = 0;
+
+    if ((fileData = strstr(fileData, "DDiScene")))
+    {
+        while (!isdigit(*fileData))
+            fileData++;
+        count = atoi(fileData);
+    }
+
+    if (count == 0)
+        count = 1;
+    return count;
+}
+
 U32 Container_GetAnimationFrames(lpContainer cont)
 {
     LPDIRECT3DRMFRAME3 frame = NULL;
@@ -1702,6 +1718,178 @@ void Container_SetSoundTriggerCallback(ContainerSoundTriggerCallback callback, v
     containerGlobs.flags |= CONTAINER_GLOB_FLAG_TRIGGERENABLED;
 }
 
+void Container_YFlipTexture(LPDIRECT3DRMTEXTURE3 texture)
+{
+    LPD3DRMIMAGE image;
+    char* buffer, *topline, *bottomline;
+    S32 y, byteWidth;
+
+    if ((image = texture->lpVtbl->GetImage(texture)))
+    {
+        byteWidth = (image->depth * image->width) / 8;
+        if ((buffer = Mem_Alloc(byteWidth)))
+        {
+            topline = (char*) image->buffer1;
+            bottomline = &((char*) image->buffer1)[(image->height - 1) * image->bytes_per_line];
+
+            for (y = 0; y < image->height / 2; y++)
+            {
+                memcpy(buffer, bottomline, byteWidth);
+                memcpy(bottomline, topline, byteWidth);
+                memcpy(topline, buffer, byteWidth);
+                topline += image->bytes_per_line;
+                bottomline -= image->bytes_per_line;
+            }
+
+            Mem_Free(buffer);
+        }
+        else
+        {
+            Error_Warn(TRUE, "Cannot allocate buffer for yflip");
+        }
+    }
+}
+
+S32 __cdecl Container_TextureSetSort(const void* a, const void* b)
+{
+    if (((lpContainer_TextureRef) a)->fileName != NULL && ((lpContainer_TextureRef) b)->fileName == NULL)
+        return -1;
+    if (((lpContainer_TextureRef) a)->fileName == NULL && ((lpContainer_TextureRef) b)->fileName != NULL)
+        return 1;
+
+    return 0;
+}
+
+void Container_TextureDestroyCallback(LPDIRECT3DRMOBJECT lpD3DRMobj, void* lpArg)
+{
+    lpContainer_TextureRef textRef = lpArg;
+    lpContainer_Texture text;
+
+    Error_Debug(Error_Format("Removing %s from texture list\n", textRef->fileName));
+
+    text = (lpContainer_Texture) textRef->texture->lpVtbl->GetAppData(textRef->texture);
+    // This is deliberately not Mem_Free()
+    free(text);
+
+    Mem_Free(textRef->fileName);
+    textRef->fileName = NULL;
+    textRef->texture = NULL;
+}
+
+HRESULT Container_TextureLoadCallback(const char* name, void* data, LPDIRECT3DRMTEXTURE3 *texture)
+{
+    lpContainer_TextureData textureData = data;
+    lpContainer_Texture text;
+
+    if (!(textureData->flags & CONTAINER_TEXTURE_NOLOAD))
+    {
+        char path[1024];
+        const char *s;
+        char *p;
+        char *tag = NULL;
+
+        U32 loop;
+        S32 location;
+
+        s = textureData->xFileName;
+        p = path;
+
+        for (location = 0; location < (containerGlobs.sharedDir ? 2 : 1); location++)
+        {
+            if (location == 0)
+            {
+                // Strip the xfilename off the end of the path...
+                while (*s != '\0')
+                {
+                    if (*s == '\\')
+                    {
+                        if (tag)
+                            *tag = '\\';
+                        *p = '\0';
+                        tag = p;
+                    }
+                    else
+                    {
+                        *p = *s;
+                    }
+                    s++;
+                    p++;
+                }
+
+                if (tag)
+                {
+                    strcat(path, "\\");
+                    strcat(path, name);
+                }
+                else
+                {
+                    strcpy(path, name);
+                }
+            }
+            else
+            {
+                sprintf(path, "%s\\%s", containerGlobs.sharedDir, name);
+            }
+
+            *texture = NULL;
+
+            for (loop = 0; loop < containerGlobs.textureCount; loop++)
+            {
+                if (containerGlobs.textureSet[loop].fileName && (strcmp(containerGlobs.textureSet[loop].fileName, path) == 0))
+                {
+                    *texture = containerGlobs.textureSet[loop].texture;
+                    (*texture)->lpVtbl->AddRef(*texture);
+
+                    return D3DRM_OK;
+                }
+            }
+
+            if ((text = Container_LoadTexture(path, NULL, NULL)))
+            {
+                *texture = text->texture;
+
+#ifndef CONTAINER_DONTFLIPTEXTURES
+                Container_YFlipTexture(*texture);
+#endif
+
+                if (Main_MIPMapEnabled())
+                {
+                    HRESULT r = (*texture)->lpVtbl->GenerateMIPMap(*texture, 0);
+                }
+
+                if (containerGlobs.textureCount == CONTAINER_MAXTEXTURES)
+                {
+                    Error_Warn(TRUE, "Sorting texture list");
+                    qsort(containerGlobs.textureSet, containerGlobs.textureCount, sizeof(Container_TextureRef), Container_TextureSetSort);
+                    for (; containerGlobs.textureCount >= 0; containerGlobs.textureCount--)
+                    {
+                        if (containerGlobs.textureSet[containerGlobs.textureCount - 1].fileName)
+                            break;
+                    }
+                    Error_Fatal(containerGlobs.textureCount == CONTAINER_MAXTEXTURES, "CONTAINER_MAXTEXTURES overflowed");
+                }
+
+                if (containerGlobs.textureCount < CONTAINER_MAXTEXTURES)
+                {
+                    lpContainer_TextureRef textRef = &containerGlobs.textureSet[containerGlobs.textureCount];
+
+                    (*texture)->lpVtbl->AddDestroyCallback(*texture, Container_TextureDestroyCallback, textRef);
+
+                    textRef->fileName = Mem_Alloc(strlen(path) + 1);
+                    strcpy(textRef->fileName, path);
+                    textRef->texture = *texture;
+
+                    containerGlobs.textureCount++;
+                }
+
+                return D3DRM_OK;
+            }
+        }
+    }
+
+    return D3DRMERR_NOTFOUND;
+}
+
 inline LPDIRECT3DRMFRAME3 Container_GetMasterFrame(lpContainer cont)
 {
     return cont->masterFrame;
@@ -1777,8 +1965,34 @@ lpAnimClone Container_LoadAnimSet(const char* fname, LPDIRECT3DRMFRAME3 frame, U
         }
     } else
     {
-        // TODO: Implement Container_LoadAnimSet
-        Error_Warn(TRUE, "Container_LoadAnimSet(): non-lws Not Implemented Yet"); // TEMP:
+        if ((buffer.lpMemory = File_LoadBinary(fname, &buffer.dSize)))
+        {
+            if (lpD3DRM()->lpVtbl->CreateFrame(lpD3DRM(), frame, &rootFrame) == D3DRM_OK)
+            {
+                Container_NoteCreation(rootFrame);
+                if (lpD3DRM()->lpVtbl->CreateAnimationSet(lpD3DRM(), &animSet) == D3DRM_OK)
+                {
+                    Container_NoteCreation(animSet);
+
+                    tData.xFileName = fname;
+                    tData.flags = 0;
+
+                    if (animSet->lpVtbl->Load(animSet, &buffer, NULL, D3DRMLOAD_FROMMEMORY, Container_TextureLoadCallback, &tData, rootFrame) == D3DRM_OK)
+                    {
+                        animSet->lpVtbl->SetTime(animSet, 0.0f);
+
+                        fc = Container_GetAnimFileFrameCount(buffer.lpMemory);
+                        if (frameCount)
+                            *frameCount = fc;
+
+                        animClone = AnimClone_Register(animSet, rootFrame, fc);
+                    }
+
+                    Mem_Free(buffer.lpMemory);
+                }
+                rootFrame->lpVtbl->Release(rootFrame);
+            }
+        }
     }
 
     return animClone;

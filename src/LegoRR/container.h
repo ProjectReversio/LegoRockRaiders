@@ -11,6 +11,8 @@
 #define CONTAINER_ACTIVITYFRAMEPREFIX "ActFrame"
 #define CONTAINER_SCALESTRING "SCALE"
 
+#define CONTAINER_TEXTURE_NOLOAD 0x00000001
+
 #define CONTAINER_MAXLISTS 20
 #define CONTAINER_MAXTEXTURES 1000
 #define CONTAINER_MESHGROUPBLOCKSIZE 20
@@ -230,6 +232,7 @@ extern B32 Container_SetActivity(lpContainer cont, const char* actname);
 extern F32 Container_GetAnimationTime(lpContainer cont);
 extern F32 Container_SetAnimationTime(lpContainer cont, F32 time);
 
+extern U32 Container_GetAnimFileFrameCount(const char* fileData);
 extern U32 Container_GetAnimationFrames(lpContainer cont);
 
 extern LPDIRECT3DRMFRAME3 Container_Frame_Find(lpContainer cont, const char* findName, U32 hidden);
@@ -316,6 +319,12 @@ extern void Container_Hide2(lpContainer cont, B32 hide);
 extern void Container_Hide(lpContainer cont, B32 hide);
 
 extern void Container_SetSoundTriggerCallback(ContainerSoundTriggerCallback callback, void* data);
+
+extern void Container_YFlipTexture(LPDIRECT3DRMTEXTURE3 texture);
+
+extern S32 __cdecl Container_TextureSetSort(const void* a, const void* b);
+extern void Container_TextureDestroyCallback(LPDIRECT3DRMOBJECT lpD3DRMobj, void* lpArg);
+extern HRESULT Container_TextureLoadCallback(const char* name, void* data, LPDIRECT3DRMTEXTURE3 *texture);
 
 extern inline LPDIRECT3DRMFRAME3 Container_GetMasterFrame(lpContainer cont);
 

@@ -3,6 +3,31 @@
 #include "error.h"
 #include "mem.h"
 
+lpAnimClone AnimClone_Register(LPDIRECT3DRMANIMATIONSET2 animSet, LPDIRECT3DRMFRAME3 root, U32 frameCount)
+{
+    AnimClone data;
+    lpAnimClone orig = Mem_Alloc(sizeof(AnimClone));
+
+    orig->clonedFrom = NULL;
+    orig->animSet = animSet;
+    orig->scene = NULL;
+    orig->lws = FALSE;
+
+    orig->root = root;
+    orig->root->lpVtbl->AddRef(orig->root);
+    orig->partCount = 0;
+    orig->frameCount = frameCount;
+
+    AnimClone_WalkTree(root, 0, AnimClone_FrameCountCallback, &orig->partCount);
+    orig->partArray = Mem_Alloc(sizeof(LPDIRECT3DRMFRAME3) * orig->partCount);
+
+    data.partArray = orig->partArray;
+    data.partCount = 0;
+    AnimClone_WalkTree(root, 0, AnimClone_SetupFrameArrayCallback, &data);
+
+    return orig;
+}
+
 lpAnimClone AnimClone_RegisterLws(lpLws_Info scene, LPDIRECT3DRMFRAME3 root, U32 frameCount)
 {
     AnimClone data;
@@ -126,8 +151,107 @@ void AnimClone_SetTime(lpAnimClone clone, F32 time, F32* oldTime)
 
 void AnimClone_CreateCopy(LPDIRECT3DRMFRAME3 orig, LPDIRECT3DRMFRAME3 clone, B32 lws)
 {
-    // TODO: Implement AnimClone_CreateCopy
-    Error_Warn(TRUE, "AnimClone_CreateCopy(): Not yet implemented"); // TEMP:
+    LPDIRECT3DRMFRAMEARRAY children;
+    LPDIRECT3DRMFRAME3 parent;
+    U32 count, loop;
+    const char* name;
+    U32 length;
+    Matrix4F mat;
+
+    // Link in the visuals...
+    if (lws)
+        AnimClone_CloneLwsMesh(orig, clone);
+    else
+        AnimClone_ReferenceVisuals(orig, clone);
+
+    // Copy the frame name...
+    orig->lpVtbl->GetName(orig, &length, NULL);
+    if (length)
+    {
+        name = Mem_Alloc(length);
+        orig->lpVtbl->GetName(orig, &length, name);
+        clone->lpVtbl->SetName(clone, name);
+        Mem_Free(name);
+    }
+
+    // Copy the transformation...
+    orig->lpVtbl->GetParent(orig, &parent);
+    orig->lpVtbl->GetTransform(orig, parent, mat);
+    parent->lpVtbl->Release(parent);
+    clone->lpVtbl->AddTransform(clone, D3DRMCOMBINE_REPLACE, mat);
+
+    // Do exactly the same for each child of the frame...
+    if (orig->lpVtbl->GetChildren(orig, &children) == D3DRM_OK)
+    {
+        count = children->lpVtbl->GetSize(children);
+        for (loop = 0; loop < count; loop++)
+        {
+            LPDIRECT3DRMFRAME3 newFrame, childFrame;
+            LPDIRECT3DRMFRAME child1;
+
+            children->lpVtbl->GetElement(children, loop, &child1);
+            child1->lpVtbl->QueryInterface(child1, &IID_IDirect3DRMFrame3, &childFrame);
+            child1->lpVtbl->Release(child1);
+
+            // All 'childFrame' are children of 'orig' thus all 'newFrame' should be children of 'clone'
+            lpD3DRM()->lpVtbl->CreateFrame(lpD3DRM(), clone, &newFrame);
+            Container_NoteCreation(newFrame);
+
+            AnimClone_CreateCopy(childFrame, newFrame, lws);
+
+            newFrame->lpVtbl->Release(newFrame);
+            childFrame->lpVtbl->Release(childFrame);
+        }
+        children->lpVtbl->Release(children);
+    }
+}
+
+void AnimClone_CloneLwsMesh(LPDIRECT3DRMFRAME3 orig, LPDIRECT3DRMFRAME3 clone)
+{
+    struct IUnknown *iunknown[ANIMCLONE_MAXVISUALS];
+    LPDIRECT3DRMUSERVISUAL uv;
+    lpMesh mesh;
+    U32 count, loop;
+
+    orig->lpVtbl->GetVisuals(orig, &count, NULL);
+    if (count)
+    {
+        Error_Fatal(count >= ANIMCLONE_MAXVISUALS, "ANIMCLONE_MAXVISUALS too small");
+        orig->lpVtbl->GetVisuals(orig, &count, iunknown);
+        for (loop = 0; loop < count; loop++)
+        {
+            if (iunknown[loop]->lpVtbl->QueryInterface(iunknown[loop], &IID_IDirect3DRMUserVisual, &uv) == D3DRM_OK)
+            {
+                mesh = (lpMesh) uv->lpVtbl->GetAppData(uv);
+                Error_Fatal(mesh == NULL, "Cannot get mesh");
+                Mesh_Clone(mesh, clone);
+            }
+        }
+    }
+}
+
+void AnimClone_ReferenceVisuals(LPDIRECT3DRMFRAME3 orig, LPDIRECT3DRMFRAME3 clone)
+{
+    //LPDIRECT3DRMVISUAL *visuals;
+    LPDIRECT3DRMVISUAL visual;
+    U32 count, loop;
+
+    // Cut down on the Mem_Alloc()s
+    LPDIRECT3DRMVISUAL visuals[ANIMCLONE_MAXVISUALS];
+
+    orig->lpVtbl->GetVisuals(orig, &count, NULL);
+    if (count)
+    {
+        Error_Fatal(count >= ANIMCLONE_MAXVISUALS, "ANIMCLONE_MAXVISUALS too small");
+        //visuals = Mem_Alloc(sizeof(LPDIRECT3DRMVISUAL) * count);
+        orig->lpVtbl->GetVisuals(orig, &count, (struct IUnknown **) visuals);
+
+        for (loop = 0; loop < count; loop++)
+        {
+            visual = visuals[loop];
+            clone->lpVtbl->AddVisual(clone, (struct IUnknown*) visual);
+        }
+    }
 }
 
 lpAnimClone AnimClone_Make(lpAnimClone orig, LPDIRECT3DRMFRAME3 parent, U32* frameCount)
