@@ -1214,6 +1214,13 @@ U32 Container_Mesh_SetVertices(lpContainer cont, U32 groupID, U32 index, U32 cou
     return 0;
 }
 
+lpContainer Container_SearchTree(lpContainer root, const char* name, Container_SearchMode mode, U32* count)
+{
+    // TODO: Implement Container_SearchTree
+
+    return NULL;
+}
+
 Container_Type Container_ParseTypeString(const char* str, B32* noTexture)
 {
     // For now, just check against one type...
@@ -1247,6 +1254,13 @@ Container_Type Container_ParseTypeString(const char* str, B32* noTexture)
     }
 
     return Container_Invalid;
+}
+
+const char* Container_FormatPartName(lpContainer cont, const char* partName, U32* instance)
+{
+    // TODO: Implement Container_FormatPartName
+
+    return NULL;
 }
 
 lpContainer Container_Load(lpContainer parent, const char* filename, const char* typestr, B32 looping)
@@ -2021,6 +2035,11 @@ void Container_Mesh_SetPerspectiveCorrection(lpContainer cont, U32 group, B32 on
         else
             mesh->lpVtbl->SetGroupMapping(mesh, group, 0);
     }
+}
+
+void Container_Mesh_Swap(lpContainer target, lpContainer origin, B32 restore)
+{
+    // TODO: Implement Container_Mesh_Swap
 }
 
 void Container_EnableFog(B32 on)

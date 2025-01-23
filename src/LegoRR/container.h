@@ -112,6 +112,13 @@ typedef struct Container_TextureData
     U32 flags;
 } Container_TextureData, *lpContainer_TextureData;
 
+typedef enum Container_SearchMode
+{
+    Container_SearchMode_FirstMatch,
+    Container_SearchMode_MatchCount,
+    Container_SearchMode_NthMatch
+} Container_SearchMode;
+
 typedef struct Container
 {
     LPDIRECT3DRMFRAME3 masterFrame, activityFrame, hiddenFrame;
@@ -257,7 +264,11 @@ extern U32 Container_Frame_GetTrigger(LPDIRECT3DRMFRAME3 frame);
 extern U32 Container_Mesh_GetVertices(lpContainer cont, U32 groupID, U32 index, U32 count, lpVertex retArray);
 extern U32 Container_Mesh_SetVertices(lpContainer cont, U32 groupID, U32 index, U32 count, lpVertex values);
 
+extern lpContainer Container_SearchTree(lpContainer root, const char* name, Container_SearchMode mode, U32* count);
+
 extern Container_Type Container_ParseTypeString(const char* str, B32* noTexture);
+
+extern const char* Container_FormatPartName(lpContainer cont, const char* partName, U32* instance);
 
 extern lpContainer Container_Load(lpContainer parent, const char* filename, const char* typestr, B32 looping);
 extern lpContainer Container_MakeLight(lpContainer parent, U32 type, F32 r, F32 g, F32 b);
@@ -317,6 +328,8 @@ extern void Container_Mesh_SetEmissive(lpContainer cont, U32 groupID, F32 r, F32
 extern void Container_Mesh_SetColourAlpha(lpContainer cont, U32 groupID, F32 r, F32 g, F32 b, F32 a);
 
 extern void Container_Mesh_SetPerspectiveCorrection(lpContainer cont, U32 group, B32 on);
+
+extern void Container_Mesh_Swap(lpContainer target, lpContainer origin, B32 restore);
 
 extern void Container_EnableFog(B32 on);
 extern void Container_SetFogColour(F32 r, F32 g, F32 b);
