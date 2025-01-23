@@ -11,6 +11,8 @@
 #define CONTAINER_ACTIVITYFRAMEPREFIX "ActFrame"
 #define CONTAINER_SCALESTRING "SCALE"
 
+#define CONTAINER_TRASHVALUE 0xdeaddead
+
 #define CONTAINER_TEXTURE_NOLOAD 0x00000001
 
 #define CONTAINER_MAXLISTS 20
@@ -194,9 +196,15 @@ extern lpContainer Container_Create(lpContainer parent);
 extern void Container_Remove(lpContainer dead);
 extern void Container_Remove2(lpContainer dead, B32 kill);
 
+extern void Container_Frame_FreeName(LPDIRECT3DRMFRAME3 frame);
+
 extern void Container_AddList();
 
+extern U32 Container_GetActivities(lpContainer cont, LPDIRECT3DRMFRAME3* frameList, struct AnimClone** acList, char* nameList);
+
 extern void Container_SetTypeData(lpContainer cont, const char* name, LPDIRECT3DRMLIGHT light, LPDIRECT3DRMMESH mesh, struct Mesh* transMesh);
+
+extern void Container_FreeTypeData(lpContainer cont);
 
 extern void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer owner, struct AnimClone* animClone, const char* asfname, U32* frameCount, const char* frameName, F32* currTime, F32* transCo, const char* actSample, void* soundRecord, U32* trigger);
 
@@ -237,6 +245,9 @@ extern U32 Container_GetAnimationFrames(lpContainer cont);
 
 extern LPDIRECT3DRMFRAME3 Container_Frame_Find(lpContainer cont, const char* findName, U32 hidden);
 
+extern void Container_Frame_RemoveAppData(LPDIRECT3DRMFRAME3 frame);
+
+extern const char* Container_Frame_GetName(LPDIRECT3DRMFRAME3 frame);
 extern F32 Container_Frame_GetCurrTime(LPDIRECT3DRMFRAME3 frame);
 extern U32 Container_Frame_GetFrameCount(LPDIRECT3DRMFRAME3 frame);
 extern struct AnimClone* Container_Frame_GetAnimClone(LPDIRECT3DRMFRAME3 frame);
@@ -325,6 +336,9 @@ extern void Container_YFlipTexture(LPDIRECT3DRMTEXTURE3 texture);
 extern S32 __cdecl Container_TextureSetSort(const void* a, const void* b);
 extern void Container_TextureDestroyCallback(LPDIRECT3DRMOBJECT lpD3DRMobj, void* lpArg);
 extern HRESULT Container_TextureLoadCallback(const char* name, void* data, LPDIRECT3DRMTEXTURE3 *texture);
+
+extern B32 Container_FrameLoad(const char* fname, LPDIRECT3DRMFRAME3 frame);
+extern LPDIRECT3DRMMESH Container_MeshLoad(void* file_data, U32 file_size, const char* file_name, LPDIRECT3DRMFRAME3 frame, B32 noTexture);
 
 extern inline LPDIRECT3DRMFRAME3 Container_GetMasterFrame(lpContainer cont);
 

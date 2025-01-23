@@ -144,3 +144,6 @@ extern void Lws_InterpolateDissolve(lpLws_Info scene, lpLws_Node node, U16 prev,
 extern inline lpMesh Lws_GetNodeMesh(lpLws_Info scene, lpLws_Node node);
 
 extern lpLws_Info Lws_Clone(lpLws_Info scene, LPDIRECT3DRMFRAME3 parent);
+
+extern void Lws_Free(lpLws_Info scene);
+extern void Lws_FreeNode(lpLws_Info scene, lpLws_Node node);

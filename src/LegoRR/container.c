@@ -71,7 +71,57 @@ lpContainer Container_Initialize(const char* gameName)
 
 void Container_Shutdown()
 {
-    // TODO: Implement Container_Shutdown
+    U32 loop, count, sub, unfreed = 0;
+    lpContainer testCont;
+
+    Container_DebugCheckOK(CONTAINER_DEBUG_NOTREQUIRED);
+
+    for (loop = 0; loop < CONTAINER_MAXLISTS; loop++)
+    {
+        if (containerGlobs.listSet[loop])
+        {
+            count = 0x00000001 << loop;
+
+            for (sub = 0; sub < count; sub++)
+            {
+                if ((testCont = &containerGlobs.listSet[loop][sub]))
+                {
+                    if (testCont == testCont->nextFree)
+                    {
+                        Error_Debug(Error_Format("Warning: Unfreed Container type #%d\n", testCont->type));
+                        unfreed++;
+                        Container_Remove2(testCont, TRUE);
+                    }
+                }
+            }
+
+            Mem_Free(containerGlobs.listSet[loop]);
+        }
+    }
+
+    containerGlobs.freeList = NULL;
+    containerGlobs.flags = 0x00000000;
+
+    for (loop = 0; loop < containerGlobs.textureCount; loop++)
+    {
+        if (containerGlobs.textureSet[loop].fileName)
+        {
+            Error_Debug(Error_Format("Texture %s was not removed\n", containerGlobs.textureSet[loop].fileName));
+            Mem_Free(containerGlobs.textureSet[loop].fileName);
+        }
+    }
+
+    if (containerGlobs.sharedDir)
+        Mem_Free(containerGlobs.sharedDir);
+
+#ifdef _DEBUG
+    if (unfreed)
+        Error_Debug(Error_Format("Warning: %d Unremoved Container%s\n", unfreed, unfreed == 1 ? "" : "s"));
+#endif // _DEBUG
+
+#ifdef _HIERARCHY_DEBUG
+    Container_Debug_DumpCreationInfo();
+#endif // _HIERARCHY_DEBUG
 }
 
 lpContainer Container_Create(lpContainer parent)
@@ -123,6 +173,16 @@ lpContainer Container_Create(lpContainer parent)
     return NULL;
 }
 
+void Container_Frame_FreeName(LPDIRECT3DRMFRAME3 frame)
+{
+    const char* name;
+
+    if ((name = Container_Frame_GetName(frame)))
+    {
+        Mem_Free(name);
+    }
+}
+
 void Container_AddList()
 {
     lpContainer list;
@@ -157,7 +217,243 @@ void Container_Remove(lpContainer dead)
 
 void Container_Remove2(lpContainer dead, B32 kill)
 {
-    // TODO: Implement Container_Remove2
+    LPDIRECT3DRMFRAME3 parentFrame;
+    HRESULT r;
+
+    Container_DebugCheckOK(dead);
+
+    Error_Fatal(!dead, "NULL passed to Container_Remove()");
+
+    if (dead->type != Container_Reference)
+        Container_SetParent(dead, NULL); // Unparent it first...
+
+    if (dead->type == Container_FromActivity || dead->type == Container_Anim)
+    {
+        if (dead->cloneData)
+        {
+            if (kill)
+            {
+                if (dead->cloneData->cloneTable)
+                    Mem_Free(dead->cloneData->cloneTable);
+                Mem_Free(dead->cloneData);
+            }
+            else
+            {
+                dead->cloneData->used = FALSE;
+                return;
+            }
+        }
+    }
+
+    // The Animation sets for the activity type object are not stored in the
+    // typeData (as there are an unlimited/unordered number of them) therefore
+    // they are stored in the frames AppData section... So release them...
+    if (dead->type == Container_FromActivity)
+    {
+        lpAnimClone *animCloneList;
+        LPDIRECT3DRMFRAME3 *frameList;
+        U32 loop, count;
+
+        count = Container_GetActivities(dead, NULL, NULL, NULL);
+
+        // Allocate two temporary buffers to be filled in with the list of
+        // animation sets and frames (one for each activity)...
+        animCloneList = Mem_Alloc(sizeof(lpAnimClone) * count);
+        frameList = Mem_Alloc(sizeof(LPDIRECT3DRMFRAME3) * count);
+        Container_GetActivities(dead, frameList, animCloneList, NULL);
+
+        for (loop = 0; loop < count; loop++)
+        {
+            // Release the animation set,
+            AnimClone_Remove(animCloneList[loop]);
+            // and free the string defining the frame's name,
+            Container_Frame_FreeName(frameList[loop]);
+            // Remove the appdata...
+            Container_Frame_RemoveAppData(frameList[loop]);
+            // Then release out reference to the frame...
+            r = frameList[loop]->lpVtbl->Release(frameList[loop]);
+        }
+
+        // Free the temporary buffers...
+        Mem_Free(animCloneList);
+        Mem_Free(frameList);
+    }
+    else if (dead->type == Container_Mesh)
+    {
+        lpContainer_MeshAppData appData;
+        LPDIRECT3DRMMESH mesh, subMesh;
+        lpMesh transmesh;
+        U32 loop;
+
+        if (dead->typeData)
+        {
+            if ((transmesh = dead->typeData->transMesh))
+            {
+                Mesh_Remove(dead->typeData->transMesh, dead->activityFrame);
+            }
+            else
+            {
+                mesh = dead->typeData->mesh;
+
+                // Free the separate mesh groups if used...
+                if ((appData = (lpContainer_MeshAppData) mesh->lpVtbl->GetAppData(mesh)))
+                {
+                    for (loop = 0; loop < appData->usedCount; loop++)
+                    {
+                        subMesh = appData->meshList[loop];
+                        dead->activityFrame->lpVtbl->DeleteVisual(dead->activityFrame, (struct IUnknown*) subMesh);
+                        r = subMesh->lpVtbl->Release(subMesh);
+                    }
+
+                    // Root mesh gets removed in Container_FreeTypeData()...
+
+                    Mem_Free(appData->meshList);
+                    Mem_Free(appData);
+                }
+            }
+        }
+    }
+    else if (dead->type == Container_Anim)
+    {
+        lpAnimClone animClone;
+        if ((animClone = Container_Frame_GetAnimClone(dead->activityFrame)))
+        {
+            AnimClone_Remove(animClone);
+        }
+    }
+
+#ifdef _DEBUG
+    if (dead->type == Container_Reference)
+    {
+        Container_Frame_FreeName(dead->masterFrame);
+        Container_Frame_FreeName(dead->activityFrame);
+    }
+    Container_Frame_FreeName(dead->hiddenFrame);
+#endif // _DEBUG
+
+    //Remove the typeData from the container and the AppData from the frames...
+    Container_FreeTypeData(dead);
+    if (dead->type != Container_Reference || !(dead->flags & CONTAINER_FLAG_DEADREFERENCE))
+        Container_Frame_RemoveAppData(dead->masterFrame);
+    if (dead->type != Container_Reference)
+        Container_Frame_RemoveAppData(dead->activityFrame);
+    Container_Frame_RemoveAppData(dead->hiddenFrame);
+
+    // Remove the frames and all unreferenced descendants from the hierarchy...
+
+    if (dead->type != Container_Reference)
+    {
+        dead->masterFrame->lpVtbl->GetParent(dead->masterFrame, &parentFrame);
+
+        if (parentFrame)
+        {
+            parentFrame->lpVtbl->DeleteChild(parentFrame, dead->masterFrame);
+            parentFrame->lpVtbl->Release(parentFrame);
+        }
+
+        r = dead->masterFrame->lpVtbl->Release(dead->masterFrame);
+        r = dead->activityFrame->lpVtbl->Release(dead->activityFrame);
+
+        dead->hiddenFrame->lpVtbl->GetParent(dead->hiddenFrame, &parentFrame);
+        if (parentFrame)
+        {
+            parentFrame->lpVtbl->DeleteChild(parentFrame, dead->hiddenFrame);
+            parentFrame->lpVtbl->Release(parentFrame);
+        }
+
+        r = dead->hiddenFrame->lpVtbl->Release(dead->hiddenFrame);
+    }
+    else
+    {
+        dead->hiddenFrame->lpVtbl->Release(dead->hiddenFrame);
+    }
+
+    // Trash the container structure...
+    Mem_DebugTrash(dead, CONTAINER_TRASHVALUE, sizeof(Container));
+
+    // Link the freed Container in at the beginning of the free list so it may be re-used...
+    dead->nextFree = containerGlobs.freeList;
+    containerGlobs.freeList = dead;
+}
+
+U32 Container_GetActivities(lpContainer cont, LPDIRECT3DRMFRAME3* frameList, lpAnimClone* acList, char* nameList)
+{
+    // Either as List or nameList may be passed as NULL in which case they will not
+    // be filled in (if both are NULL the result is the size of array required to hold them)...
+    // If nameList is not passed as NULL, the char* pointers returned MUST BE FREED
+    // AFTER USE!!!!
+
+    LPDIRECT3DRMFRAMEARRAY children;
+    LPDIRECT3DRMFRAME3 sourceFrame, childFrame;
+    LPDIRECT3DRMFRAME frame1;
+    U32 count, loop, source, nameLen = 0, listSize = 0;
+    const char* name;
+    HRESULT r;
+
+    if (cont->type == Container_FromActivity)
+    {
+        for (source = 0; source < 2; source++)
+        {
+            if (source == 0)
+                sourceFrame = cont->activityFrame;
+            if (source == 1)
+                sourceFrame = cont->hiddenFrame;
+
+            if (sourceFrame->lpVtbl->GetChildren(sourceFrame, &children) == D3DRM_OK)
+            {
+                count = children->lpVtbl->GetSize(children);
+                //Error_Warn(!count, "Can't find any children on frame");
+
+                for (loop = 0; loop < count; loop++)
+                {
+                    children->lpVtbl->GetElement(children, loop, &frame1);
+
+                    r = frame1->lpVtbl->QueryInterface(frame1, &IID_IDirect3DRMFrame3, &childFrame);
+                    Error_Fatal(r, "Cannot query frame3");
+                    frame1->lpVtbl->Release(frame1);
+
+                    childFrame->lpVtbl->GetName(childFrame, &nameLen, name);
+                    if (nameLen)
+                    {
+                        name = Mem_Alloc(nameLen);
+                        childFrame->lpVtbl->GetName(childFrame, &nameLen, name);
+
+                        if (_strnicmp(name, CONTAINER_ACTIVITYFRAMEPREFIX, strlen(CONTAINER_ACTIVITYFRAMEPREFIX)) == 0)
+                        {
+                            if (frameList != NULL)
+                                frameList[listSize] = childFrame;
+                            if (acList != NULL)
+                                acList[listSize] = Container_Frame_GetAnimClone(childFrame);
+                            if (nameList != NULL)
+                                nameList[listSize] = name;
+                            listSize++;
+
+                            if (nameList == NULL)
+                                Mem_Free(name);
+                        }
+                        else
+                        {
+                            Mem_Free(name);
+                        }
+                    }
+
+                    r = childFrame->lpVtbl->Release(childFrame);
+                }
+
+                r = children->lpVtbl->Release(children);
+            }
+            else
+            {
+                Error_Fatal(TRUE, "GetChildren() call failed");
+            }
+        }
+    }
+    else
+    {
+        Error_Fatal(TRUE, "Container_GetActivities() supplied with a non-activity object");
+    }
+
+    return listSize;
 }
 
 void Container_SetTypeData(lpContainer cont, const char* name, LPDIRECT3DRMLIGHT light, LPDIRECT3DRMMESH mesh, struct Mesh* transMesh)
@@ -182,6 +478,45 @@ void Container_SetTypeData(lpContainer cont, const char* name, LPDIRECT3DRMLIGHT
         cont->typeData->light = light;
         cont->typeData->mesh = mesh;
         cont->typeData->transMesh = transMesh;
+    }
+}
+
+void Container_FreeTypeData(lpContainer cont)
+{
+    HRESULT r;
+
+    if (cont->typeData)
+    {
+        if (cont->type == Container_FromActivity)
+        {
+            Mem_Free(cont->typeData->name);
+        }
+        else if (cont->type == Container_Light)
+        {
+            r = cont->typeData->light->lpVtbl->Release(cont->typeData->light);
+        }
+        else if (cont->type == Container_Mesh)
+        {
+            if (cont->typeData->mesh)
+            {
+                cont->activityFrame->lpVtbl->DeleteVisual(cont->activityFrame, (struct IUnknown*) cont->typeData->mesh);
+                r = cont->typeData->mesh->lpVtbl->Release(cont->typeData->mesh);
+            }
+        }
+        else if (cont->type == Container_LWO)
+        {
+            if (cont->typeData->transMesh)
+            {
+                Mesh_Remove(cont->typeData->transMesh, cont->activityFrame);
+            }
+        }
+        else
+        {
+            Error_Warn(TRUE, Error_Format("Code not implemented for Container type #%d", cont->type));
+        }
+
+        Mem_Free(cont->typeData);
+        cont->typeData = NULL;
     }
 }
 
@@ -596,8 +931,6 @@ F32 Container_SetAnimationTime(lpContainer cont, F32 time)
         {
             Error_Warn(TRUE, "Couldn't find frame (thus AnimationSet) to SetTime() on");
         }
-
-        // TODO: Implement Container_SetAnimationTime
     }
     else if (cont->type == Container_Anim)
     {
@@ -740,6 +1073,29 @@ LPDIRECT3DRMFRAME3 Container_Frame_Find(lpContainer cont, const char* findName, 
     }
 
     return foundFrame;
+}
+
+void Container_Frame_RemoveAppData(LPDIRECT3DRMFRAME3 frame)
+{
+    Container_AppData* appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    Error_Fatal(!appData, "AppData not set on frame");
+    if (appData)
+    {
+        if (appData->animSetFileName != NULL)
+            Mem_Free(appData->animSetFileName);
+        Mem_Free(appData);
+    }
+
+    frame->lpVtbl->SetAppData(frame, (DWORD)NULL);
+}
+
+const char* Container_Frame_GetName(LPDIRECT3DRMFRAME3 frame)
+{
+    Container_AppData* appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    Error_Fatal(!appData, "AppData not set on frame");
+    if (appData)
+        return appData->frameName;
+    return NULL;
 }
 
 F32 Container_Frame_GetCurrTime(LPDIRECT3DRMFRAME3 frame)
@@ -1028,10 +1384,38 @@ lpContainer Container_Load(lpContainer parent, const char* filename, const char*
         }
     } else if (type == Container_Frame)
     {
-        // TODO: Implement Container_Load
+        cont = Container_Create(parent);
+        cont->type = type;
+
+        // Just add it onto the activity frame...
+        sprintf(tempString, "%s.%s", name, containerGlobs.extensionNames[type]);
+        if (!Container_FrameLoad(tempString, cont->activityFrame))
+        {
+            Error_Warn(TRUE, Error_Format("Cannot Load File \"%s\".\n", tempString));
+        }
     } else if (type == Container_Mesh)
     {
-        // TODO: Implement Container_Load
+        LPDIRECT3DRMMESH mesh;
+        LPVOID fdata;
+        U32 fsize;
+
+        // Create a meshbuilder, retrieve the mesh object
+        // then attach it to the activity frame...
+        sprintf(tempString, "%s.%s", name, containerGlobs.extensionNames[type]);
+        if ((fdata = File_LoadBinary(tempString, &fsize)))
+        {
+            cont = Container_Create(parent);
+            cont->type = type;
+            if ((mesh = Container_MeshLoad(fdata, fsize, tempString, cont->activityFrame, noTexture)))
+            {
+                Container_SetTypeData(cont, NULL, NULL, mesh, NULL);
+            }
+            else
+            {
+                //Error_Warn(TRUE, Error_Format("Cannot Load File \"%s\"", tempString));
+            }
+            Mem_Free(fdata);
+        }
     } else if (type == Container_Anim || type == Container_LWS)
     {
         lpAnimClone animClone;
@@ -1050,7 +1434,22 @@ lpContainer Container_Load(lpContainer parent, const char* filename, const char*
         }
     } else if (type == Container_LWO)
     {
-        // TODO: Implement Container_Load
+        lpMesh mesh;
+        cont = Container_Create(parent);
+        cont->type = type;
+
+        //sprintf(tempString, "%s.lwo", name);
+        //if ((mesh = Lws_LoadMesh(NULL, name, cont->activityFrame, noTexture)))
+        if ((mesh = Mesh_Load(name, cont->activityFrame, noTexture)))
+        {
+            Container_SetTypeData(cont, NULL, NULL, NULL, mesh);
+        }
+        else
+        {
+            Error_Warn(TRUE, Error_Format("Cannot Load File \"%s\".", tempString));
+            Container_Remove(cont);
+            cont = NULL;
+        }
     } else if (type == Container_Invalid)
     {
         Error_Fatal(TRUE, "Do not recognize container type");
@@ -1888,6 +2287,78 @@ HRESULT Container_TextureLoadCallback(const char* name, void* data, LPDIRECT3DRM
     }
 
     return D3DRMERR_NOTFOUND;
+}
+
+B32 Container_FrameLoad(const char* fname, LPDIRECT3DRMFRAME3 frame)
+{
+    B32 res = FALSE;
+    D3DRMLOADMEMORY buffer;
+    Container_TextureData tData;
+
+    if ((buffer.lpMemory = File_LoadBinary(fname, &buffer.dSize)))
+    {
+        tData.xFileName = fname;
+        tData.flags = 0;
+
+        if (frame->lpVtbl->Load(frame, &buffer, NULL, D3DRMLOAD_FROMMEMORY, Container_TextureLoadCallback, &tData) == D3DRM_OK)
+        // if (frame->lpVtbl->Load(frame, &buffer, NULL, D3DRMLOAD_FROMMEMORY, NULL, NULL) == D3DRM_OK)
+        {
+            res = TRUE;
+        }
+        Mem_Free(buffer.lpMemory);
+    }
+
+    return res;
+}
+
+LPDIRECT3DRMMESH Container_MeshLoad(void* file_data, U32 file_size, const char* file_name, LPDIRECT3DRMFRAME3 frame, B32 noTexture)
+{
+    LPDIRECT3DRMMESHBUILDER3 mb;
+    LPDIRECT3DRMMESH mesh;
+    HRESULT r;
+    D3DRMLOADMEMORY buffer;
+    Container_TextureData tData;
+
+    buffer.lpMemory = file_data;
+    buffer.dSize = file_size;
+
+    if (lpD3DRM()->lpVtbl->CreateMeshBuilder(lpD3DRM(), &mb) == D3DRM_OK)
+    {
+        Container_NoteCreation(mb);
+
+        tData.xFileName = file_name;
+        tData.flags = 0;
+
+        if (noTexture)
+            tData.flags |= CONTAINER_TEXTURE_NOLOAD;
+
+        if (mb->lpVtbl->Load(mb, &buffer, NULL, D3DRMLOAD_FROMMEMORY, Container_TextureLoadCallback, &tData))
+        //if (mb->lpVtbl->Load(mb, &buffer, NULL, D3DRMLOAD_FROMMEMORY, NULL, NULL))
+        {
+            mb->lpVtbl->CreateMesh(mb, &mesh);
+            Container_NoteCreation(mesh);
+            r = mb->lpVtbl->Release(mb);
+            if (frame->lpVtbl->AddVisual(frame, (struct IUnknown*) mesh) == D3DRM_OK)
+            {
+                return mesh;
+            }
+            else
+            {
+                Error_Fatal(TRUE, "Unable to add visual to frame");
+            }
+        }
+        else
+        {
+            Error_Fatal(TRUE, Error_Format("Unable to load MeshBuilder from memory (%s)", file_name));
+        }
+        r = mb->lpVtbl->Release(mb);
+    }
+    else
+    {
+        Error_Fatal(TRUE, "Unable to create MeshBuilder");
+    }
+
+    return NULL;
 }
 
 inline LPDIRECT3DRMFRAME3 Container_GetMasterFrame(lpContainer cont)

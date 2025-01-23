@@ -862,3 +862,57 @@ lpLws_Info Lws_Clone(lpLws_Info scene, LPDIRECT3DRMFRAME3 parent)
 
     return clone;
 }
+
+void Lws_Free(lpLws_Info scene)
+{
+    lpLws_Node node;
+    lpLws_Info clonedFrom;
+    U16 loop;
+
+    clonedFrom = scene->clonedFrom;
+    scene->referenceCount--;
+
+    if (scene->referenceCount == 0)
+    {
+        for (loop = 0; loop < scene->nodeCount; loop++)
+        {
+            node = &scene->nodeList[loop];
+            Lws_FreeNode(scene, node);
+        }
+
+        if (scene->clonedFrom == NULL)
+        {
+            Mem_Free(scene->nodeList);
+            Mem_Free(scene->filePath);
+            if (scene->triggerCount)
+            {
+                Mem_Free(scene->triggerList);
+            }
+        }
+
+        Mem_Free(scene->frameList);
+        Mem_Free(scene);
+    }
+
+    if (clonedFrom)
+        Lws_Free(clonedFrom);
+}
+
+void Lws_FreeNode(lpLws_Info scene, lpLws_Node node)
+{
+    if (!(node->flags & LWSNODE_FLAG_NULL))
+    {
+        Mesh_Remove(Lws_GetNodeMesh(scene, node), scene->frameList[node->frameIndex]);
+    }
+
+    if (scene->clonedFrom == NULL && scene->referenceCount == 0)
+    {
+        Mem_Free(node->name);
+        Mem_Free(node->keyList);
+        if (node->dissolveCount)
+        {
+            Mem_Free(node->dissolveLevel);
+            Mem_Free(node->dissolveFrame);
+        }
+    }
+}

@@ -291,5 +291,36 @@ lpAnimClone AnimClone_Make(lpAnimClone orig, LPDIRECT3DRMFRAME3 parent, U32* fra
     }
 
     return clone;
+}
 
+void AnimClone_Remove(lpAnimClone dead)
+{
+    U32 loop;
+
+    if (dead)
+    {
+        if (dead->clonedFrom == NULL)
+        {
+            if (dead->lws)
+            {
+                Lws_Free(dead->scene);
+            }
+            else
+            {
+                dead->animSet->lpVtbl->Release(dead->animSet);
+                dead->root->lpVtbl->Release(dead->root);
+            }
+        }
+
+        if (!dead->lws)
+        {
+            for (loop = 0; loop < dead->partCount; loop++)
+            {
+                dead->partArray[loop]->lpVtbl->Release(dead->partArray[loop]);
+            }
+            Mem_Free(dead->partArray);
+        }
+
+        Mem_Free(dead);
+    }
 }

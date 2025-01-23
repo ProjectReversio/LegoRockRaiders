@@ -32,6 +32,21 @@ U32 Mem_AllocHandleDebug(U32 size, U32 line, const char* file)
     // TODO: Implement Mem_AllocHandleDebug
     Mem_AllocHandle(size);
 }
+
+void Mem_Debug_FillWith(void* addr, U32 value, U32 size)
+{
+    U32 loop;
+
+    for (loop = 0; loop < (size / 4); loop++)
+    {
+        ((U32*)addr)[loop] = value;
+    }
+
+    for (loop = 0; loop < (size % 4); loop++)
+    {
+        ((U8*)addr)[size - loop] = ((U8*)&value)[4 - loop];
+    }
+}
 #endif
 
 U32 Mem_AllocHandle(U32 size)

@@ -25,12 +25,19 @@ typedef struct Mem_Globs
 
 extern Mem_Globs memGlobs;
 
+#ifdef _DEBUG
+#define Mem_DebugTrash(a, v, s) Mem_Debug_FillWith((a), (v), (s))
+#else
+#define Mem_DebugTrash(a, v, s)
+#endif // _DEBUG
+
 extern void Mem_Initialize();
 extern void Mem_Shutdown(B32 freeAll);
 
 #ifdef _DEBUG
 extern void* Mem_AllocDebug(U32 size, U32 line, const char* file);
 extern U32 Mem_AllocHandleDebug(U32 size, U32 line, const char* file);
+extern void Mem_Debug_FillWith(void* addr, U32 value, U32 size);
 #endif
 
 inline void* Mem_Alloc(U32 size)
