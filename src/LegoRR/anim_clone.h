@@ -34,6 +34,8 @@ extern void AnimClone_CreateCopy(LPDIRECT3DRMFRAME3 orig, LPDIRECT3DRMFRAME3 clo
 extern void AnimClone_CloneLwsMesh(LPDIRECT3DRMFRAME3 orig, LPDIRECT3DRMFRAME3 clone);
 extern void AnimClone_ReferenceVisuals(LPDIRECT3DRMFRAME3 orig, LPDIRECT3DRMFRAME3 clone);
 
+extern B32 AnimClone_IsLws(lpAnimClone clone);
+
 extern lpAnimClone AnimClone_Make(lpAnimClone orig, LPDIRECT3DRMFRAME3 parent, U32* frameCount);
 
 extern void AnimClone_Remove(lpAnimClone dead);

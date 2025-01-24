@@ -165,6 +165,16 @@ typedef struct Container_MeshAppData
     B32 groupZeroHidden, firstAddGroup;
 } Container_MeshAppData, *lpContainer_MeshAppData;
 
+typedef struct Container_SearchData
+{
+    const char* string;
+    U32 stringLen;
+    B32 caseSensitive;
+    LPDIRECT3DRMFRAME3 resultFrame;
+    U32 count, mode, matchNumber;
+} Container_SearchData, *lpContainer_SearchData;
+
+typedef B32 (*Container_SearchCallback)(LPDIRECT3DRMFRAME3 frame, void* data);
 typedef void (*ContainerSoundTriggerCallback)(const char* sampleName, lpContainer cont, void* data);
 typedef void (*ContainerTriggerFrameCallback)(lpContainer cont, void* data);
 
@@ -219,6 +229,10 @@ extern void Container_SetSharedTextureDirectory(const char* path);
 
 extern void Container_SetTriggerFrameCallback(void (*Callback)(lpContainer cont, void* data), void* data);
 
+extern void Container_Frame_ReferenceDestroyCallback(LPDIRECT3DRMOBJECT lpD3DRMobj, void* lpArg);
+
+extern lpContainer Container_Frame_GetContainer(LPDIRECT3DRMFRAME3 frame);
+
 extern void Container_GetFrames(lpContainer cont, lpContainer ref, LPDIRECT3DRMFRAME3 *contFrame, LPDIRECT3DRMFRAME3 *refFrame);
 
 extern void Container_SetPosition(lpContainer cont, lpContainer ref, F32 x, F32 y, F32 z);
@@ -257,6 +271,8 @@ extern void Container_Frame_RemoveAppData(LPDIRECT3DRMFRAME3 frame);
 extern const char* Container_Frame_GetName(LPDIRECT3DRMFRAME3 frame);
 extern F32 Container_Frame_GetCurrTime(LPDIRECT3DRMFRAME3 frame);
 extern U32 Container_Frame_GetFrameCount(LPDIRECT3DRMFRAME3 frame);
+extern lpContainer Container_Frame_GetOwner(LPDIRECT3DRMFRAME3 frame);
+extern const char* Container_Frame_GetAnimSetFileName(LPDIRECT3DRMFRAME3 frame);
 extern struct AnimClone* Container_Frame_GetAnimClone(LPDIRECT3DRMFRAME3 frame);
 extern const char* Container_Frame_GetSample(LPDIRECT3DRMFRAME3 frame);
 extern U32 Container_Frame_GetTrigger(LPDIRECT3DRMFRAME3 frame);
@@ -265,6 +281,8 @@ extern U32 Container_Mesh_GetVertices(lpContainer cont, U32 groupID, U32 index, 
 extern U32 Container_Mesh_SetVertices(lpContainer cont, U32 groupID, U32 index, U32 count, lpVertex values);
 
 extern lpContainer Container_SearchTree(lpContainer root, const char* name, Container_SearchMode mode, U32* count);
+extern B32 Container_Frame_WalkTree(LPDIRECT3DRMFRAME3 frame, U32 level, Container_SearchCallback callback, void* data);
+extern B32 Container_Frame_SearchCallback(LPDIRECT3DRMFRAME3 frame, void* data);
 
 extern Container_Type Container_ParseTypeString(const char* str, B32* noTexture);
 

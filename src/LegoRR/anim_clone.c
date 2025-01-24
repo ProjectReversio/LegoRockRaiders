@@ -254,6 +254,11 @@ void AnimClone_ReferenceVisuals(LPDIRECT3DRMFRAME3 orig, LPDIRECT3DRMFRAME3 clon
     }
 }
 
+B32 AnimClone_IsLws(lpAnimClone clone)
+{
+    return clone->lws;
+}
+
 lpAnimClone AnimClone_Make(lpAnimClone orig, LPDIRECT3DRMFRAME3 parent, U32* frameCount)
 {
     lpAnimClone clone = Mem_Alloc(sizeof(AnimClone));

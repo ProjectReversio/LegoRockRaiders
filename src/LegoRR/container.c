@@ -600,6 +600,66 @@ void Container_SetTriggerFrameCallback(void (*Callback)(lpContainer cont, void* 
     containerGlobs.triggerFrameData;
 }
 
+void Container_Frame_ReferenceDestroyCallback(LPDIRECT3DRMOBJECT lpD3DRMobj, void* lpArg)
+{
+    LPDIRECT3DRMFRAME3 frame = (LPDIRECT3DRMFRAME3) lpD3DRMobj;
+    lpContainer cont;
+
+    Error_Warn(TRUE, "Reference container's frame is being destroyed");
+
+    if ((cont = Container_Frame_GetOwner(frame)))
+    {
+        cont->flags |= CONTAINER_FLAG_DEADREFERENCE;
+        Container_Frame_RemoveAppData(frame);
+    }
+}
+
+lpContainer Container_Frame_GetContainer(LPDIRECT3DRMFRAME3 frame)
+{
+    // Unlike Container_Frame_GetOwner() this will create a Container if there is
+    // none already assigned...
+
+    lpContainer cont;
+    HRESULT r;
+
+    Container_DebugCheckOK(frame);
+
+    if ((cont = Container_Frame_GetOwner(frame)) == NULL)
+    {
+        // Create a new Container (along with redundant master frame).
+        if ((cont = Container_Create(NULL)))
+        {
+            /*
+            // Then move over the activity frame to the 'real' master frame,
+            Container_Frame_SafeAddChild(frame, cont->activityFrame);
+            // Release the unused master frame and replace it with the correct one.
+            Container_Frame_RemoveAppData(cont->masterFrame);
+            */
+
+            // Remove the redundant frames from the container...
+            r = cont->masterFrame->lpVtbl->Release(cont->masterFrame);
+            r = cont->activityFrame->lpVtbl->Release(cont->activityFrame);
+            //r = cont->hiddenFrame->lpVtbl->Release(cont->hiddenFrame);
+
+            cont->masterFrame = frame;
+            //cont->hiddenFrame = NULL;
+            cont->activityFrame = NULL;
+
+            cont->type = Container_Reference;
+
+            frame->lpVtbl->AddDestroyCallback(frame, Container_Frame_ReferenceDestroyCallback, NULL);
+
+            Container_Frame_SetAppData(frame, cont, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+        }
+        else
+        {
+            Error_Warn(TRUE, "Couldn't create Container to surround frame");
+        }
+    }
+
+    return cont;
+}
+
 void Container_GetFrames(lpContainer cont, lpContainer ref, LPDIRECT3DRMFRAME3 *contFrame, LPDIRECT3DRMFRAME3 *refFrame)
 {
     Container_DebugCheckOK(cont);
@@ -1118,6 +1178,26 @@ U32 Container_Frame_GetFrameCount(LPDIRECT3DRMFRAME3 frame)
     return 0;
 }
 
+lpContainer Container_Frame_GetOwner(LPDIRECT3DRMFRAME3 frame)
+{
+    Container_AppData *appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    //Error_Warn(!appData, Error_Format("AppData not set on frame 0x%0.8x", frame));
+    if (appData)
+        return appData->ownerContainer;
+
+    return NULL;
+}
+
+const char* Container_Frame_GetAnimSetFileName(LPDIRECT3DRMFRAME3 frame)
+{
+    Container_AppData* appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    Error_Fatal(!appData, "AppData not set on frame");
+    if (appData)
+        return appData->animSetFileName;
+
+    return NULL;
+}
+
 lpAnimClone Container_Frame_GetAnimClone(LPDIRECT3DRMFRAME3 frame)
 {
     Container_AppData *appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
@@ -1216,9 +1296,162 @@ U32 Container_Mesh_SetVertices(lpContainer cont, U32 groupID, U32 index, U32 cou
 
 lpContainer Container_SearchTree(lpContainer root, const char* name, Container_SearchMode mode, U32* count)
 {
-    // TODO: Implement Container_SearchTree
+    Container_SearchData search;
+
+    Container_DebugCheckOK(root);
+
+    search.string = name;
+    search.stringLen = strlen(name);
+    search.caseSensitive = FALSE;
+    search.resultFrame = NULL;
+    search.count = 0;
+    search.mode = mode;
+
+    if (count)
+        search.matchNumber = *count;
+    else
+        search.matchNumber = 0;
+
+#ifdef CONTAINER_MATCHHIDDENHIERARCHY
+    if (root->flags & CONTAINER_FLAG_HIDDEN)
+    {
+        Container_Frame_WalkTree(root->activityFrame, 0, Container_Frame_SearchCallback, &search);
+    } else
+    {
+#endif // CONTAINER_MATCHHIDDENHIERARCHY
+
+    Container_Frame_WalkTree(root->masterFrame, 0, Container_Frame_SearchCallback, &search);
+
+#ifdef CONTAINER_MATCHHIDDENHIERARCHY
+    }
+#endif
+
+    if (mode == Container_SearchMode_FirstMatch || mode == Container_SearchMode_NthMatch)
+    {
+        if (search.resultFrame)
+            return Container_Frame_GetContainer(search.resultFrame);
+    }
+    else if (mode == Container_SearchMode_MatchCount)
+    {
+        *count = search.count;
+    }
 
     return NULL;
+}
+
+B32 Container_Frame_WalkTree(LPDIRECT3DRMFRAME3 frame, U32 level, Container_SearchCallback callback, void* data)
+{
+    LPDIRECT3DRMFRAMEARRAY children;
+    LPDIRECT3DRMFRAME3 child;
+    LPDIRECT3DRMFRAME child1;
+    U32 count, loop;
+    B32 finished = FALSE;
+    HRESULT r;
+
+    if (callback(frame, data))
+        return TRUE;
+
+    frame->lpVtbl->GetChildren(frame, &children);
+    count = children->lpVtbl->GetSize(children);
+
+    for (loop = 0; loop < count; loop++)
+    {
+        children->lpVtbl->GetElement(children, loop, &child1);
+        child1->lpVtbl->QueryInterface(child1, &IID_IDirect3DRMFrame3, &child);
+        child1->lpVtbl->Release(child1);
+
+        if (Container_Frame_WalkTree(child, level + 1, callback, data))
+        {
+            finished = TRUE;
+            r = child->lpVtbl->Release(child);
+            break;
+        }
+        r = child->lpVtbl->Release(child);
+    }
+
+    r = children->lpVtbl->Release(children);
+
+    return finished;
+}
+
+B32 Container_Frame_SearchCallback(LPDIRECT3DRMFRAME3 frame, void* data)
+{
+    Container_SearchData *search = data;
+    char* name;
+    U32 len, loop;
+
+    frame->lpVtbl->GetName(frame, &len, NULL);
+
+    if (search->stringLen == len - 1)
+    {
+        name = Mem_Alloc(len);
+        name[0] = '\0';
+        frame->lpVtbl->GetName(frame, &len, name);
+
+        // Replace any characters in the name string with '?' if their position
+        // corresponds to a '?' in the search string...
+        for (loop = 0; loop < len; loop++)
+        {
+            if (search->string[loop] == '?')
+                name[loop] = '?';
+        }
+
+        if (search->mode == Container_SearchMode_FirstMatch)
+        {
+            search->resultFrame = NULL;
+            if (search->caseSensitive)
+            {
+                if (strcmp(name, search->string) == 0)
+                    search->resultFrame = frame;
+            }
+            else
+            {
+                if (_stricmp(name, search->string) == 0)
+                    search->resultFrame = frame;
+            }
+        }
+        else if (search->mode == Container_SearchMode_MatchCount)
+        {
+            if (search->caseSensitive)
+            {
+                if (strcmp(name, search->string) == 0)
+                    search->count++;
+            }
+            else
+            {
+                if (_stricmp(name, search->string) == 0)
+                    search->count++;
+            }
+        }
+        else if (search->mode == Container_SearchMode_NthMatch)
+        {
+            search->resultFrame = NULL;
+            if (search->caseSensitive)
+            {
+                if (strcmp(name, search->string) == 0)
+                    search->count++;
+            }
+            else
+            {
+                if (_stricmp(name, search->string) == 0)
+                    search->count++;
+            }
+
+            if (search->count == search->matchNumber + 1)
+                search->resultFrame = frame;
+        }
+        else
+        {
+            Error_Fatal(TRUE, "Unknown search type");
+        }
+
+        Mem_Free(name);
+
+        if (search->resultFrame)
+            return TRUE;
+    }
+
+    return FALSE;
 }
 
 Container_Type Container_ParseTypeString(const char* str, B32* noTexture)
@@ -1256,11 +1489,63 @@ Container_Type Container_ParseTypeString(const char* str, B32* noTexture)
     return Container_Invalid;
 }
 
-const char* Container_FormatPartName(lpContainer cont, const char* partName, U32* instance)
+const char* Container_FormatPartName(lpContainer cont, const char* partname, U32* instance)
 {
-    // TODO: Implement Container_FormatPartName
+    // e.g. xf_????????_lphead_stationary_00_DDc_00 <- clone number (redundant (always zero))
+    //         ^uid     ^part  ^filename  ^instance
 
-    return NULL;
+    static char name[1024];
+    char tempString[1024];
+    LPDIRECT3DRMFRAME3 frame;
+    char* fname;
+    char* s;
+    lpAnimClone animClone;
+
+    Container_DebugCheckOK(cont);
+
+    if (cont->type == Container_FromActivity)
+    {
+        Error_Fatal(!cont->typeData, "Container has no typeData");
+        frame = Container_Frame_Find(cont, cont->typeData->name, 0);
+        Error_Fatal(frame == NULL, "Cannot locate current activities frame");
+    }
+    else if (cont->type == Container_Anim)
+    {
+        frame = cont->activityFrame;
+    }
+    else
+    {
+        Error_Fatal(TRUE, "Calling this function with a non-animation typ Container serves no purpose");
+    }
+
+    animClone = Container_Frame_GetAnimClone(frame);
+    // ^^^^^^ If animClone is NULL then you have probably misspelled the animation filename. Duh!
+
+    if (AnimClone_IsLws(animClone))
+    {
+        if (instance)
+            sprintf(name, "%s_%0.2i", partname, *instance);
+        else
+            sprintf(name, "%s_??", partname);
+    }
+    else
+    {
+        sprintf(tempString, "%s", Container_Frame_GetAnimSetFileName(frame));
+        _strlwr(tempString);
+
+        for (fname = s = tempString; *s != '\0'; s++)
+        {
+            if (*s == '\\')
+                fname = s + 1;
+        }
+
+        if (instance)
+            sprintf(name, "xf_????????_%s_%s_%0.2d_DDc_00", partname, fname, *instance);
+        else
+            sprintf(name, "xf_????????_%s_%s_??_DDc_00", partname, fname);
+    }
+
+    return name;
 }
 
 lpContainer Container_Load(lpContainer parent, const char* filename, const char* typestr, B32 looping)
@@ -2039,7 +2324,103 @@ void Container_Mesh_SetPerspectiveCorrection(lpContainer cont, U32 group, B32 on
 
 void Container_Mesh_Swap(lpContainer target, lpContainer origin, B32 restore)
 {
-    // TODO: Implement Container_Mesh_Swap
+    // If not restoring then move any visuals on the container onto its hidden frame
+    // and add the mesh from the origin container onto the target container...
+    // Otherwise, restore the original visuals...
+
+    LPDIRECT3DRMMESH mesh;
+    LPDIRECT3DRMVISUAL* visuals;
+    LPDIRECT3DRMVISUAL visual;
+    LPDIRECT3DRMFRAME3 frame;
+    U32 count, loop;
+    lpMesh transmesh;
+
+    Container_DebugCheckOK(target);
+    Error_Fatal(target->type != Container_Reference && target->type != Container_Mesh, "Container_Mesh_Swap() can only be used with a reference or mesh object as the 'target' container");
+    Error_Fatal((target->flags & CONTAINER_FLAG_MESHSWAPPED) && !restore, "Container_Mesh_Swap() called without restoring previous swap");
+    Error_Fatal(!(target->flags & CONTAINER_FLAG_MESHSWAPPED) && restore, "Container_Mesh_Swap() called with restore without a previous swap");
+
+    if (target->type == Container_Reference)
+        frame = target->masterFrame;
+    else
+        frame = target->activityFrame;
+
+    if (!restore) // Move all the existing visuals onto the hidden frame...
+    {
+        frame->lpVtbl->GetVisuals(frame, &count, NULL);
+        if (count)
+        {
+            Error_Fatal(count >= CONTAINER_MAXVISUALS, "CONTAINER_MAXVISUALS too small");
+            visuals = containerGlobs.visualArray;
+            frame->lpVtbl->GetVisuals(frame, &count, (struct IUnknown**) visuals);
+
+            //Error_Debug(Error_Format("Moving %i visuals to the hidden frame\n", count));
+            for (loop = 0; loop < count; loop++)
+            {
+                visual = visuals[loop];
+
+                target->hiddenFrame->lpVtbl->AddVisual(target->hiddenFrame, (struct IUnknown*) visual);
+                frame->lpVtbl->DeleteVisual(frame, (struct IUnknown*) visual);
+            }
+        }
+
+        if (origin)
+        {
+            //Error_Fatal(origin->type != Container_Mesh, "Container_Mesh_Swap() called with non-mesh object as 'origin' container");
+            if ((mesh = origin->typeData->mesh) == NULL)
+            {
+                transmesh = origin->typeData->transMesh;
+                Error_Fatal(transmesh == NULL, "Container has no mesh object");
+                frame->lpVtbl->AddVisual(frame, (struct IUnknown*) transmesh->uv);
+            }
+            else
+            {
+                Error_Fatal(mesh->lpVtbl->GetAppData(mesh), "Not yet supported with separate mesh groups");
+
+                // Add the origin's mesh as the new visual
+                frame->lpVtbl->AddVisual(frame, (struct IUnknown*) mesh);
+            }
+        }
+
+        target->flags |= CONTAINER_FLAG_MESHSWAPPED;
+    }
+    else
+    {
+        // Delete the visual (will still be used by the origin container) then restore the original visuals...
+
+        frame->lpVtbl->GetVisuals(frame, &count, NULL);
+        if (count)
+        {
+            Error_Fatal(count >= CONTAINER_MAXVISUALS, "CONTAINER_MAXVISUALS too small");
+            visuals = containerGlobs.visualArray;
+            frame->lpVtbl->GetVisuals(frame, &count, (struct IUnknown**) visuals);
+
+            //Error_Debug(Error_Format("Deleting %i visuals...\n", count));
+            for (loop = 0; loop < count; loop++)
+            {
+                visual = visuals[loop];
+                frame->lpVtbl->DeleteVisual(frame, (struct IUnknown*) visual);
+            }
+        }
+
+        target->hiddenFrame->lpVtbl->GetVisuals(target->hiddenFrame, &count, NULL);
+        if (count)
+        {
+            Error_Fatal(count >= CONTAINER_MAXVISUALS, "CONTAINER_MAXVISUALS too small");
+            visuals = containerGlobs.visualArray;
+            target->hiddenFrame->lpVtbl->GetVisuals(target->hiddenFrame, &count, (struct IUnknown**) visuals);
+
+            //Error_Debug(Error_Format("Restoring %i visuals from the hidden frame...\n", count));
+            for (loop = 0; loop < count; loop++)
+            {
+                visual = visuals[loop];
+                frame->lpVtbl->AddVisual(frame, (struct IUnknown*) visual);
+                target->hiddenFrame->lpVtbl->DeleteVisual(target->hiddenFrame, (struct IUnknown*) visual);
+            }
+        }
+
+        target->flags &= ~CONTAINER_FLAG_MESHSWAPPED;
+    }
 }
 
 void Container_EnableFog(B32 on)
