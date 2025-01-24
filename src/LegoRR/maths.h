@@ -140,3 +140,5 @@ extern B32 Maths_PointInsidePoly(lpPoint2F point, lpPoint2F fromList, lpPoint2F 
 extern B32 Maths_RayPlaneIntersection(lpPoint3F endPoint, lpPoint3F rayOrigin, lpPoint3F ray, lpPoint3F planePoint, lpPoint3F planeNormal);
 extern B32 Maths_RayPlaneDistance(F32* dist, lpPoint3F rayOrigin, lpPoint3F ray, lpPoint3F planePoint, lpPoint3F planeNormal);
 extern void Maths_RayEndPoint(lpPoint3F endPoint, lpPoint3F rayOrigin, lpPoint3F ray, F32 dist);
+
+extern lpPoint3F Maths_Vector3DRotate(lpPoint3F r, lpPoint3F v, lpPoint3F axis, F32 theta);

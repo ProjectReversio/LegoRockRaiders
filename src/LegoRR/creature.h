@@ -9,6 +9,8 @@ typedef enum CreatureFlags
     CREATURE_FLAG_SOURCE = 0x1,
 } CreatureFlags;
 
+typedef F32 (*GetWorldZCallback)(F32, F32, struct Map3D*);
+
 typedef struct CreatureModel
 {
     LegoObject_ID objID;
@@ -38,3 +40,6 @@ typedef struct CreatureModel
 extern B32 Creature_Load(lpCreatureModel creature, LegoObject_ID objID, lpContainer root, const char* filename, const char* gameName);
 
 extern void Creature_Clone(lpCreatureModel srcCreature, lpCreatureModel destCreature);
+
+extern void Creature_SetOrientation(lpCreatureModel creature, F32 xDir, F32 yDir);
+extern void Creature_SetPosition(lpCreatureModel creature, F32 xPos, F32 yPos, GetWorldZCallback zCallback, struct Map3D* map);

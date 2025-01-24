@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "maths.h"
 
+#include <d3drmdef.h>
+
 S16 Maths_Rand()
 {
     return rand();
@@ -94,4 +96,7 @@ void Maths_RayEndPoint(lpPoint3F endPoint, lpPoint3F rayOrigin, lpPoint3F ray, F
     Maths_Vector3DAdd(endPoint, rayOrigin, &temp);
 }
 
-
+lpPoint3F Maths_Vector3DRotate(lpPoint3F r, lpPoint3F v, lpPoint3F axis, F32 theta)
+{
+    return (lpPoint3F) D3DRMVectorRotate((LPD3DVECTOR) r, (LPD3DVECTOR) v, (LPD3DVECTOR) axis, theta);
+}

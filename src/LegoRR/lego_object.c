@@ -4,6 +4,7 @@
 
 #include "creature.h"
 #include "dummy.h"
+#include "lego.h"
 #include "mem.h"
 #include "sfx.h"
 
@@ -91,7 +92,59 @@ void LegoObject_IncLevelPathsBuilt(B32 incCurrent)
 
 void LegoObject_SetPositionAndHeading(lpLegoObject liveObj, F32 xPos, F32 yPos, F32 theta, B32 assignHeading)
 {
-    // TODO: Implement LegoObject_SetPositionAndHeading
+    Point3F orientation;
+    Point3F axis;
+    if (assignHeading)
+    {
+        orientation.x = 0.0f;
+        orientation.y = 1.0f;
+        orientation.z = 0.0f;
+        axis.x = 0.0f;
+        axis.y = 0.0f;
+        axis.z = -1.0f;
+        Maths_Vector3DRotate(&orientation, &orientation, &axis, theta);
+    }
+
+    if (liveObj->type == LegoObject_Vehicle)
+    {
+        // TODO: Implement LegoObject_SetPositionAndHeading
+    }
+    else if (liveObj->type == LegoObject_MiniFigure)
+    {
+        if (assignHeading)
+            Creature_SetOrientation(liveObj->miniFigure, orientation.x, orientation.y);
+
+        Creature_SetPosition(liveObj->miniFigure, xPos, yPos, LegoObject_GetWorldZCallback_Lake, Lego_GetMap());
+    }
+    else if (liveObj->type == LegoObject_RockMonster)
+    {
+        // TODO: Implement LegoObject_SetPositionAndHeading
+    }
+    else if (liveObj->type == LegoObject_Building)
+    {
+        // TODO: Implement LegoObject_SetPositionAndHeading
+    }
+    else if ((liveObj->flags3 & LIVEOBJ3_SIMPLEOBJECT) != LIVEOBJ3_NONE)
+    {
+        // TODO: Implement LegoObject_SetPositionAndHeading
+    }
+
+    if (assignHeading)
+    {
+        liveObj->faceDirection.x = orientation.x;
+        liveObj->faceDirection.y = orientation.y;
+        liveObj->faceDirection.z = orientation.z;
+    }
+
+    liveObj->faceDirectionLength = 0.01f;
+
+    liveObj->tempPosition.x = liveObj->faceDirection.x * -0.01f;
+    liveObj->tempPosition.y = liveObj->faceDirection.y * -0.01f;
+    liveObj->tempPosition.z = liveObj->faceDirection.z * -0.01f;
+
+    liveObj->tempPosition.x += xPos;
+    liveObj->tempPosition.y += yPos;
+    liveObj->tempPosition.z += 0.0f;
 }
 
 void LegoObject_FUN_00438720(lpLegoObject liveObj)
@@ -191,6 +244,28 @@ B32 LegoObject_Remove(lpLegoObject liveObj)
 {
     // TODO: Implement LegoObject_Remove
     return FALSE;
+}
+
+// The same as `LegoObject_GetWorldZCallback`, but returns a lower Z value with over Lake terrain.
+// Objects wading in a lake (aka, not sailing) will have their Z lowered a bit, and have it at the lowest near the center of a lake BLOCK.
+F32 LegoObject_GetWorldZCallback_Lake(F32 xPos, F32 yPos, struct Map3D* map)
+{
+    Point2I blockPos;
+
+    F32 zModifier = 0.0f;
+    if (Map3D_WorldToBlockPos(map, xPos, yPos, &blockPos.x, &blockPos.y, &zModifier) != 0)
+    {
+        if (legoGlobs.currLevel->blocks[(legoGlobs.currLevel->width * blockPos.y + blockPos.x)].terrain == Lego_SurfaceType8_Lake)
+        {
+            zModifier *= 8.0f;
+        }
+        else
+        {
+            zModifier = 0.0f;
+        }
+    }
+
+    return Map3D_GetWorldZ(map, xPos, yPos) + zModifier;
 }
 
 void HiddenObject_Add(void* objModel, LegoObject_Type objType, LegoObject_ID objID, Point2F* worldPos, F32 heading, F32 health, const char* thisOLName, const char* drivingOLName)

@@ -230,6 +230,17 @@ typedef struct LegoObject
 
     // TODO: Implement LegoObject
 
+    F32 routeCurveTotalDist;
+    F32 routeCurveCurrDist;
+    F32 routeCurveInitialDist; // Used as spill-over when distance taveled is beyond routeCurveTotalDist.
+
+    Point2F point_298;
+    Point3F tempPosition; // Last position used for finding new face direction when moving.
+    Point3F faceDirection; // 1.0 to -1.0 directions that determine rotation with atan2
+    F32 faceDirectionLength; // faceDirection length (faceDirection may be Vector4F...)
+
+    // TODO: Implement LegoObject
+
     const char* activityName1;
     const char* activityName2;
     struct AITask* aiTask; // Linked list of tasks (or null). Linked using the `AITask::next` field.
@@ -321,6 +332,10 @@ extern B32 LegoObject_RunThroughListsSkipUpgradeParts(LegoObject_RunThroughLists
 extern lpLegoObject LegoObject_Create_internal();
 extern lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, LegoObject_ID objID);
 extern B32 LegoObject_Remove(lpLegoObject liveObj);
+
+// The same as `LegoObject_GetWorldZCallback`, but returns a lower Z value with over Lake terrain.
+// Objects wading in a lake (aka, not sailing) will have their Z lowered a bit, and have it at the lowest near the center of a lake BLOCK.
+extern F32 LegoObject_GetWorldZCallback_Lake(F32 xPos, F32 yPos, struct Map3D* map);
 
 extern void HiddenObject_Add(void* objModel, LegoObject_Type objType, LegoObject_ID objID, Point2F* worldPos, F32 heading, F32 health, const char* thisOLName, const char* drivingOLName);
 

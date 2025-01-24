@@ -79,5 +79,14 @@ void Creature_Clone(lpCreatureModel srcCreature, lpCreatureModel destCreature)
     destCreature->polyHigh = MeshLOD_Clone(srcCreature->polyHigh);
     destCreature->polyFP = MeshLOD_Clone(srcCreature->polyFP);
     destCreature->contAct = Container_Clone(srcCreature->contAct);
+}
 
+void Creature_SetOrientation(lpCreatureModel creature, F32 xDir, F32 yDir)
+{
+    Container_SetOrientation(creature->contAct, NULL, xDir, yDir, 0.0f, 0.0f, 0.0f, -1.0f);
+}
+
+void Creature_SetPosition(lpCreatureModel creature, F32 xPos, F32 yPos, GetWorldZCallback zCallback, struct Map3D* map)
+{
+    Container_SetPosition(creature->contAct, NULL, xPos, yPos, zCallback(xPos, yPos, map));
 }
