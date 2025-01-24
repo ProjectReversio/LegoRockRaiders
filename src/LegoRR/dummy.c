@@ -2,7 +2,7 @@
 
 void Object_Hide(lpBasicObjectModel basicObjData, B32 hide)
 {
-    // TODO: Implement Object_Hide
+    Container_Hide(basicObjData->contAct, hide);
 }
 
 void Object_SetOwnerObject(lpBasicObjectModel basicObjData, lpLegoObject liveObj)
