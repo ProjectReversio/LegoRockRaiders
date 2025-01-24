@@ -36,3 +36,5 @@ typedef struct CreatureModel
 } CreatureModel, *lpCreatureModel;
 
 extern B32 Creature_Load(lpCreatureModel creature, LegoObject_ID objID, lpContainer root, const char* filename, const char* gameName);
+
+extern void Creature_Clone(lpCreatureModel srcCreature, lpCreatureModel destCreature);

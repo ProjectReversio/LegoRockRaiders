@@ -376,7 +376,251 @@ void Container_Remove2(lpContainer dead, B32 kill)
     containerGlobs.freeList = dead;
 }
 
-U32 Container_GetActivities(lpContainer cont, LPDIRECT3DRMFRAME3* frameList, lpAnimClone* acList, char* nameList)
+lpContainer Container_GetParent(lpContainer child)
+{
+    LPDIRECT3DRMFRAME3 childFrame, parentFrame;
+    lpContainer parent;
+
+    Container_DebugCheckOK(child);
+
+    // Special condition - Root frame 'may' have a parent with no container attached
+    // (one that is at a level above the Containers hierarchy scope)...
+    if (child == containerGlobs.rootContainer)
+        return NULL;
+
+    childFrame = child->masterFrame;
+    Error_Fatal(!childFrame, "Child has no masterFrame");
+
+    childFrame->lpVtbl->GetParent(childFrame, &parentFrame);
+
+    if (parentFrame)
+    {
+        parent = Container_Frame_GetContainer(parentFrame);
+        parentFrame->lpVtbl->Release(parentFrame);
+    }
+    else
+    {
+        parent = NULL;
+    }
+
+    return parent;
+}
+
+lpContainer Container_Clone(lpContainer orig)
+{
+    lpContainer cont = NULL, useOldClone = NULL;
+    D3DRMMATRIX4D mat;
+    U32 loadRef = 0;
+
+    Container_DebugCheckOK(orig);
+
+    if (orig->type == Container_Mesh)
+    {
+        // Special case - Don't allow cloning of separated group meshes...
+
+        LPDIRECT3DRMMESH mesh = orig->typeData->mesh;
+        Error_Fatal(!mesh, "TypeData missing on Object");
+        if (mesh->lpVtbl->GetAppData(mesh))
+            Error_Fatal(TRUE, "Cannot clone separated mesh objects");
+    }
+
+    if (orig->type == Container_FromActivity || orig->type == Container_Anim)
+    {
+        // If the object being cloned is a clone itself then use the original
+        if (orig->cloneData)
+        {
+            if (orig->cloneData->clonedFrom)
+            {
+                orig = orig->cloneData->clonedFrom;
+            }
+        }
+
+        if (orig->cloneData)
+        {
+            lpContainer testClone;
+            U32 loop;
+
+            // If the original clone is unused then return that...
+            if (!orig->cloneData->used)
+            {
+                useOldClone = orig;
+            }
+            else
+            {
+                // Find an unused clone...
+                for (loop = 0; loop < orig->cloneData->cloneCount; loop++)
+                {
+                    if ((testClone = orig->cloneData->cloneTable[loop]))
+                    {
+                        if (!testClone->cloneData->used)
+                        {
+                            useOldClone = testClone;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (useOldClone)
+            {
+                useOldClone->cloneData->used = TRUE;
+                cont = useOldClone;
+                Container_SetParent(cont, Container_GetParent(orig));
+                Container_SetAnimationTime(cont, 0.0f);
+                Error_Debug(Error_Format("Reusing freed clone\n"));
+            }
+            else
+            {
+                cont = Container_Create(Container_GetParent(orig));
+                loadRef = orig->cloneData->cloneCount++;
+                orig->cloneData->cloneTable = Mem_ReAlloc(orig->cloneData->cloneTable, sizeof(lpContainer) * orig->cloneData->cloneCount);
+                orig->cloneData->cloneTable[loadRef] = cont;
+            }
+        }
+        else
+        {
+            cont = Container_Create(Container_GetParent(orig));
+            orig->cloneData = Mem_Alloc(sizeof(Container_CloneData));
+            orig->cloneData->cloneCount = 1;
+            orig->cloneData->cloneTable = Mem_Alloc(sizeof(lpContainer));
+            orig->cloneData->cloneTable[0] = cont;
+            orig->cloneData->clonedFrom = NULL;
+            orig->cloneData->cloneNumber = 0;
+            orig->cloneData->used = TRUE;
+            loadRef = 0;
+        }
+    }
+    else
+    {
+        cont = Container_Create(Container_GetParent(orig));
+    }
+
+    {
+        // Duplicate the activity frames transformation matrix
+        LPDIRECT3DRMFRAME3 parent;
+        orig->activityFrame->lpVtbl->GetParent(orig->activityFrame, &parent);
+        orig->activityFrame->lpVtbl->GetTransform(orig->activityFrame, parent, mat);
+        orig->activityFrame->lpVtbl->AddTransform(cont->activityFrame, D3DRMCOMBINE_REPLACE, mat);
+        parent->lpVtbl->Release(parent);
+    }
+
+    if (useOldClone)
+        return cont;
+
+    // Copy across any data to the clone here..
+    cont->type = orig->type;
+    if (orig->typeData)
+    {
+        cont->typeData = Mem_Alloc(sizeof(Container_TypeData));
+        memcpy(cont->typeData, orig->typeData, sizeof(Container_TypeData));
+        if (orig->typeData->name)
+        {
+            cont->typeData->name = Mem_Alloc(strlen(orig->typeData->name) + 1);
+            strcpy(cont->typeData->name, orig->typeData->name);
+        }
+    }
+    else
+    {
+        cont->typeData = NULL;
+    }
+
+    if (orig->type == Container_FromActivity || orig->type == Container_Anim)
+    {
+        // The new container obviously will have no cloneData.
+        cont->cloneData = Mem_Alloc(sizeof(Container_CloneData));
+        cont->cloneData->cloneTable = NULL;
+        cont->cloneData->cloneCount = 0;
+        cont->cloneData->clonedFrom = orig;
+        cont->cloneData->cloneNumber = loadRef;
+        cont->cloneData->used = TRUE;
+        loadRef++;
+    }
+
+    if (cont->type == Container_Mesh)
+    {
+        LPDIRECT3DRMMESH mesh = cont->typeData->mesh;
+        Error_Fatal(!mesh, "TypeData missing on Object");
+        cont->activityFrame->lpVtbl->AddVisual(cont->activityFrame, (struct IUnknown*) mesh);
+        mesh->lpVtbl->AddRef(mesh);
+
+#ifdef _DEBUG
+        Container_Frame_FormatName(cont->masterFrame, "Master Frame Mesh Clone (0x%0.8x)", orig->masterFrame);
+#endif // _DEBUG
+    }
+    else if (cont->type == Container_FromActivity)
+    {
+        U32 loop, count;
+        LPDIRECT3DRMFRAME3 *frameList;
+        const char** actNameList;
+        const char* fname;
+        F32 transCo;
+        U32 trigger;
+        const char* sample;
+        lpAnimClone origClone;
+
+        count = Container_GetActivities(orig, NULL, NULL, NULL);
+        frameList = Mem_Alloc(sizeof(LPDIRECT3DRMFRAME3) * count);
+        actNameList = Mem_Alloc(sizeof(const char*) * count);
+
+        Container_GetActivities(orig, frameList, NULL, actNameList);
+        for (loop = 0; loop < count; loop++)
+        {
+            fname = Container_Frame_GetAnimSetFileName(frameList[loop]);
+            transCo = Container_Frame_GetTransCo(frameList[loop]);
+            sample = Container_Frame_GetSample(frameList[loop]);
+            origClone = Container_Frame_GetAnimClone(frameList[loop]);
+            trigger = Container_Frame_GetTrigger(frameList[loop]);
+            Container_Frame_SetAppData(frameList[loop], NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+            Container_AddActivity2(cont, fname, &actNameList[loop][strlen(CONTAINER_ACTIVITYFRAMEPREFIX) + 1], transCo, trigger, sample, origClone, FALSE, FALSE); // Last two parameters are ignored during cloning...
+            Mem_Free(actNameList[loop]);
+
+            // UPDATE SOUND HERE TO ENSURE STREAMING BUFFER IS UPDATED PROPERLY
+            // THIS IS DUE TO CLONING TAKING A LONG TIME
+            // ONLY CHECK EVERY 25 ANIMATIONS BECAUSE STREAMING SOUND IS QUITE INTENSIVE?
+            if (loop % 25 == 0)
+                Sound3D_Update();
+        }
+
+        Mem_Free(frameList);
+        Mem_Free(actNameList);
+
+        if (cont->typeData)
+            Container_SetActivity(cont, cont->typeData->name);
+
+#ifdef _DEBUG
+    Container_Frame_FormatName(cont->masterFrame, "Master Frame Clone (0x%0.8x)", orig->masterFrame);
+    Container_Frame_FormatName(cont->activityFrame, "Activity Frame Clone (0x%0.8x)", orig->activityFrame);
+    Container_Frame_FormatName(cont->hiddenFrame, "Hidden Frame Clone (0x%0.8x)", orig->hiddenFrame);
+#endif // _DEBUG
+
+    }
+    else if (cont->type == Container_Anim)
+    {
+        const char* fname;
+        U32 frameCount;
+        lpAnimClone origClone, newClone;
+
+        fname = Container_Frame_GetAnimSetFileName(orig->activityFrame);
+
+        origClone = Container_Frame_GetAnimClone(orig->activityFrame);
+        newClone = AnimClone_Make(origClone, cont->activityFrame, &frameCount);
+        Container_Frame_SetAppData(cont->activityFrame, cont, newClone, fname, &frameCount, NULL, NULL, NULL, NULL, NULL, NULL);
+    }
+    else if (cont->type == Container_LWO)
+    {
+        lpMesh mesh = cont->typeData->transMesh;
+        Error_Fatal(!mesh, "TypeData missing on Object");
+        cont->typeData->transMesh = Mesh_Clone(mesh, cont->activityFrame);
+    }
+    else
+    {
+        Error_Warn(TRUE, Error_Format("Code not implemented for Container type #%d", orig->type));
+    }
+
+    return cont;
+}
+
+U32 Container_GetActivities(lpContainer cont, LPDIRECT3DRMFRAME3* frameList, lpAnimClone* acList, char** nameList)
 {
     // Either as List or nameList may be passed as NULL in which case they will not
     // be filled in (if both are NULL the result is the size of array required to hold them)...
@@ -412,7 +656,7 @@ U32 Container_GetActivities(lpContainer cont, LPDIRECT3DRMFRAME3* frameList, lpA
                     Error_Fatal(r, "Cannot query frame3");
                     frame1->lpVtbl->Release(frame1);
 
-                    childFrame->lpVtbl->GetName(childFrame, &nameLen, name);
+                    childFrame->lpVtbl->GetName(childFrame, &nameLen, NULL);
                     if (nameLen)
                     {
                         name = Mem_Alloc(nameLen);
@@ -1206,6 +1450,16 @@ lpAnimClone Container_Frame_GetAnimClone(LPDIRECT3DRMFRAME3 frame)
         return appData->animClone;
 
     return NULL;
+}
+
+F32 Container_Frame_GetTransCo(LPDIRECT3DRMFRAME3 frame)
+{
+    Container_AppData* appData = (Container_AppData*) frame->lpVtbl->GetAppData(frame);
+    Error_Fatal(!appData, "AppData not set on frame");
+    if (appData)
+        return appData->transCo;
+
+    return 0.0f;
 }
 
 const char* Container_Frame_GetSample(LPDIRECT3DRMFRAME3 frame)
@@ -3075,4 +3329,19 @@ LPDIRECTDRAWSURFACE4 Container_LoadTextureSurface(const char* fname, B32 managed
 lpContainer Container_GetRoot()
 {
     return containerGlobs.rootContainer;
+}
+
+void Container_SetUserData(lpContainer cont, void* data)
+{
+    Container_DebugCheckOK(cont);
+
+    cont->userData = data;
+}
+
+void Container_EnableSoundTriggers(B32 on)
+{
+    if (on)
+        containerGlobs.flags |= CONTAINER_GLOB_FLAG_TRIGGERENABLED;
+    else
+        containerGlobs.flags &= ~CONTAINER_GLOB_FLAG_TRIGGERENABLED;
 }

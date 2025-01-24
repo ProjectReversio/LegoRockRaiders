@@ -230,6 +230,13 @@ typedef struct LegoObject
 
     // TODO: Implement LegoObject
 
+    const char* activityName1;
+    const char* activityName2;
+    struct AITask* aiTask; // Linked list of tasks (or null). Linked using the `AITask::next` field.
+    Point2F targetBlockPos; // (init: -1.0f, -1.0f)
+
+    // TODO: Implement LegoObject
+
     U32 objLevel;
     lpObjectStats stats;
     F32 aiTimer_338;
@@ -269,6 +276,14 @@ typedef struct LegoObject_Globs
 
     // TODO: Implement LegoObject_Globs
 
+    const char* activityName[79]; // [activityType:79]
+
+    // TODO: Implement LegoObject_Globs
+
+    U32 listCount;
+
+    // TODO: Implement LegoObject_Globs
+
     lpLegoObject minifigureObj_9cb8;
 
     // TODO: Implement LegoObject_Globs
@@ -277,6 +292,8 @@ typedef struct LegoObject_Globs
 extern LegoObject_Globs objectGlobs;
 
 extern void LegoObject_Initialize();
+
+extern void LegoObject_AddList();
 
 extern void LegoObject_TriggerFrameCallback(lpContainer cont, void* data);
 
@@ -301,6 +318,7 @@ typedef B32 (LegoObject_RunThroughListsCallback)(lpLegoObject obj, void* search)
 
 extern B32 LegoObject_RunThroughListsSkipUpgradeParts(LegoObject_RunThroughListsCallback callback, void* search);
 
+extern lpLegoObject LegoObject_Create_internal();
 extern lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, LegoObject_ID objID);
 extern B32 LegoObject_Remove(lpLegoObject liveObj);
 

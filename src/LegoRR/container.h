@@ -217,7 +217,11 @@ extern void Container_Frame_FreeName(LPDIRECT3DRMFRAME3 frame);
 
 extern void Container_AddList();
 
-extern U32 Container_GetActivities(lpContainer cont, LPDIRECT3DRMFRAME3* frameList, struct AnimClone** acList, char* nameList);
+extern lpContainer Container_GetParent(lpContainer child);
+
+extern lpContainer Container_Clone(lpContainer orig);
+
+extern U32 Container_GetActivities(lpContainer cont, LPDIRECT3DRMFRAME3* frameList, struct AnimClone** acList, char** nameList);
 
 extern void Container_SetTypeData(lpContainer cont, const char* name, LPDIRECT3DRMLIGHT light, LPDIRECT3DRMMESH mesh, struct Mesh* transMesh);
 
@@ -274,6 +278,7 @@ extern U32 Container_Frame_GetFrameCount(LPDIRECT3DRMFRAME3 frame);
 extern lpContainer Container_Frame_GetOwner(LPDIRECT3DRMFRAME3 frame);
 extern const char* Container_Frame_GetAnimSetFileName(LPDIRECT3DRMFRAME3 frame);
 extern struct AnimClone* Container_Frame_GetAnimClone(LPDIRECT3DRMFRAME3 frame);
+extern F32 Container_Frame_GetTransCo(LPDIRECT3DRMFRAME3 frame);
 extern const char* Container_Frame_GetSample(LPDIRECT3DRMFRAME3 frame);
 extern U32 Container_Frame_GetTrigger(LPDIRECT3DRMFRAME3 frame);
 
@@ -382,3 +387,7 @@ extern struct AnimClone* Container_LoadAnimSet(const char* fname, LPDIRECT3DRMFR
 extern LPDIRECTDRAWSURFACE4 Container_LoadTextureSurface(const char* fname, B32 managed, U32* width, U32* height, B32* trans);
 
 extern lpContainer Container_GetRoot();
+
+extern void Container_SetUserData(lpContainer cont, void* data);
+
+extern void Container_EnableSoundTriggers(B32 on);

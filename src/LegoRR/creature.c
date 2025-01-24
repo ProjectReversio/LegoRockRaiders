@@ -70,3 +70,14 @@ B32 Creature_Load(lpCreatureModel creature, LegoObject_ID objID, lpContainer roo
 
     return result;
 }
+
+void Creature_Clone(lpCreatureModel srcCreature, lpCreatureModel destCreature)
+{
+    memcpy(destCreature, srcCreature, sizeof(CreatureModel));
+    destCreature->flags &= ~CREATURE_FLAG_SOURCE;
+    destCreature->polyMedium = MeshLOD_Clone(srcCreature->polyMedium);
+    destCreature->polyHigh = MeshLOD_Clone(srcCreature->polyHigh);
+    destCreature->polyFP = MeshLOD_Clone(srcCreature->polyFP);
+    destCreature->contAct = Container_Clone(srcCreature->contAct);
+
+}
