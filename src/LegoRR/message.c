@@ -19,3 +19,10 @@ void Message_AddMessageAction(Message_Type messageType, lpLegoObject argument1Ob
 {
     // TODO: Implement Message_AddMessageAction
 }
+
+lpLegoObject Message_GetPrimarySelectedUnit()
+{
+    // TODO: Implement Message_GetPrimarySelectedUnit
+
+    return NULL;
+}

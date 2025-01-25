@@ -535,3 +535,15 @@ B32 Level_AddCryOreToToolStore(lpLegoObject liveObj, SearchAddCryOre_c* search)
     // TODO: Implement Level_AddCryOreToToolStore
     return FALSE;
 }
+
+void Level_SetPointer_FromSurfaceType(Lego_SurfaceType8 surfaceType)
+{
+    // TODO: Implement Level_SetPointer_FromSurfaceType
+}
+
+B32 Level_BlockPointerCheck(Point2I* blockPos)
+{
+    // TODO: Implement Level_BlockPointerCheck
+
+    return FALSE;
+}

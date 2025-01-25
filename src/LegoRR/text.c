@@ -9,3 +9,8 @@ void Text_Load(lpTextWindow textWindow1, lpTextWindow textWindow2, S32 imageX, S
 {
     // TODO: Implement Text_Load
 }
+
+void Text_DisplayMessage(Text_Type textType, B32 changeTiming, B32 setFlag4)
+{
+    // TODO: Implement Text_DisplayMessage
+}

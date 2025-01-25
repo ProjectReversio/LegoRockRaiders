@@ -159,6 +159,12 @@ B32 LegoObject_RunThroughListsSkipUpgradeParts(LegoObject_RunThroughListsCallbac
     return FALSE;
 }
 
+B32 LegoObject_DoPickSphereSelection(U32 mouseX, U32 mouseY, lpLegoObject* selectedObj)
+{
+    // TODO: Implement LegoObject_DoPickSphereSelection
+    return FALSE;
+}
+
 lpLegoObject LegoObject_Create_internal()
 {
     if (objectGlobs.freeList == NULL)

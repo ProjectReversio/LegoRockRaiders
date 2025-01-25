@@ -392,6 +392,16 @@ typedef enum ViewMode
     ViewMode_Top = 1,
 } ViewMode;
 
+typedef enum PointerSFX_Type
+{
+    PointerSFX_Okay                  = 0,
+    PointerSFX_NotOkay               = 1,
+    PointerSFX_NotOkay_ImmovableRock = 2,
+    PointerSFX_Okay_TopPriority      = 3,
+    PointerSFX_Okay_Wall             = 4,
+    PointerSFX_Okay_Floor            = 5,
+} PointerSFX_Type;
+
 typedef struct Lego_Globs
 {
     lpConfig config;
@@ -702,6 +712,11 @@ extern void Lego_LoadTextMessages(lpConfig config);
 extern void Lego_LoadPanels(lpConfig config, U32 screenWidth, U32 screenHeight);
 extern void Lego_LoadPanelButtons(lpConfig config, U32 screenWidth, U32 screenHeight);
 extern void Lego_LoadTutorialIcon(lpConfig config);
+
+extern void Lego_ShowBlockToolTip(Point2I* mouseBlockPos, B32 showConstruction, B32 playSound, B32 showCavern);
+
+// Sets the current combination pointer/hover SFX, with a pointer duration of 12.5.
+extern void Lego_SetPointerSFX(PointerSFX_Type pointerSFXType);
 
 // This is an old method for playing movies.
 // It supports playing a movie that isn't just in the center of the screen

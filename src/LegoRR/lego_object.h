@@ -410,6 +410,8 @@ typedef B32 (LegoObject_RunThroughListsCallback)(lpLegoObject obj, void* search)
 
 extern B32 LegoObject_RunThroughListsSkipUpgradeParts(LegoObject_RunThroughListsCallback callback, void* search);
 
+extern B32 LegoObject_DoPickSphereSelection(U32 mouseX, U32 mouseY, lpLegoObject* selectedObj);
+
 extern lpLegoObject LegoObject_Create_internal();
 extern lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, LegoObject_ID objID);
 extern B32 LegoObject_Remove(lpLegoObject liveObj);

@@ -11,3 +11,5 @@ extern void HelpWindow_Initialize(lpConfig config, const char* gameName);
 extern void HelpWindow_IfFlag4_AndParam_Clear1_Set2_Else_Clear3(B32 state);
 
 extern void HelpWindow_RecallDependencies(LegoObject_Type objType, LegoObject_ID objID, U32 objLevel, B32 noHelpWindow);
+
+extern B32 HelpWindow_FUN_00418cd0(U32 mouseX, U32 mouseY, B32 leftButton, B32 leftLast, B32 leftReleased, F32 elapsed);

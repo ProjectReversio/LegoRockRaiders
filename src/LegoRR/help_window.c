@@ -21,3 +21,10 @@ void HelpWindow_RecallDependencies(LegoObject_Type objType, LegoObject_ID objID,
 {
     // TODO: Implement HelpWindow_RecallDependencies
 }
+
+B32 HelpWindow_FUN_00418cd0(U32 mouseX, U32 mouseY, B32 leftButton, B32 leftLast, B32 leftReleased, F32 elapsed)
+{
+    // TODO: Implement HelpWindow_FUN_00418cd0
+
+    return FALSE;
+}
