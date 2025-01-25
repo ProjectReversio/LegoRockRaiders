@@ -201,6 +201,34 @@ typedef enum LegoObject_UpgradeType
     LegoObject_UpgradeType_Carry = 3,
 } LegoObject_UpgradeType;
 
+typedef enum LegoObject_ToolType
+{
+    LegoObject_ToolType_Drill      = 0,
+    LegoObject_ToolType_Spade      = 1,
+    LegoObject_ToolType_Hammer     = 2,
+    LegoObject_ToolType_Spanner    = 3,
+    LegoObject_ToolType_Laser      = 4,
+    LegoObject_ToolType_PusherGun  = 5,
+    LegoObject_ToolType_BirdScarer = 6,
+    LegoObject_ToolType_FreezerGun = 7,
+    LegoObject_ToolType_Barrier    = 8,
+    LegoObject_ToolType_Dynamite   = 9,
+    LegoObject_ToolType_CryOre     = 10,
+    LegoObject_ToolType_Count      = 11,
+} LegoObject_ToolType;
+
+typedef enum LegoObject_GlobFlags
+{
+    OBJECT_GLOB_FLAG_NONE             = 0,
+    OBJECT_GLOB_FLAG_INITIALISED      = 0x1,
+    OBJECT_GLOB_FLAG_REMOVING         = 0x2,
+    OBJECT_GLOB_FLAG_POWERUPDATING    = 0x4,
+    OBJECT_GLOB_FLAG_POWERNEEDSUPDATE = 0x8,
+    OBJECT_GLOB_FLAG_UPDATING         = 0x10,
+    OBJECT_GLOB_FLAG_LEVELENDING      = 0x20,
+    OBJECT_GLOB_FLAG_CYCLEUNITS       = 0x40,
+} LegoObject_GlobFlags;
+
 typedef U32 LegoObject_ID;
 
 typedef struct HiddenObject
@@ -230,6 +258,11 @@ typedef struct LegoObject
 
     // TODO: Implement LegoObject
 
+    U32 routeBlocksTotal; // total blocks to travel for current route
+    U32 routeBlocksCurrent; // number of blocks traveled (up to routingBlocksTotal)
+
+    // TODO: Implement LegoObject
+
     F32 routeCurveTotalDist;
     F32 routeCurveCurrDist;
     F32 routeCurveInitialDist; // Used as spill-over when distance taveled is beyond routeCurveTotalDist.
@@ -239,12 +272,28 @@ typedef struct LegoObject
     Point3F faceDirection; // 1.0 to -1.0 directions that determine rotation with atan2
     F32 faceDirectionLength; // faceDirection length (faceDirection may be Vector4F...)
 
-    // TODO: Implement LegoObject
+    S32 strafeSignFP; // (direction sign only, does higher numbers do not affect speed)
+    S32 forwardSignFP; // (direction sign only, does higher numbers do not affect speed)
+    F32 rotateSpeedFP;
+    Point3F dirVector_2c8; // Always (0.0f, 0.0f, 0.0f)
+    F32 animTime;
+    U32 animRepeat; // Number of times an activity animation is set to repeat (i.e. number of jumping jacks/reinforce hits). Zero is default.
+    lpContainer cameraNull;
+    U32 cameraFrame;
+    lpContainer contMiniTeleportUp;
 
     const char* activityName1;
     const char* activityName2;
     struct AITask* aiTask; // Linked list of tasks (or null). Linked using the `AITask::next` field.
     Point2F targetBlockPos; // (init: -1.0f, -1.0f)
+
+    struct LegoObject* routeToObject;
+    struct LegoObject* interactObject; // Used in combination with routeToObject for Upgrade station and RM boulders.
+    struct LegoObject* carryingThisObject;
+    struct LegoObject* carriedObjects[6]; // (includes carried vehicles)
+    U32 carryingIndex; // Index of carried object in holder's carriedObjects list.
+    U32 numCarriedObjects;
+    U32 carryNullFrames;
 
     // TODO: Implement LegoObject
 
@@ -256,7 +305,33 @@ typedef struct LegoObject
     F32 energy; // (init: -1.0f)
     S32* stolenCrystalLevels; // (alloc: new int[6]) Each element is the count stolen for a level, index 0 only seems to be used for recovery
 
+    LOD_PolyLevel polyLOD;
+    S32 drillSoundHandle; // Handle returned by SFX_Play functions
+    S32 engineSoundHandle; // Handle returned by SFX_Play functions
+    F32 weaponSlowDeath;
+    U32 weaponID;
+    F32 weaponRechargeTimer;
+
+    struct LegoObject* freezeObject; // (bi-directional link between frozen RockMonster and IceCube)
+    F32 freezeTimer;
+
+    struct LegoObject* driveObject; // (bi-directional link between driver and driven)
+
+    LegoObject_ToolType carriedTools[5];
+    U32 numCarriedTools;
+    F32 bubbleTimer;
+    struct Image* bubbleImage;
+
+    U32 teleporter_modeFlags;
+    U32 teleporter_teleportFlags;
+
     // TODO: Implement LegoObject
+
+    Point3F beamVector_39c; // (used for unkWeaponTypes 1-3 "Lazer", "Pusher", "Freezer")
+    Point3F weaponVector_3a8; // (used for unkWeaponType 4 "Lazer")
+
+    Point2F pushingVec2D;
+    F32 pushingDist;
 
     struct LegoObject* throwObject; // (bi-directional link between thrower and thrown
     struct LegoObject* projectileObject; // Projectile fired from weapon.
@@ -289,11 +364,17 @@ typedef struct LegoObject_Globs
 
     const char* activityName[79]; // [activityType:79]
 
-    // TODO: Implement LegoObject_Globs
-
+    void* UnkSurfaceGrid_1_TABLE;
+    void* UnkSurfaceGrid_2_TABLE;
+    U32 UnkSurfaceGrid_COUNT;
+    F32 radarSurveyCycleTimer; // Timer for how often survey scans update.
     U32 listCount;
+    LegoObject_GlobFlags flags;
+    U32 toolNullIndex[11]; // [toolType:11]
+    U32 objectTotalLevels[20][15][16]; // [objType:20][objIndex:15][objLevel:16]
+    U32 objectPrevLevels[20][15][16]; // [objType:20][objIndex:15][objLevel:16]
 
-    // TODO: Implement LegoObject_Globs
+    U32 NERPs_TrainFlags;
 
     lpLegoObject minifigureObj_9cb8;
 
@@ -332,6 +413,12 @@ extern B32 LegoObject_RunThroughListsSkipUpgradeParts(LegoObject_RunThroughLists
 extern lpLegoObject LegoObject_Create_internal();
 extern lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, LegoObject_ID objID);
 extern B32 LegoObject_Remove(lpLegoObject liveObj);
+
+extern void LegoObject_MiniFigure_EquipTool(lpLegoObject liveObj, LegoObject_ToolType toolType);
+
+extern void LegoObject_UpdatePowerConsumption(lpLegoObject liveObj);
+
+extern B32 LegoObject_UpdateActivityChange(lpLegoObject liveObj);
 
 // The same as `LegoObject_GetWorldZCallback`, but returns a lower Z value with over Lake terrain.
 // Objects wading in a lake (aka, not sailing) will have their Z lowered a bit, and have it at the lowest near the center of a lake BLOCK.

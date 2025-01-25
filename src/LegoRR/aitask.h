@@ -1,7 +1,6 @@
 #pragma once
 
 #include "platform.h"
-#include "lego_object.h"
 
 typedef struct AITask
 {
@@ -15,4 +14,6 @@ extern void AITask_Initialize();
 
 extern void AITask_Game_SetNoGather(B32 noGather);
 
-extern void AITask_DoCollect(lpLegoObject liveObj, F32 param2);
+extern void AITask_DoCollect(struct LegoObject* liveObj, F32 param2);
+
+extern void AITask_LiveObject_Unk_UpdateAITask_AnimationWait(struct LegoObject* liveObj);

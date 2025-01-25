@@ -23,3 +23,8 @@ void NERPs_InitBlockPointersTable(Lego_Level* level)
 {
     // TODO: Implement NERPs_InitBlockPointersTable
 }
+
+B32 NERPFunc__True(S32* stack)
+{
+    return TRUE;
+}

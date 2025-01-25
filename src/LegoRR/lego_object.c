@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "aitask.h"
 #include "creature.h"
 #include "dummy.h"
 #include "lego.h"
@@ -201,13 +202,19 @@ lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, LegoObj
         liveObj->miniFigure = Mem_Alloc(sizeof(CreatureModel));
         Creature_Clone(objModel, liveObj->miniFigure);
         Object_SetOwnerObject(liveObj->miniFigure, liveObj);
-
-        // TODO: Implement LegoObject_Create
+        liveObj->carryNullFrames = NERPFunc__True(liveObj->miniFigure);
+        //LiveFlags3 ogFlags = liveObj->flags3;
+        liveObj->flags3 |= (LIVEOBJ3_UNK_1 | LIVEOBJ3_CANREINFORCE | LIVEOBJ3_CANFIRSTPERSON | LIVEOBJ3_CANCARRY | LIVEOBJ3_CANPICKUP | LIVEOBJ3_CANYESSIR | LIVEOBJ3_CANSELECT | LIVEOBJ3_CANDAMAGE | LIVEOBJ3_AITASK_UNK_400000);
 
         if (((CreatureModel*)objModel)->drillNullName != NULL)
         {
-            // TODO: Implement LegoObject_Create
+            //liveObj->flags3 = ogFlags | (LIVEOBJ3_UNK_1 | LIVEOBJ3_CANDIG | LIVEOBJ3_CANREINFORCE | LIVEOBJ3_CANFIRSTPERSON | LIVEOBJ3_CANCARRY | LIVEOBJ3_CANPICKUP | LIVEOBJ3_CANYESSIR | LIVEOBJ3_CANSELECT | LIVEOBJ3_CANDAMAGE | LIVEOBJ3_AITASK_UNK_400000);
+            liveObj->flags3 |= LIVEOBJ3_CANDIG;
         }
+
+        StatsObject_SetObjectLevel(liveObj, 0);
+        liveObj->flags3 |= LIVEOBJ3_CANDYNAMITE;
+        LegoObject_MiniFigure_EquipTool(liveObj, LegoObject_ToolType_Drill);
     }
     else if (liveObj->type == LegoObject_RockMonster)
     {
@@ -229,13 +236,37 @@ lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, LegoObj
     liveObj->activityName2 = objectGlobs.activityName[0];
     liveObj->activityName1 = objectGlobs.activityName[9];
 
-    // TODO: Implement LegoObject_Create
+    if (LegoObject_UpdateActivityChange(liveObj))
+        liveObj->flags3 |= LIVEOBJ3_CANTURN;
+
+    liveObj->activityName1 = objectGlobs.activityName[16];
+    if (LegoObject_UpdateActivityChange(liveObj))
+        liveObj->flags3 |= LIVEOBJ3_CANGATHER;
+
+    liveObj->activityName1 = objectGlobs.activityName[2];
+    if (LegoObject_UpdateActivityChange(liveObj))
+        liveObj->flags3 |= LIVEOBJ3_CANROUTERUBBLE;
+
+    liveObj->activityName1 = objectGlobs.activityName[0];
+    LegoObject_UpdateActivityChange(liveObj);
+
+    AITask_LiveObject_Unk_UpdateAITask_AnimationWait(liveObj);
 
     Container_EnableSoundTriggers(TRUE);
     if (soundOn)
         SFX_SetSoundOn(TRUE, FALSE);
 
-    // TODO: Implement LegoObject_Create
+    LegoObject_UpdatePowerConsumption(liveObj);
+
+    objectGlobs.objectTotalLevels[liveObj->type][liveObj->id][0]++;
+
+    if ((StatsObject_GetStatsFlags2(liveObj) & STATS2_UNSELECTABLE) != STATS2_NONE)
+    {
+        liveObj->flags3 &= (LIVEOBJ3_UNK_1|LIVEOBJ3_CANDIG|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANTURN|LIVEOBJ3_CANFIRSTPERSON|LIVEOBJ3_CANCARRY|LIVEOBJ3_CANPICKUP|LIVEOBJ3_CANYESSIR|LIVEOBJ3_UNK_200|LIVEOBJ3_UNK_400|
+          LIVEOBJ3_UNUSED_800|LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNK_2000|LIVEOBJ3_UNK_4000|LIVEOBJ3_CANDYNAMITE|LIVEOBJ3_UNK_10000|LIVEOBJ3_SIMPLEOBJECT|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_UPGRADEPART|
+          LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_SELECTED|LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_REMOVING|LIVEOBJ3_UNK_1000000|LIVEOBJ3_UNK_2000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_MONSTER_UNK_8000000|
+          LIVEOBJ3_CANROUTERUBBLE|LIVEOBJ3_HASPOWER|LIVEOBJ3_UNK_40000000|LIVEOBJ3_POWEROFF);
+    }
 
     return liveObj;
 }
@@ -243,6 +274,23 @@ lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, LegoObj
 B32 LegoObject_Remove(lpLegoObject liveObj)
 {
     // TODO: Implement LegoObject_Remove
+    return FALSE;
+}
+
+void LegoObject_MiniFigure_EquipTool(lpLegoObject liveObj, LegoObject_ToolType toolType)
+{
+    // TODO: Implement LegoObject_MiniFigure_EquipTool
+}
+
+void LegoObject_UpdatePowerConsumption(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_UpdatePowerConsumption
+}
+
+B32 LegoObject_UpdateActivityChange(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_UpdateActivityChange
+
     return FALSE;
 }
 
