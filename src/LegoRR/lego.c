@@ -1252,7 +1252,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
 
                                     if (Message_AnyUnitSelected())
                                     {
-
+                                        // TODO: Implement Lego_HandleWorld
                                     }
 
                                     if (!someBool)
