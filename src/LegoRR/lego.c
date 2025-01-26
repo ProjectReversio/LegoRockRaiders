@@ -3481,7 +3481,49 @@ void Lego_ShowBlockToolTip(Point2I* mouseBlockPos, B32 showConstruction, B32 pla
 // Sets the current combination pointer/hover SFX, with a pointer duration of 12.5.
 void Lego_SetPointerSFX(PointerSFX_Type pointerSFXType)
 {
-    // TODO: Implement Lego_SetPointerSFX
+    B32 origQueueMode = SFX_IsQueueMode();
+    SFX_SetQueueMode(FALSE, FALSE);
+
+    switch (pointerSFXType)
+    {
+        case PointerSFX_Okay:
+        {
+            Pointer_SetCurrent(Pointer_Okay, 12.5f);
+            SFX_Random_PlaySoundNormal(SFX_Okay, FALSE);
+            break;
+        }
+        case PointerSFX_NotOkay:
+        {
+            Pointer_SetCurrent(Pointer_NotOkay, 12.5f);
+            SFX_Random_PlaySoundNormal(SFX_NotOkay, FALSE);
+            break;
+        }
+        case PointerSFX_NotOkay_ImmovableRock:
+        {
+            Pointer_SetCurrent(Pointer_NotOkay, 12.5f);
+            SFX_Random_PlaySoundNormal(SFX_ImmovableRock, FALSE);
+            break;
+        }
+        case PointerSFX_Okay_TopPriority:
+        {
+            Pointer_SetCurrent(Pointer_Okay, 12.5f);
+            SFX_Random_PlaySoundNormal(SFX_TopPriority, FALSE);
+            break;
+        }
+        case PointerSFX_Okay_Wall:
+        {
+            Pointer_SetCurrent(Pointer_Okay, 12.5f);
+            SFX_Random_PlaySoundNormal(SFX_Wall, FALSE);
+            break;
+        }
+        case PointerSFX_Okay_Floor:
+        {
+            Pointer_SetCurrent(Pointer_Okay, 12.5f);
+            SFX_Random_PlaySoundNormal(SFX_Floor, FALSE);
+            break;
+        }
+    }
+    SFX_SetQueueMode(origQueueMode, FALSE);
 }
 
 void Lego_ClearSomeFlags3_FUN_00435950()

@@ -89,6 +89,8 @@ extern void Pointer_LoadPointers(lpConfig config);
 
 extern Pointer_Type Pointer_GetCurrentType();
 
+extern void Pointer_SetCurrent(Pointer_Type pointerType, F32 timer);
+
 extern void Pointer_SetCurrent_IfTimerFinished(Pointer_Type pointerType);
 
 extern void Pointer_DrawPointer(U32 mouseX, U32 mouseY);

@@ -110,6 +110,12 @@ Pointer_Type Pointer_GetCurrentType()
     return pointerGlobs.currentType;
 }
 
+void Pointer_SetCurrent(Pointer_Type pointerType, F32 timer)
+{
+    pointerGlobs.currentType = pointerType;
+    pointerGlobs.timer = timer;
+}
+
 void Pointer_SetCurrent_IfTimerFinished(Pointer_Type pointerType)
 {
     if (pointerGlobs.timer <= 0.0f)
