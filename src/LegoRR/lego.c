@@ -3329,6 +3329,12 @@ void Lego_SetPointerSFX(PointerSFX_Type pointerSFXType)
     // TODO: Implement Lego_SetPointerSFX
 }
 
+void Lego_ClearSomeFlags3_FUN_00435950()
+{
+    legoGlobs.flags3 &= ~(GAME3_UNK_1|GAME3_UNK_2|GAME3_UNK_4|GAME3_PICKUPOBJECT|GAME3_LOADVEHICLE|GAME3_UNK_20|GAME3_UNK_40|GAME3_PLACEBUILDING);
+    SelectPlace_Hide(legoGlobs.selectPlace, TRUE);
+}
+
 // This is an old method for playing movies.
 // It supports playing a movie that isn't just in the center of the screen
 //  (which can be seen by setting certain Level CFG AVI properties).
