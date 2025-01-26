@@ -1115,6 +1115,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
 #else
     B32 intersections = Map3D_GetIntersections(legoGlobs.currLevel->map, legoGlobs.viewMain, inputGlobs.msx, inputGlobs.msy, &mouseBlockX, &mouseBlockY, &mouseWorldPos);
 #endif
+    B32 somethingIntersections = intersections == FALSE;
     if (intersections)
     {
         theBlock = &legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * mouseBlockY + mouseBlockX];
@@ -1135,6 +1136,9 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
     Lego_UpdateTopdownCamera(elapsedAbs);
 
     // TODO: Implement Lego_HandleWorld
+
+    if (somethingIntersections)
+        goto nwlabel;
 
     legoGlobs.mouseWorldPos.x = mouseWorldPos.x;
     legoGlobs.mouseWorldPos.y = mouseWorldPos.y;
@@ -1287,7 +1291,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
                                             if (surfType == Lego_SurfaceType8_Immovable || (theBlock->flags1 & BLOCK1_INCORNER) != BLOCK1_NONE ||
                                                 (someBool3 = TRUE, leftReleased == 0 || Level_BlockPointerCheck(&legoGlobs.mouseBlockPos)))
                                             {
-                                                // TODO: Implement Lego_HandleWorld
+                                                goto thinglabel;
                                             }
                                             Message_AddMessageAction(Message_ClearSelection, NULL, 0, NULL);
                                             Lego_SetPointerSFX(PointerSFX_Okay_Wall);
@@ -1295,6 +1299,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
                                             Interface_OpenMenu_FUN_0041b200(Interface_Menu_Wall, &legoGlobs.mouseBlockPos);
                                         }
 
+thinglabel:
                                         if (!someBool3)
                                         {
                                             // TODO: Implement Lego_HandleWorld
@@ -1329,7 +1334,17 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
         }
     }
 
+nwlabel:
+
     // TODO: Implement Lego_HandleWorld
+
+    if (gamectrlGlobs.mslb_Last_6 == 0)
+    {
+        legoGlobs.flags1 &= ~(GAME1_MULTISELECT | GAME1_UNK_200);
+    }
+
+    gamectrlGlobs.mslb_Last_0 = inputGlobs.mslb;
+    gamectrlGlobs.mslr_Last_0 = inputGlobs.msrb;
 }
 
 void Lego_UpdateTopdownCamera(F32 elapsedAbs)
