@@ -15,3 +15,5 @@ extern B32 Level_AddCryOreToToolStore(lpLegoObject liveObj, SearchAddCryOre_c* s
 extern void Level_SetPointer_FromSurfaceType(Lego_SurfaceType8 surfaceType);
 
 extern B32 Level_BlockPointerCheck(Point2I* blockPos);
+
+extern B32 Level_FindSelectedUnit_BlockCheck_FUN_00431960(U32 bx, U32 by, B32 param3);

@@ -1159,6 +1159,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
     {
         if ((legoGlobs.flags3 & GAME3_PLACEBUILDING) == GAME3_NONE)
         {
+            Pointer_Type pointer;
             if (LegoObject_DoPickSphereSelection(inputGlobs.msx, inputGlobs.msy, &mouseObj))
             {
                 // --- Hovering on Object ---
@@ -1192,7 +1193,24 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
 
                 if ((legoGlobs.flags1 & GAME1_LASERTRACKER) != GAME1_NONE)
                 {
-                    // TODO: Implement Lego_HandleWorld
+                    B32 newBool;
+                    BlockFlags1 bf1;
+                    if (mouseBlockX < legoGlobs.currLevel->width - 1 && mouseBlockY < legoGlobs.currLevel->height - 1 &&
+                        (bf1 = legoGlobs.currLevel->blocks[mouseBlockY * legoGlobs.currLevel->width + mouseBlockX].flags1, (bf1 & BLOCK1_WALL) != BLOCK1_NONE &&
+                        (bf1 & BLOCK1_FLOOR) == BLOCK1_NONE))
+                    {
+                        newBool = TRUE;
+                    }
+                    else
+                    {
+                        newBool = FALSE;
+                    }
+                    if (newBool)
+                    {
+                        Level_SetPointer_FromSurfaceType(theBlock->terrain);
+                    }
+
+                    goto wowlabel;
                 }
 
                 if (leftReleased != 0)
@@ -1202,7 +1220,17 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
 
                 if ((legoGlobs.flags3 & GAME3_PICKUPOBJECT) != GAME3_NONE || (legoGlobs.flags3 & GAME3_LOADVEHICLE) != GAME3_NONE)
                 {
+                    if ((legoGlobs.flags3 & GAME3_PICKUPOBJECT) == GAME3_NONE)
+                    {
+                        pointer = Pointer_VehicleCantPickUp;
+                    }
+                    else
+                    {
+                        pointer = Pointer_LegoManCantPickUp;
+                    }
+
                     // TODO: Implement Lego_HandleWorld
+                    // goto
                 }
 
                 if ((legoGlobs.flags3 & GAME3_UNK_20) == GAME3_NONE && ((legoGlobs.flags3 & GAME3_UNK_40) == GAME3_NONE))
@@ -1267,7 +1295,23 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
 
                                     if (Message_AnyUnitSelected())
                                     {
-                                        // TODO: Implement Lego_HandleWorld
+                                        if ((legoGlobs.flags1 & GAME1_VERTEXMODE) == GAME1_NONE)
+                                        {
+                                            // TODO: Implement Lego_HandleWorld
+                                        }
+                                        else if (theBlock->predug == Lego_PredugType_Cavern_Exposed || !Level_FindSelectedUnit_BlockCheck_FUN_00431960(mouseBlockX, mouseBlockY, TRUE))
+                                        {
+                                            legoGlobs.bool_c8 = FALSE;
+                                        }
+                                        else
+                                        {
+                                            // TODO: Implement Lego_HandleWorld
+                                        }
+
+                                        if (!someBool && (theBlock->flags1 & BLOCK1_FLOOR) != BLOCK1_NONE)
+                                        {
+                                            // TODO: Implement Lego_HandleWorld
+                                        }
                                     }
 
                                     if (!someBool)

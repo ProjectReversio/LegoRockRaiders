@@ -547,3 +547,10 @@ B32 Level_BlockPointerCheck(Point2I* blockPos)
 
     return FALSE;
 }
+
+B32 Level_FindSelectedUnit_BlockCheck_FUN_00431960(U32 bx, U32 by, B32 param3)
+{
+    // TODO: Implement Level_FindSelectedUnit_BlockCheck_FUN_00431960
+
+    return FALSE;
+}
