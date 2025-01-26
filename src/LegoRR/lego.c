@@ -1029,6 +1029,13 @@ B32 Lego_HandleKeys(F32 elapsedGame, F32 elapsed, B32 *outKeyDownT, B32 *outKeyD
     return TRUE;
 }
 
+// bx,by : mouse-over block position.
+// liveObj : mouse-over object.
+void Lego_HandleDebugKeys(S32 bx, S32 by, lpLegoObject liveObj, F32 gameCtrlElapsed)
+{
+    // TODO: Implement Lego_HandleDebugKeys
+}
+
 void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDownR, B32 keyDownAnyShift)
 {
     B32 leftReleased = 0;
@@ -1146,14 +1153,16 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
     legoGlobs.flags2 |= GAME2_MOUSE_INSIDEGAMEVIEW;
     legoGlobs.mouseBlockPos.x = mouseBlockX;
     legoGlobs.mouseBlockPos.y = mouseBlockY;
+    LegoObject* mouseObj = NULL;
     // TODO: Cleanup this flags check
     if ((legoGlobs.flags1 >> 8 & 1) == 0 || (legoGlobs.flags3 & (GAME3_UNK_1 | GAME3_PLACEBUILDING)) != GAME3_NONE)
     {
         if ((legoGlobs.flags3 & GAME3_PLACEBUILDING) == GAME3_NONE)
         {
-            LegoObject* mouseObj = NULL;
             if (LegoObject_DoPickSphereSelection(inputGlobs.msx, inputGlobs.msy, &mouseObj))
             {
+                // --- Hovering on Object ---
+
                 if (mouseObj->type == LegoObject_MiniFigure && mouseObj->driveObject != NULL)
                 {
                     mouseObj = mouseObj->driveObject;
@@ -1179,6 +1188,8 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
             }
             else
             {
+                // --- Hovering on Block ---
+
                 if ((legoGlobs.flags1 & GAME1_LASERTRACKER) != GAME1_NONE)
                 {
                     // TODO: Implement Lego_HandleWorld
@@ -1276,15 +1287,109 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
                                         Lego_SurfaceType8 surfType;
                                         if (!someBool2 && (surfType = theBlock->terrain, surfType != Lego_SurfaceType8_Lava && surfType != Lego_SurfaceType8_Lake) && (theBlock->flags2 & BLOCK2_SLUGHOLE_EXPOSED) == BLOCK2_NONE)
                                         {
+                                            Interface_MenuType menuType;
                                             if ((theBlock->flags1 & BLOCK1_FLOOR) != BLOCK1_NONE)
                                             {
                                                 B32 someBool4 = FALSE;
+                                                B32 someBool5 = FALSE;
                                                 if ((legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * legoGlobs.mouseBlockPos.y + legoGlobs.mouseBlockPos.x].flags1 & BLOCK1_ERODEACTIVE) != BLOCK1_NONE)
                                                 {
-                                                    // TODO: Implement Lego_HandleWorld
+                                                    someBool4 = TRUE;
+                                                    someBool5 = TRUE;
+                                                    if (leftReleased != 0 && !Level_BlockPointerCheck(&legoGlobs.mouseBlockPos))
+                                                    {
+                                                        Message_AddMessageAction(Message_ClearSelection, NULL, 0, NULL);
+                                                        Lego_SetPointerSFX(PointerSFX_Okay_Floor);
+                                                        Interface_OpenMenu_FUN_0041b200(Interface_Menu_Erode, &legoGlobs.mouseBlockPos);
+                                                    }
+                                                }
+                                                if (!someBool4 && (theBlock->flags1 & BLOCK1_BUILDINGPATH) != BLOCK1_NONE && (someBool5 = TRUE, leftReleased != 0))
+                                                {
+                                                    Lego_SetPointerSFX(PointerSFX_NotOkay);
                                                 }
 
-                                                // TODO: Implement Lego_HandleWorld
+                                                // TODO: Verify if this if statement is correct
+                                                if (((theBlock->flags1 & BLOCK1_FOUNDATION) != BLOCK1_NONE ||
+                                                    ((legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * legoGlobs.mouseBlockPos.y + legoGlobs.mouseBlockPos.x].flags1 & BLOCK1_LAYEDPATH) != BLOCK1_NONE)) &&
+                                                    ((legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * legoGlobs.mouseBlockPos.y + legoGlobs.mouseBlockPos.x].flags1 & BLOCK1_BUILDINGPATH) == BLOCK1_NONE))
+                                                {
+                                                    BlockFlags1 newBlockFlags1;
+                                                    if ((legoGlobs.mouseBlockPos.x < 0 || legoGlobs.mouseBlockPos.y < 0) ||
+                                                        (legoGlobs.currLevel->width <= legoGlobs.mouseBlockPos.x || legoGlobs.currLevel->height <= legoGlobs.mouseBlockPos.y))
+                                                    {
+                                                        newBlockFlags1 = BLOCK1_NONE;
+                                                    }
+                                                    else
+                                                    {
+                                                        newBlockFlags1 = legoGlobs.currLevel->blocks[legoGlobs.mouseBlockPos.y * legoGlobs.currLevel->width + legoGlobs.mouseBlockPos.x].flags1 & BLOCK1_PATH;
+                                                    }
+
+                                                    if (newBlockFlags1 == BLOCK1_NONE && (someBool5 = TRUE, leftReleased != 0) && !Level_BlockPointerCheck(&legoGlobs.mouseBlockPos))
+                                                    {
+                                                        Lego_SetPointerSFX(PointerSFX_Okay_Floor);
+                                                        Interface_OpenMenu_FUN_0041b200(Interface_Menu_Construction, &legoGlobs.mouseBlockPos);
+                                                    }
+                                                }
+
+                                                if (someBool5)
+                                                {
+                                                    goto wowlabel;
+                                                }
+
+                                                B32 someBool6;
+                                                if ((legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * legoGlobs.mouseBlockPos.y + legoGlobs.mouseBlockPos.x].flags1 & BLOCK1_LAYEDPATH) == BLOCK1_NONE)
+                                                {
+                                                    BlockFlags1 newBlockFlags2;
+                                                    if (legoGlobs.mouseBlockPos.x < 0 || legoGlobs.mouseBlockPos.y < 0 || legoGlobs.currLevel->width <= legoGlobs.mouseBlockPos.x || legoGlobs.currLevel->height <= legoGlobs.mouseBlockPos.y)
+                                                    {
+                                                        newBlockFlags2 = BLOCK1_NONE;
+                                                    }
+                                                    else
+                                                    {
+                                                        newBlockFlags2 = legoGlobs.currLevel->blocks[legoGlobs.mouseBlockPos.y * legoGlobs.currLevel->width + legoGlobs.mouseBlockPos.x].flags1 & BLOCK1_PATH;
+                                                    }
+
+                                                    if (newBlockFlags2 != BLOCK1_NONE)
+                                                        goto whatlabel;
+                                                    someBool6 = FALSE;
+                                                }
+                                                else
+                                                {
+whatlabel:
+                                                    someBool6 = TRUE;
+                                                    if (leftReleased != 0 && !Level_BlockPointerCheck(&legoGlobs.mouseBlockPos))
+                                                    {
+                                                        Message_AddMessageAction(Message_ClearSelection, NULL, 0, NULL);
+                                                        Lego_SetPointerSFX(PointerSFX_Okay_Floor);
+                                                        Interface_OpenMenu_FUN_0041b200(Interface_Menu_Ground, &legoGlobs.mouseBlockPos);
+                                                    }
+                                                }
+
+                                                if (!someBool6)
+                                                {
+                                                    B32 someBool7 = FALSE;
+                                                    if ((theBlock->flags1 & BLOCK1_CLEARED) != BLOCK1_NONE && (someBool7 = TRUE, leftReleased != 0) &&
+                                                        !Level_BlockPointerCheck(&legoGlobs.mouseBlockPos))
+                                                    {
+                                                        Message_AddMessageAction(Message_ClearSelection, NULL, 0, NULL);
+                                                        Lego_SetPointerSFX(PointerSFX_Okay_Floor);
+                                                        Interface_OpenMenu_FUN_0041b200(Interface_Menu_Ground, &legoGlobs.mouseBlockPos);
+                                                    }
+                                                    if (!someBool7)
+                                                    {
+                                                        someBool3 = FALSE;
+                                                        if ((theBlock->flags1 & BLOCK1_CLEARED) != BLOCK1_NONE || (someBool3 = TRUE, leftReleased == 0) ||
+                                                            Level_BlockPointerCheck(&legoGlobs.mouseBlockPos))
+                                                        {
+                                                            goto thinglabel;
+                                                        }
+                                                        Message_AddMessageAction(Message_ClearSelection, NULL, 0, NULL);
+                                                        Lego_SetPointerSFX(PointerSFX_Okay_Floor);
+                                                        menuType = Interface_Menu_Rubble;
+                                                        goto unklabel;
+                                                    }
+                                                }
+
                                                 goto wowlabel;
                                             }
 
@@ -1295,9 +1400,10 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
                                             }
                                             Message_AddMessageAction(Message_ClearSelection, NULL, 0, NULL);
                                             Lego_SetPointerSFX(PointerSFX_Okay_Wall);
+                                            menuType = Interface_Menu_Wall;
 unklabel:
                                             someBool3 = TRUE;
-                                            Interface_OpenMenu_FUN_0041b200(Interface_Menu_Wall, &legoGlobs.mouseBlockPos);
+                                            Interface_OpenMenu_FUN_0041b200(menuType, &legoGlobs.mouseBlockPos);
                                         }
 
 thinglabel:
@@ -1308,7 +1414,7 @@ thinglabel:
                                     }
                                 }
 
-                                // TODO: Implement Lego_HandleWorld
+                                goto wowlabel;
                             }
                         }
                         else
@@ -1343,6 +1449,11 @@ herething:
 
 wowlabel:
     // TODO: Implement Lego_HandleWorld
+
+    if ((legoGlobs.flags2 & GAME2_ALLOWDEBUGKEYS) != GAME2_NONE)
+    {
+        Lego_HandleDebugKeys(mouseBlockX, mouseBlockY, mouseObj, gamectrlGlobs.handleWorldNoMouseButtonsElapsed);
+    }
 
 nwlabel:
 

@@ -645,6 +645,9 @@ extern B32 Lego_Shutdown_Quick();
 extern B32 Lego_MainLoop(F32 elapsed);
 
 extern B32 Lego_HandleKeys(F32 elapsedGame, F32 elapsed, B32 *outKeyDownT, B32 *outKeyDownR, B32 *outKeyDownAnyShift);
+// bx,by : mouse-over block position.
+// liveObj : mouse-over object.
+extern void Lego_HandleDebugKeys(S32 bx, S32 by, lpLegoObject liveObj, F32 gameCtrlElapsed);
 
 extern void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDownR, B32 keyDownAnyShift);
 extern void Lego_UpdateTopdownCamera(F32 elapsedAbs);
