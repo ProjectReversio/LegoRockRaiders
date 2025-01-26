@@ -1,6 +1,7 @@
 #include "level.h"
 
 #include "erode.h"
+#include "pointer.h"
 #include "smoke.h"
 
 B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
@@ -538,7 +539,53 @@ B32 Level_AddCryOreToToolStore(lpLegoObject liveObj, SearchAddCryOre_c* search)
 
 void Level_SetPointer_FromSurfaceType(Lego_SurfaceType8 surfaceType)
 {
-    // TODO: Implement Level_SetPointer_FromSurfaceType
+    if (surfaceType == Lego_SurfaceType8_Immovable)
+    {
+        Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_Immovable);
+        return;
+    }
+
+    if (surfaceType == Lego_SurfaceType8_Hard)
+    {
+        Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_Hard);
+        return;
+    }
+
+    if (surfaceType == Lego_SurfaceType8_Medium)
+    {
+        Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_Medium);
+        return;
+    }
+
+    if (surfaceType == Lego_SurfaceType8_Loose)
+    {
+        Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_Loose);
+        return;
+    }
+
+    if (surfaceType == Lego_SurfaceType8_Soil)
+    {
+        Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_Soil);
+        return;
+    }
+
+    if (surfaceType == Lego_SurfaceType8_OreSeam)
+    {
+        Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_OreSeam);
+        return;
+    }
+
+    if (surfaceType == Lego_SurfaceType8_CrystalSeam)
+    {
+        Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_CrystalSeam);
+        return;
+    }
+
+    if (surfaceType == Lego_SurfaceType8_RechargeSeam)
+    {
+        Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_RechargeSeam);
+        return;
+    }
 }
 
 B32 Level_BlockPointerCheck(Point2I* blockPos)

@@ -1265,7 +1265,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
 
                                 if (isFloor && (legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * legoGlobs.mouseBlockPos.y + legoGlobs.mouseBlockPos.x].terrain == Lego_SurfaceType8_Immovable || legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * legoGlobs.mouseBlockPos.y + legoGlobs.mouseBlockPos.x].terrain == Lego_SurfaceType8_RechargeSeam))
                                 {
-                                    if (theBlock->flags1 & BLOCK1_FLOOR == BLOCK1_NONE)
+                                    if ((theBlock->flags1 & BLOCK1_FLOOR) == BLOCK1_NONE)
                                     {
                                         Level_SetPointer_FromSurfaceType(theBlock->terrain);
                                     }
@@ -1283,7 +1283,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
                                 else
                                 {
                                     B32 someBool = FALSE;
-                                    if (theBlock->flags1 & BLOCK1_FLOOR == BLOCK1_NONE)
+                                    if ((theBlock->flags1 & BLOCK1_FLOOR) == BLOCK1_NONE)
                                     {
                                         Level_SetPointer_FromSurfaceType(theBlock->terrain);
                                     }
