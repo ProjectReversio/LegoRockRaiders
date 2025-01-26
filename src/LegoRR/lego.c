@@ -1285,7 +1285,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
                                                 }
 
                                                 // TODO: Implement Lego_HandleWorld
-                                                // goto
+                                                goto wowlabel;
                                             }
 
                                             if (surfType == Lego_SurfaceType8_Immovable || (theBlock->flags1 & BLOCK1_INCORNER) != BLOCK1_NONE ||
@@ -1295,6 +1295,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
                                             }
                                             Message_AddMessageAction(Message_ClearSelection, NULL, 0, NULL);
                                             Lego_SetPointerSFX(PointerSFX_Okay_Wall);
+unklabel:
                                             someBool3 = TRUE;
                                             Interface_OpenMenu_FUN_0041b200(Interface_Menu_Wall, &legoGlobs.mouseBlockPos);
                                         }
@@ -1302,7 +1303,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
 thinglabel:
                                         if (!someBool3)
                                         {
-                                            // TODO: Implement Lego_HandleWorld
+                                            goto herething;
                                         }
                                     }
                                 }
@@ -1315,6 +1316,12 @@ thinglabel:
                             legoGlobs.flags1 |= GAME1_UNK_200;
                             Pointer_SetCurrent_IfTimerFinished(Pointer_CantHelp);
                             Text_DisplayMessage(Text_Encyclopedia, FALSE, FALSE);
+                        }
+
+herething:
+                        if (leftReleased != 0)
+                        {
+                            Lego_SetPointerSFX(PointerSFX_NotOkay);
                         }
                     }
                     else
@@ -1333,6 +1340,9 @@ thinglabel:
             // TODO: Implement Lego_HandleWorld
         }
     }
+
+wowlabel:
+    // TODO: Implement Lego_HandleWorld
 
 nwlabel:
 
