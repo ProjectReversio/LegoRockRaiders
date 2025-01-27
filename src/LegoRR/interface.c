@@ -128,7 +128,27 @@ void Interface_FUN_0041b3c0()
 
 void Interface_FUN_0041b860(F32 elapsedAbs)
 {
-    // TODO: Implement Interface_FUN_0041b860
+    interfaceGlobs.timer_fc8 -= elapsedAbs;
+    if (interfaceGlobs.timer_fc8 < 0.0f)
+    {
+        interfaceGlobs.flashingState = !interfaceGlobs.flashingState;
+        interfaceGlobs.timer_fc8 = 15.0f;
+    }
+
+    Interface_FUN_0041e9f0(elapsedAbs);
+
+    if (interfaceGlobs.float_1494 > 0.0f)
+    {
+        interfaceGlobs.float_1494 -= elapsedAbs;
+        return;
+    }
+
+    interfaceGlobs.flags |= INTERFACE_GLOB_FLAG_UNK_800;
+}
+
+void Interface_FUN_0041e9f0(F32 elapsedAbs)
+{
+    // TODO: Implement Interface_FUN_0041e9f0
 }
 
 void Interface_SelectBlock(Interface_MenuType menuType, Point2I* blockPos)
