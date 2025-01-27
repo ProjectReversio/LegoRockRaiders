@@ -20,3 +20,8 @@ B32 ToolTip_GetType(const char* toolTipName, ToolTip_Type* toolTipType)
     // TODO: Implement ToolTip_GetType
     return FALSE;
 }
+
+void ToolTip_SetFlag10(ToolTip_Type toolTipType, B32 state)
+{
+    // TODO: Implement ToolTip_SetFlag10
+}

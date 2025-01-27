@@ -11,3 +11,5 @@ extern void ToolTip_Update(U32 mousex, U32 mousey, F32 elapsedAbs);
 extern void ToolTip_AddFlag4(ToolTip_Type toolTipType);
 
 extern B32 ToolTip_GetType(const char* toolTipName, ToolTip_Type* toolTipType);
+
+extern void ToolTip_SetFlag10(ToolTip_Type toolTipType, B32 state);
