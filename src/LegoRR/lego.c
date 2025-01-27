@@ -2569,8 +2569,60 @@ B32 Lego_LoadErodeMap(lpLego_Level level, const char* filename)
 
 B32 Lego_LoadPathMap(lpLego_Level level, const char* filename, S32 modifier)
 {
-    // TODO: Implement Lego_LoadPathMap
-    return TRUE;
+    U32 fileHandle;
+    if (filename != NULL && (fileHandle = File_LoadBinaryHandle(filename, NULL), fileHandle != -1))
+    {
+        U32 width, height;
+        MapShared_GetDimensions(fileHandle, &width, &height);
+        if (width != level->width || height != level->height)
+        {
+            Mem_FreeHandle(fileHandle);
+            return FALSE;
+        }
+
+        for (U32 y = 0; y < height; y++)
+        {
+            for (U32 x = 0; x < width; x++)
+            {
+                Point2I coords;
+                coords.x = x;
+                coords.y = y;
+                U32 block = MapShared_GetBlock(fileHandle, x, y);
+
+                if ((level->blocks[x + y * level->width].flags1 & BLOCK1_FLOOR) != BLOCK1_NONE)
+                {
+                    if (block - modifier == 2)
+                    {
+                        level->blocks[x + y * level->width].flags1 |= BLOCK1_PATH;
+                    }
+                    else if (block - modifier == 1 &&
+                        (legoGlobs.currLevel->blocks[x + legoGlobs.currLevel->width * y].flags1 & BLOCK1_BUILDINGSOLID) == BLOCK1_NONE &&
+                        (legoGlobs.currLevel->blocks[x + legoGlobs.currLevel->width * y].flags2 & BLOCK2_TOOLSTORE) == BLOCK2_NONE &&
+                        (legoGlobs.currLevel->blocks[x + legoGlobs.currLevel->width * y].flags1 & BLOCK1_BUILDINGPATH) == BLOCK1_NONE &&
+                        (!Construction_Zone_ExistsAtBlock(&coords)))
+                    {
+                        level->blocks[x + y * level->width].flags1 &= ~BLOCK1_CLEARED;
+                        level->blocks[x + y * level->width].flags1 &= ~BLOCK1_PATH;
+                        level->blocks[x + y * level->width].flags1 &= ~BLOCK1_LAYEDPATH;
+                        LegoObject_RequestPowerGridUpdate();
+                        AITask_RemoveAttackPathReferences(&coords);
+                        //unknownemptyfunc(&coords); // TODO: Figure out what this was
+
+                        for (U32 i = 0; i < 4; i++)
+                        {
+                            AITask_DoClear_AtPosition(&coords, Message_ClearInitialComplete);
+                        }
+
+                        legoGlobs.currLevel->blocks[x + legoGlobs.currLevel->width * y].flags1 |= BLOCK1_RUBBLE_FULL;
+                    }
+                }
+            }
+        }
+
+        Mem_FreeHandle(fileHandle);
+        return TRUE;
+    }
+    return FALSE;
 }
 
 B32 Lego_LoadEmergeMap(lpLego_Level level, const char* filename)

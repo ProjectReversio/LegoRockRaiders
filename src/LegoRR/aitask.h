@@ -1,6 +1,8 @@
 #pragma once
 
 #include "platform.h"
+#include "maths.h"
+#include "message.h"
 
 typedef struct AITask
 {
@@ -17,3 +19,7 @@ extern void AITask_Game_SetNoGather(B32 noGather);
 extern void AITask_DoCollect(struct LegoObject* liveObj, F32 param2);
 
 extern void AITask_LiveObject_Unk_UpdateAITask_AnimationWait(struct LegoObject* liveObj);
+
+extern B32 AITask_RemoveAttackPathReferences(Point2I* blockPos);
+
+extern void AITask_DoClear_AtPosition(Point2I* blockPos, Message_Type completeAction);

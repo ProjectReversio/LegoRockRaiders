@@ -100,3 +100,7 @@ extern void Interface_SelectBlock(Interface_MenuType menuType, Point2I* blockPos
 extern void Interface_OpenMenu_FUN_0041b200(Interface_MenuType menuType, Point2I* blockPos);
 
 extern void Interface_UnkSlideOffScreen_FUN_0041e980_internal(Interface_MenuType menuType, Point2I* optBlockPos);
+
+extern void Interface_BackToMain_IfSelectedWall_IsBlockPos(Point2I *blockPos);
+
+extern void Interface_BackToMain();

@@ -1,6 +1,9 @@
 #include "level.h"
 
+#include "aitask.h"
+#include "construction.h"
 #include "erode.h"
+#include "interface.h"
 #include "pointer.h"
 #include "smoke.h"
 
@@ -75,6 +78,13 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
     }
 
     return TRUE;
+}
+
+Lego_SurfaceType Level_Block_ChoosePathTexture(S32 bx, S32 by, U8* ref_direction, B32 powered)
+{
+    // TODO: Implement Level_Block_ChoosePathTexture
+
+    return TEXTURE_FLOOR_PATH_1SIDES; // TEMP:
 }
 
 void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
@@ -155,7 +165,30 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
 
         if ((blocks[blockIndex].flags1 & BLOCK1_EXPOSEDFLOORCHECKS) == BLOCK1_NONE)
         {
-            // TODO: Implement Level_BlockUpdateSurface
+            U32 someIdx = legoGlobs.currLevel->width * by + bx;
+            // TODO: Figure out what these flags are doing
+            if ((legoGlobs.currLevel->blocks[someIdx].flags1 & BLOCK1_BUILDINGSOLID) == BLOCK1_NONE && (legoGlobs.currLevel->blocks[someIdx].flags2 & BLOCK2_TOOLSTORE) == BLOCK2_NONE &&
+                ((legoGlobs.currLevel->blocks[someIdx].flags1 + 1) & 0x80) == 0 &&
+                !Construction_Zone_ExistsAtBlock(&blockPos))
+            {
+                legoGlobs.currLevel->blocks[someIdx].flags1 &= ~BLOCK1_CLEARED;
+                legoGlobs.currLevel->blocks[someIdx].flags1 &= ~BLOCK1_PATH;
+                legoGlobs.currLevel->blocks[someIdx].flags1 &= ~BLOCK1_LAYEDPATH;
+                LegoObject_RequestPowerGridUpdate();
+                AITask_RemoveAttackPathReferences(&blockPos);
+
+                //unknownemptyfunc(&blockPos); // TODO: Figure out what this was
+
+                for (U32 i = 0; i < 4; i++)
+                {
+                    AITask_DoClear_AtPosition(&blockPos, Message_ClearComplete);
+                }
+
+                legoGlobs.currLevel->blocks[someIdx].flags1 |= BLOCK1_RUBBLE_FULL;
+            }
+
+            legoGlobs.currLevel->blocks[someIdx].flags1 |= BLOCK1_EXPOSEDFLOORCHECKS;
+            Interface_BackToMain_IfSelectedWall_IsBlockPos(&blockPos);
         }
 
         // TODO: Implement Level_BlockUpdateSurface
@@ -197,7 +230,6 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
                             blocks[blockIndex].texture = TEXTURE_FLOOR_ERODE_MAX;
                         break;
                     }
-                    // TODO: Implement Level_BlockUpdateSurface
                 }
             }
             else
@@ -218,7 +250,54 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
         }
         else if ((ogFlags & BLOCK1_FOUNDATION) == BLOCK1_NONE)
         {
-            // TODO: Implement Level_BlockUpdateSurface
+            if ((ogFlags & BLOCK1_PATH) == BLOCK1_NONE)
+            {
+                if ((blocks[blockIndex].flags2 & BLOCK2_SLUGHOLE_EXPOSED) == 0)
+                {
+                    if ((ogFlags & BLOCK1_CLEARED) == BLOCK1_NONE)
+                    {
+                        switch (ogFlags & BLOCK1_RUBBLE_FULL)
+                        {
+                            case BLOCK1_NONE:
+                            {
+                                blocks[blockIndex].texture = TEXTURE_FLOOR_RUBBLE_LOW;
+                                break;
+                            }
+                            case BLOCK1_RUBBLE_LOW:
+                            {
+                                blocks[blockIndex].texture = TEXTURE_FLOOR_RUBBLE_MED;
+                                break;
+                            }
+                            case BLOCK1_RUBBLE_MEDIUM:
+                            {
+                                blocks[blockIndex].texture = TEXTURE_FLOOR_RUBBLE_HIGH;
+                                break;
+                            }
+                            case BLOCK1_RUBBLE_FULL:
+                            {
+                                blocks[blockIndex].texture = TEXTURE_FLOOR_RUBBLE_MAX;
+                                break;
+                            }
+                        }
+                    }
+                    else if ((ogFlags & BLOCK1_LAYEDPATH) == BLOCK1_NONE)
+                    {
+                        blocks[blockIndex].texture = TEXTURE_FLOOR_STD;
+                    }
+                    else
+                    {
+                        blocks[blockIndex].texture = TEXTURE_FLOOR_PATH_LAYED;
+                    }
+                }
+                else
+                {
+                    blocks[blockIndex].texture = TEXTURE_FLOOR_SLUGHOLE;
+                }
+            }
+            else
+            {
+                blocks[blockIndex].texture = Level_Block_ChoosePathTexture(bx, by, &blocks[blockIndex].direction, blocks[blockIndex].flags2 & BLOCK2_POWERED);
+            }
         }
         else if ((blocks[blockIndex].flags2 & BLOCK2_POWERED) == BLOCK2_NONE)
         {

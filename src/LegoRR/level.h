@@ -6,6 +6,8 @@
 
 extern B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern);
 
+extern Lego_SurfaceType Level_Block_ChoosePathTexture(S32 bx, S32 by, U8* ref_direction, B32 powered);
+
 extern void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved);
 
 extern void Level_Block_LowerRoofVertices(lpLego_Level level, U32 bx, U32 by);

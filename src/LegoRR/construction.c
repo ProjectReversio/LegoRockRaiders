@@ -12,3 +12,10 @@ lpLegoObject Construction_SpawnBuilding(LegoObject_ID objID, Point2I* originBloc
 {
     // TODO: Implement Construction_SpawnBuilding
 }
+
+B32 Construction_Zone_ExistsAtBlock(Point2I* originBlockPos)
+{
+    // TODO: Implement Construction_Zone_ExistsAtBlock
+
+    return FALSE;
+}

@@ -2,6 +2,7 @@
 
 #include "lego.h"
 #include "map3d.h"
+#include "message.h"
 
 Interface_Globs interfaceGlobs = {};
 
@@ -106,4 +107,18 @@ void Interface_UnkSlideOffScreen_FUN_0041e980_internal(Interface_MenuType menuTy
     }
 
     interfaceGlobs.nextMenuType = menuType;
+}
+
+void Interface_BackToMain_IfSelectedWall_IsBlockPos(Point2I *blockPos)
+{
+    if (interfaceGlobs.currMenuType == Interface_Menu_Wall && interfaceGlobs.selBlockPos.x == blockPos->x && interfaceGlobs.selBlockPos.y == blockPos->y)
+    {
+        Interface_BackToMain();
+    }
+}
+
+void Interface_BackToMain()
+{
+    Message_AddMessageAction(Message_ClearSelection, NULL, 0, NULL);
+    Interface_OpenMenu_FUN_0041b200(Interface_Menu_Main, NULL);
 }

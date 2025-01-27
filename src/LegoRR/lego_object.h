@@ -422,6 +422,11 @@ extern void LegoObject_UpdatePowerConsumption(lpLegoObject liveObj);
 
 extern B32 LegoObject_UpdateActivityChange(lpLegoObject liveObj);
 
+// If we're currently in the update loop, then delay recalculations until the end of the update loop/next tick(?).
+//
+// Otherwise, we can turn on power updating mode right now.
+extern void LegoObject_RequestPowerGridUpdate();
+
 // The same as `LegoObject_GetWorldZCallback`, but returns a lower Z value with over Lake terrain.
 // Objects wading in a lake (aka, not sailing) will have their Z lowered a bit, and have it at the lowest near the center of a lake BLOCK.
 extern F32 LegoObject_GetWorldZCallback_Lake(F32 xPos, F32 yPos, struct Map3D* map);

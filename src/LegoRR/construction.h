@@ -8,3 +8,5 @@ extern void Construction_DisableCryOreDrop(B32 disabled);
 
 // Immediately spawns a Building object without the need of a construction zone.
 extern lpLegoObject Construction_SpawnBuilding(LegoObject_ID objID, Point2I* originBlockPos, Direction direction, Point2I* shapeBlocks, U32 shapeCount, B32 teleportDown);
+
+extern B32 Construction_Zone_ExistsAtBlock(Point2I* originBlockPos);
