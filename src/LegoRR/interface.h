@@ -147,16 +147,18 @@ typedef struct Interface_Menu
 	U32 iconCount;
 } Interface_Menu;
 
+#define INTERFACE_ICONPANEL_ITEM_COUNT 11
+
 typedef struct Interface_Globs
 {
     lpFont font;
-    lpImage iconPanelImages[11]; // (cfg: InterfaceSurroundImages[0]) g_InterfaceSurroundImages
-    Point2F iconPanelIconOffsets[11]; // (cfg: InterfaceSurroundImages[1, 2])
-    lpImage iconPanelNoBackImages[11]; // (cfg: InterfaceSurroundImages[5])
-    Point2F iconPanelNoBackIconOffsets[11]; // (cfg: InterfaceSurroundImages[6, 7])
+    lpImage iconPanelImages[INTERFACE_ICONPANEL_ITEM_COUNT]; // (cfg: InterfaceSurroundImages[0]) g_InterfaceSurroundImages
+    Point2F iconPanelIconOffsets[INTERFACE_ICONPANEL_ITEM_COUNT]; // (cfg: InterfaceSurroundImages[1, 2])
+    lpImage iconPanelNoBackImages[INTERFACE_ICONPANEL_ITEM_COUNT]; // (cfg: InterfaceSurroundImages[5])
+    Point2F iconPanelNoBackIconOffsets[INTERFACE_ICONPANEL_ITEM_COUNT]; // (cfg: InterfaceSurroundImages[6, 7])
     lpImage backButtonImage_hl; // (cfg: InterfaceBackButton[2])
     lpImage backButtonImage_pr; // (cfg: InterfaceBackButton[3])
-    Point2F iconPanelBackButtonOffsets[11]; // (cfg: InterfaceSurroundImages[3, 4]) Point2F_ARRAY_004dde6c
+    Point2F iconPanelBackButtonOffsets[INTERFACE_ICONPANEL_ITEM_COUNT]; // (cfg: InterfaceSurroundImages[3, 4]) Point2F_ARRAY_004dde6c
     Size2I backButtonSize; // (cfg: InterfaceBackButton[0, 1])
     const char* backButtonText; // (cfg: InterfaceBackButton[4])
     const char* menuItemName[74];
@@ -231,7 +233,11 @@ extern void Interface_Initialize(U32 x, U32 y, lpFont font);
 extern void Interface_InitBuildItems();
 extern void Interface_LoadMenuItems(lpConfig config, const char* gameName);
 extern void Interface_LoadItemPanels(lpConfig config, const char* gameName);
+extern void Interface_LoadBuildItems(lpConfig config, const char* gameName);
+extern void Interface_LoadBackButton(lpConfig config, const char* gameName);
 extern void Interface_LoadPlusMinusImages(const char* plusName, const char* minusName);
+
+extern B32 Interface_GetMenuItemType(const char* menuItemName, Interface_MenuItemType* outMenuItemType);
 
 extern void Interface_FUN_0041b3c0();
 
@@ -256,3 +262,18 @@ extern void Interface_AddMenuItems(Interface_MenuType menuType, U32 numItems, ..
 extern void Interface_SetScrollParameters(U32 xEnd, U32 yEnd, U32 xStart, U32 yStart, F32 timerFloat_750);
 
 extern void Interface_ResetMenu();
+
+typedef B32 (*Interface_Callback_Unknown)(Interface_MenuType menuIcon, U32 param2, S32 param3, F32* param4);
+extern B32 Interface_FUN_0041b5b0(Interface_MenuType menuIcon, Interface_Callback_Unknown callback, void* context);
+
+extern B32 Interface_Callback_FUN_0041b730(Interface_MenuType menuIcon, U32 param2, S32 param3, F32* param4);
+
+extern U32 Interface_GetBuildMenuIconCount(Interface_MenuType interfaceMenuType);
+
+extern B32 Interface_NotMainOrFirstPersonMenu(Interface_MenuType interfaceMenuType);
+
+extern void Interface_SetFloat1494To25_AndUnsetFlags800();
+
+extern void Interface_FUN_0041ebd0(F32 xScreen, F32 yScreen);
+
+extern void Interface_DrawHoverOutline(Area2F* area);

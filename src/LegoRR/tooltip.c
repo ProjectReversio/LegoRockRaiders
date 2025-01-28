@@ -25,3 +25,8 @@ void ToolTip_SetFlag10(ToolTip_Type toolTipType, B32 state)
 {
     // TODO: Implement ToolTip_SetFlag10
 }
+
+void ToolTip_SetText(ToolTip_Type toolTipType, const char* msg, ...)
+{
+    // TODO: Implement ToolTip_SetText
+}

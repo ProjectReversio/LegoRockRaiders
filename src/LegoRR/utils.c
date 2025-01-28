@@ -1,6 +1,11 @@
 #include <string.h>
 #include <ctype.h>
 #include "utils.h"
+
+#include <stdarg.h>
+#include <stdio.h>
+
+#include "error.h"
 #include "mem.h"
 
 #define UTIL_HASHSTRING_LARGENUMBER 6293815
@@ -109,6 +114,45 @@ char* Util_StrCpy(const char* string)
     return newString;
 }
 #endif
+
+const char* Util_RemoveUnderscores(const char* string, ...)
+{
+    const char* s;
+    char* t;
+    char completeString[UTIL_MAXSTRINGLENGTH], buffer[UTIL_MAXSTRINGLENGTH];
+    U32 len;
+    va_list args;
+    const char* result;
+
+    va_start(args, string);
+    len = vsprintf(completeString, string, args);
+    Error_Fatal(len > UTIL_MAXSTRINGLENGTH, Error_Format("String too big for 'Util_RemoveUnderscores'.", string));
+    va_end(args);
+
+    t = buffer;
+    for (s = completeString; *s != '\0'; s++)
+    {
+        if (*s == '\\' && *(s + 1) == 'n')
+        {
+            *t = '\n';
+            s++;
+        }
+        else if (*s == '_')
+        {
+            *t = ' ';
+        }
+        else
+        {
+            *t = *s;
+        }
+        t++;
+    }
+    *t = '\0';
+
+    result = Util_StrCpy(buffer);
+
+    return result;
+}
 
 U32 Util_HashString(const char* str, B32 bIgnoreBlanks, B32 upperCase)
 {

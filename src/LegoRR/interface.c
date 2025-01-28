@@ -1,10 +1,12 @@
 #include "interface.h"
 
+#include "keys.h"
 #include "lego.h"
 #include "map3d.h"
 #include "mem.h"
 #include "message.h"
 #include "tooltip.h"
+#include "utils.h"
 
 Interface_Globs interfaceGlobs = {};
 
@@ -102,12 +104,114 @@ void Interface_InitBuildItems()
 
 void Interface_LoadMenuItems(lpConfig config, const char* gameName)
 {
-    // TODO: Implement Interface_LoadMenuItems
+    lpConfig conf = Config_FindArray(config, Config_BuildStringID(gameName, "InterfaceImages", 0));
+    do
+    {
+        if (conf == NULL)
+        {
+            Interface_LoadBuildItems(config, gameName);
+            Interface_LoadBackButton(config, gameName);
+            return;
+        }
+
+        Interface_MenuItemType type;
+        if (Interface_GetMenuItemType(conf->itemName, &type))
+        {
+            char buffer[1024];
+            strcpy(buffer, conf->dataString);
+            char* stringParts[20];
+            B32 boolValue = 0;
+            if (Util_Tokenize(buffer, stringParts, ":") == 7 && Util_GetBoolFromString(stringParts[6]) != BOOL3_ERROR)
+                boolValue = Util_GetBoolFromString(stringParts[6]) == BOOL3_TRUE;
+
+            interfaceGlobs.menuItemUnkBools[type] = boolValue;
+            interfaceGlobs.menuItemIcons[type] = Image_LoadBMPScaled(stringParts[0], 0, 0);
+            interfaceGlobs.menuItemIcons_no[type] = Image_LoadBMPScaled(stringParts[1], 0, 0);
+            interfaceGlobs.menuItemIcons_pr[type] = Image_LoadBMPScaled(stringParts[2], 0, 0);
+
+            const char* itemTexts[2];
+            S32 num = Util_Tokenize(stringParts[3], itemTexts, "|");
+            interfaceGlobs.langMenuItemTexts[type] = Util_StrCpy(itemTexts[0]);
+            if (num == 2)
+                SFX_GetType(itemTexts[1], &interfaceGlobs.sfxMenuItemTexts[type]);
+
+            num = Util_Tokenize(stringParts[4], itemTexts, "|");
+            interfaceGlobs.langMenuItemTexts_no[type] = Util_StrCpy(itemTexts[0]);
+            if (num == 2)
+                SFX_GetType(itemTexts[1], &interfaceGlobs.sfxMenuItemTexts_no[type]);
+
+            Keys8 key;
+            if (Key_Find(stringParts[5], &key))
+                interfaceGlobs.menuItemF2keys[type] = key;
+        }
+
+        conf = Config_GetNextItem(conf);
+    } while (TRUE);
 }
 
 void Interface_LoadItemPanels(lpConfig config, const char* gameName)
 {
-    // TODO: Implement Interface_LoadItemPanels
+    for (S32 i = 0; i < INTERFACE_ICONPANEL_ITEM_COUNT; i++)
+    {
+        char str[20];
+        _itoa(i, str, 10);
+        const char* interfaceSurroundImages = Config_GetTempStringValue(config, Config_BuildStringID(gameName, "InterfaceSurroundImages", str, 0));
+        if (interfaceSurroundImages == NULL)
+        {
+            interfaceGlobs.iconPanelImages[i] = NULL;
+        }
+        else
+        {
+            char* stringParts[20];
+            Util_Tokenize(interfaceSurroundImages, stringParts, ":");
+            if (_stricmp(stringParts[0], "NULL") != 0)
+            {
+                interfaceGlobs.iconPanelImages[i] = Image_LoadBMPScaled(stringParts[0], 0, 0);
+                if (interfaceGlobs.iconPanelImages[i] != NULL)
+                    Image_SetupTrans(interfaceGlobs.iconPanelImages[i], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+                interfaceGlobs.iconPanelIconOffsets[i].x = (F32)atoi(stringParts[1]);
+                interfaceGlobs.iconPanelIconOffsets[i].y = (F32)atoi(stringParts[2]);
+
+                // TODO: Verify this is correct
+                interfaceGlobs.iconPanelBackButtonOffsets[i].x = (F32)atoi(stringParts[3]);
+                interfaceGlobs.iconPanelBackButtonOffsets[i].y = (F32)atoi(stringParts[4]);
+            }
+
+            if (_stricmp(stringParts[5], "NULL") != 0)
+            {
+                // TODO: Verify this is correct
+                interfaceGlobs.iconPanelNoBackImages[i] = Image_LoadBMPScaled(stringParts[5], 0, 0);
+                if (interfaceGlobs.iconPanelNoBackImages[i] != NULL)
+                    Image_SetupTrans(interfaceGlobs.iconPanelNoBackImages[i], 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+                // TODO: Verify this is correct
+                interfaceGlobs.iconPanelNoBackIconOffsets[i].x = (F32)atoi(stringParts[6]);
+                interfaceGlobs.iconPanelNoBackIconOffsets[i].y = (F32)atoi(stringParts[7]);
+            }
+        }
+    }
+}
+
+void Interface_LoadBuildItems(lpConfig config, const char* gameName)
+{
+    // TODO: Implement Interface_LoadBuildItems
+}
+
+void Interface_LoadBackButton(lpConfig config, const char* gameName)
+{
+    const char* interfaceBackButton = Config_GetTempStringValue(config, Config_BuildStringID(gameName, "InterfaceBackButton", 0));
+    if (interfaceBackButton == NULL)
+        return;
+
+    const char* stringParts[20];
+    Util_Tokenize(interfaceBackButton, stringParts, ":");
+    interfaceGlobs.backButtonSize.width = atoi(stringParts[0]);
+    interfaceGlobs.backButtonSize.height = atoi(stringParts[1]);
+    interfaceGlobs.backButtonImage_hl = Image_LoadBMPScaled(stringParts[2], 0, 0);
+    interfaceGlobs.backButtonImage_pr = Image_LoadBMPScaled(stringParts[3], 0, 0);
+    interfaceGlobs.backButtonText = Util_RemoveUnderscores(stringParts[4]);
+    ToolTip_SetText(ToolTip_InterfaceMenuBackButton, interfaceGlobs.backButtonText);
 }
 
 void Interface_LoadPlusMinusImages(const char* plusName, const char* minusName)
@@ -121,9 +225,67 @@ void Interface_LoadPlusMinusImages(const char* plusName, const char* minusName)
         Image_SetupTrans(interfaceGlobs.dependenciesMinusImage, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 }
 
+B32 Interface_GetMenuItemType(const char* menuItemName, Interface_MenuItemType* outMenuItemType)
+{
+    S32 cmp;
+
+    for (S32 i = 0; i < Interface_MenuItem_Type_Count; i++)
+    {
+        if (_stricmp(interfaceGlobs.menuItemName[i], menuItemName) == 0)
+        {
+            *outMenuItemType = i;
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
 void Interface_FUN_0041b3c0()
 {
+    if ((interfaceGlobs.flags & INTERFACE_GLOB_FLAG_UNK_4) == INTERFACE_GLOB_FLAG_NONE)
+        return;
+
+    U32 buildMenuIconCount = Interface_GetBuildMenuIconCount(interfaceGlobs.currMenuType);
+    if (!Interface_NotMainOrFirstPersonMenu(interfaceGlobs.currMenuType))
+    {
+        if (interfaceGlobs.iconPanelNoBackImages[buildMenuIconCount - 1] != NULL)
+        {
+            Point2F destPos;
+            destPos.x = interfaceGlobs.iconPanelNoBackIconOffsets[buildMenuIconCount - 1].x + interfaceGlobs.currMenuPosition.x;
+            destPos.y = interfaceGlobs.iconPanelNoBackIconOffsets[buildMenuIconCount - 1].y + interfaceGlobs.currMenuPosition.y;
+            Image_DisplayScaled(interfaceGlobs.iconPanelNoBackImages[buildMenuIconCount - 1], NULL, &destPos, NULL);
+        }
+        goto endFunc;
+    }
+
+    if (interfaceGlobs.iconPanelImages[buildMenuIconCount - 1] != NULL)
+    {
+        Point2F destPos;
+        destPos.x = interfaceGlobs.iconPanelIconOffsets[buildMenuIconCount - 1].x + interfaceGlobs.currMenuPosition.x;
+        destPos.y = interfaceGlobs.iconPanelIconOffsets[buildMenuIconCount - 1].y + interfaceGlobs.currMenuPosition.y;
+        Image_DisplayScaled(interfaceGlobs.iconPanelImages[buildMenuIconCount - 1], NULL, &destPos, NULL);
+    }
+
     // TODO: Implement Interface_FUN_0041b3c0
+
+endFunc:
+    Point2F destPos;
+    destPos.x = interfaceGlobs.currMenuPosition.x;
+    destPos.y = interfaceGlobs.currMenuPosition.y;
+    Interface_FUN_0041b5b0(interfaceGlobs.currMenuType, Interface_Callback_FUN_0041b730, &destPos);
+
+    if ((interfaceGlobs.flags & (INTERFACE_GLOB_FLAG_UNK_200 | INTERFACE_GLOB_FLAG_UNK_1000)) != INTERFACE_GLOB_FLAG_NONE)
+    {
+        Interface_DrawHoverOutline(&interfaceGlobs.areaf_fb4);
+    }
+
+    if ((interfaceGlobs.flags & (INTERFACE_GLOB_FLAG_UNK_1000 | INTERFACE_GLOB_FLAG_UNK_2000)) != INTERFACE_GLOB_FLAG_NONE)
+    {
+        Interface_FUN_0041ebd0(interfaceGlobs.areaf_fb4.x, interfaceGlobs.areaf_fb4.y);
+        return;
+    }
+
+    Interface_SetFloat1494To25_AndUnsetFlags800();
 }
 
 void Interface_FUN_0041b860(F32 elapsedAbs)
@@ -285,4 +447,63 @@ void Interface_ResetMenu()
     interfaceGlobs.currMenuType = Interface_Menu_Main;
     interfaceGlobs.currMenuPosition.x = interfaceGlobs.slideEndPosition.x;
     interfaceGlobs.flags |= (INTERFACE_GLOB_FLAG_UNK_4 | INTERFACE_GLOB_FLAG_UNK_80);
+}
+
+B32 Interface_FUN_0041b5b0(Interface_MenuType menuIcon, Interface_Callback_Unknown callback, void* context)
+{
+    // TODO: Implement Interface_FUN_0041b5b0
+
+    return FALSE;
+}
+
+B32 Interface_Callback_FUN_0041b730(Interface_MenuType menuIcon, U32 param2, S32 param3, F32* param4)
+{
+    // TODO: Implement Interface_Callback_FUN_0041b730
+    return FALSE;
+}
+
+U32 Interface_GetBuildMenuIconCount(Interface_MenuType interfaceMenuType)
+{
+    U32 iconCount = 0;
+
+    if (interfaceMenuType == Interface_Menu_BuildBuilding)
+        return legoGlobs.buildingCount;
+
+    if (interfaceMenuType == Interface_Menu_BuildSmallVehicle)
+    {
+        // TODO: Implement Interface_GetBuildMenuIconCount
+    }
+    else
+    {
+        if (interfaceMenuType != Interface_Menu_BuildLargeVehicle)
+            return interfaceGlobs.menuList[interfaceMenuType].iconCount;
+
+        // TODO: Implement Interface_GetBuildMenuIconCount
+    }
+
+    return iconCount;
+}
+
+B32 Interface_NotMainOrFirstPersonMenu(Interface_MenuType interfaceMenuType)
+{
+    if (interfaceMenuType != Interface_Menu_Main && interfaceMenuType != Interface_Menu_FP)
+        return TRUE;
+
+    return FALSE;
+}
+
+void Interface_SetFloat1494To25_AndUnsetFlags800()
+{
+    interfaceGlobs.float_1494 = 25.0f;
+    interfaceGlobs.flags &= ~INTERFACE_GLOB_FLAG_UNK_800;
+}
+
+void Interface_FUN_0041ebd0(F32 xScreen, F32 yScreen)
+{
+    // TODO: Implement Interface_FUN_0041ebd0
+}
+
+void Interface_DrawHoverOutline(Area2F* area)
+{
+    // TODO: Implement Interface_DrawHoverOutline
 }

@@ -117,7 +117,7 @@ B32 Key_Find(const char* name, U8* keyID)
 {
     for (U32 loop = 0; loop < 256; loop++)
     {
-        if (keyGlobs.keyName[loop] && stricmp(keyGlobs.keyName[loop], name) == 0)
+        if (keyGlobs.keyName[loop] && _stricmp(keyGlobs.keyName[loop], name) == 0)
         {
             *keyID = (U8) loop;
             return TRUE;
