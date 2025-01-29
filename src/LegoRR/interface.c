@@ -1,10 +1,12 @@
 #include "interface.h"
 
+#include "encyclopedia.h"
 #include "keys.h"
 #include "lego.h"
 #include "map3d.h"
 #include "mem.h"
 #include "message.h"
+#include "panels.h"
 #include "tooltip.h"
 #include "utils.h"
 
@@ -154,7 +156,7 @@ void Interface_LoadItemPanels(lpConfig config, const char* gameName)
     for (S32 i = 0; i < INTERFACE_ICONPANEL_ITEM_COUNT; i++)
     {
         char str[20];
-        _itoa(i, str, 10);
+        _itoa(i + 1, str, 10);
         const char* interfaceSurroundImages = Config_GetTempStringValue(config, Config_BuildStringID(gameName, "InterfaceSurroundImages", str, 0));
         if (interfaceSurroundImages == NULL)
         {
@@ -266,7 +268,50 @@ void Interface_FUN_0041b3c0()
         Image_DisplayScaled(interfaceGlobs.iconPanelImages[buildMenuIconCount - 1], NULL, &destPos, NULL);
     }
 
-    // TODO: Implement Interface_FUN_0041b3c0
+    S32 flags = interfaceGlobs.menuItemFlags[0] & INTERFACE_MENUITEM_FLAG_FLASH;
+    lpImage backImage = interfaceGlobs.backButtonImage_hl;
+    if (!Interface_GetIconFlag8(Interface_MenuItem_Back))
+    {
+        // TODO: Verify this code is correct
+        if ((interfaceGlobs.flags & INTERFACE_GLOB_FLAG_UNK_4000) == INTERFACE_GLOB_FLAG_NONE)
+        {
+            if (flags != INTERFACE_MENUITEM_FLAG_NONE)
+            {
+                if (interfaceGlobs.flashingState == 0)
+                {
+                    backImage = NULL;
+                }
+            }
+            else
+            {
+                backImage = NULL;
+            }
+        }
+        else if (flags != INTERFACE_MENUITEM_FLAG_NONE)
+        {
+            if (interfaceGlobs.flashingState == 0)
+            {
+                backImage = NULL;
+            }
+        }
+    }
+    else
+    {
+        backImage = interfaceGlobs.backButtonImage_pr;
+        if (flags != INTERFACE_MENUITEM_FLAG_NONE && interfaceGlobs.flashingState)
+            backImage = interfaceGlobs.backButtonImage_hl;
+    }
+    if (backImage != NULL)
+    {
+        Point2F destPos;
+        destPos.x = interfaceGlobs.iconPanelBackButtonOffsets[buildMenuIconCount - 1].x + interfaceGlobs.currMenuPosition.x;
+        destPos.y = interfaceGlobs.iconPanelBackButtonOffsets[buildMenuIconCount - 1].y + interfaceGlobs.currMenuPosition.y;
+        Image_DisplayScaled(backImage, NULL, &destPos, NULL);
+    }
+
+    Interface_FUN_0041c420(Interface_MenuItem_Back, LegoObject_None, 0, NULL);
+    Interface_SetIconFlag8(Interface_MenuItem_Back, FALSE);
+    Interface_ChangeIconFlag1_FUN_0041c6e0(Interface_MenuItem_Back);
 
 endFunc:
     Point2F destPos;
@@ -310,7 +355,59 @@ void Interface_FUN_0041b860(F32 elapsedAbs)
 
 void Interface_FUN_0041e9f0(F32 elapsedAbs)
 {
-    // TODO: Implement Interface_FUN_0041e9f0
+    if ((interfaceGlobs.flags & INTERFACE_GLOB_FLAG_UNK_80) != INTERFACE_GLOB_FLAG_NONE)
+        return;
+
+    if ((interfaceGlobs.flags & INTERFACE_GLOB_FLAG_UNK_100) == INTERFACE_GLOB_FLAG_NONE)
+    {
+        if ((interfaceGlobs.flags & INTERFACE_GLOB_FLAG_UNK_4) != INTERFACE_GLOB_FLAG_NONE &&
+            (interfaceGlobs.currMenuPosition.x = interfaceGlobs.currMenuPosition.x - elapsedAbs * interfaceGlobs.slideSpeed,
+                interfaceGlobs.currMenuPosition.x <= interfaceGlobs.slideEndPosition.x))
+        {
+            interfaceGlobs.flags |= INTERFACE_GLOB_FLAG_UNK_80;
+            interfaceGlobs.currMenuPosition.x = interfaceGlobs.slideEndPosition.x;
+        }
+    }
+    else
+    {
+        interfaceGlobs.currMenuPosition.x += interfaceGlobs.slideSpeed * elapsedAbs;
+        if (interfaceGlobs.currMenuType == Interface_Menu_Type_Count && (panelGlobs.panelTable[8].flags & PANELDATA_FLAG_UNK2) != PANELDATA_FLAG_NONE)
+        {
+            Panel_ChangeFlags_BasedOnState(Panel_PriorityList);
+            // TODO: Figure out which flag "1" is, might be PanelButton_TopPanel_Priorities or PanelButton_PriorityList_Disable2
+            Panel_Button_SetFlag_8_OrUnset_c(Panel_TopPanel, 1, FALSE);
+            interfaceGlobs.currMenuPosition.x = interfaceGlobs.slideStartPosition.x;
+        }
+
+        if (interfaceGlobs.slideStartPosition.x <= interfaceGlobs.currMenuPosition.x)
+        {
+            interfaceGlobs.flags &= ~INTERFACE_GLOB_FLAG_UNK_100;
+            interfaceGlobs.currMenuPosition.x = interfaceGlobs.slideStartPosition.x;
+            SFX_Random_PlaySoundNormal(SFX_InterfaceSlideOnScreen, FALSE);
+            if (interfaceGlobs.nextMenuType == Interface_Menu_Type_Count)
+            {
+                interfaceGlobs.flags &= ~INTERFACE_GLOB_FLAG_UNK_4 | INTERFACE_GLOB_FLAG_UNK_80;
+                Panel_ChangeFlags_BasedOnState(Panel_PriorityList);
+                Panel_UnsetFlag_6();
+                panelGlobs.flags |= PANEL_GLOB_FLAG_UNK_2;
+            }
+            else if (interfaceGlobs.nextMenuType == Interface_Menu_Encyclopedia)
+            {
+                interfaceGlobs.flags &= ~INTERFACE_GLOB_FLAG_UNK_4 | INTERFACE_GLOB_FLAG_UNK_80;
+                Panel_ChangeFlags_BasedOnState(Panel_Encyclopedia);
+                legoGlobs.flags3 |= GAME3_UNK_1;
+                Encyclopedia_UnsetFlag1();
+            }
+            else
+            {
+                interfaceGlobs.flags |= INTERFACE_GLOB_FLAG_UNK_4;
+            }
+
+            interfaceGlobs.currMenuType = interfaceGlobs.nextMenuType;
+            interfaceGlobs.selBlockPos.x = interfaceGlobs.highlightBlockPos.x;
+            interfaceGlobs.selBlockPos.y = interfaceGlobs.highlightBlockPos.y;
+        }
+    }
 }
 
 void Interface_SelectBlock(Interface_MenuType menuType, Point2I* blockPos)
@@ -451,14 +548,100 @@ void Interface_ResetMenu()
 
 B32 Interface_FUN_0041b5b0(Interface_MenuType menuIcon, Interface_Callback_Unknown callback, void* context)
 {
-    // TODO: Implement Interface_FUN_0041b5b0
+    if (menuIcon == Interface_Menu_BuildBuilding)
+    {
+        // TODO: Implement Interface_FUN_0041b5b0
+    }
+    else if (menuIcon == Interface_Menu_BuildSmallVehicle)
+    {
+        // TODO: Implement Interface_FUN_0041b5b0
+    }
+    else if (menuIcon == Interface_Menu_BuildLargeVehicle)
+    {
+        // TODO: Implement Interface_FUN_0041b5b0
+    }
+    else if (interfaceGlobs.menuList[menuIcon].iconCount != 0)
+    {
+        S32 i = 0;
+        while (TRUE)
+        {
+            Interface_MenuItemType menuItem = interfaceGlobs.menuList[menuIcon].iconList[i];
+            if (menuItem == Interface_MenuItem_PowerOn || menuItem == Interface_MenuItem_PowerOff)
+            {
+                menuItem = Interface_GetPrimaryUnit_PowerIcon(&menuItem);
+            }
+
+            if (callback(menuItem, 0, 0, context))
+                break;
+
+            i++;
+            if (interfaceGlobs.menuList[menuIcon].iconCount <= i)
+                return FALSE;
+        }
+
+        return TRUE;
+    }
 
     return FALSE;
 }
 
-B32 Interface_Callback_FUN_0041b730(Interface_MenuType menuIcon, U32 param2, S32 param3, F32* param4)
+B32 Interface_Callback_FUN_0041b730(Interface_MenuType menuIcon, LegoObject_Type objType, LegoObject_ID objID, Point2F* destPos)
 {
-    // TODO: Implement Interface_Callback_FUN_0041b730
+    lpImage image;
+    Interface_MenuItemFlags flags;
+
+    if (menuIcon == Interface_MenuItem_Build)
+    {
+        Interface_ChangeObjectIconFlag1_FUN_0041c730(objType, objID);
+        image = Interface_GetBuildImageByObjectType(objType, objID);
+        if (objType == LegoObject_Vehicle)
+        {
+            flags = interfaceGlobs.vehicleItemFlags[objID] & INTERFACE_MENUITEM_FLAG_FLASH;
+        }
+        else
+        {
+            flags = objType; // TODO: What?
+            if (objType == LegoObject_Building)
+                flags = interfaceGlobs.buildingItemFlags[objID] & INTERFACE_MENUITEM_FLAG_FLASH;
+        }
+
+        Interface_SetObjectIconFlag8(objType, objID, FALSE);
+    }
+    else
+    {
+        Interface_ChangeIconFlag1_FUN_0041c6e0(menuIcon);
+        image = Interface_FUN_0041c9e0(menuIcon);
+        flags = interfaceGlobs.menuItemFlags[menuIcon] & INTERFACE_MENUITEM_FLAG_FLASH;
+        Interface_SetIconFlag8(menuIcon, FALSE);
+    }
+    Interface_FUN_0041c420(menuIcon, objType, objID, destPos);
+
+    F32 yOffset;
+    if (image == NULL)
+    {
+        yOffset = 40;
+    }
+    else
+    {
+        yOffset = image->height;
+        if (flags == INTERFACE_MENUITEM_FLAG_NONE || interfaceGlobs.flashingState != 0)
+            Image_DisplayScaled(image, NULL, destPos, NULL);
+    }
+
+    if (menuIcon == Interface_MenuItem_TeleportMan)
+    {
+        objID = 0;
+        objType = LegoObject_MiniFigure;
+    }
+    else if (menuIcon != Interface_MenuItem_Build)
+    {
+        destPos->y += yOffset;
+        return FALSE;
+    }
+
+    Interface_DrawTeleportQueueNumber(objType, objID, destPos);
+
+    destPos->y += yOffset;
     return FALSE;
 }
 
@@ -501,6 +684,98 @@ void Interface_SetFloat1494To25_AndUnsetFlags800()
 void Interface_FUN_0041ebd0(F32 xScreen, F32 yScreen)
 {
     // TODO: Implement Interface_FUN_0041ebd0
+}
+
+B32 Interface_GetIconFlag8(Interface_MenuItemType menuIcon)
+{
+    return interfaceGlobs.menuItemFlags[menuIcon] & INTERFACE_MENUITEM_FLAG_UNK_8;
+}
+
+void Interface_SetIconFlag8(Interface_MenuItemType menuIcon, B32 on)
+{
+    if (on)
+    {
+        interfaceGlobs.menuItemFlags[menuIcon] |= INTERFACE_MENUITEM_FLAG_UNK_8;
+    }
+    else
+    {
+        interfaceGlobs.menuItemFlags[menuIcon] &= ~INTERFACE_MENUITEM_FLAG_UNK_8;
+    }
+}
+
+void Interface_SetObjectIconFlag8(LegoObject_Type objType, LegoObject_ID objID, B32 on)
+{
+    // TODO: Implement Interface_SetObjectIconFlag8
+}
+
+void Interface_FUN_0041c420(Interface_MenuItemType menuIcon, LegoObject_Type objType, LegoObject_ID objID, Point2F* destPos)
+{
+    // TODO: Implement Interface_FUN_0041c420
+}
+
+void Interface_ChangeObjectIconFlag1_FUN_0041c730(LegoObject_Type objType, LegoObject_ID objID)
+{
+    // TODO: Implement Interface_ChangeObjectIconFlag1_FUN_0041c730
+}
+
+void Interface_ChangeIconFlag1_FUN_0041c6e0(Interface_MenuItemType menuIcon)
+{
+    Interface_MenuItemFlags flags = interfaceGlobs.menuItemFlags[menuIcon];
+    if ((flags & INTERFACE_MENUITEM_FLAG_UNK_2) == INTERFACE_MENUITEM_FLAG_NONE && ((interfaceGlobs.flags & INTERFACE_GLOB_FLAG_UNK_80) != INTERFACE_GLOB_FLAG_NONE))
+    {
+        flags = interfaceGlobs.menuItemFlags[menuIcon];
+        if (Interface_HandleMenuItem(menuIcon))
+        {
+            interfaceGlobs.menuItemFlags[menuIcon] = flags & ~INTERFACE_MENUITEM_FLAG_UNK_1;
+            return;
+        }
+    }
+
+    interfaceGlobs.menuItemFlags[menuIcon] = flags | INTERFACE_MENUITEM_FLAG_UNK_1;
+}
+
+B32 Interface_HandleMenuItem(Interface_MenuItemType menuIcon)
+{
+    // TODO: Implement Interface_HandleMenuItem
+
+    return TRUE;
+}
+
+Interface_MenuItemType Interface_GetPrimaryUnit_PowerIcon(Interface_MenuItemType* menuIcon)
+{
+    // TODO: Implement Interface_GetPrimaryUnit_PowerIcon
+
+    return *menuIcon;
+}
+
+B32 Interface_GetIconUnk_FUN_0041c820(Interface_MenuItemType menuIcon, B32 param2)
+{
+    // TODO: Implement Interface_GetIconUnk_FUN_0041c820
+
+    return FALSE;
+}
+
+lpImage Interface_GetBuildImageByObjectType(LegoObject_Type objType, LegoObject_ID objID)
+{
+    // TODO: Implement Interface_GetBuildImageByObjectType
+
+    return NULL;
+}
+
+lpImage Interface_FUN_0041c9e0(Interface_MenuItemType menuIcon)
+{
+    if (Interface_GetIconUnk_FUN_0041c820(menuIcon, FALSE))
+        return interfaceGlobs.menuItemIcons_no[menuIcon];
+
+    if (Interface_GetIconFlag8(menuIcon))
+        return interfaceGlobs.menuItemIcons_pr[menuIcon];
+
+    return interfaceGlobs.menuItemIcons[menuIcon];
+}
+
+void Interface_DrawTeleportQueueNumber(LegoObject_Type objType, LegoObject_ID objID, Point2F* screenPt)
+{
+    // TODO: Implement Interface_DrawTeleportQueueNumber
 }
 
 void Interface_DrawHoverOutline(Area2F* area)

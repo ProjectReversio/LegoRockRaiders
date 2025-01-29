@@ -263,10 +263,10 @@ extern void Interface_SetScrollParameters(U32 xEnd, U32 yEnd, U32 xStart, U32 yS
 
 extern void Interface_ResetMenu();
 
-typedef B32 (*Interface_Callback_Unknown)(Interface_MenuType menuIcon, U32 param2, S32 param3, F32* param4);
+typedef B32 (*Interface_Callback_Unknown)(Interface_MenuType menuIcon, LegoObject_Type objType, LegoObject_ID objID, Point2F* destPos);
 extern B32 Interface_FUN_0041b5b0(Interface_MenuType menuIcon, Interface_Callback_Unknown callback, void* context);
 
-extern B32 Interface_Callback_FUN_0041b730(Interface_MenuType menuIcon, U32 param2, S32 param3, F32* param4);
+extern B32 Interface_Callback_FUN_0041b730(Interface_MenuType menuIcon, LegoObject_Type objType, LegoObject_ID objID, Point2F* destPos);
 
 extern U32 Interface_GetBuildMenuIconCount(Interface_MenuType interfaceMenuType);
 
@@ -275,5 +275,27 @@ extern B32 Interface_NotMainOrFirstPersonMenu(Interface_MenuType interfaceMenuTy
 extern void Interface_SetFloat1494To25_AndUnsetFlags800();
 
 extern void Interface_FUN_0041ebd0(F32 xScreen, F32 yScreen);
+
+extern B32 Interface_GetIconFlag8(Interface_MenuItemType menuIcon);
+extern void Interface_SetIconFlag8(Interface_MenuItemType menuIcon, B32 on);
+
+extern void Interface_SetObjectIconFlag8(LegoObject_Type objType, LegoObject_ID objID, B32 on);
+
+extern void Interface_FUN_0041c420(Interface_MenuItemType menuIcon, LegoObject_Type objType, LegoObject_ID objID, Point2F* destPos);
+
+extern void Interface_ChangeObjectIconFlag1_FUN_0041c730(LegoObject_Type objType, LegoObject_ID objID);
+
+extern void Interface_ChangeIconFlag1_FUN_0041c6e0(Interface_MenuItemType menuIcon);
+
+extern B32 Interface_HandleMenuItem(Interface_MenuItemType menuIcon);
+
+extern Interface_MenuItemType Interface_GetPrimaryUnit_PowerIcon(Interface_MenuItemType* menuIcon);
+
+extern B32 Interface_GetIconUnk_FUN_0041c820(Interface_MenuItemType menuIcon, B32 param2);
+
+extern lpImage Interface_GetBuildImageByObjectType(LegoObject_Type objType, LegoObject_ID objID);
+extern lpImage Interface_FUN_0041c9e0(Interface_MenuItemType menuIcon);
+
+extern void Interface_DrawTeleportQueueNumber(LegoObject_Type objType, LegoObject_ID objID, Point2F* screenPt);
 
 extern void Interface_DrawHoverOutline(Area2F* area);

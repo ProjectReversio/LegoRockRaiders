@@ -107,6 +107,7 @@ typedef struct PanelTextWindow
 typedef enum Panel_GlobFlags
 {
     PANEL_GLOB_FLAG_NONE = 0,
+    PANEL_GLOB_FLAG_UNK_2 = 2,
 } Panel_GlobFlags;
 
 typedef struct Panel_Globs
@@ -172,3 +173,9 @@ extern void Panel_CryOreSideBar_Draw();
 extern void Panel_Crystals_LoadRewardQuota(lpConfig config, const char* gameName, const char* levelName);
 
 extern B32 Panel_IsFlags_2_Not8(Panel_Type panelType);
+
+extern void Panel_ChangeFlags_BasedOnState(Panel_Type panelType);
+
+extern void Panel_Button_SetFlag_8_OrUnset_c(Panel_Type panelType, PanelButton_Type buttonType, B32 setFlag8);
+
+extern void Panel_UnsetFlag_6();

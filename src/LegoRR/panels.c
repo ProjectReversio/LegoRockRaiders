@@ -169,3 +169,18 @@ B32 Panel_IsFlags_2_Not8(Panel_Type panelType)
 
     return FALSE;
 }
+
+void Panel_ChangeFlags_BasedOnState(Panel_Type panelType)
+{
+    // TODO: Implement Panel_ChangeFlags_BasedOnState
+}
+
+void Panel_Button_SetFlag_8_OrUnset_c(Panel_Type panelType, PanelButton_Type buttonType, B32 setFlag8)
+{
+    // TODO: Implement Panel_Button_SetFlag_8_OrUnset_c
+}
+
+void Panel_UnsetFlag_6()
+{
+    // TODO: Implement Panel_UnsetFlag_6
+}
