@@ -386,14 +386,16 @@ void Interface_FUN_0041e9f0(F32 elapsedAbs)
             SFX_Random_PlaySoundNormal(SFX_InterfaceSlideOnScreen, FALSE);
             if (interfaceGlobs.nextMenuType == Interface_Menu_Type_Count)
             {
-                interfaceGlobs.flags &= ~INTERFACE_GLOB_FLAG_UNK_4 | INTERFACE_GLOB_FLAG_UNK_80;
+                interfaceGlobs.flags &= ~INTERFACE_GLOB_FLAG_UNK_4;
+                interfaceGlobs.flags |= INTERFACE_GLOB_FLAG_UNK_80;
                 Panel_ChangeFlags_BasedOnState(Panel_PriorityList);
                 Panel_UnsetFlag_6();
                 panelGlobs.flags |= PANEL_GLOB_FLAG_UNK_2;
             }
             else if (interfaceGlobs.nextMenuType == Interface_Menu_Encyclopedia)
             {
-                interfaceGlobs.flags &= ~INTERFACE_GLOB_FLAG_UNK_4 | INTERFACE_GLOB_FLAG_UNK_80;
+                interfaceGlobs.flags &= ~INTERFACE_GLOB_FLAG_UNK_4;
+                interfaceGlobs.flags |= INTERFACE_GLOB_FLAG_UNK_80;
                 Panel_ChangeFlags_BasedOnState(Panel_Encyclopedia);
                 legoGlobs.flags3 |= GAME3_UNK_1;
                 Encyclopedia_UnsetFlag1();
@@ -453,7 +455,8 @@ void Interface_UnkSlideOffScreen_FUN_0041e980_internal(Interface_MenuType menuTy
 {
     if ((interfaceGlobs.flags & INTERFACE_GLOB_FLAG_UNK_80) == INTERFACE_GLOB_FLAG_NONE || interfaceGlobs.currMenuType != menuType)
     {
-        interfaceGlobs.flags &= ~INTERFACE_GLOB_FLAG_UNK_80 | INTERFACE_GLOB_FLAG_UNK_100;
+        interfaceGlobs.flags &= ~INTERFACE_GLOB_FLAG_UNK_80;
+        interfaceGlobs.flags |= INTERFACE_GLOB_FLAG_UNK_100;
         SFX_Random_PlaySoundNormal(SFX_InterfaceSlideOffScreen, FALSE);
     }
     else

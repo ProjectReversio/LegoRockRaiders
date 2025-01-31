@@ -75,7 +75,8 @@ lpMeshLOD MeshLOD_Clone(lpMeshLOD srcMeshLOD)
     {
         memcpy(clonedMeshLOD, srcMeshLOD, sizeof(MeshLOD));
         clonedMeshLOD->setID = 0;
-        clonedMeshLOD->flags &= ~MESHLOD_FLAG_MEMBLOCK | MESHLOD_FLAG_CLONED;
+        clonedMeshLOD->flags &= ~MESHLOD_FLAG_MEMBLOCK;
+        clonedMeshLOD->flags |= MESHLOD_FLAG_CLONED;
         clonedMeshLOD->next = &clonedMeshLOD[i + 1];
         i++;
         srcMeshLOD = srcMeshLOD->next;

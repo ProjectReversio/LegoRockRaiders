@@ -166,9 +166,10 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
         if ((blocks[blockIndex].flags1 & BLOCK1_EXPOSEDFLOORCHECKS) == BLOCK1_NONE)
         {
             U32 someIdx = legoGlobs.currLevel->width * by + bx;
-            // TODO: Figure out what these flags are doing
-            if ((legoGlobs.currLevel->blocks[someIdx].flags1 & BLOCK1_BUILDINGSOLID) == BLOCK1_NONE && (legoGlobs.currLevel->blocks[someIdx].flags2 & BLOCK2_TOOLSTORE) == BLOCK2_NONE &&
-                ((legoGlobs.currLevel->blocks[someIdx].flags1 + 1) & 0x80) == 0 &&
+            // TODO: Is this correct?
+            if ((legoGlobs.currLevel->blocks[someIdx].flags1 & BLOCK1_BUILDINGSOLID) == BLOCK1_NONE &&
+                ((legoGlobs.currLevel->blocks[someIdx].flags2 & 0xFF) & BLOCK2_TOOLSTORE) == BLOCK2_NONE &&
+                ((legoGlobs.currLevel->blocks[someIdx].flags2 & 0xFF) & BLOCK2_EMERGE_TRIGGER) == BLOCK2_NONE &&
                 !Construction_Zone_ExistsAtBlock(&blockPos))
             {
                 legoGlobs.currLevel->blocks[someIdx].flags1 &= ~BLOCK1_CLEARED;
@@ -252,7 +253,7 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
         {
             if ((ogFlags & BLOCK1_PATH) == BLOCK1_NONE)
             {
-                if ((blocks[blockIndex].flags2 & BLOCK2_SLUGHOLE_EXPOSED) == 0)
+                if (((blocks[blockIndex].flags2 & 0xFF) & BLOCK2_SLUGHOLE_EXPOSED) == 0)
                 {
                     if ((ogFlags & BLOCK1_CLEARED) == BLOCK1_NONE)
                     {
