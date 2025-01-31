@@ -2597,7 +2597,7 @@ B32 Lego_LoadPathMap(lpLego_Level level, const char* filename, S32 modifier)
                     }
                     else if (block - modifier == 1 &&
                         (legoGlobs.currLevel->blocks[x + legoGlobs.currLevel->width * y].flags1 & BLOCK1_BUILDINGSOLID) == BLOCK1_NONE &&
-                        (legoGlobs.currLevel->blocks[x + legoGlobs.currLevel->width * y].flags2 & BLOCK2_TOOLSTORE) == BLOCK2_NONE &&
+                        ((legoGlobs.currLevel->blocks[x + legoGlobs.currLevel->width * y].flags2 & 0xFF) & BLOCK2_TOOLSTORE) == BLOCK2_NONE &&
                         (legoGlobs.currLevel->blocks[x + legoGlobs.currLevel->width * y].flags1 & BLOCK1_BUILDINGPATH) == BLOCK1_NONE &&
                         (!Construction_Zone_ExistsAtBlock(&coords)))
                     {
