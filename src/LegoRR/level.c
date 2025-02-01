@@ -75,6 +75,27 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
         ANGLES[7].y = 1;
 
         // TODO: Implement Level_DestroyWall
+
+        level->blocks[by * level->width + bx].flags1 &= ~BLOCK1_REINFORCED;
+        level->blocks[by * level->width + bx].flags1 |= BLOCK1_EXPOSEDFLOORCHECKS;
+
+        BlockFlags1 flags1 = level->blocks[by * level->width + bx].flags1;
+
+        if (((flags1 & BLOCK1_EXPOSED) == BLOCK1_NONE || (flags1 & BLOCK1_HIDDEN) != BLOCK1_NONE) && (flags1 & BLOCK1_DIGREQUEST) != BLOCK1_NONE)
+        {
+            // TODO: Implement Level_DestroyWall
+        }
+
+        if (isHiddenCavern)
+        {
+            level->blocks[by * level->width + bx].flags1 |= BLOCK1_CLEARED;
+        }
+        else
+        {
+            // TODO: Implement Level_DestroyWall
+        }
+
+        // TODO: Implement Level_DestroyWall
     }
 
     return TRUE;
