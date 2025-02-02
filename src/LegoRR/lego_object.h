@@ -3,7 +3,9 @@
 #include "platform.h"
 #include "container.h"
 #include "config.h"
+#include "images.h"
 #include "meshLOD.h"
+#include "sfx.h"
 #include "stats.h"
 #include "upgrade.h"
 
@@ -359,9 +361,7 @@ typedef struct LegoObject_Globs
 {
     lpLegoObject listSet[32];
     lpLegoObject freeList;
-
-    // TODO: Implement LegoObject_Globs
-
+    SFX_ID objectTtSFX[20][15]; // [objType:20][objIndex:15] (cfg: ObjTtSFXs)
     const char* activityName[79]; // [activityType:79]
 
     void* UnkSurfaceGrid_1_TABLE;
@@ -379,6 +379,17 @@ typedef struct LegoObject_Globs
     lpLegoObject minifigureObj_9cb8;
 
     // TODO: Implement LegoObject_Globs
+
+    const char* abilityName[6]; // [abilityType:6]
+    lpImage ToolTipIcons_Abilities[6]; // [abilityType:6] (cfg: ToolTipIcons)
+    lpImage ToolTipIcons_Tools[11]; // [toolType:11] (cfg: ToolTipIcons)
+    lpImage ToolTipIcon_Blank; // (cfg: ToolTipIcons::Blank)
+    lpImage ToolTipIcon_Ore; // (cfg: ToolTipIcons::Ore)
+    U32 BuildingsTeleported;
+    F32 s_sound3DUpdateTimer;
+    U32 s_stepCounter_c63c; // (static, counter %4 for step SFX)
+    void** s_FlocksDestroy_c640; // (static, Struct 0x10, used in Flocks activities (QUICK_DESTROY??))
+
 } LegoObject_Globs;
 
 extern LegoObject_Globs objectGlobs;
@@ -430,6 +441,8 @@ extern void LegoObject_RequestPowerGridUpdate();
 // The same as `LegoObject_GetWorldZCallback`, but returns a lower Z value with over Lake terrain.
 // Objects wading in a lake (aka, not sailing) will have their Z lowered a bit, and have it at the lowest near the center of a lake BLOCK.
 extern F32 LegoObject_GetWorldZCallback_Lake(F32 xPos, F32 yPos, struct Map3D* map);
+
+extern const char* Object_GetLangName(LegoObject_Type objType, LegoObject_ID objID);
 
 extern void HiddenObject_Add(void* objModel, LegoObject_Type objType, LegoObject_ID objID, Point2F* worldPos, F32 heading, F32 health, const char* thisOLName, const char* drivingOLName);
 

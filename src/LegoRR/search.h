@@ -3,6 +3,7 @@
 #include "platform.h"
 #include "save.h"
 #include "front_end.h"
+#include "interface.h"
 
 typedef struct SearchLevelSelectAdd
 {
@@ -35,3 +36,12 @@ typedef struct SearchAddCryOre_c
     U32 crystalCount;
     U32 oreCount; // normal ore
 } SearchAddCryOre_c, *lpSearchAddCryOre_c;
+
+typedef struct SearchInterfaceUnknown
+{
+    U32 mouseX, mouseY;
+    Point2F currMenuPos;
+    Interface_MenuItemType menuItemType;
+    LegoObject_Type objType;
+    LegoObject_ID objID;
+} SearchInterfaceUnknown, *lpSearchInterfaceUnknown;

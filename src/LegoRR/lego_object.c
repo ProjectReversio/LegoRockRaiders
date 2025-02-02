@@ -330,6 +330,13 @@ F32 LegoObject_GetWorldZCallback_Lake(F32 xPos, F32 yPos, struct Map3D* map)
     return Map3D_GetWorldZ(map, xPos, yPos) + zModifier;
 }
 
+const char* Object_GetLangName(LegoObject_Type objType, LegoObject_ID objID)
+{
+    // TODO: Implement Object_GetLangName
+
+    return NULL;
+}
+
 void HiddenObject_Add(void* objModel, LegoObject_Type objType, LegoObject_ID objID, Point2F* worldPos, F32 heading, F32 health, const char* thisOLName, const char* drivingOLName)
 {
     // TODO: Implement HiddenObject_Add

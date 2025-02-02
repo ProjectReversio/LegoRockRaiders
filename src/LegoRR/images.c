@@ -676,6 +676,28 @@ U32 Image_GetPixelMask(lpImage image)
     return 0;
 }
 
+B32 Image_GetPixel(lpImage image, U32 x, U32 y, U32* colour)
+{
+    U32 col, bpp;
+    DDSURFACEDESC2 desc;
+    memset(&desc, 0, sizeof(DDSURFACEDESC2));
+    desc.dwSize = sizeof(DDSURFACEDESC2);
+
+    if (x < image->width && y < image->height)
+    {
+        if (image->surface->lpVtbl->Lock(image->surface, NULL, &desc, DDLOCK_WAIT | DDLOCK_READONLY, NULL) == DD_OK)
+        {
+            bpp = desc.ddpfPixelFormat.dwRGBBitCount;
+            col = *((U32*) &((U8*) desc.lpSurface)[(y * desc.lPitch) + (x * (bpp / 8))]);
+            *colour = col >> (32 - bpp);
+            image->surface->lpVtbl->Unlock(image->surface, NULL);
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 B32 Image_SaveBMP(lpImage image, const char* fname)
 {
     return DirectDraw_SaveBMP(image->surface, fname);

@@ -204,8 +204,8 @@ typedef struct Interface_Globs
     Point2I highlightBlockPos;
     Interface_MenuType nextMenuType;
     Interface_MenuItemType menuItemType_fa8;
-    U32 field_fac;
-    U32 field_fb0;
+    LegoObject_Type field_fac;
+    LegoObject_ID field_fb0;
     Area2F areaf_fb4;
     B32 flashingState; // For block and icon flashing. false = off, true = on
     F32 timer_fc8;
@@ -263,10 +263,10 @@ extern void Interface_SetScrollParameters(U32 xEnd, U32 yEnd, U32 xStart, U32 yS
 
 extern void Interface_ResetMenu();
 
-typedef B32 (*Interface_Callback_Unknown)(Interface_MenuType menuIcon, LegoObject_Type objType, LegoObject_ID objID, Point2F* destPos);
+typedef B32 (*Interface_Callback_Unknown)(Interface_MenuType menuIcon, LegoObject_Type objType, LegoObject_ID objID, void* context);
 extern B32 Interface_FUN_0041b5b0(Interface_MenuType menuIcon, Interface_Callback_Unknown callback, void* context);
 
-extern B32 Interface_Callback_FUN_0041b730(Interface_MenuType menuIcon, LegoObject_Type objType, LegoObject_ID objID, Point2F* destPos);
+extern B32 Interface_Callback_FUN_0041b730(Interface_MenuType menuIcon, LegoObject_Type objType, LegoObject_ID objID, void* context);
 
 extern U32 Interface_GetBuildMenuIconCount(Interface_MenuType interfaceMenuType);
 
@@ -297,6 +297,22 @@ extern lpImage Interface_GetBuildImageByObjectType(LegoObject_Type objType, Lego
 extern lpImage Interface_FUN_0041c9e0(Interface_MenuItemType menuIcon);
 
 extern B32 Interface_DoSomethingWithRenameReplace(U32 mouseX, U32 mouseY, B32 leftButton, B32 leftButtonLast, B32 leftReleased);
+
+extern B32 Interface_FUN_0041c0f0(U32 mouseX, U32 mouseY, Interface_MenuItemType* outMenuItemType, LegoObject_Type* outObjType, LegoObject_ID* outObjID);
+
+extern void Interface_SetSFX_004df1f4(SFX_ID sfxType);
+
+extern B32 Interface_FUN_0041edb0(U32 mouseX, U32 mouseY, F32 x, F32 y, LegoObject_Type *outObjType, LegoObject_ID* outObjID, U32* outObjLevel);
+
+extern B32 Interface_FUN_0041c610(Interface_MenuItemType menuIcon, LegoObject_Type objType, LegoObject_ID objID, B32 leftButton, B32 leftButtonLast);
+
+extern B32 Interface_Callback_FUN_0041c240(Interface_MenuItemType menuIcon, LegoObject_Type objType, LegoObject_ID objID, void* context);
+
+extern B32 Interface_DoAction_FUN_0041dbd0(Interface_MenuItemType menuIcon);
+
+extern void Interface_SetDat_004decd8_004decdc(Interface_MenuItemType menuIcon, LegoObject_Type objType, LegoObject_ID objID);
+
+extern void Interface_FUN_0041cc10(Point2F* point, U32 unkWidth, U32 unkHeight);
 
 extern void Interface_DrawTeleportQueueNumber(LegoObject_Type objType, LegoObject_ID objID, Point2F* screenPt);
 
