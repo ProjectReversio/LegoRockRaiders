@@ -316,4 +316,9 @@ extern void Interface_FUN_0041cc10(Point2F* point, U32 unkWidth, U32 unkHeight);
 
 extern void Interface_DrawTeleportQueueNumber(LegoObject_Type objType, LegoObject_ID objID, Point2F* screenPt);
 
+// Draws a green 2-pixel width rectangle around the specified rect (drawing 1 and 2 pixels outside
+// of area).
+//
+// Passed area must subtract 1 from width/height so that there isn't a gap between the edge and the
+// start of the border on the bottom/right side.
 extern void Interface_DrawHoverOutline(Area2F* area);

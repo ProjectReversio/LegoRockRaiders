@@ -1134,7 +1134,41 @@ void Interface_DrawTeleportQueueNumber(LegoObject_Type objType, LegoObject_ID ob
     // TODO: Implement Interface_DrawTeleportQueueNumber
 }
 
+// Draws a green 2-pixel width rectangle around the specified rect (drawing 1 and 2 pixels outside
+// of area).
+//
+// Passed area must subtract 1 from width/height so that there isn't a gap between the edge and the
+// start of the border on the bottom/right side.
 void Interface_DrawHoverOutline(Area2F* area)
 {
-    // TODO: Implement Interface_DrawHoverOutline
+    Point2F rectLines[5];
+    if ((legoGlobs.flags1 & GAME1_FREEZEINTERFACE) == GAME1_NONE)
+    {
+        // Draw for rect expanded by 1 pixel.
+        // Then draw for rect expanded by 2 pixels, for a 2-pixel-width rectangle
+        // outline.
+        rectLines[0].x = area->x - 1.0f;
+        rectLines[0].y = area->y - 1.0f;
+        rectLines[1].x = (area->width + area->x) + 1.0f;
+        rectLines[1].y = rectLines[0].y;
+        rectLines[2].x = rectLines[1].x;
+        rectLines[2].y = (area->height + area->y) + 1.0f;
+        rectLines[3].x = rectLines[0].x;
+        rectLines[3].y = rectLines[2].y;
+        rectLines[4].x = rectLines[0].x;
+        rectLines[4].y = rectLines[0].y;
+        Draw_LineListEx(rectLines, rectLines + 1, 4, 0.0f, 1.0f, 0.0f, DrawEffect_None);
+
+        rectLines[0].x = area->x - 2.0f;
+        rectLines[0].y = area->y - 2.0f;
+        rectLines[1].x = (area->width + area->x) + 2.0f;
+        rectLines[1].y = rectLines[0].y;
+        rectLines[2].x = rectLines[1].x;
+        rectLines[2].y = (area->height + area->y) + 2.0f;
+        rectLines[3].x = rectLines[0].x;
+        rectLines[3].y = rectLines[2].y;
+        rectLines[4].x = rectLines[0].x;
+        rectLines[4].y = rectLines[0].y;
+        Draw_LineListEx(rectLines, rectLines + 1, 4, 0.0f, 1.0f, 0.0f, DrawEffect_None);
+    }
 }
