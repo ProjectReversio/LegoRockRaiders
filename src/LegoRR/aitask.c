@@ -213,7 +213,25 @@ void AITask_DoDig_AtBlockPos(Point2I* blockPos, B32 param2, B32 param3)
 
 void AITask_UnkInitRouting_FUN_00402530(lpAITask aiTask, B32 dropCarried)
 {
-    // TODO: Implement AITask_UnkInitRouting_FUN_00402530
+    if (!Message_AnyUnitSelected())
+        return;
+
+    U32* outUnitsCount = &aiTask->unitListCount;
+    lpLegoObject** outUnitsList = &aiTask->unitList;
+    aiTask->flags |= (AITASK_FLAG_IMMEDIATESELECTION | AITASK_FLAG_DUPLICATE);
+    Message_CopySelectedUnits(outUnitsList, outUnitsCount);
+
+    U32 i = 0;
+    if (*outUnitsCount != 0)
+    {
+        do
+        {
+            LegoObject_Route_End((*outUnitsList)[i], FALSE);
+            if (dropCarried)
+                LegoObject_DropCarriedObject((*outUnitsList)[i], FALSE);
+            i++;
+        } while (i < *outUnitsCount);
+    }
 }
 
 lpAITask AITask_InitTask_1(lpAITask aiTask, AI_Priority priorityType)

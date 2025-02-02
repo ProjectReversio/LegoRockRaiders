@@ -15,6 +15,13 @@ B32 Message_AnyUnitSelected()
     return FALSE;
 }
 
+B32 Message_CopySelectedUnits(lpLegoObject **outUnitsList, U32* outUnitsCount)
+{
+    // TODO: Implement Message_CopySelectedUnits
+
+    return FALSE;
+}
+
 void Message_AddMessageAction(Message_Type messageType, lpLegoObject argument1Obj, U32 argument2, Point2I* opt_blockPos)
 {
     // TODO: Implement Message_AddMessageAction

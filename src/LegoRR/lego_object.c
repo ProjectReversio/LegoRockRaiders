@@ -400,3 +400,13 @@ somelabel:
 
     return firstMeshLOD;
 }
+
+void LegoObject_Route_End(lpLegoObject liveObj, B32 completed)
+{
+    // TODO: Implement LegoObject_Route_End
+}
+
+void LegoObject_DropCarriedObject(lpLegoObject liveObj, B32 putAway)
+{
+    // TODO: Implement LegoObject_DropCarriedObject
+}

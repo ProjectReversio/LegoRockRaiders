@@ -80,6 +80,8 @@ extern void Message_Debug_RegisterSelectedUnitHotkey(U8 key, Message_Type messag
 
 extern B32 Message_AnyUnitSelected();
 
+extern B32 Message_CopySelectedUnits(lpLegoObject **outUnitsList, U32* outUnitsCount);
+
 extern void Message_AddMessageAction(Message_Type messageType, lpLegoObject argument1Obj, U32 argument2, Point2I* opt_blockPos);
 
 extern lpLegoObject Message_GetPrimarySelectedUnit();

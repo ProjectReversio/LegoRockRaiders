@@ -459,3 +459,7 @@ extern const char* Object_GetLangName(LegoObject_Type objType, LegoObject_ID obj
 extern void HiddenObject_Add(void* objModel, LegoObject_Type objType, LegoObject_ID objID, Point2F* worldPos, F32 heading, F32 health, const char* thisOLName, const char* drivingOLName);
 
 extern lpMeshLOD LegoObject_LoadMeshLOD(lpConfig act, const char* gameName, const char* dirname, LOD_PolyLevel polyLOD, U32 numCameraFrames);
+
+extern void LegoObject_Route_End(lpLegoObject liveObj, B32 completed);
+
+extern void LegoObject_DropCarriedObject(lpLegoObject liveObj, B32 putAway);
