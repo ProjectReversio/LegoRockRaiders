@@ -10,3 +10,8 @@ void Water_Initialize(lpContainer root, lpLego_Level level)
 {
     // TODO: Implement Water_Initialize
 }
+
+void Water_Update(lpLego_Level level, F32 elapsedGame)
+{
+    // TODO: Implement Water_Update
+}

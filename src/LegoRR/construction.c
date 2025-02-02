@@ -19,3 +19,8 @@ B32 Construction_Zone_ExistsAtBlock(Point2I* originBlockPos)
 
     return FALSE;
 }
+
+void Construction_UpdateAll(F32 elapsedGame)
+{
+    // TODO: Implement Construction_UpdateAll
+}

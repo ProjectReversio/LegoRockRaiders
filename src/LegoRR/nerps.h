@@ -19,3 +19,5 @@ extern B32 NERPsFile_LoadMessageFile(const char* filename);
 extern void NERPs_InitBlockPointersTable(struct Lego_Level* level);
 
 extern B32 NERPFunc__True(S32* stack);
+
+extern void NERPsRuntime_Execute(F32 elapsedAbs);

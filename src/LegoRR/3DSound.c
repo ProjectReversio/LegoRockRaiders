@@ -636,6 +636,17 @@ void Sound3D_Stream_CheckPosition(B32 looping)
     }
 }
 
+void Sound3D_UpdateListener()
+{
+    if (Sound3D_Initialized() && sound3DGlobs.listenerFrame)
+        Sound3D_ListenerCallback(sound3DGlobs.listenerFrame, NULL, 0.0f);
+}
+
+void Sound3D_ListenerCallback(LPDIRECT3DRMFRAME3 obj, void* arg, F32 delta)
+{
+    // TODO: Implement Sound3D_ListenerCallback
+}
+
 S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableIndex, B32 loop, lpPoint3F wPos)
 {
     LPDIRECTSOUNDBUFFER soundBuff;

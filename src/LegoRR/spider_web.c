@@ -11,3 +11,10 @@ void SpiderWeb_Restart(Lego_Level* level)
 {
     // TODO: Implement SpiderWeb_Restart
 }
+
+B32 SpiderWeb_Update(F32 elapsedGame)
+{
+    // TODO: Implement SpiderWeb_Update
+
+    return FALSE;
+}

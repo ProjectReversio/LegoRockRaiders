@@ -19,3 +19,8 @@ void Advisor_LoadPositions(lpConfig config, const char* gameName, S32 screenWidt
 {
     // TODO: Implement Advisor_LoadPositions
 }
+
+void Advisor_Update(F32 elapsed)
+{
+    // TODO: Implement Advisor_Update
+}

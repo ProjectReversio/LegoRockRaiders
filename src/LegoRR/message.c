@@ -33,3 +33,8 @@ lpLegoObject Message_GetPrimarySelectedUnit()
 
     return NULL;
 }
+
+void Message_PTL_Update()
+{
+    // TODO: Implement Message_PTL_Update
+}

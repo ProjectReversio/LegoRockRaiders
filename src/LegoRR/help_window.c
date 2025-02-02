@@ -28,3 +28,8 @@ B32 HelpWindow_FUN_00418cd0(U32 mouseX, U32 mouseY, B32 leftButton, B32 leftLast
 
     return FALSE;
 }
+
+void HelpWindow_FUN_00418930()
+{
+    // TODO: Implement HelpWindow_FUN_00418930
+}

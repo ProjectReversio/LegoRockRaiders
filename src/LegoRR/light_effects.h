@@ -24,3 +24,5 @@ extern B32 LightEffects_Load(lpConfig config, const char* gameName);
 extern void LightEffects_SetDimmerMode(B32 isDimoutMode);
 
 extern void LightEffects_ResetColor();
+
+extern void LightEffects_Update(F32 elapsed);

@@ -23,3 +23,7 @@ extern B32 Level_FindSelectedUnit_BlockCheck_FUN_00431960(U32 bx, U32 by, B32 pa
 extern B32 Level_Block_IsImmovable(Point2I* blockPos);
 extern B32 Level_Block_IsLava(Point2I* blockPos);
 extern B32 Level_Block_IsSurveyed(U32 bx, U32 by);
+
+extern void Level_BlockActivity_UpdateAll(lpLego_Level level, F32 elapsedGame);
+
+extern void Level_UpdateEffects(lpLego_Level level, F32 elapsedGame);

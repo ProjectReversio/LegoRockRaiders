@@ -723,6 +723,13 @@ extern void Lego_SetPointerSFX(PointerSFX_Type pointerSFXType);
 
 extern void Lego_ClearSomeFlags3_FUN_00435950();
 
+extern void Lego_DrawDragSelectionBox(lpLego_Level level);
+extern void Lego_DrawAllSelectedUnitBoxes(lpViewport viewMain);
+extern void Lego_DrawAllLaserTrackerBoxes(lpViewport viewMain);
+extern void Lego_DrawRenameInput(F32 elapsedAbs);
+
+extern void Lego_HandleRadarInput();
+
 // This is an old method for playing movies.
 // It supports playing a movie that isn't just in the center of the screen
 //  (which can be seen by setting certain Level CFG AVI properties).

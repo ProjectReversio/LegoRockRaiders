@@ -445,6 +445,10 @@ extern void LegoObject_UpdatePowerConsumption(lpLegoObject liveObj);
 
 extern B32 LegoObject_UpdateActivityChange(lpLegoObject liveObj);
 
+extern void LegoObject_HideAllCertainObjects();
+
+extern void LegoObject_UpdateAll(F32 elapsedGame);
+
 // If we're currently in the update loop, then delay recalculations until the end of the update loop/next tick(?).
 //
 // Otherwise, we can turn on power updating mode right now.

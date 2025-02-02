@@ -777,22 +777,54 @@ B32 Lego_MainLoop(F32 elapsed)
     if (!dontExit)
         return FALSE;
 
-    // TODO: Implement Lego_MainLoop
+    if ((legoGlobs.flags1 & GAME1_FREEZEINTERFACE) == GAME1_NONE)
+        Lego_HandleRadarInput();
+
+    AITask_UpdateAll(elapsedGame);
+    Level_UpdateEffects(legoGlobs.currLevel, elapsedGame);
+    DamageFont_UpdateAll(elapsed);
+    LegoObject_UpdateAll(elapsedGame);
+    Weapon_Update(elapsedGame);
+    Erode_Update(elapsedGame);
+    Level_BlockActivity_UpdateAll(legoGlobs.currLevel, elapsedGame);
+    Message_PTL_Update();
 
     Camera_Update(legoGlobs.cameraMain, legoGlobs.currLevel, elapsed, elapsedGame);
     Camera_Update(legoGlobs.cameraTrack, legoGlobs.currLevel, elapsed, elapsedGame);
     Camera_Update(legoGlobs.cameraFP, legoGlobs.currLevel, elapsed, elapsedGame);
 
-    // TODO: Implement Lego_MainLoop
+    Construction_UpdateAll(elapsedGame);
+
+    Interface_FUN_0041b940(elapsedGame);
 
     Lego_UnkUpdateMapsWorldUnk_FUN_004290d0(elapsed, FALSE);
 
-    // TODO: Implement Lego_MainLoop
+    LegoObject_HideAllCertainObjects();
+    ElectricFence_UpdateAll(elapsedGame);
 
     Lego_HandleWorld(elapsedAbs, elapsed, keyDownT, keyDownR, keyDownAnyShift);
     Map3D_Update(legoGlobs.currLevel->map, elapsedGame);
 
-    // TODO: Implement Lego_MainLoop
+    Water_Update(legoGlobs.currLevel, elapsedGame);
+    Sound3D_UpdateListener();
+    Smoke_Update(elapsedGame);
+    SpiderWeb_Update(elapsedGame);
+    LightEffects_Update(elapsedGame);
+    Info_FUN_0041a1f0(elapsedGame);
+
+    if (legoGlobs.IsFallinsEnabled)
+        Fallin_Update(elapsedGame);
+
+    // "Toggles fallin mode."
+    if ((legoGlobs.flags2 & GAME2_ALLOWDEBUGKEYS) != GAME2_NONE &&
+        Input_IsKeyPressed(KEY_F6))
+    {
+        legoGlobs.IsFallinsEnabled = !legoGlobs.IsFallinsEnabled;
+        const char* txt = "On";
+        if (!legoGlobs.IsFallinsEnabled)
+            txt = "Off";
+        TextWindow_PrintF(legoGlobs.textWnd_80, "\nFallin Mode %s", txt);
+    }
 
     Container_Hide(legoGlobs.ambientLight, FALSE);
     if (legoGlobs.viewMode == ViewMode_Top)
@@ -819,9 +851,25 @@ B32 Lego_MainLoop(F32 elapsed)
     else
         legoGlobs.flags1 &= ~GAME1_RADARON;
 
+    if (legoGlobs.viewMode == ViewMode_Top)
+    {
+        Lego_DrawAllSelectedUnitBoxes(legoGlobs.viewMain);
+        Lego_DrawAllLaserTrackerBoxes(legoGlobs.viewMain);
+        Encyclopedia_DrawSelectBox(legoGlobs.viewMain);
+    }
+
+    Lego_DrawDragSelectionBox(legoGlobs.currLevel);
+
+    if ((legoGlobs.flags1 & GAME1_FREEZEINTERFACE) == GAME1_NONE)
+    {
+        Bubble_Unk_DrawObjectUIs_FUN_004074d0(elapsed);
+    }
+
     // TODO: Implement Lego_MainLoop
 
     Main_Finalize3D();
+    Smoke_HideAll(TRUE);
+    SFX_Update(elapsedGame);
 
     // TODO: Implement Lego_MainLoop
 
@@ -875,16 +923,30 @@ B32 Lego_MainLoop(F32 elapsed)
         Info_Draw(elapsed);
     }
 
-    // TODO: Implement Lego_MainLoop
+    HelpWindow_FUN_00418930();
 
+    F32 el = elapsed;
+    if (Objective_IsEnded())
+        el = elapsedGame;
+
+    Advisor_Update(el);
     Sound_Update(legoGlobs.flags1 & GAME1_USEMUSIC);
 
-    // TODO: Implement
+    if ((legoGlobs.flags1 & GAME1_DEBUG_NONERPS) == GAME1_NONE)
+        NERPsRuntime_Execute(elapsed);
 
     Objective_Update(legoGlobs.textWnd_80, legoGlobs.currLevel, elapsedGame, elapsedAbs);
 
+    if (mainGlobs.programmerLevel < PROGRAMMER_MODE_2)
+    {
+        // TODO: Implement Lego_MainLoop
+    }
+
+    Text_Update(elapsed);
+
     // TODO: Implement Lego_MainLoop
 
+    Lego_DrawRenameInput(elapsedGame);
     if ((legoGlobs.flags1 & GAME1_PAUSED) == GAME1_NONE)
     {
         Pointer_Update(elapsedAbs);
@@ -907,7 +969,8 @@ B32 Lego_MainLoop(F32 elapsed)
     // TODO: Implement Lego_MainLoop
 
 
-    // TEMP: For Debug
+#ifdef LEGORR_DEBUG_SHOW_INFO
+    // Show Debug Info
     {
         Point3F debugCameraPos;
         //Camera_GetTopdownWorldPos(legoGlobs.cameraMain, legoGlobs.currLevel->map, &debugCameraPos);
@@ -921,6 +984,7 @@ B32 Lego_MainLoop(F32 elapsed)
 
         Font_PrintF(legoGlobs.bmpToolTipFont, 10, 70, "Mouse Position: (%d,%d)", inputGlobs.msx, inputGlobs.msy);
     }
+#endif
 
     // TODO: Implement Lego_MainLoop
 
@@ -945,7 +1009,19 @@ B32 Lego_MainLoop(F32 elapsed)
         // TODO: Implement Lego_MainLoop
     }
 
+    ToolTip_Update(inputGlobs.msx, inputGlobs.msy, elapsedGame);
+
+    if ((legoGlobs.flags2 & GAME2_ALLOWDEBUGKEYS) != GAME2_NONE)
+    {
+        // TODO: Implement Lego_MainLoop
+    }
+
     // TODO: Implement Lego_MainLoop
+
+    if ((legoGlobs.flags2 & GAME2_ALLOWDEBUGKEYS) != GAME2_NONE)
+    {
+        // TODO: Implement Lego_MainLoop
+    }
 
     return TRUE;
 }
@@ -3652,6 +3728,31 @@ void Lego_ClearSomeFlags3_FUN_00435950()
 {
     legoGlobs.flags3 &= ~(GAME3_UNK_1|GAME3_UNK_2|GAME3_UNK_4|GAME3_PICKUPOBJECT|GAME3_LOADVEHICLE|GAME3_UNK_20|GAME3_UNK_40|GAME3_PLACEBUILDING);
     SelectPlace_Hide(legoGlobs.selectPlace, TRUE);
+}
+
+void Lego_DrawDragSelectionBox(lpLego_Level level)
+{
+    // TODO: Implement Lego_DrawDragSelectionBox
+}
+
+void Lego_DrawAllSelectedUnitBoxes(lpViewport viewMain)
+{
+    // TODO: Implement Lego_DrawAllSelectedUnitBoxes
+}
+
+void Lego_DrawAllLaserTrackerBoxes(lpViewport viewMain)
+{
+    // TODO: Implement Lego_DrawAllLaserTrackerBoxes
+}
+
+void Lego_DrawRenameInput(F32 elapsedAbs)
+{
+    // TODO: Implement Lego_DrawRenameInput
+}
+
+void Lego_HandleRadarInput()
+{
+    // TODO: Implement Lego_HandleRadarInput
 }
 
 // This is an old method for playing movies.

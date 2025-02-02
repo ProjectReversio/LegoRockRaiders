@@ -16,3 +16,5 @@ typedef struct ElectricFence_Block
 extern lpElectricFence_Block ElectricFence_CreateFence(lpLegoObject liveObj);
 
 extern void ElectricFence_Restart(struct Lego_Level* level);
+
+extern void ElectricFence_UpdateAll(F32 elapsedGame);

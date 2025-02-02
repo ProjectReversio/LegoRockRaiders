@@ -37,3 +37,5 @@ extern void Advisor_Initialize(const char* gameName, lpLegoCamera cameraMain, lp
 extern void Advisor_InitViewport(F32 param_unused);
 extern void Advisor_LoadAnims(lpConfig config, const char* gameName);
 extern void Advisor_LoadPositions(lpConfig config, const char* gameName, S32 screenWidth, S32 screenHeight);
+
+extern void Advisor_Update(F32 elapsed);

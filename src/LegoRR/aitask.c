@@ -247,3 +247,8 @@ lpAITask AITask_InitTask_1(lpAITask aiTask, AI_Priority priorityType)
 
     return aiTask;
 }
+
+void AITask_UpdateAll(F32 elapsedGame)
+{
+    // TODO: Implement AITask_UpdateAll
+}

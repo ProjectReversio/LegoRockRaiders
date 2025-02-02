@@ -720,3 +720,13 @@ B32 Level_Block_IsSurveyed(U32 bx, U32 by)
 
     return FALSE;
 }
+
+void Level_BlockActivity_UpdateAll(lpLego_Level level, F32 elapsedGame)
+{
+    // TODO: Implement Level_BlockActivity_UpdateAll
+}
+
+void Level_UpdateEffects(lpLego_Level level, F32 elapsedGame)
+{
+    // TODO: Implement Level_UpdateEffects
+}

@@ -14,3 +14,8 @@ void Text_DisplayMessage(Text_Type textType, B32 changeTiming, B32 setFlag4)
 {
     // TODO: Implement Text_DisplayMessage
 }
+
+void Text_Update(F32 elapsedAbs)
+{
+    // TODO: Implement Text_Update
+}

@@ -300,6 +300,16 @@ B32 LegoObject_UpdateActivityChange(lpLegoObject liveObj)
     return FALSE;
 }
 
+void LegoObject_HideAllCertainObjects()
+{
+    // TODO: Implement LegoObject_HideAllCertainObjects
+}
+
+void LegoObject_UpdateAll(F32 elapsedGame)
+{
+    // TODO: Implement LegoObject_UpdateAll
+}
+
 // If we're currently in the update loop, then delay recalculations until the end of the update loop/next tick(?).
 //
 // Otherwise, we can turn on power updating mode right now.

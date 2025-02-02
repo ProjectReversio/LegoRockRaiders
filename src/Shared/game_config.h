@@ -42,6 +42,9 @@
 // Define me to display debug info in the loader
 //#define LEGORR_DEBUG_LOADER
 
+// Define me to show debug info
+//#define LEGORR_DEBUG_SHOW_INFO
+
 #ifdef _DEBUG
     // Defaults for Debug Mode
     #define LEGORR_WINDOWED_DEFAULT // For convenience, default to windowed mode in debug builds
@@ -57,8 +60,11 @@
 
     #define LEGORR_NO_MUTEX
 
+    #define LEGORR_DEBUG_SHOW_INFO
+
     // TEMP: For debug
     //#define LEGORR_DEBUG_FORCE_INTERSECTION_BUG
+
 
     //#define LEGORR_DEBUG_LOADER
 

@@ -32,6 +32,11 @@ B32 Info_Update_FUN_0041a0d0(S32 mouseX, S32 mouseY, B32 leftReleased)
     return FALSE;
 }
 
+void Info_FUN_0041a1f0(F32 elapsed)
+{
+    // TODO: Implement Info_FUN_0041a1f0
+}
+
 void ScrollInfo_Update(B32 index)
 {
     // TODO: Implement ScrollInfo_Update

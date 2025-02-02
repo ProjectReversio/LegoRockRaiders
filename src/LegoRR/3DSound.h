@@ -151,6 +151,9 @@ extern inline void Sound3D_RemoveUpdateFrame(LPDIRECT3DRMFRAME3 frame);
 extern inline void Sound3D_UpdateFrames();
 extern void Sound3D_Stream_CheckPosition(B32 looping);
 
+extern void Sound3D_UpdateListener();
+extern void Sound3D_ListenerCallback(LPDIRECT3DRMFRAME3 obj, void* arg, F32 delta);
+
 extern S32 Sound3D_Play2(Sound3D_Play play, LPDIRECT3DRMFRAME3 frame, S32 soundTableIndex, B32 loop, lpPoint3F wPos);
 extern B32 Sound3D_Stream_Play(const char* fName, B32 loop, S32 volume);
 

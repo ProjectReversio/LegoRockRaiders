@@ -8,3 +8,5 @@ struct Lego_Level;
 extern void SpiderWeb_Add(S32 bx, S32 by, lpLegoObject webObj);
 
 extern void SpiderWeb_Restart(struct Lego_Level* level);
+
+extern B32 SpiderWeb_Update(F32 elapsedGame);

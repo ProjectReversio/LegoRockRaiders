@@ -314,6 +314,8 @@ extern void Interface_SetDat_004decd8_004decdc(Interface_MenuItemType menuIcon, 
 
 extern void Interface_FUN_0041cc10(Point2F* point, U32 unkWidth, U32 unkHeight);
 
+extern void Interface_FUN_0041b940(F32 elapsedAbs);
+
 extern void Interface_DrawTeleportQueueNumber(LegoObject_Type objType, LegoObject_ID objID, Point2F* screenPt);
 
 // Draws a green 2-pixel width rectangle around the specified rect (drawing 1 and 2 pixels outside

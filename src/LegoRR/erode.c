@@ -9,3 +9,8 @@ void Erode_Block_FUN_0040ed80(Point2I* blockPos, B32 doState2_else_add3)
 {
     // TODO: Implement Erode_Block_FUN_0040ed80
 }
+
+void Erode_Update(F32 elapsedGame)
+{
+    // TODO: Implement Erode_Update
+}

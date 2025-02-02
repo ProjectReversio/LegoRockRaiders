@@ -31,3 +31,8 @@ void LightEffects_ResetColor()
 {
     Container_SetColour(lightGlobs.rootSpotlight, lightGlobs.initialRGB.red, lightGlobs.initialRGB.green, lightGlobs.initialRGB.blue);
 }
+
+void LightEffects_Update(F32 elapsed)
+{
+    // TODO: Implement LightEffects_Update
+}

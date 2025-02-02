@@ -14,4 +14,8 @@ extern B32 Smoke_Initialize();
 
 extern void Smoke_LoadTextures(const char* dirname, const char* basename, U32 textureCount);
 
+extern void Smoke_Update(F32 elapsedGame);
+
 extern void Smoke_Hide(lpSmoke smoke, B32 hide);
+
+extern void Smoke_HideAll(B32 hide);

@@ -28,3 +28,8 @@ B32 NERPFunc__True(S32* stack)
 {
     return TRUE;
 }
+
+void NERPsRuntime_Execute(F32 elapsedAbs)
+{
+    // TODO: Implement NERPsRuntime_Execute
+}

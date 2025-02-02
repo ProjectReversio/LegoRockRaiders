@@ -1129,6 +1129,11 @@ void Interface_FUN_0041cc10(Point2F* point, U32 unkWidth, U32 unkHeight)
     interfaceGlobs.areaf_fb4.height = (F32)unkHeight;
 }
 
+void Interface_FUN_0041b940(F32 elapsedAbs)
+{
+    // TODO: Implement Interface_FUN_0041b940
+}
+
 void Interface_DrawTeleportQueueNumber(LegoObject_Type objType, LegoObject_ID objID, Point2F* screenPt)
 {
     // TODO: Implement Interface_DrawTeleportQueueNumber
