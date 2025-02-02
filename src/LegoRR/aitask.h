@@ -23,3 +23,5 @@ extern void AITask_LiveObject_Unk_UpdateAITask_AnimationWait(struct LegoObject* 
 extern B32 AITask_RemoveAttackPathReferences(Point2I* blockPos);
 
 extern void AITask_DoClear_AtPosition(Point2I* blockPos, Message_Type completeAction);
+
+extern void AITask_DoDig_AtBlockPos(Point2I* blockPos, B32 param2, B32 param3);

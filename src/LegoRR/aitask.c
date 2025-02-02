@@ -34,3 +34,8 @@ void AITask_DoClear_AtPosition(Point2I* blockPos, Message_Type completeAction)
 {
     // TODO: Implement AITask_DoClear_AtPosition
 }
+
+void AITask_DoDig_AtBlockPos(Point2I* blockPos, B32 param2, B32 param3)
+{
+    // TODO: Implement AITask_DoDig_AtBlockPos
+}

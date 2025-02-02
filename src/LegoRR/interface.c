@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "aitask.h"
 #include "encyclopedia.h"
 #include "keys.h"
 #include "lego.h"
@@ -885,6 +886,15 @@ B32 Interface_DoSomethingWithRenameReplace(U32 mouseX, U32 mouseY, B32 leftButto
     }
     else
     {
+        S32 varFlag;
+        if (menuItemType == Interface_MenuItem_LayPath ||
+            (varFlag = interfaceGlobs.flags | INTERFACE_GLOB_FLAG_UNK_200, menuItemType == Interface_MenuItem_PlaceFence))
+        {
+            varFlag = interfaceGlobs.flags | (INTERFACE_GLOB_FLAG_UNK_2000 | INTERFACE_GLOB_FLAG_UNK_200);
+        }
+
+        interfaceGlobs.flags = varFlag;
+
         // TODO: Implement Interface_DoSomethingWithRenameReplace
     }
 
@@ -982,7 +992,54 @@ B32 Interface_FUN_0041edb0(U32 mouseX, U32 mouseY, F32 x, F32 y, LegoObject_Type
 
 B32 Interface_FUN_0041c610(Interface_MenuItemType menuIcon, LegoObject_Type objType, LegoObject_ID objID, B32 leftButton, B32 leftButtonLast)
 {
-    // TODO: Implement Interface_FUN_0041c610
+    Interface_MenuItemType type = interfaceGlobs.menuItemType_fa8;
+    if (!leftButton)
+    {
+        interfaceGlobs.menuItemType_fa8 = Interface_MenuItem_Type_Count;
+    }
+    else if ((interfaceGlobs.flags & INTERFACE_GLOB_FLAG_UNK_1000) == INTERFACE_GLOB_FLAG_NONE)
+    {
+        if (interfaceGlobs.menuItemType_fa8 == Interface_MenuItem_Type_Count)
+        {
+            if (leftButtonLast)
+                goto nLabel;
+
+            interfaceGlobs.menuItemType_fa8 = menuIcon;
+            interfaceGlobs.field_fac = objType;
+            interfaceGlobs.field_fb0 = objID;
+
+            if (menuIcon == Interface_MenuItem_Build)
+            {
+                Interface_SetObjectIconFlag8(objType, objID, TRUE);
+                goto nLabel;
+            }
+        }
+        else
+        {
+            if (interfaceGlobs.menuItemType_fa8 != menuIcon)
+                goto nLabel;
+
+            if (menuIcon == Interface_MenuItem_Build)
+            {
+                if (interfaceGlobs.field_fac == objType && interfaceGlobs.field_fb0 == objID)
+                {
+                    Interface_SetObjectIconFlag8(objType, objID, TRUE);
+                }
+                goto nLabel;
+            }
+        }
+
+        Interface_SetIconFlag8(menuIcon, TRUE);
+    }
+
+nLabel:
+    if (type == menuIcon)
+    {
+        if (menuIcon != Interface_MenuItem_Build)
+            return TRUE;
+        if (interfaceGlobs.field_fac == objType && interfaceGlobs.field_fb0 == objID)
+            return TRUE;
+    }
 
     return FALSE;
 }
@@ -1035,9 +1092,28 @@ B32 Interface_Callback_FUN_0041c240(Interface_MenuItemType menuIcon, LegoObject_
 
 B32 Interface_DoAction_FUN_0041dbd0(Interface_MenuItemType menuIcon)
 {
-    // TODO: Implement Interface_DoAction_FUN_0041dbd0
+    lpLegoObject obj = Message_GetPrimarySelectedUnit();
+    if (Interface_GetIconUnk_FUN_0041c820(menuIcon, TRUE))
+    {
+        return FALSE;
+    }
 
-    return FALSE;
+    switch (menuIcon)
+    {
+        // TODO: Implement Interface_DoAction_FUN_0041dbd0
+        case Interface_MenuItem_Dig:
+        {
+            AITask_DoDig_AtBlockPos(&interfaceGlobs.selBlockPos, FALSE, TRUE);
+
+            interfaceGlobs.origWallHighlight = Map3D_GetBlockHighlight(Lego_GetMap(), interfaceGlobs.selBlockPos.x, interfaceGlobs.selBlockPos.y);
+            Interface_BackToMain();
+            return TRUE;
+        }
+        // TODO: Implement Interface_DoAction_FUN_0041dbd0
+    }
+
+    Interface_BackToMain();
+    return TRUE;
 }
 
 void Interface_SetDat_004decd8_004decdc(Interface_MenuItemType menuIcon, LegoObject_Type objType, LegoObject_ID objID)
