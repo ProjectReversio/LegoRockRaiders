@@ -171,7 +171,11 @@ B32 AITask_RemoveAttackPathReferences(Point2I* blockPos)
 
 void AITask_DoClear_AtPosition(Point2I* blockPos, Message_Type completeAction)
 {
-    // TODO: Implement AITask_DoClear_AtPosition
+    lpAITask task = AITask_Create(AITask_Type_Clear);
+    task->blockPos.x = blockPos->x;
+    task->blockPos.y = blockPos->y;
+    task->completeAction = completeAction;
+    AITask_InitTask_1(task, AI_Priority_Clearing);
 }
 
 void AITask_DoDig_AtBlockPos(Point2I* blockPos, B32 param2, B32 param3)
