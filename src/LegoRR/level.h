@@ -19,3 +19,7 @@ extern void Level_SetPointer_FromSurfaceType(Lego_SurfaceType8 surfaceType);
 extern B32 Level_BlockPointerCheck(Point2I* blockPos);
 
 extern B32 Level_FindSelectedUnit_BlockCheck_FUN_00431960(U32 bx, U32 by, B32 param3);
+
+extern B32 Level_Block_IsImmovable(Point2I* blockPos);
+extern B32 Level_Block_IsLava(Point2I* blockPos);
+extern B32 Level_Block_IsSurveyed(U32 bx, U32 by);

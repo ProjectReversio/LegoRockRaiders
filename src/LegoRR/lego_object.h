@@ -219,6 +219,18 @@ typedef enum LegoObject_ToolType
     LegoObject_ToolType_Count      = 11,
 } LegoObject_ToolType;
 
+typedef enum LegoObject_AbilityType
+{
+    LegoObject_AbilityType_Pilot    = 0,
+    LegoObject_AbilityType_Sailor   = 1,
+    LegoObject_AbilityType_Driver   = 2,
+    LegoObject_AbilityType_Dynamite = 3,
+    LegoObject_AbilityType_Repair   = 4,
+    LegoObject_AbilityType_Scanner  = 5,
+    LegoObject_AbilityType_Count    = 6,
+    LegoObject_AbilityType_Invalid  = -1,
+} LegoObject_AbilityType;
+
 typedef enum LegoObject_GlobFlags
 {
     OBJECT_GLOB_FLAG_NONE             = 0,

@@ -702,3 +702,21 @@ B32 Level_FindSelectedUnit_BlockCheck_FUN_00431960(U32 bx, U32 by, B32 param3)
 
     return FALSE;
 }
+
+B32 Level_Block_IsImmovable(Point2I* blockPos)
+{
+    return legoGlobs.currLevel->blocks[blockPos->y * legoGlobs.currLevel->width + blockPos->x].terrain == Lego_SurfaceType8_Immovable;
+}
+
+B32 Level_Block_IsLava(Point2I* blockPos)
+{
+    return legoGlobs.currLevel->blocks[blockPos->y * legoGlobs.currLevel->width + blockPos->x].terrain == Lego_SurfaceType8_Lava;
+}
+
+B32 Level_Block_IsSurveyed(U32 bx, U32 by)
+{
+    if (bx < legoGlobs.currLevel->width - 1 && by < legoGlobs.currLevel->height - 1)
+        return legoGlobs.currLevel->blocks[by * legoGlobs.currLevel->width + bx].flags1 & BLOCK1_SURVEYED;
+
+    return FALSE;
+}
