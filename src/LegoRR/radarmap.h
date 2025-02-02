@@ -19,3 +19,5 @@ typedef struct RadarMap
 extern void RadarMap_Initialize();
 
 extern lpRadarMap RadarMap_Create(lpMap3D map, lpArea2F radarViewRect, F32 tvTiltOrZoom);
+
+extern B32 RadarMap_InsideRadarScreen(lpRadarMap radarMap, U32 mouseX, U32 mouseY);

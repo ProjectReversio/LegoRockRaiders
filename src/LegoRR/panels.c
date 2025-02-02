@@ -135,6 +135,11 @@ void Panel_DrawPanel(Panel_Type panelType, F32 elapsedAbs)
     // TODO: Implement Panel_FUN_0045a9f0
 }
 
+void Panel_Crystals_Draw(U32 crystals, U32 usedCrystals, F32 elapsedGame)
+{
+    // TODO: Implement Panel_Crystals_Draw
+}
+
 void Panel_CryOreSideBar_ChangeOreMeter(B32 increment, U32 amount)
 {
     // TODO: Implement Panel_CryOreSideBar_ChangeOreMeter
@@ -183,4 +188,19 @@ void Panel_Button_SetFlag_8_OrUnset_c(Panel_Type panelType, PanelButton_Type but
 void Panel_UnsetFlag_6()
 {
     // TODO: Implement Panel_UnsetFlag_6
+}
+
+U32 Panel_PrintF(Panel_Type panelType, lpFont font, S32 x, S32 y, B32 center, const char* msg, ...)
+{
+    // TODO: Implement Panel_PrintF
+
+    return 0;
+}
+
+B32 Panel_CheckCollision(F32 elapsedAbs, U32 mouseX, U32 mouseY, B32 leftButton, B32 leftButtonLast, B32 *outPanelCollision)
+{
+    // TODO: Implement Panel_CheckCollision
+
+    *outPanelCollision = FALSE;
+    return FALSE;
 }

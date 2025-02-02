@@ -25,6 +25,13 @@ void Info_SetFlag4(B32 state)
     // TODO: Implement Info_SetFlag4
 }
 
+B32 Info_Update_FUN_0041a0d0(S32 mouseX, S32 mouseY, B32 leftReleased)
+{
+    // TODO: Implement Info_Update_FUN_0041a0d0
+
+    return FALSE;
+}
+
 void ScrollInfo_Update(B32 index)
 {
     // TODO: Implement ScrollInfo_Update

@@ -296,6 +296,8 @@ extern B32 Interface_GetIconUnk_FUN_0041c820(Interface_MenuItemType menuIcon, B3
 extern lpImage Interface_GetBuildImageByObjectType(LegoObject_Type objType, LegoObject_ID objID);
 extern lpImage Interface_FUN_0041c9e0(Interface_MenuItemType menuIcon);
 
+extern B32 Interface_DoSomethingWithRenameReplace(U32 mouseX, U32 mouseY, B32 leftButton, B32 leftButtonLast, B32 leftReleased);
+
 extern void Interface_DrawTeleportQueueNumber(LegoObject_Type objType, LegoObject_ID objID, Point2F* screenPt);
 
 extern void Interface_DrawHoverOutline(Area2F* area);

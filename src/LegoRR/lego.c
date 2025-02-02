@@ -863,10 +863,10 @@ B32 Lego_MainLoop(F32 elapsed)
             crystals = legoGlobs.currLevel->crystals;
             chargedCrystals = legoGlobs.currLevel->crystals - legoGlobs.currLevel->crystalsDrained;
         }
-        // TODO: Panel_Crystals_Draw((U32)crystals, (U32)chargedCrystals, elapsedGame);
+        Panel_Crystals_Draw((U32)crystals, (U32)chargedCrystals, elapsedGame);
         Panel_CryOreSideBar_Draw();
 
-        // TODO: Implement Lego_MainLoop
+        Panel_PrintF(Panel_CrystalSideBar, legoGlobs.bmpToolTipFont, 16, 469, TRUE, "%i", legoGlobs.currLevel->ore + legoGlobs.currLevel->studs * 5);
 
         Panel_DrawPanel(Panel_Information, elapsed);
         ScrollInfo_Update(FALSE);
@@ -1138,11 +1138,81 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
     else
         Pointer_SetCurrent_IfTimerFinished(Pointer_Standard);
 
-    // TODO: Implement Lego_HandleWorld
+    B32 collFlag = FALSE;
+
+    if ((legoGlobs.flags1 & GAME1_MULTISELECT) == GAME1_NONE &&
+        Panel_CheckCollision(elapsedAbs, inputGlobs.msx, inputGlobs.msy, inputGlobs.mslb, gamectrlGlobs.mslb_Last_0, &collFlag))
+    {
+        Lego_UpdateTopdownCamera(elapsedAbs);
+        legoGlobs.flags1 |= GAME1_UNK_200;
+        goto nwlabel;
+    }
 
     Lego_UpdateTopdownCamera(elapsedAbs);
 
-    // TODO: Implement Lego_HandleWorld
+    PointerSFX_Type ptrType;
+    if ((legoGlobs.flags1 & GAME1_MULTISELECT) == GAME1_NONE)
+    {
+        if (Priorities_HandleInput(inputGlobs.msx, inputGlobs.msy, inputGlobs.mslb, gamectrlGlobs.mslb_Last_0, leftReleased))
+        {
+            legoGlobs.flags1 |= GAME1_UNK_200;
+            goto nwlabel;
+        }
+
+        if ((legoGlobs.flags1 & GAME1_MULTISELECT) == GAME1_NONE &&
+            (legoGlobs.flags2 & GAME2_INMENU) == GAME2_NONE &&
+            Interface_DoSomethingWithRenameReplace(inputGlobs.msx, inputGlobs.msy, inputGlobs.mslb, gamectrlGlobs.mslb_Last_0, leftReleased))
+        {
+            legoGlobs.flags1 |= GAME1_UNK_200;
+            goto nwlabel;
+        }
+
+        if ((legoGlobs.flags1 & GAME1_MULTISELECT) != GAME1_NONE ||
+            !Info_Update_FUN_0041a0d0(inputGlobs.msx, inputGlobs.msy, leftReleased))
+        {
+            goto nextLbl;
+        }
+
+        legoGlobs.flags1 |= GAME1_UNK_200;
+
+        if (leftReleased == 0)
+            goto nwlabel;
+
+        ptrType = PointerSFX_Okay;
+
+theLblNew:
+        Lego_SetPointerSFX(ptrType);
+        goto nwlabel;
+    }
+
+nextLbl:
+    if (legoGlobs.viewMode == ViewMode_FP)
+    {
+        legoGlobs.flags1 |= GAME1_UNK_200;
+        goto nwlabel;
+    }
+
+    if ((legoGlobs.flags1 & GAME1_MULTISELECT) == GAME1_NONE &&
+        (legoGlobs.flags1 & GAME1_RADARON) != GAME1_NONE &&
+        RadarMap_InsideRadarScreen(legoGlobs.currLevel->radarMap, inputGlobs.msx, inputGlobs.msy))
+    {
+        if (leftReleased != 0)
+        {
+            Lego_SetPointerSFX(PointerSFX_Okay);
+        }
+
+        if ((legoGlobs.flags1 & GAME1_RADAR_TRACKOBJECTVIEW) == GAME1_NONE)
+        {
+            Pointer_SetCurrent_IfTimerFinished(currentPointer);
+        }
+
+        goto nwlabel;
+    }
+
+    if (collFlag)
+    {
+        // TODO: Implement Lego_HandleWorld
+    }
 
     if (somethingIntersections)
         goto nwlabel;

@@ -11,3 +11,10 @@ lpRadarMap RadarMap_Create(lpMap3D map, lpArea2F radarViewRect, F32 tvTiltOrZoom
 
     return NULL;
 }
+
+B32 RadarMap_InsideRadarScreen(lpRadarMap radarMap, U32 mouseX, U32 mouseY)
+{
+    // TODO: Implement RadarMap_InsideRadarScreen
+
+    return FALSE;
+}

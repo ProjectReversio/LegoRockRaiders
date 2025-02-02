@@ -167,6 +167,8 @@ extern void Panel_SetArea(Panel_Type panelType, S32 xOut, S32 yOut, S32 xIn, S32
 
 extern void Panel_DrawPanel(Panel_Type panelType, F32 elapsedAbs);
 
+extern void Panel_Crystals_Draw(U32 crystals, U32 usedCrystals, F32 elapsedGame);
+
 extern void Panel_CryOreSideBar_ChangeOreMeter(B32 increment, U32 amount);
 extern void Panel_CryOreSideBar_Draw();
 
@@ -179,3 +181,7 @@ extern void Panel_ChangeFlags_BasedOnState(Panel_Type panelType);
 extern void Panel_Button_SetFlag_8_OrUnset_c(Panel_Type panelType, PanelButton_Type buttonType, B32 setFlag8);
 
 extern void Panel_UnsetFlag_6();
+
+extern U32 Panel_PrintF(Panel_Type panelType, lpFont font, S32 x, S32 y, B32 center, const char* msg, ...);
+
+extern B32 Panel_CheckCollision(F32 elapsedAbs, U32 mouseX, U32 mouseY, B32 leftButton, B32 leftButtonLast, B32 *outPanelCollision);

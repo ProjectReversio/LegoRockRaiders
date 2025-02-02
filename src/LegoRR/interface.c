@@ -776,6 +776,13 @@ lpImage Interface_FUN_0041c9e0(Interface_MenuItemType menuIcon)
     return interfaceGlobs.menuItemIcons[menuIcon];
 }
 
+B32 Interface_DoSomethingWithRenameReplace(U32 mouseX, U32 mouseY, B32 leftButton, B32 leftButtonLast, B32 leftReleased)
+{
+    // TODO: Implement Interface_DoSomethingWithRenameReplace
+
+    return FALSE;
+}
+
 void Interface_DrawTeleportQueueNumber(LegoObject_Type objType, LegoObject_ID objID, Point2F* screenPt)
 {
     // TODO: Implement Interface_DrawTeleportQueueNumber

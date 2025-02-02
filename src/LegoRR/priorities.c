@@ -20,3 +20,10 @@ B32 Priorities_LoadLevel(lpConfig config, const char* gameName, const char* leve
     // TODO: Implement Priorities_LoadLevel
     return TRUE;
 }
+
+B32 Priorities_HandleInput(U32 mouseX, U32 mouseY, B32 leftButton, B32 leftButtonLast, B32 leftReleased)
+{
+    // TODO: Implement Priorities_HandleInput
+
+    return FALSE;
+}
