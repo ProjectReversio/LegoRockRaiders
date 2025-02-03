@@ -359,7 +359,24 @@ B32 LegoObject_Callback_Update(lpLegoObject liveObj, void* search)
 
 B32 LegoObject_RunThroughLists(LegoObject_RunThroughListsCallback callback, void* search, B32 skipUpgradeParts)
 {
-    // TODO: Implement LegoObject_RunThroughLists
+    for (U32 tblIndex = 0; tblIndex < objectGlobs.listCount; tblIndex++)
+    {
+        if (objectGlobs.listSet[tblIndex] != NULL)
+        {
+            U32 size = 1 << ((U8)tblIndex & 0x1f);
+            for (U32 i = 0; i < size; i++)
+            {
+
+                lpLegoObject liveObj = &objectGlobs.listSet[tblIndex][i];
+                if (liveObj != NULL && liveObj->nextFree == liveObj &&
+                    (skipUpgradeParts == FALSE || (liveObj->flags3 & LIVEOBJ3_UPGRADEPART) == LIVEOBJ3_NONE) &&
+                    callback(liveObj, search))
+                {
+                    return TRUE;
+                }
+            }
+        }
+    }
 
     return FALSE;
 }
