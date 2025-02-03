@@ -9,3 +9,8 @@ void Object_SetOwnerObject(lpBasicObjectModel basicObjData, lpLegoObject liveObj
 {
     Container_SetUserData(basicObjData->contAct, liveObj);
 }
+
+lpContainer Object_GetActivityContainer(lpBasicObjectModel basicObjData)
+{
+    return basicObjData->contAct;
+}

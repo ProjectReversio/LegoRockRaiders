@@ -180,3 +180,5 @@ extern void AITask_UnkInitRouting_FUN_00402530(lpAITask aiTask, B32 dropCarried)
 extern lpAITask AITask_InitTask_1(lpAITask aiTask, AI_Priority priorityType);
 
 extern void AITask_UpdateAll(F32 elapsedGame);
+
+extern void AITask_LiveObject_SetAITaskUnk(struct LegoObject* liveObj, AITask_Type taskType, struct LegoObject* liveObj2, B32 param4);

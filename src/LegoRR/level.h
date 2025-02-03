@@ -24,6 +24,8 @@ extern B32 Level_Block_IsImmovable(Point2I* blockPos);
 extern B32 Level_Block_IsLava(Point2I* blockPos);
 extern B32 Level_Block_IsSurveyed(U32 bx, U32 by);
 
+extern void Level_Block_SetBusy(Point2I* blockPos, B32 state);
+
 extern void Level_BlockActivity_UpdateAll(lpLego_Level level, F32 elapsedGame);
 
 extern void Level_UpdateEffects(lpLego_Level level, F32 elapsedGame);

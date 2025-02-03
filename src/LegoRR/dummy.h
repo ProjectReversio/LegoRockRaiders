@@ -12,3 +12,5 @@ typedef struct BasicObjectModel
 extern void Object_Hide(lpBasicObjectModel basicObjData, B32 hide);
 
 extern void Object_SetOwnerObject(lpBasicObjectModel basicObjData, lpLegoObject liveObj);
+
+extern lpContainer Object_GetActivityContainer(lpBasicObjectModel basicObjData);

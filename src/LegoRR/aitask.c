@@ -252,3 +252,8 @@ void AITask_UpdateAll(F32 elapsedGame)
 {
     // TODO: Implement AITask_UpdateAll
 }
+
+void AITask_LiveObject_SetAITaskUnk(lpLegoObject liveObj, AITask_Type taskType, lpLegoObject liveObj2, B32 param4)
+{
+    // TODO: Implement AITask_LiveObject_SetAITaskUnk
+}

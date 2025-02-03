@@ -6,6 +6,7 @@
 #include "creature.h"
 #include "dummy.h"
 #include "lego.h"
+#include "level.h"
 #include "mem.h"
 #include "sfx.h"
 
@@ -300,6 +301,36 @@ B32 LegoObject_UpdateActivityChange(lpLegoObject liveObj)
     return FALSE;
 }
 
+void LegoObject_SetActivity(lpLegoObject liveObj, Activity_Type activityType, U32 repeatCount)
+{
+    liveObj->activityName1 = objectGlobs.activityName[activityType];
+    liveObj->animRepeat = repeatCount;
+    liveObj->animTime = 0.0f;
+}
+
+lpContainer LegoObject_GetActivityContainer(lpLegoObject liveObj)
+{
+    switch (liveObj->type)
+    {
+        case LegoObject_Vehicle:
+            return Vehicle_GetActivityContainer(liveObj->vehicle);
+        case LegoObject_MiniFigure:
+            return Object_GetActivityContainer((BasicObjectModel*) liveObj->miniFigure);
+        case LegoObject_RockMonster:
+            return Object_GetActivityContainer((BasicObjectModel*) liveObj->rockMonster);
+        case LegoObject_Building:
+            return Object_GetActivityContainer((BasicObjectModel*) liveObj->building);
+        case LegoObject_UpgradePart:
+            return Object_GetActivityContainer((BasicObjectModel*) liveObj->upgradePart);
+    }
+
+    if ((liveObj->flags3 & LIVEOBJ3_SIMPLEOBJECT) != LIVEOBJ3_NONE)
+        return liveObj->other;
+
+    // TODO: This seems wrong?
+    return (lpContainer) liveObj;
+}
+
 void LegoObject_HideAllCertainObjects()
 {
     // TODO: Implement LegoObject_HideAllCertainObjects
@@ -352,6 +383,408 @@ void LegoObject_UpdateAll(F32 elapsedGame)
 B32 LegoObject_Callback_Update(lpLegoObject liveObj, void* search)
 {
     F32* pElapsed = (F32*)search;
+    F32 elapsed = *pElapsed;
+
+    // TODO: Implement LegoObject_Callback_Update
+
+    lpLegoObject driveObj;
+    if (liveObj->type == LegoObject_MiniFigure && (liveObj->flags2 & LIVEOBJ2_DRIVING) != LIVEOBJ2_NONE &&
+        (driveObj = liveObj->driveObject, driveObj != NULL && driveObj->type == LegoObject_Vehicle))
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+    else
+    {
+        LegoObject_MoveAnimation(liveObj, elapsed);
+    }
+
+    // TODO: Implement LegoObject_Callback_Update
+
+    if ((liveObj->flags2 & LIVEOBJ2_PUSHED) != LIVEOBJ2_NONE)
+        goto objectupdate_end;
+
+    if ((liveObj->flags1 & LIVEOBJ1_TURNING) != LIVEOBJ1_NONE)
+    {
+        if ((liveObj->flags1 & LIVEOBJ1_TURNRIGHT) != LIVEOBJ1_NONE)
+        {
+            if (liveObj->animTime > 0.0f)
+            {
+                lpContainer container = LegoObject_GetActivityContainer(liveObj);
+                Container_AddRotation(container, Container_Combine_Before, 0.0f, 1.0f, 0.0f, 1.5707964f);
+                Container_SetAnimationTime(container, 0.0f);
+                liveObj->flags1 &= ~LIVEOBJ1_TURNRIGHT;
+            }
+            goto objectupdate_end;
+        }
+
+        if (liveObj->animTime <= 0.0f)
+            goto objectupdate_end;
+
+        F32 turnAmount;
+        lpContainer container = LegoObject_GetActivityContainer(liveObj);
+        if (liveObj->activityName1 == objectGlobs.activityName[Activity_TurnLeft] ||
+            liveObj->activityName1 == objectGlobs.activityName[Activity_CarryTurnLeft])
+        {
+            turnAmount = -1.5707964f;
+        }
+        else
+        {
+            turnAmount = 1.5707964f;
+        }
+
+        Container_AddRotation(container, Container_Combine_Before, 0.0f, 1.0f, 0.0f, turnAmount);
+
+        liveObj->flags1 &= ~LIVEOBJ1_TURNING;
+        liveObj->flags1 |= LIVEOBJ1_MOVING;
+
+        if (liveObj->routeBlocksTotal != 0)
+        {
+            if ((liveObj->flags1 & LIVEOBJ1_RUNNINGAWAY) != LIVEOBJ1_NONE &&
+                liveObj->type == LegoObject_MiniFigure)
+            {
+                LegoObject_SetActivity(liveObj, Activity_RunPanic, 0);
+                goto objectupdate_end;
+            }
+
+xlabel:
+            LegoObject_SetActivity(liveObj, Activity_Route, 0);
+            goto objectupdate_end;
+        }
+
+nextLabel:
+        LegoObject_SetActivity(liveObj, Activity_Stand, 0);
+        goto objectupdate_end;
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_UNK_20) != LIVEOBJ2_NONE)
+    {
+        LegoObject_TryDepart_FUN_004499c0(liveObj);
+        goto objectupdate_end;
+    }
+
+    if ((liveObj->flags1 & LIVEOBJ1_CANTDO) != LIVEOBJ1_NONE)
+    {
+thelbx:
+        if (liveObj->animTime > 0.0f)
+        {
+            liveObj->flags1 &= ~LIVEOBJ1_CANTDO;
+        }
+
+        goto objectupdate_end;
+    }
+
+    if ((liveObj->flags1 & LIVEOBJ1_UNUSED_10000000) != LIVEOBJ1_NONE)
+    {
+        if (liveObj->animTime > 0.0f)
+        {
+            lpContainer container = LegoObject_GetActivityContainer(liveObj);
+
+            liveObj->flags1 &= ~LIVEOBJ1_UNUSED_10000000;
+            Container_SetOrientation(container, NULL, liveObj->dirVector_2c8.x, liveObj->dirVector_2c8.y, 0.0f, 0.0f, 0.0f, -1.0f);
+            LegoObject_SetActivity(liveObj, Activity_Stand, 0);
+        }
+        goto objectupdate_end;
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_FIRINGLASER) != LIVEOBJ2_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags4 & LIVEOBJ4_UNK_8000) != LIVEOBJ4_NONE)
+    {
+        if (liveObj->animTime <= 0.0f)
+            goto objectupdate_end;
+
+        liveObj->flags4 &= ~LIVEOBJ4_UNK_8000;
+
+        if (liveObj->routeToObject != NULL)
+        {
+            lpContainer depositNull = LegoObject_GetDepositNull(liveObj->routeToObject);
+            if (depositNull != NULL)
+            {
+                Point3F pos;
+                Point3F dir;
+                Container_GetPosition(depositNull, NULL, &pos);
+                Container_GetOrientation(depositNull, NULL, &dir, NULL);
+
+                F32 zPos = Map3D_GetWorldZ(Lego_GetMap(), pos.x, pos.y);
+
+                lpContainer container = LegoObject_GetActivityContainer(liveObj);
+                Container_SetPosition(container, NULL, pos.x, pos.y, zPos);
+
+                lpContainer container2 = LegoObject_GetActivityContainer(liveObj);
+                Container_SetOrientation(container2, NULL, dir.x, dir.y, dir.z, 0.0f, 0.0f, -1.0f);
+            }
+
+            LegoObject_DoOpeningClosing(liveObj->routeToObject, FALSE);
+            LegoObject_SetActivity(liveObj, Activity_Stand, 0);
+            goto objectupdate_end;
+        }
+        goto nextLabel;
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_UNK_80000000) != LIVEOBJ2_NONE)
+    {
+        if (liveObj->routeToObject == NULL)
+        {
+            liveObj->flags2 &= (LIVEOBJ2_DAMAGESHAKING|LIVEOBJ2_UNK_20000000|LIVEOBJ2_RECHARGING|
+                      LIVEOBJ2_FROZEN|LIVEOBJ2_UNK_4000000|LIVEOBJ2_ACTIVEELECTRICFENCE|
+                      LIVEOBJ2_FIRINGFREEZER|LIVEOBJ2_FIRINGPUSHER|LIVEOBJ2_FIRINGLASER|
+                      LIVEOBJ2_UNK_200000|LIVEOBJ2_UNK_100000|LIVEOBJ2_UNK_80000|LIVEOBJ2_UNK_40000|
+                      LIVEOBJ2_UNK_20000|LIVEOBJ2_TRIGGERFRAMECALLBACK|LIVEOBJ2_UPGRADING|
+                      LIVEOBJ2_PUSHED|LIVEOBJ2_SHOWDAMAGENUMBERS|LIVEOBJ2_DAMAGE_UNK_1000|LIVEOBJ2_UNK_800|
+                      LIVEOBJ2_TRAINING|LIVEOBJ2_BUILDPATH|LIVEOBJ2_UNK_100|LIVEOBJ2_UNK_80|
+                      LIVEOBJ2_UNK_40|LIVEOBJ2_UNK_20|LIVEOBJ2_UNK_10|LIVEOBJ2_DRIVING|
+                      LIVEOBJ2_UNK_4|LIVEOBJ2_THROWN|LIVEOBJ2_THROWING);
+        }
+        else
+        {
+            lpContainer container = LegoObject_GetActivityContainer(liveObj);
+            lpContainer routeContainer = LegoObject_GetActivityContainer(liveObj->routeToObject);
+            Point3F pos;
+            Point3F dir;
+            Point3F up;
+            Container_GetPosition(routeContainer, NULL, &pos);
+            Container_GetOrientation(routeContainer, NULL, &dir, &up);
+            Container_SetPosition(container, NULL, pos.x, pos.y, pos.z);
+            Container_SetOrientation(container, NULL, dir.x, dir.y, dir.z, up.x, up.y, up.z);
+
+            if (liveObj->animTime > 0.0f)
+            {
+                liveObj->routeToObject->carriedObjects[liveObj->routeToObject->numCarriedObjects] = liveObj;
+                liveObj->routeToObject->carriedObjects[liveObj->routeToObject->numCarriedObjects]->carryingThisObject = liveObj->routeToObject;
+
+                // TODO: What the heck is this? This looks very wrong.
+                liveObj->routeToObject->carriedObjects[liveObj->routeToObject->numCarriedObjects]->carriedObjects[6] = liveObj->routeToObject->numCarriedObjects;
+
+                liveObj->routeToObject->flags1 |= LIVEOBJ1_CARRYING;
+
+                LegoObject_DoOpeningClosing(liveObj->routeToObject, FALSE);
+
+                liveObj->routeToObject->numCarriedObjects++;
+
+                liveObj->flags2 &= (LIVEOBJ2_DAMAGESHAKING|LIVEOBJ2_UNK_20000000|LIVEOBJ2_RECHARGING|LIVEOBJ2_FROZEN|
+                                    LIVEOBJ2_UNK_4000000|LIVEOBJ2_ACTIVEELECTRICFENCE|LIVEOBJ2_FIRINGFREEZER|
+                                    LIVEOBJ2_FIRINGPUSHER|LIVEOBJ2_FIRINGLASER|LIVEOBJ2_UNK_200000|LIVEOBJ2_UNK_100000|
+                                    LIVEOBJ2_UNK_80000|LIVEOBJ2_UNK_40000|LIVEOBJ2_UNK_20000|LIVEOBJ2_TRIGGERFRAMECALLBACK|
+                                    LIVEOBJ2_UPGRADING|LIVEOBJ2_PUSHED|LIVEOBJ2_SHOWDAMAGENUMBERS|
+                                    LIVEOBJ2_DAMAGE_UNK_1000|LIVEOBJ2_UNK_800|LIVEOBJ2_TRAINING|LIVEOBJ2_BUILDPATH|
+                                    LIVEOBJ2_UNK_100|LIVEOBJ2_UNK_80|LIVEOBJ2_UNK_40|LIVEOBJ2_UNK_20|LIVEOBJ2_UNK_10|
+                                    LIVEOBJ2_DRIVING|LIVEOBJ2_UNK_4|LIVEOBJ2_THROWN|LIVEOBJ2_THROWING);
+
+                LegoObject_SetActivity(liveObj, Activity_Stand, 0);
+
+                AITask_LiveObject_SetAITaskUnk(liveObj, AITask_Type_FindLoad, NULL, TRUE);
+                liveObj->routeToObject->flags4 &= ~LIVEOBJ4_UNK_10000;
+            }
+        }
+        goto objectupdate_end;
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_RECHARGING) != LIVEOBJ2_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_FIRINGPUSHER) != LIVEOBJ2_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_FIRINGFREEZER) != LIVEOBJ2_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags1 & LIVEOBJ1_UNK_800) != LIVEOBJ1_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags1 & LIVEOBJ1_UNK_4000) != LIVEOBJ1_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags1 & LIVEOBJ1_STORING) != LIVEOBJ1_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags1 & LIVEOBJ1_RESTING) != LIVEOBJ1_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_UNK_200000) != LIVEOBJ2_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_UNK_40000) != LIVEOBJ2_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_UNK_20000000) != LIVEOBJ2_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags1 & LIVEOBJ1_REPAIRDRAINING) != LIVEOBJ1_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags1 & LIVEOBJ1_EATING) != LIVEOBJ1_NONE)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_UNK_40) != LIVEOBJ2_NONE)
+    {
+        liveObj->flags2 &= (LIVEOBJ2_UNK_80000000|LIVEOBJ2_DAMAGESHAKING|LIVEOBJ2_UNK_20000000|
+                            LIVEOBJ2_RECHARGING|LIVEOBJ2_FROZEN|LIVEOBJ2_UNK_4000000|
+                            LIVEOBJ2_ACTIVEELECTRICFENCE|LIVEOBJ2_FIRINGFREEZER|LIVEOBJ2_FIRINGPUSHER|
+                            LIVEOBJ2_FIRINGLASER|LIVEOBJ2_UNK_200000|LIVEOBJ2_UNK_100000|LIVEOBJ2_UNK_80000|
+                            LIVEOBJ2_UNK_40000|LIVEOBJ2_UNK_20000|LIVEOBJ2_TRIGGERFRAMECALLBACK|
+                            LIVEOBJ2_UPGRADING|LIVEOBJ2_PUSHED|LIVEOBJ2_SHOWDAMAGENUMBERS|
+                            LIVEOBJ2_DAMAGE_UNK_1000|LIVEOBJ2_UNK_800|LIVEOBJ2_TRAINING|LIVEOBJ2_BUILDPATH|
+                            LIVEOBJ2_UNK_100|LIVEOBJ2_UNK_80|LIVEOBJ2_UNK_20|LIVEOBJ2_UNK_10|
+                            LIVEOBJ2_DRIVING|LIVEOBJ2_UNK_4|LIVEOBJ2_THROWN|LIVEOBJ2_THROWING);
+
+        if (liveObj->aiTask != NULL)
+        {
+            LegoObject_MiniFigure_EquipTool(liveObj, liveObj->aiTask->toolType);
+            AITask_LiveObject_SetAITaskUnk(liveObj, AITask_Type_GetTool, NULL, TRUE);
+        }
+
+        goto objectupdate_end;
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_TRAINING) != LIVEOBJ2_NONE)
+    {
+        if (liveObj->animTime > 0.0f)
+        {
+            liveObj->flags2 &= (LIVEOBJ2_UNK_80000000|LIVEOBJ2_DAMAGESHAKING|LIVEOBJ2_UNK_20000000|
+                                LIVEOBJ2_RECHARGING|LIVEOBJ2_FROZEN|LIVEOBJ2_UNK_4000000|
+                                LIVEOBJ2_ACTIVEELECTRICFENCE|LIVEOBJ2_FIRINGFREEZER|LIVEOBJ2_FIRINGPUSHER|
+                                LIVEOBJ2_FIRINGLASER|LIVEOBJ2_UNK_200000|LIVEOBJ2_UNK_100000|
+                                LIVEOBJ2_UNK_80000|LIVEOBJ2_UNK_40000|LIVEOBJ2_UNK_20000|
+                                LIVEOBJ2_TRIGGERFRAMECALLBACK|LIVEOBJ2_UPGRADING|LIVEOBJ2_PUSHED|
+                                LIVEOBJ2_SHOWDAMAGENUMBERS|LIVEOBJ2_DAMAGE_UNK_1000|LIVEOBJ2_UNK_800|
+                                LIVEOBJ2_BUILDPATH|LIVEOBJ2_UNK_100|LIVEOBJ2_UNK_80|LIVEOBJ2_UNK_40|
+                                LIVEOBJ2_UNK_20|LIVEOBJ2_UNK_10|LIVEOBJ2_DRIVING|LIVEOBJ2_UNK_4|
+                                LIVEOBJ2_THROWN|LIVEOBJ2_THROWING);
+
+            AITask_LiveObject_SetAITaskUnk(liveObj, AITask_Type_Train, NULL, TRUE);
+        }
+
+        goto objectupdate_end;
+    }
+
+    if ((liveObj->flags2 & LIVEOBJ2_UPGRADING) == LIVEOBJ2_NONE)
+    {
+        if ((liveObj->flags1 & LIVEOBJ1_PLACING) != LIVEOBJ1_NONE)
+        {
+            // TODO: Implement LegoObject_Callback_Update
+        }
+
+        if ((liveObj->flags1 & LIVEOBJ1_GETTINGHIT) != LIVEOBJ1_NONE)
+        {
+            if (liveObj->animTime > 0.0f)
+                liveObj->flags1 &= ~LIVEOBJ1_GETTINGHIT;
+
+            goto objectupdate_end;
+        }
+
+        if (liveObj->carryingThisObject != NULL)
+            goto objectupdate_end;
+
+        if ((liveObj->flags1 & LIVEOBJ1_MOVING) != LIVEOBJ1_NONE &&
+            LegoObject_FUN_0043c6a0(liveObj))
+        {
+            LegoObject_Route_End(liveObj, TRUE);
+            LegoObject_Proc_FUN_0043c7f0(liveObj);
+
+            goto objectupdate_end;
+        }
+
+        if ((liveObj->flags1 & LIVEOBJ1_MOVING) != LIVEOBJ1_NONE)
+        {
+            LegoObject_Route_UpdateMovement(liveObj, elapsed);
+            LegoObject_UpdateCarryingEnergy(liveObj, elapsed);
+            LegoObject_RockMonster_FUN_0043ad70(liveObj);
+
+            if ((liveObj->flags2 & LIVEOBJ2_UNK_4000000) != LIVEOBJ2_NONE)
+            {
+                // TODO: Implement LegoObject_Callback_Update
+            }
+
+            if ((liveObj->flags1 & LIVEOBJ1_DRILLING) != LIVEOBJ1_NONE)
+            {
+                LegoObject_SetActivity(liveObj, Activity_Drill, 0);
+                Point2I pos;
+                pos.x = liveObj->targetBlockPos.x;
+                pos.y = liveObj->targetBlockPos.y;
+                Level_Block_SetBusy(&pos, TRUE);
+                goto objectupdate_end;
+            }
+
+            if ((liveObj->flags1 & LIVEOBJ1_LIFTING) != LIVEOBJ1_NONE)
+            {
+                LegoObject_SetActivity(liveObj, Activity_Reverse, 0);
+                goto objectupdate_end;
+            }
+
+            if ((liveObj->flags2 & LIVEOBJ2_TRAINING) != LIVEOBJ2_NONE)
+            {
+                LegoObject_SetActivity(liveObj, Activity_Train, 0);
+                goto objectupdate_end;
+            }
+            // TODO: Implement LegoObject_Callback_Update
+        }
+
+        if ((liveObj->flags1 & LIVEOBJ1_TELEPORTINGDOWN) != LIVEOBJ1_NONE)
+        {
+            // TODO: Implement LegoObject_Callback_Update
+        }
+
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if (liveObj->type == LegoObject_MiniFigure)
+    {
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+    if (liveObj->animTime <= 0.0f)
+        goto objectupdate_end;
+
+    if (liveObj->routeToObject == NULL || (StatsObject_GetStatsFlags2(liveObj->routeToObject) & STATS2_UPGRADEBUILDING) == STATS2_NONE)
+    {
+        liveObj->flags2 &= (LIVEOBJ2_UNK_80000000|LIVEOBJ2_DAMAGESHAKING|LIVEOBJ2_UNK_20000000|LIVEOBJ2_RECHARGING|
+                            LIVEOBJ2_FROZEN|LIVEOBJ2_UNK_4000000|LIVEOBJ2_ACTIVEELECTRICFENCE|LIVEOBJ2_FIRINGFREEZER|
+                            LIVEOBJ2_FIRINGPUSHER|LIVEOBJ2_FIRINGLASER|LIVEOBJ2_UNK_200000|LIVEOBJ2_UNK_100000|
+                            LIVEOBJ2_UNK_80000|LIVEOBJ2_UNK_40000|LIVEOBJ2_UNK_20000|LIVEOBJ2_TRIGGERFRAMECALLBACK|
+                            LIVEOBJ2_PUSHED|LIVEOBJ2_SHOWDAMAGENUMBERS|LIVEOBJ2_DAMAGE_UNK_1000|LIVEOBJ2_UNK_800|
+                            LIVEOBJ2_TRAINING|LIVEOBJ2_BUILDPATH|LIVEOBJ2_UNK_100|LIVEOBJ2_UNK_80|LIVEOBJ2_UNK_40|
+                            LIVEOBJ2_UNK_20|LIVEOBJ2_UNK_10|LIVEOBJ2_DRIVING|LIVEOBJ2_UNK_4|LIVEOBJ2_THROWN|
+                            LIVEOBJ2_THROWING);
+
+        goto objectupdate_end;
+    }
+
+    if ((liveObj->routeToObject->flags2 & LIVEOBJ2_UPGRADING) != LIVEOBJ2_NONE)
+        goto objectupdate_end;
+
+
+
+    // TODO: Implement LegoObject_Callback_Update
+
+objectupdate_end:
+
     // TODO: Implement LegoObject_Callback_Update
 
     return FALSE;
@@ -509,4 +942,60 @@ void LegoObject_Route_End(lpLegoObject liveObj, B32 completed)
 void LegoObject_DropCarriedObject(lpLegoObject liveObj, B32 putAway)
 {
     // TODO: Implement LegoObject_DropCarriedObject
+}
+
+F32 LegoObject_MoveAnimation(lpLegoObject liveObj, F32 elapsed)
+{
+    // TODO: Implement LegoObject_MoveAnimation
+
+    return elapsed;
+}
+
+B32 LegoObject_TryDepart_FUN_004499c0(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_TryDepart_FUN_004499c0
+
+    return FALSE;
+}
+
+lpContainer LegoObject_GetDepositNull(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_GetDepositNull
+
+    return NULL;
+}
+
+B32 LegoObject_DoOpeningClosing(lpLegoObject liveObj, B32 open)
+{
+    // TODO: Implement LegoObject_DoOpeningClosing
+
+    return FALSE;
+}
+
+B32 LegoObject_FUN_0043c6a0(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_FUN_0043c6a0
+
+    return FALSE;
+}
+
+void LegoObject_Proc_FUN_0043c7f0(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_Proc_FUN_0043c7f0
+}
+
+void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
+{
+    // TODO: Implement LegoObject_Route_UpdateMovement
+}
+
+// Update energy drain while carrying and attempt to rest when needed
+void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed)
+{
+    // TODO: Implement LegoObject_UpdateCarryingEnergy
+}
+
+void LegoObject_RockMonster_FUN_0043ad70(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_RockMonster_FUN_0043ad70
 }

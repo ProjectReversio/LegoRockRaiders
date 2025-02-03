@@ -11,3 +11,8 @@ void Vehicle_Hide(lpVehicleModel vehicle, B32 hide)
 {
     // TODO: Implement Vehicle_Hide
 }
+
+lpContainer Vehicle_GetActivityContainer(lpVehicleModel vehicle)
+{
+    return vehicle->contAct1;
+}

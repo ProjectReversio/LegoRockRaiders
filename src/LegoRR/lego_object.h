@@ -231,6 +231,90 @@ typedef enum LegoObject_AbilityType
     LegoObject_AbilityType_Invalid  = -1,
 } LegoObject_AbilityType;
 
+typedef enum Activity_Type //: S32
+{
+	Activity_Stand               = 0,
+	Activity_Route               = 1,
+	Activity_RouteRubble         = 2,
+	Activity_RunPanic            = 3,
+	Activity_Drill               = 4,
+	Activity_Teleport            = 5,
+	Activity_Walk                = 6,
+	Activity_Reinforce           = 7,
+	Activity_Reverse             = 8,
+	Activity_TurnLeft            = 9,
+	Activity_TurnRight           = 10,
+	Activity_CantDo              = 11,
+	Activity_Emerge              = 12,
+	Activity_Enter               = 13,
+	Activity_EnterRein           = 14,
+	Activity_Collect             = 15,
+	Activity_Gather              = 16,
+	Activity_Carry               = 17,
+	Activity_CarryRubble         = 18,
+	Activity_Throw               = 19,
+	Activity_CarryTurnLeft       = 20,
+	Activity_CarryTurnRight      = 21,
+	Activity_CarryStand          = 22,
+	Activity_HitLeft             = 23,
+	Activity_HitRight            = 24,
+	Activity_HitFront            = 25,
+	Activity_HitBack             = 26,
+	Activity_HitHard             = 27,
+	Activity_Dynamite            = 28,
+	Activity_Deposit             = 29,
+	Activity_Clear               = 30,
+	Activity_Place               = 31,
+	Activity_Repair              = 32,
+	Activity_Slip                = 33,
+	Activity_Rest                = 34,
+	Activity_Eat                 = 35,
+	Activity_Stamp               = 36,
+	Activity_ThrowMan            = 37,
+	Activity_ThrownByRockMonster = 38,
+	Activity_GetUp               = 39,
+	Activity_BuildPath           = 40,
+	Activity_Upgrade             = 41,
+	Activity_Explode             = 42,
+	Activity_Unpowered           = 43,
+	Activity_FireLaser           = 44,
+	Activity_Freezed             = 45,
+	Activity_FreezeStart         = 46,
+	Activity_FreezeMelt          = 47,
+	Activity_Recharge            = 48,
+	Activity_WakeUp              = 49,
+	Activity_Train               = 50,
+	Activity_FloatOn             = 51,
+	Activity_FloatOff            = 52,
+	Activity_Opening             = 53,
+	Activity_Closing             = 54,
+	Activity_Open                = 55,
+	Activity_Waiting1            = 56,
+	Activity_Waiting2            = 57,
+	Activity_Waiting3            = 58,
+	Activity_Waiting4            = 59,
+	Activity_Waiting5            = 60,
+	Activity_Waiting6            = 61,
+	Activity_Waiting7            = 62,
+	Activity_Waiting8            = 63,
+	Activity_Waiting9            = 64,
+	Activity_Waiting10           = 65,
+	Activity_Waiting11           = 66,
+	Activity_Waiting12           = 67,
+	Activity_Waiting13           = 68,
+	Activity_Waiting14           = 69,
+	Activity_Waiting15           = 70,
+	Activity_Waiting16           = 71,
+	Activity_Waiting17           = 72,
+	Activity_Waiting18           = 73,
+	Activity_Waiting19           = 74,
+	Activity_Waiting20           = 75,
+	Activity_Waiting21           = 76,
+	Activity_Crumble             = 77,
+	Activity_TeleportIn          = 78,
+	Activity_Type_Count          = 79,
+} Activity_Type;
+
 typedef enum LegoObject_GlobFlags
 {
     OBJECT_GLOB_FLAG_NONE             = 0,
@@ -445,6 +529,10 @@ extern void LegoObject_UpdatePowerConsumption(lpLegoObject liveObj);
 
 extern B32 LegoObject_UpdateActivityChange(lpLegoObject liveObj);
 
+extern void LegoObject_SetActivity(lpLegoObject liveObj, Activity_Type activityType, U32 repeatCount);
+
+extern lpContainer LegoObject_GetActivityContainer(lpLegoObject liveObj);
+
 extern void LegoObject_HideAllCertainObjects();
 
 extern void LegoObject_UpdateAll(F32 elapsedGame);
@@ -481,3 +569,22 @@ extern lpMeshLOD LegoObject_LoadMeshLOD(lpConfig act, const char* gameName, cons
 extern void LegoObject_Route_End(lpLegoObject liveObj, B32 completed);
 
 extern void LegoObject_DropCarriedObject(lpLegoObject liveObj, B32 putAway);
+
+extern F32 LegoObject_MoveAnimation(lpLegoObject liveObj, F32 elapsed);
+
+extern B32 LegoObject_TryDepart_FUN_004499c0(lpLegoObject liveObj);
+
+extern lpContainer LegoObject_GetDepositNull(lpLegoObject liveObj);
+
+extern B32 LegoObject_DoOpeningClosing(lpLegoObject liveObj, B32 open);
+
+extern B32 LegoObject_FUN_0043c6a0(lpLegoObject liveObj);
+
+extern void LegoObject_Proc_FUN_0043c7f0(lpLegoObject liveObj);
+
+extern void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed);
+
+// Update energy drain while carrying and attempt to rest when needed
+extern void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed);
+
+extern void LegoObject_RockMonster_FUN_0043ad70(lpLegoObject liveObj);
