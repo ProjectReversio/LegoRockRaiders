@@ -307,7 +307,80 @@ void LegoObject_HideAllCertainObjects()
 
 void LegoObject_UpdateAll(F32 elapsedGame)
 {
-    // TODO: Implement LegoObject_UpdateAll
+    // Were we updating our power grid after the update loop, last tick?
+    if ((objectGlobs.flags & OBJECT_GLOB_FLAG_POWERUPDATING) != OBJECT_GLOB_FLAG_NONE)
+    {
+        Level_PowerGrid_ClearBlockPowered_100_Points28C();
+    }
+
+    objectGlobs.flags |= OBJECT_GLOB_FLAG_UPDATING;
+
+    LegoObject_RunThroughLists(LegoObject_Callback_Update, &elapsedGame, FALSE);
+
+    LegoObject_GlobFlags flagUnsetUpdating = objectGlobs.flags & ~OBJECT_GLOB_FLAG_UPDATING;
+    LegoObject_GlobFlags flagPowerRecalc = objectGlobs.flags & OBJECT_GLOB_FLAG_POWERUPDATING;
+    objectGlobs.flags = flagUnsetUpdating;
+
+    // Were we updating our power grid after the update loop, last tick?
+    if (flagPowerRecalc != OBJECT_GLOB_FLAG_NONE)
+    {
+        Level_PowerGrid_UpdateLevelBlocks_PointsAAC();
+    }
+
+    // Turn off power updating if an update is no longer needed.
+    if ((objectGlobs.flags & OBJECT_GLOB_FLAG_POWERNEEDSUPDATE) == OBJECT_GLOB_FLAG_NONE)
+    {
+        objectGlobs.flags &= ~OBJECT_GLOB_FLAG_POWERUPDATING;
+    }
+    else
+    {
+        // Otherwise, restart the request for a power grid update (turns on POWERUPDATING flag).
+        LegoObject_RequestPowerGridUpdate();
+        objectGlobs.flags &= ~OBJECT_GLOB_FLAG_POWERNEEDSUPDATE;
+    }
+
+    LegoObject_Flocks_Update_FUN_0044c1c0(&elapsedGame);
+
+    objectGlobs.s_sound3DUpdateTimer -= elapsedGame;
+    if (objectGlobs.s_sound3DUpdateTimer <= 0.0f)
+    {
+        objectGlobs.s_sound3DUpdateTimer = 125.0f;
+        Lego_UpdateAll3DSounds(TRUE);
+    }
+}
+
+B32 LegoObject_Callback_Update(lpLegoObject liveObj, void* search)
+{
+    F32* pElapsed = (F32*)search;
+    // TODO: Implement LegoObject_Callback_Update
+
+    return FALSE;
+}
+
+B32 LegoObject_RunThroughLists(LegoObject_RunThroughListsCallback callback, void* search, B32 skipUpgradeParts)
+{
+    // TODO: Implement LegoObject_RunThroughLists
+
+    return FALSE;
+}
+
+void LegoObject_Flocks_Update_FUN_0044c1c0(F32* pElapsed)
+{
+    // TODO: Implement LegoObject_Flocks_Update_FUN_0044c1c0
+}
+
+// Marks blocks in the first PowerGrid list as unpowered and moves them to the second list. Then
+// clears the first list.
+void Level_PowerGrid_ClearBlockPowered_100_Points28C()
+{
+    // TODO: Implement Level_PowerGrid_ClearBlockPowered_100_Points28C
+}
+
+// Updates the block surfaces for unpowered blocks in the second PowerGrid list. Then clears the
+// list.
+void Level_PowerGrid_UpdateLevelBlocks_PointsAAC()
+{
+    // TODO: Implement Level_PowerGrid_UpdateLevelBlocks_PointsAAC
 }
 
 // If we're currently in the update loop, then delay recalculations until the end of the update loop/next tick(?).

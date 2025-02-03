@@ -449,6 +449,20 @@ extern void LegoObject_HideAllCertainObjects();
 
 extern void LegoObject_UpdateAll(F32 elapsedGame);
 
+extern B32 LegoObject_Callback_Update(lpLegoObject liveObj, void* search);
+
+extern B32 LegoObject_RunThroughLists(LegoObject_RunThroughListsCallback callback, void* search, B32 skipUpgradeParts);
+
+extern void LegoObject_Flocks_Update_FUN_0044c1c0(F32* pElapsed);
+
+// Marks blocks in the first PowerGrid list as unpowered and moves them to the second list. Then
+// clears the first list.
+extern void Level_PowerGrid_ClearBlockPowered_100_Points28C();
+
+// Updates the block surfaces for unpowered blocks in the second PowerGrid list. Then clears the
+// list.
+extern void Level_PowerGrid_UpdateLevelBlocks_PointsAAC();
+
 // If we're currently in the update loop, then delay recalculations until the end of the update loop/next tick(?).
 //
 // Otherwise, we can turn on power updating mode right now.

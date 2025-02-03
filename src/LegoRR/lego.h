@@ -730,6 +730,9 @@ extern void Lego_DrawRenameInput(F32 elapsedAbs);
 
 extern void Lego_HandleRadarInput();
 
+extern B32 Lego_UpdateAll3DSounds(B32 stopAll);
+extern B32 Lego_UpdateObject3DSounds(lpLegoObject liveObj, void* context);
+
 // This is an old method for playing movies.
 // It supports playing a movie that isn't just in the center of the screen
 //  (which can be seen by setting certain Level CFG AVI properties).

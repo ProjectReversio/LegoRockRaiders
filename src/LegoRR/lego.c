@@ -3755,6 +3755,19 @@ void Lego_HandleRadarInput()
     // TODO: Implement Lego_HandleRadarInput
 }
 
+B32 Lego_UpdateAll3DSounds(B32 stopAll)
+{
+    return LegoObject_RunThroughListsSkipUpgradeParts(Lego_UpdateObject3DSounds, &stopAll);
+}
+
+B32 Lego_UpdateObject3DSounds(lpLegoObject liveObj, void* context)
+{
+    B32* pStopAll = (B32*)context;
+    // TODO: Implement Lego_UpdateObject3DSounds
+
+    return FALSE;
+}
+
 // This is an old method for playing movies.
 // It supports playing a movie that isn't just in the center of the screen
 //  (which can be seen by setting certain Level CFG AVI properties).
