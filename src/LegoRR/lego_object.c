@@ -156,8 +156,7 @@ void LegoObject_FUN_00438720(lpLegoObject liveObj)
 
 B32 LegoObject_RunThroughListsSkipUpgradeParts(LegoObject_RunThroughListsCallback callback, void* search)
 {
-    // TODO: Implement LegoObject_RunThroughListsSkipUpgradeParts
-    return FALSE;
+    return LegoObject_RunThroughLists(callback, search, TRUE);
 }
 
 B32 LegoObject_DoPickSphereSelection(U32 mouseX, U32 mouseY, lpLegoObject* selectedObj)

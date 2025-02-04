@@ -341,7 +341,23 @@ B32 AITask_Callback_UpdateTask(lpAITask aiTask, void* context)
 
 B32 AITask_RunThroughLists(AITask_RunThroughListsCallback callback, void* data)
 {
-    // TODO: Implement AITask_RunThroughLists
+    for (U32 listIndex = 0; listIndex < aiGlobs.listCount; listIndex++)
+    {
+        if (aiGlobs.listSet[listIndex] != NULL)
+        {
+            U32 size = 1 << ((U8)listIndex & 0x1f);
+            for (U32 i = 0; i < size; i++)
+            {
+
+                lpAITask aiTask = &aiGlobs.listSet[listIndex][i];
+                if (aiTask != NULL && aiTask->nextFree == aiTask &&
+                    callback(aiTask, data))
+                {
+                    return TRUE;
+                }
+            }
+        }
+    }
 
     return FALSE;
 }
