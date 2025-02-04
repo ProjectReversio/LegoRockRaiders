@@ -142,8 +142,8 @@ typedef struct AITask_Globs
     lpAITask freeList;
     U32 listCount;
     const char* aitaskName[31];
-    const char* priorityName[27];
-    S32 priorityValues[27];
+    const char* priorityName[AI_Priority_Count];
+    AI_Priority priorityValues[AI_Priority_Count];
     lpAITask pendingTaskList;
     lpAITask creatureTaskList;
     lpLegoObject freeUnitList[50];
@@ -151,7 +151,7 @@ typedef struct AITask_Globs
     lpLegoObject freeCreatureList[50];
     U32 freeCreatureCount;
     U32 requestObjCounts[20][15][16];
-    B32 disabledPriorities[27];
+    B32 disabledPriorities[AI_Priority_Count];
     AITask_GlobFlags flags;
 } AITask_Globs;
 
@@ -180,5 +180,19 @@ extern void AITask_UnkInitRouting_FUN_00402530(lpAITask aiTask, B32 dropCarried)
 extern lpAITask AITask_InitTask_1(lpAITask aiTask, AI_Priority priorityType);
 
 extern void AITask_UpdateAll(F32 elapsedGame);
+
+extern B32 AITask_Callback_UpdateObject(struct LegoObject* liveObj, void* context);
+
+// Called during AITask_UpdateAll, to update two count-down timers for all tasks.
+extern B32 AITask_Callback_UpdateTask(lpAITask aiTask, void* context);
+
+typedef B32 (*AITask_RunThroughListsCallback)(lpAITask aiTask, void* data);
+extern B32 AITask_RunThroughLists(AITask_RunThroughListsCallback callback, void* data);
+
+extern void AITask_FUN_00402240(lpAITask* refAiTask);
+
+extern void AITask_FUN_00405b40();
+
+extern void AITask_FUN_00405880();
 
 extern void AITask_LiveObject_SetAITaskUnk(struct LegoObject* liveObj, AITask_Type taskType, struct LegoObject* liveObj2, B32 param4);

@@ -250,7 +250,115 @@ lpAITask AITask_InitTask_1(lpAITask aiTask, AI_Priority priorityType)
 
 void AITask_UpdateAll(F32 elapsedGame)
 {
-    // TODO: Implement AITask_UpdateAll
+    AI_Priority finalPriority;
+
+    const AI_Priority orePriority = aiGlobs.priorityValues[AI_Priority_Ore];
+    const AI_Priority crystalPriority = aiGlobs.priorityValues[AI_Priority_Crystal];
+    const AI_Priority constructionPriority = aiGlobs.priorityValues[AI_Priority_Construction];
+
+    // Find the highest priority
+
+    AI_Priority oreCrystalPriority = orePriority;
+
+    // If Crystal has higher than or equal priority to Ore, use Crystal
+    if (crystalPriority >= orePriority)
+    {
+        // Crystal has higher priority
+        oreCrystalPriority = crystalPriority;
+    }
+
+    // Get the highest priority of Construction and Ore/Crystal
+    if (constructionPriority >= oreCrystalPriority)
+    {
+        // Construction has higher priority
+        finalPriority = constructionPriority;
+    }
+    else
+    {
+        // Ore/Crystal has higher priority
+        finalPriority = crystalPriority;
+
+        // If Ore has higher priority than Crystal, use Ore
+        if (orePriority > crystalPriority)
+        {
+            // Ore has higher priority
+            finalPriority = orePriority;
+        }
+    }
+
+    // The final priority is the highest of Construction, Ore, and Crystal
+
+    // TODO: Why is this setting the barrier priority to the final priority plus Ore priority?
+    aiGlobs.priorityValues[AI_Priority_Barrier] = finalPriority + AI_Priority_Ore;
+
+    if ((aiGlobs.flags & AITASK_GLOB_FLAG_DISABLEUPDATES) != AITASK_GLOB_FLAG_NONE)
+        return;
+
+    AITask_RunThroughLists(AITask_Callback_UpdateTask, &elapsedGame);
+    for (lpAITask task = aiGlobs.pendingTaskList; task != NULL; task = task->next)
+    {
+        if ((task->taskType == AITask_Type_Repair && (task->flags & AITASK_FLAG_UPGRADEBUILDING) == AITASK_FLAG_NONE) &&
+            (task->targetObject->health <= 0.0f || task->targetObject->health >= 100.0f))
+        {
+            task->flags |= AITASK_FLAG_REMOVING;
+        }
+    }
+
+    AITask_FUN_00402240(&aiGlobs.pendingTaskList);
+    AITask_FUN_00402240(&aiGlobs.creatureTaskList);
+    aiGlobs.freeUnitCount = 0;
+    aiGlobs.freeCreatureCount = 0;
+
+    LegoObject_RunThroughListsSkipUpgradeParts(AITask_Callback_UpdateObject, &elapsedGame);
+
+    AITask_FUN_00405b40();
+    AITask_FUN_00405880();
+}
+
+B32 AITask_Callback_UpdateObject(lpLegoObject liveObj, void* context)
+{
+    F32* pElapsedGame = context;
+    F32 elapsedGame = *pElapsedGame;
+
+    // TODO: Implement AITask_Callback_UpdateObject
+
+    return FALSE;
+}
+
+// Called during AITask_UpdateAll, to update two count-down timers for all tasks.
+B32 AITask_Callback_UpdateTask(lpAITask aiTask, void* context)
+{
+    F32* pElapsedGame = context;
+    F32 elapsedGame = *pElapsedGame;
+
+    if ((aiTask->flags & AITASK_FLAG_NOTIMELIMIT) == AITASK_FLAG_NONE)
+        aiTask->time -= elapsedGame;
+
+    aiTask->timeIn -= elapsedGame;
+
+    return FALSE;
+}
+
+B32 AITask_RunThroughLists(AITask_RunThroughListsCallback callback, void* data)
+{
+    // TODO: Implement AITask_RunThroughLists
+
+    return FALSE;
+}
+
+void AITask_FUN_00402240(lpAITask* refAiTask)
+{
+    // TODO: Implement AITask_FUN_00402240
+}
+
+void AITask_FUN_00405b40()
+{
+    // TODO: Implement AITask_FUN_00405b40
+}
+
+void AITask_FUN_00405880()
+{
+    // TODO: Implement AITask_FUN_00405880
 }
 
 void AITask_LiveObject_SetAITaskUnk(lpLegoObject liveObj, AITask_Type taskType, lpLegoObject liveObj2, B32 param4)
