@@ -43,3 +43,5 @@ extern void Creature_Clone(lpCreatureModel srcCreature, lpCreatureModel destCrea
 
 extern void Creature_SetOrientation(lpCreatureModel creature, F32 xDir, F32 yDir);
 extern void Creature_SetPosition(lpCreatureModel creature, F32 xPos, F32 yPos, GetWorldZCallback zCallback, struct Map3D* map);
+
+extern F32 Creature_MoveAnimation(lpCreatureModel creature, F32 elapsed, U32 unkFrameNo);

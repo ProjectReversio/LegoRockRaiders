@@ -23,3 +23,4 @@ extern void Building_Hide(lpBuildingModel building, B32 hide);
 
 extern Point2I* Building_GetShapePoints(BuildingModel* building, U32* optoutShapeCount);
 
+extern F32 Building_MoveAnimation(lpBuildingModel building, F32 elapsed, U32 unkFrameNo);

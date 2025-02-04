@@ -21,3 +21,10 @@ Point2I* Building_GetShapePoints(BuildingModel* building, U32* optoutShapeCount)
 
     return building->shapePoints;
 }
+
+F32 Building_MoveAnimation(lpBuildingModel building, F32 elapsed, U32 unkFrameNo)
+{
+    // TODO: Implement Building_MoveAnimation
+
+    return 0.0f;
+}

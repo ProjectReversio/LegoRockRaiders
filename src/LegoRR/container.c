@@ -1170,6 +1170,12 @@ B32 Container_SetActivity(lpContainer cont, const char* actname)
     return result;
 }
 
+F32 Container_MoveAnimation(lpContainer cont, F32 delta)
+{
+    F32 time = Container_GetAnimationTime(cont);
+    return Container_SetAnimationTime(cont, time + delta);
+}
+
 F32 Container_GetAnimationTime(lpContainer cont)
 {
     LPDIRECT3DRMFRAME3 frame;

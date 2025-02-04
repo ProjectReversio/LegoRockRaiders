@@ -262,6 +262,8 @@ inline B32 Container_AddActivity(lpContainer cont, const char* fname, const char
 }
 extern B32 Container_SetActivity(lpContainer cont, const char* actname);
 
+extern F32 Container_MoveAnimation(lpContainer cont, F32 delta);
+
 extern F32 Container_GetAnimationTime(lpContainer cont);
 extern F32 Container_SetAnimationTime(lpContainer cont, F32 time);
 

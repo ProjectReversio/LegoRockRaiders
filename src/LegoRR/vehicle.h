@@ -19,3 +19,5 @@ extern B32 Vehicle_Load(lpVehicleModel vehicle, LegoObject_ID objID, lpContainer
 extern void Vehicle_Hide(lpVehicleModel vehicle, B32 hide);
 
 extern lpContainer Vehicle_GetActivityContainer(lpVehicleModel vehicle);
+
+extern F32 Vehicle_MoveAnimation(lpVehicleModel vehicle, F32 elapsed1, F32 elapsed2, U32 unkFrameNo);

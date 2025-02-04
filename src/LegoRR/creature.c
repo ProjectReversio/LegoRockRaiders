@@ -90,3 +90,19 @@ void Creature_SetPosition(lpCreatureModel creature, F32 xPos, F32 yPos, GetWorld
 {
     Container_SetPosition(creature->contAct, NULL, xPos, yPos, zCallback(xPos, yPos, map));
 }
+
+F32 Creature_MoveAnimation(lpCreatureModel creature, F32 elapsed, U32 unkFrameNo)
+{
+    // TEMP: Temporarily check for NULL, original doesn't have this check.
+    if (creature == NULL)
+        return 0.0f;
+
+    F32 anim = Container_MoveAnimation(creature->contAct, elapsed);
+    if (unkFrameNo > 1 && anim != 0.0f)
+    {
+        U32 frames = Container_GetAnimationFrames(creature->contAct);
+        return anim - (F32)(frames * (unkFrameNo - 1));
+    }
+
+    return anim;
+}

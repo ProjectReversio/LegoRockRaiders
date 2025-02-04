@@ -572,7 +572,11 @@ extern void LegoObject_DropCarriedObject(lpLegoObject liveObj, B32 putAway);
 
 extern F32 LegoObject_MoveAnimation(lpLegoObject liveObj, F32 elapsed);
 
+extern void LegoObject_CalculateSpeeds(lpLegoObject liveObj, F32 elapsed, F32* outRouteSpeed, F32* outTransSpeed);
+
 extern B32 LegoObject_TryDepart_FUN_004499c0(lpLegoObject liveObj);
+
+extern void LegoObject_SimpleObject_FUN_00448160(lpLegoObject liveObj, F32 elapsed);
 
 extern lpContainer LegoObject_GetDepositNull(lpLegoObject liveObj);
 

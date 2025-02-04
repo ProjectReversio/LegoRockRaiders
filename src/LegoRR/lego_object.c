@@ -945,9 +945,59 @@ void LegoObject_DropCarriedObject(lpLegoObject liveObj, B32 putAway)
 
 F32 LegoObject_MoveAnimation(lpLegoObject liveObj, F32 elapsed)
 {
-    // TODO: Implement LegoObject_MoveAnimation
+    F32 routeSpeed;
+    F32 transSpeed;
+    LegoObject_CalculateSpeeds(liveObj, elapsed, &routeSpeed, &transSpeed);
+
+    if ((liveObj->flags1 & LIVEOBJ1_UNK_4000) != LIVEOBJ1_NONE)
+        goto endFunc;
+
+    LegoObject_Type objType = liveObj->type;
+
+    if (objType == LegoObject_Vehicle)
+    {
+        liveObj->animTime = Vehicle_MoveAnimation(liveObj->vehicle, transSpeed, elapsed, liveObj->animRepeat);
+    }
+    else if (objType == LegoObject_MiniFigure)
+    {
+        liveObj->animTime = Creature_MoveAnimation(liveObj->miniFigure, transSpeed, liveObj->animRepeat);
+    }
+    else if (objType == LegoObject_RockMonster)
+    {
+        liveObj->animTime = Creature_MoveAnimation(liveObj->rockMonster, transSpeed, liveObj->animRepeat);
+    }
+    else if (objType == LegoObject_Building)
+    {
+        liveObj->animTime = Building_MoveAnimation(liveObj->building, transSpeed, liveObj->animRepeat);
+    }
+    else
+    {
+        if ((liveObj->flags3 & LIVEOBJ3_SIMPLEOBJECT) != LIVEOBJ3_NONE)
+        {
+            LegoObject_SimpleObject_FUN_00448160(liveObj, elapsed);
+            goto endFunc;
+        }
+
+        if (objType != LegoObject_UpgradePart)
+            goto endFunc;
+
+        liveObj->animTime = Upgrade_Part_MoveAnimation(liveObj->upgradePart, transSpeed, liveObj->animRepeat);
+    }
+
+endFunc:
+    if (liveObj->animTime > 0.0f)
+        AITask_LiveObject_Unk_UpdateAITask_AnimationWait(liveObj);
 
     return elapsed;
+}
+
+void LegoObject_CalculateSpeeds(lpLegoObject liveObj, F32 elapsed, F32* outRouteSpeed, F32* outTransSpeed)
+{
+    // TODO: Implement LegoObject_CalculateSpeeds
+
+    // TEMP: Set to 1.0f for now
+    *outRouteSpeed = 1.0f;
+    *outTransSpeed = 1.0f;
 }
 
 B32 LegoObject_TryDepart_FUN_004499c0(lpLegoObject liveObj)
@@ -955,6 +1005,11 @@ B32 LegoObject_TryDepart_FUN_004499c0(lpLegoObject liveObj)
     // TODO: Implement LegoObject_TryDepart_FUN_004499c0
 
     return FALSE;
+}
+
+void LegoObject_SimpleObject_FUN_00448160(lpLegoObject liveObj, F32 elapsed)
+{
+    // TODO: Implement LegoObject_SimpleObject_FUN_00448160
 }
 
 lpContainer LegoObject_GetDepositNull(lpLegoObject liveObj)
