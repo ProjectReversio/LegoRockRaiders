@@ -1043,6 +1043,15 @@ void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
     // TODO: Implement LegoObject_Route_UpdateMovement
 }
 
+B32 LegoObject_FUN_004439d0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockPos, U32 unused)
+{
+    // TODO: Implement LegoObject_FUN_004439d0
+
+    outBlockPos->x = blockPos->x;
+    outBlockPos->y = blockPos->y;
+    return FALSE;
+}
+
 // Update energy drain while carrying and attempt to rest when needed
 void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed)
 {
@@ -1052,4 +1061,14 @@ void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed)
 void LegoObject_RockMonster_FUN_0043ad70(lpLegoObject liveObj)
 {
     // TODO: Implement LegoObject_RockMonster_FUN_0043ad70
+}
+
+B32 LegoObject_GetBlockPos(lpLegoObject liveObj, S32* outBx, S32* outBy)
+{
+    lpContainer cont = LegoObject_GetActivityContainer(liveObj);
+
+    Point3F position;
+    Container_GetPosition(cont, NULL, &position);
+
+    return Map3D_WorldToBlockPos_NoZ(Lego_GetMap(), position.x, position.y, outBx, outBy);
 }

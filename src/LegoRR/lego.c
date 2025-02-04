@@ -3755,6 +3755,21 @@ void Lego_HandleRadarInput()
     // TODO: Implement Lego_HandleRadarInput
 }
 
+// Returns TRUE if liveObj (or its drivenObj) is the first-person unit.
+// BUG: When in topdown view, returns TRUE if the objectFP is not NULL and matches the unit's
+// drivenObj.
+// TODO: Fix vanilla bug
+B32 Lego_IsFPObject(lpLegoObject liveObj)
+{
+    if ((legoGlobs.viewMode != ViewMode_FP || liveObj != legoGlobs.objectFP) &&
+        (liveObj->driveObject == NULL || liveObj->driveObject != legoGlobs.objectFP))
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
 B32 Lego_UpdateAll3DSounds(B32 stopAll)
 {
     return LegoObject_RunThroughListsSkipUpgradeParts(Lego_UpdateObject3DSounds, &stopAll);

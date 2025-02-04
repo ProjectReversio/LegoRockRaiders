@@ -588,7 +588,11 @@ extern void LegoObject_Proc_FUN_0043c7f0(lpLegoObject liveObj);
 
 extern void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed);
 
+extern B32 LegoObject_FUN_004439d0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockPos, U32 unused);
+
 // Update energy drain while carrying and attempt to rest when needed
 extern void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed);
 
 extern void LegoObject_RockMonster_FUN_0043ad70(lpLegoObject liveObj);
+
+extern B32 LegoObject_GetBlockPos(lpLegoObject liveObj, S32* outBx, S32* outBy);

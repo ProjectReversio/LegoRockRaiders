@@ -147,6 +147,30 @@ lpAITask AITask_Create(AITask_Type taskType)
     return task;
 }
 
+// levelCleanup is only true when called by `AITask_Callback_Remove`.
+void AITask_Remove(lpAITask aiTask, B32 levelCleanup)
+{
+    if (!levelCleanup)
+    {
+        // Extra removal behaviour that should NOT be called during level cleanup.
+        AITask_RemoveGetToolReferences(aiTask);
+    }
+
+    if (aiTask->unitList != NULL &&
+        (aiTask->flags & AITASK_FLAG_CLONED) == AITASK_FLAG_NONE)
+    {
+        Mem_Free(aiTask->unitList);
+    }
+
+    aiTask->nextFree = aiGlobs.freeList;
+    aiGlobs.freeList = aiTask;
+}
+
+void AITask_RemoveGetToolReferences(lpAITask aiTask)
+{
+    // TODO: Implement AITask_RemoveGetToolReferences
+}
+
 void AITask_Game_SetNoGather(B32 noGather)
 {
     // TODO: Implement AITask_Game_SetNoGather
@@ -320,8 +344,58 @@ B32 AITask_Callback_UpdateObject(lpLegoObject liveObj, void* context)
     F32* pElapsedGame = context;
     F32 elapsedGame = *pElapsedGame;
 
+    aiGlobs.flags |= AITASK_GLOB_FLAG_UPDATINGOBJECT;
+
+    if ((liveObj->flags3 & LIVEOBJ3_AITASK_UNK_400000) == LIVEOBJ3_NONE ||
+        liveObj->health <= 0.0f ||
+        Lego_IsFPObject(liveObj) ||
+        (liveObj->driveObject != NULL && liveObj->type == LegoObject_MiniFigure) ||
+        liveObj->carryingThisObject != NULL ||
+        (liveObj->flags2 & (LIVEOBJ2_FROZEN | LIVEOBJ2_PUSHED)) != LIVEOBJ2_NONE ||
+        (liveObj->flags1 & LIVEOBJ1_RUNNINGAWAY) != LIVEOBJ1_NONE)
+    {
+        goto endFunc;
+    }
+
+    if (liveObj->aiTask == NULL)
+    {
+        Point2I pos;
+        pos.x = 0;
+        pos.y = 0;
+
+
+        liveObj->aiTimer_338 += elapsedGame;
+        Point2I blockPos;
+        LegoObject_GetBlockPos(liveObj, &blockPos.x, &blockPos.y);
+
+        if (liveObj->aiTimer_338 == elapsedGame ||
+            (liveObj->flags4 & (LIVEOBJ4_ENTRANCEOCCUPIED | LIVEOBJ4_DOCKOCCUPIED)) != LIVEOBJ4_NONE ||
+            !LegoObject_FUN_004439d0(liveObj, &blockPos, &pos, 0))
+        {
+            // TODO: Implement AITask_Callback_UpdateObject
+        }
+        else if (pos.x != 0 && pos.y != 0)
+        {
+            liveObj->aiTask = AITask_Create(AITask_Type_Goto);
+            liveObj->aiTask->blockPos.x = pos.x;
+            liveObj->aiTask->blockPos.y = pos.y;
+        }
+
+        goto endFunc;
+    }
+    liveObj->aiTimer_338 = 0.0f;
+
+    if ((liveObj->aiTask->flags & AITASK_FLAG_REMOVING) != AITASK_FLAG_NONE)
+    {
+        AITask_LiveObject_FUN_00404110(liveObj);
+        LegoObject_Route_End(liveObj, FALSE);
+        goto endFunc;
+    }
+
     // TODO: Implement AITask_Callback_UpdateObject
 
+endFunc:
+    aiGlobs.flags &= ~AITASK_GLOB_FLAG_UPDATINGOBJECT;
     return FALSE;
 }
 
@@ -380,4 +454,33 @@ void AITask_FUN_00405880()
 void AITask_LiveObject_SetAITaskUnk(lpLegoObject liveObj, AITask_Type taskType, lpLegoObject liveObj2, B32 param4)
 {
     // TODO: Implement AITask_LiveObject_SetAITaskUnk
+}
+
+void AITask_LiveObject_FUN_00404110(lpLegoObject liveObj)
+{
+    if (liveObj->aiTask == NULL)
+        return;
+
+    lpAITask aiTask = liveObj->aiTask;
+    liveObj->aiTask = liveObj->aiTask->next;
+
+    if ((aiTask->flags & AITASK_FLAG_REALLOCATE) != AITASK_FLAG_NONE &&
+        (aiTask->flags & AITASK_FLAG_REMOVING) == AITASK_FLAG_NONE)
+    {
+        // Prepend to linked list.
+        aiTask->next = aiGlobs.pendingTaskList;
+        aiGlobs.pendingTaskList = aiTask;
+        return;
+    }
+
+    if ((aiTask->flags & AITASK_FLAG_CREATUREREALLOCATE) != AITASK_FLAG_NONE &&
+        (aiTask->flags & AITASK_FLAG_REMOVING) == AITASK_FLAG_NONE)
+    {
+        // Prepend to linked list.
+        aiTask->next = aiGlobs.creatureTaskList;
+        aiGlobs.creatureTaskList = aiTask;
+        return;
+    }
+
+    AITask_Remove(aiTask, FALSE);
 }
