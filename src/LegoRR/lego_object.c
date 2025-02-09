@@ -1045,7 +1045,19 @@ void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
 
 B32 LegoObject_CheckBlock_FUN_00443b00(lpLegoObject liveObj, Point2I* blockPos, void* data)
 {
-    // TODO: Implement LegoObject_CheckBlock_FUN_00443b00
+    B32* pAllowWall = (B32*)data;
+    B32 allowWall = *pAllowWall;
+
+    if (!allowWall && Level_Block_IsWall(blockPos->x, blockPos->y))
+        return FALSE;
+
+    CrossTerrainType type = Lego_GetCrossTerrainType(liveObj, blockPos->x, blockPos->y, blockPos->x, blockPos->y, TRUE);
+    if (type != CrossTerrainType_CantCross &&
+        !LiveObject_GetDamageFromSurface(liveObj, blockPos->x, blockPos->y, 0.0f, NULL) &&
+        !Level_Block_IsFoundationOrBusyFloor(blockPos))
+    {
+        return TRUE;
+    }
 
     return FALSE;
 }
@@ -1106,4 +1118,11 @@ B32 LegoObject_GetBlockPos(lpLegoObject liveObj, S32* outBx, S32* outBy)
     Container_GetPosition(cont, NULL, &position);
 
     return Map3D_WorldToBlockPos_NoZ(Lego_GetMap(), position.x, position.y, outBx, outBy);
+}
+
+B32 LiveObject_GetDamageFromSurface(lpLegoObject liveObj, S32 bx, S32 by, F32 elapsedGame, F32* optOutDamage)
+{
+    // TODO: Implement LiveObject_GetDamageFromSurface
+
+    return FALSE;
 }

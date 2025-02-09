@@ -713,10 +713,30 @@ B32 Level_Block_IsLava(Point2I* blockPos)
     return legoGlobs.currLevel->blocks[blockPos->y * legoGlobs.currLevel->width + blockPos->x].terrain == Lego_SurfaceType8_Lava;
 }
 
+// Generally used to tell Rock Monsters where they can't go.
+B32 Level_Block_IsFoundationOrBusyFloor(Point2I* blockPos)
+{
+    if ((legoGlobs.currLevel->blocks[blockPos->y * legoGlobs.currLevel->width + blockPos->x].flags1 & (BLOCK1_FOUNDATION | BLOCK1_BUSY_FLOOR)) == BLOCK1_NONE)
+        return FALSE;
+
+    return TRUE;
+}
+
 B32 Level_Block_IsSurveyed(U32 bx, U32 by)
 {
     if (bx < legoGlobs.currLevel->width - 1 && by < legoGlobs.currLevel->height - 1)
         return legoGlobs.currLevel->blocks[by * legoGlobs.currLevel->width + bx].flags1 & BLOCK1_SURVEYED;
+
+    return FALSE;
+}
+
+B32 Level_Block_IsWall(U32 bx, U32 by)
+{
+    if (bx < legoGlobs.currLevel->width - 1 && by < legoGlobs.currLevel->height - 1)
+    {
+        return (legoGlobs.currLevel->blocks[by * legoGlobs.currLevel->width + bx].flags1 & BLOCK1_WALL) != BLOCK1_NONE &&
+               (legoGlobs.currLevel->blocks[by * legoGlobs.currLevel->width + bx].flags1 & BLOCK1_FLOOR) == BLOCK1_NONE;
+    }
 
     return FALSE;
 }
@@ -734,4 +754,12 @@ void Level_BlockActivity_UpdateAll(lpLego_Level level, F32 elapsedGame)
 void Level_UpdateEffects(lpLego_Level level, F32 elapsedGame)
 {
     // TODO: Implement Level_UpdateEffects
+}
+
+// 0 = Can't Cross, 1 = Can Cross (floor), 2 = diagonal, 3 = wall
+CrossTerrainType Lego_GetCrossTerrainType(lpLegoObject liveObj, S32 bx1, S32 by1, S32 bx2, S32 by2, B32 param6)
+{
+    // TODO: Implement Lego_GetCrossTerrainType
+
+    return CrossTerrainType_CantCross;
 }

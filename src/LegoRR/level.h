@@ -4,6 +4,14 @@
 #include "lego.h"
 #include "search.h"
 
+typedef enum CrossTerrainType //: U32
+{
+    CrossTerrainType_CantCross = 0,
+    CrossTerrainType_CanCross = 1,
+    CrossTerrainType_Diagonal = 2,
+    CrossTerrainType_Wall = 3,
+} CrossTerrainType;
+
 extern B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern);
 
 extern Lego_SurfaceType Level_Block_ChoosePathTexture(S32 bx, S32 by, U8* ref_direction, B32 powered);
@@ -22,10 +30,18 @@ extern B32 Level_FindSelectedUnit_BlockCheck_FUN_00431960(U32 bx, U32 by, B32 pa
 
 extern B32 Level_Block_IsImmovable(Point2I* blockPos);
 extern B32 Level_Block_IsLava(Point2I* blockPos);
+
+// Generally used to tell Rock Monsters where they can't go.
+extern B32 Level_Block_IsFoundationOrBusyFloor(Point2I* blockPos);
+
 extern B32 Level_Block_IsSurveyed(U32 bx, U32 by);
+extern B32 Level_Block_IsWall(U32 bx, U32 by);
 
 extern void Level_Block_SetBusy(Point2I* blockPos, B32 state);
 
 extern void Level_BlockActivity_UpdateAll(lpLego_Level level, F32 elapsedGame);
 
 extern void Level_UpdateEffects(lpLego_Level level, F32 elapsedGame);
+
+// 0 = Can't Cross, 1 = Can Cross (floor), 2 = diagonal, 3 = wall
+extern CrossTerrainType Lego_GetCrossTerrainType(struct LegoObject* liveObj, S32 bx1, S32 by1, S32 bx2, S32 by2, B32 param6);

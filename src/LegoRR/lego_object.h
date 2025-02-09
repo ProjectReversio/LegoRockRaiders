@@ -600,3 +600,5 @@ extern void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed);
 extern void LegoObject_RockMonster_FUN_0043ad70(lpLegoObject liveObj);
 
 extern B32 LegoObject_GetBlockPos(lpLegoObject liveObj, S32* outBx, S32* outBy);
+
+extern B32 LiveObject_GetDamageFromSurface(lpLegoObject liveObj, S32 bx, S32 by, F32 elapsedGame, F32* optOutDamage);
