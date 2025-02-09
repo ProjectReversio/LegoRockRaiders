@@ -1043,13 +1043,48 @@ void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
     // TODO: Implement LegoObject_Route_UpdateMovement
 }
 
+B32 LegoObject_CheckBlock_FUN_00443b00(lpLegoObject liveObj, Point2I* blockPos, void* data)
+{
+    // TODO: Implement LegoObject_CheckBlock_FUN_00443b00
+
+    return FALSE;
+}
+
+B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, S32** outNewBXs, S32** outNewBYs, U32* outCount, LegoObject_CheckBlock_Callback callback, void* data)
+{
+    // TODO: Implement LegoObject_Route_Score_FUN_004413b0
+
+    return FALSE;
+}
+
 B32 LegoObject_FUN_004439d0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockPos, U32 unused)
 {
-    // TODO: Implement LegoObject_FUN_004439d0
+    B32 allowWall = FALSE;
 
-    outBlockPos->x = blockPos->x;
-    outBlockPos->y = blockPos->y;
-    return FALSE;
+    if (LegoObject_CheckBlock_FUN_00443b00(liveObj, blockPos, &allowWall))
+        return FALSE;
+
+    S32* newBXs;
+    S32* newBYs;
+    S32 newCount;
+    // So calling this function a second time with the same arguments seems to have
+    // a different result. Most likely because of the utilized global variables
+    // within.
+    // Note that none of the out variables are read during the function call, only
+    // written.
+    if (!LegoObject_Route_Score_FUN_004413b0(liveObj, blockPos->x, blockPos->y, 0, 0, &newBXs, &newBYs, &newCount, LegoObject_CheckBlock_FUN_00443b00, &allowWall) &&
+        !LegoObject_Route_Score_FUN_004413b0(liveObj, blockPos->x, blockPos->y, 0, 0, &newBXs, &newBYs, &newCount, LegoObject_CheckBlock_FUN_00443b00, &allowWall))
+    {
+        return FALSE;
+    }
+
+    // TODO: Verify that this is correct
+    outBlockPos->x = newBXs[newCount * 4 - 4];
+    outBlockPos->y = newBYs[newCount * 4 - 4];
+
+    Mem_Free(newBXs);
+    Mem_Free(newBYs);
+    return TRUE;
 }
 
 // Update energy drain while carrying and attempt to rest when needed

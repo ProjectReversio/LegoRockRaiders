@@ -588,6 +588,10 @@ extern void LegoObject_Proc_FUN_0043c7f0(lpLegoObject liveObj);
 
 extern void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed);
 
+typedef B32 (*LegoObject_CheckBlock_Callback)(lpLegoObject liveObj, Point2I* blockPos, void* data);
+extern B32 LegoObject_CheckBlock_FUN_00443b00(lpLegoObject liveObj, Point2I* blockPos, void* data);
+extern B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, S32** outNewBXs, S32** outNewBYs, U32* outCount, LegoObject_CheckBlock_Callback callback, void* data);
+
 extern B32 LegoObject_FUN_004439d0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockPos, U32 unused);
 
 // Update energy drain while carrying and attempt to rest when needed
