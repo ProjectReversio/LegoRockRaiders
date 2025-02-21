@@ -30,6 +30,7 @@ extern B32 Level_FindSelectedUnit_BlockCheck_FUN_00431960(U32 bx, U32 by, B32 pa
 
 extern B32 Level_Block_IsImmovable(Point2I* blockPos);
 extern B32 Level_Block_IsLava(Point2I* blockPos);
+extern B32 Level_Block_IsPath(Point2I* blockPos);
 
 // Generally used to tell Rock Monsters where they can't go.
 extern B32 Level_Block_IsFoundationOrBusyFloor(Point2I* blockPos);

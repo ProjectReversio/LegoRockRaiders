@@ -713,6 +713,22 @@ B32 Level_Block_IsLava(Point2I* blockPos)
     return legoGlobs.currLevel->blocks[blockPos->y * legoGlobs.currLevel->width + blockPos->x].terrain == Lego_SurfaceType8_Lava;
 }
 
+B32 Level_Block_IsPath(Point2I* blockPos)
+{
+    // TODO: Cleanup decompiled code
+    S32 x;
+    S32 y;
+
+    x = blockPos->x;
+    if (((x > -1 && (y = blockPos->y, y > -1)) && (x < (S32)legoGlobs.currLevel->width)) &&
+        (y < (S32)legoGlobs.currLevel->height))
+    {
+        return (legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * y + x].flags1 & BLOCK1_PATH);
+    }
+
+    return FALSE;
+}
+
 // Generally used to tell Rock Monsters where they can't go.
 B32 Level_Block_IsFoundationOrBusyFloor(Point2I* blockPos)
 {

@@ -460,7 +460,7 @@ typedef struct LegoObject_Globs
     SFX_ID objectTtSFX[20][15]; // [objType:20][objIndex:15] (cfg: ObjTtSFXs)
     const char* activityName[79]; // [activityType:79]
 
-    void* UnkSurfaceGrid_1_TABLE;
+    F32* UnkSurfaceGrid_1_TABLE;
     void* UnkSurfaceGrid_2_TABLE;
     U32 UnkSurfaceGrid_COUNT;
     F32 radarSurveyCycleTimer; // Timer for how often survey scans update.
@@ -591,6 +591,7 @@ extern void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed);
 typedef B32 (*LegoObject_CheckBlock_Callback)(lpLegoObject liveObj, Point2I* blockPos, void* data);
 extern B32 LegoObject_CheckBlock_FUN_00443b00(lpLegoObject liveObj, Point2I* blockPos, void* data);
 extern B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, S32** outNewBXs, S32** outNewBYs, U32* outCount, LegoObject_CheckBlock_Callback callback, void* data);
+extern B32 LegoObject_Route_ScoreSub_FUN_00440f30(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, U32** outNewBXs, U32** outNewBYs, U32* outCount, LegoObject_CheckBlock_Callback callback, void* data);
 
 extern B32 LegoObject_FUN_004439d0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockPos, U32 unused);
 

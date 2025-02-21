@@ -1064,8 +1064,280 @@ B32 LegoObject_CheckBlock_FUN_00443b00(lpLegoObject liveObj, Point2I* blockPos, 
 
 B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, S32** outNewBXs, S32** outNewBYs, U32* outCount, LegoObject_CheckBlock_Callback callback, void* data)
 {
-    // TODO: Implement LegoObject_Route_Score_FUN_004413b0
+    // TODO: Implement LegoObject_Route_Score_FUN_004413b0 (current implementation is broken)
+    /*
+    // TODO: Cleanup this decompiled code
 
+    S32 fStack_fd4; // TODO: Name correctly
+
+    U32 uStack_4 = 0x4413ba; // TODO: What?
+
+    U32 auStack_fc0[9]; // TODO: What?
+    auStack_fc0[0] = 0;
+    auStack_fc0[1] = 0xffffffff;
+    auStack_fc0[2] = 1;
+    auStack_fc0[3] = 0;
+    auStack_fc0[4] = 0;
+    auStack_fc0[5] = 1;
+    auStack_fc0[6] = 0xffffffff;
+    auStack_fc0[7] = 0;
+
+    S32 iStack_fec = 0; // TODO: Name correctly
+
+    B32 bVar3 = FALSE; // TODO: Name correctly
+
+    lpMap3D map = Lego_GetMap();
+    U32 blockWidth = map->blockWidth;
+    U32 blockHeight = map->blockHeight;
+
+    if (bx >= blockWidth || by >= blockHeight)
+        return FALSE;
+
+    if (callback == NULL)
+    {
+        if (bx2 >= blockWidth || by2 >= blockHeight)
+            return FALSE;
+
+        if (Lego_GetCrossTerrainType(liveObj, bx2, by2, bx2, by2, FALSE) == CrossTerrainType_CantCross)
+            return FALSE;
+    }
+
+    if (objectGlobs.UnkSurfaceGrid_1_TABLE != NULL)
+    {
+        if (objectGlobs.UnkSurfaceGrid_COUNT == blockWidth * blockHeight)
+            goto someLabel;
+
+        if (objectGlobs.UnkSurfaceGrid_1_TABLE != NULL)
+        {
+            Mem_Free(objectGlobs.UnkSurfaceGrid_1_TABLE);
+        }
+    }
+
+    objectGlobs.UnkSurfaceGrid_COUNT = blockWidth * blockHeight;
+    objectGlobs.UnkSurfaceGrid_1_TABLE = Mem_Alloc(objectGlobs.UnkSurfaceGrid_COUNT * sizeof(F32)); // TODO: Should this be sizeof(F32), sizeof another type, or just 4?
+
+someLabel:
+    if (objectGlobs.UnkSurfaceGrid_1_TABLE != NULL)
+    {
+        memset(objectGlobs.UnkSurfaceGrid_1_TABLE, 0, blockWidth * blockHeight);
+
+        S32 fStack_ffc = 1;
+
+        U32 auStack_fdc[2];
+        auStack_fdc[0] = 1;
+
+        U32* puStack_1008 = auStack_fdc;
+
+        U32 uStack_1000 = 0;
+
+        objectGlobs.UnkSurfaceGrid_1_TABLE[by * blockWidth + bx] = 1.0f;
+
+        auStack_fc0[8] = bx;
+        U32 uStack_f9c = by;
+        auStack_fdc[1] = 0;
+
+        do
+        {
+            fStack_ffc++;
+
+            U32 uStack_fe4 = 0;
+            if (*puStack_1008 != 0)
+            {
+                U32* puVar7 = auStack_fc0 + uStack_1000 * 500 + 9;
+                do
+                {
+                    // TODO: Is this correct?
+                    //F32 fVar2 = *(F32 *)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + (blockWidth * *puVar7 + puVar7[-1]) * 4);
+                    F32 fVar2 = objectGlobs.UnkSurfaceGrid_1_TABLE[blockWidth * *puVar7 + puVar7[-1]] * 4;
+
+                    S32 iStack_100c = 0;
+                    do
+                    {
+                        U32 uVar8 = puVar7[-1];
+                        U32 uVar11 = *puVar7;
+
+                        if (iStack_100c == 0)
+                            uVar11--;
+                        else if (iStack_100c == 1)
+                            uVar8++;
+                        else if (iStack_100c == 2)
+                            uVar11++;
+                        else if (iStack_100c == 3)
+                            uVar8--;
+
+                        if (uVar8 < blockWidth && uVar11 < blockHeight)
+                        {
+                            F32 fStack_ff8 = 1.0f;
+                            U32 uVar9 = auStack_fc0[iStack_100c * 2];
+                            U32 uVar6 = auStack_fc0[iStack_100c * 2 + 1];
+                            Point2I PStack_fc8;
+                            PStack_fc8.x = uVar9 + uVar8;
+                            PStack_fc8.y = uVar6 + uVar11;
+
+                            if (Level_Block_IsPath(&PStack_fc8))
+                                fStack_ff8 = 0.5f;
+
+                            S32 iVar4;
+                            F32* pfVar1;
+                            CrossTerrainType type = Lego_GetCrossTerrainType(liveObj, uVar8, uVar11, uVar9 + uVar8, uVar6 + uVar11, FALSE);
+                            // TODO: WTF is this if statement?
+                            if (type != CrossTerrainType_CantCross &&
+                                (iVar4 = uVar11 * blockWidth + uVar8,
+                                pfVar1 = (F32*)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + iVar4 * sizeof(F32)),
+                                *(F32*)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + iVar4 * sizeof(F32)) == 0.0f || (fStack_ff8 + fVar2 < *pfVar1)))
+                            {
+                                uVar6 = (U32)(uStack_1000 == 0);
+                                uVar9 = auStack_fdc[uVar6];
+                                iVar4 = uVar9 + uVar6 * 100;
+                                *pfVar1 = fStack_ff8 + fVar2;
+                                auStack_fc0[iVar4 * 5 + 8] = uVar8;
+                                auStack_fc0[iVar4 * 5 + 9] = uVar11;
+                                auStack_fdc[uVar6] = uVar9 + 1;
+
+                                if (callback == NULL)
+                                {
+                                    if (uVar8 == bx2 && uVar11 == by2)
+                                    {
+                                        bVar3 = TRUE;
+                                        fStack_fd4 = fStack_ffc;
+                                    }
+                                }
+                                else
+                                {
+                                    Point2I PStack_fd0;
+                                    PStack_fd0.x = uVar8;
+                                    PStack_fd0.y = uVar11;
+                                    if (callback(liveObj, &PStack_fd0, data))
+                                    {
+                                        iStack_fec = 1;
+                                        bx2 = uVar8;
+                                        by2 = uVar11;
+                                    }
+                                }
+                            }
+                        }
+
+                        iStack_100c++;
+                    } while (iStack_100c < 4);
+
+                    uStack_fe4++;
+                    puVar7 += 5;
+                } while (uStack_fe4 < *puStack_1008);
+            }
+
+            *puStack_1008 = 0;
+            uStack_1000 = (U32)(uStack_1000 == 0);
+            puStack_1008 = auStack_fdc + uStack_1000;
+            if (auStack_fdc[uStack_1000] == 0)
+            {
+                iStack_fec = -1;
+            }
+
+        } while (iStack_fec == 0);
+
+        if (bVar3)
+        {
+            iStack_fec = 1;
+            fStack_ffc = fStack_fd4; // TODO: fStack_fd4 might not be initialized here
+        }
+
+        if (iStack_fec == -1)
+            return FALSE;
+
+        U32* puVar7 = Mem_Alloc(fStack_ffc * sizeof(U32));
+        U32* buffer;
+        if (puVar7 != NULL && (buffer = Mem_Alloc(fStack_ffc * sizeof(U32)), buffer != NULL))
+        {
+            S32 iVar4 = fStack_ffc - 1;
+            puVar7[iVar4] = bx2;
+            U32* puStack_ff0 = buffer + iVar4;
+            *puStack_ff0 = by2;
+            *puVar7 = bx;
+            *buffer = by;
+
+            if (iVar4 != 1)
+            {
+                U32 uStack_fe4 = fStack_ffc - 2;
+                U32 uVar8 = bx2;
+                U32 uVar11 = by2;
+                do
+                {
+                    F32 fStack_1008 = 10000.0f;
+                    S32 iStack_100c = 0;
+                    do
+                    {
+                        U32 uVar9 = uVar8;
+                        U32 uVar6;
+                        if (iStack_100c == 0)
+                        {
+                            uVar6 = uVar11 - 1;
+                        }
+                        else
+                        {
+                            uVar6 = uVar11;
+                            if (iStack_100c == 1)
+                                uVar9 = uVar8 + 1;
+                            else if (iStack_100c == 2)
+                                uVar6 = uVar11 + 1;
+                            else if (iStack_100c == 3)
+                                uVar9 = uVar8 - 1;
+                        }
+
+                        Point2I PStack_fd0;
+                        PStack_fd0.x = uVar9;
+                        PStack_fd0.y = uVar6;
+
+                        if ((uVar9 < blockWidth && uVar6 < blockHeight) &&
+                            (fStack_fd4 = (S32)(*(F32*)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + (uVar11 * blockWidth + uVar8) * sizeof(F32)) -
+                                *(F32*)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + (uVar6 * blockWidth + uVar9) * sizeof(F32)),
+                                fStack_fd4 > 0.0f && ((F32)fStack_fd4 < (F32)fStack_1008))) ||
+                                ((F32)fStack_fd4 == (F32)fStack_1008 &&
+                                    (Level_Block_IsPath(&PStack_fd0))))
+                        {
+                            fStack_1008 = fStack_fd4;
+                            auStack_fdc[0] = uVar9;
+                            auStack_fdc[1] = uVar6;
+                        }
+
+                        iStack_100c++;
+                    } while (iStack_100c < 4);
+
+                    puStack_ff0--;
+                    *(U32*)(((S32)puVar7 - (S32)buffer) + (S32)puStack_ff0) = auStack_fdc[0];
+                    *puStack_ff0 = auStack_fdc[1];
+                    uStack_fe4--;
+                    uVar8 = auStack_fdc[0];
+                    uVar11 = auStack_fdc[1];
+                } while (uStack_fe4 != 0);
+            }
+
+            *outNewBXs = (S32*)puVar7;
+            *outNewBYs = (S32*)buffer;
+            *outCount = fStack_ffc;
+
+            U32 uVar8;
+            U32 uVar11;
+            if ((*puVar7 != puVar7[1] ||
+                (uVar8 = (S32)(*buffer - buffer[1]) >> 0x1f, (*buffer - buffer[1] ^ uVar8) - uVar8 != 1)) &&
+                ((*buffer != buffer[1] ||
+                    (uVar8 = *puVar7 - puVar7[1], uVar11 = (S32)uVar8 >> 0x1f,
+                    (uVar8 ^ uVar11) - uVar11 != 1))))
+            {
+                Mem_Free(puVar7);
+                Mem_Free(buffer);
+
+                return LegoObject_Route_ScoreSub_FUN_00440f30(liveObj, bx, by, bx2, by2, (U32**) outNewBXs, (U32**) outNewBYs, (U32*) outCount, callback, data);
+            }
+        }
+    }
+
+    return TRUE;*/
+
+    return FALSE;
+}
+
+B32 LegoObject_Route_ScoreSub_FUN_00440f30(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, U32** outNewBXs, U32** outNewBYs, U32* outCount, LegoObject_CheckBlock_Callback callback, void* data)
+{
     return FALSE;
 }
 
