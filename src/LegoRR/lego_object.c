@@ -1064,27 +1064,17 @@ B32 LegoObject_CheckBlock_FUN_00443b00(lpLegoObject liveObj, Point2I* blockPos, 
 
 B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, S32** outNewBXs, S32** outNewBYs, U32* outCount, LegoObject_CheckBlock_Callback callback, void* data)
 {
-    // TODO: Implement LegoObject_Route_Score_FUN_004413b0 (current implementation is broken)
-    /*
     // TODO: Cleanup this decompiled code
 
-    S32 fStack_fd4; // TODO: Name correctly
-
-    U32 uStack_4 = 0x4413ba; // TODO: What?
-
-    U32 auStack_fc0[9]; // TODO: What?
-    auStack_fc0[0] = 0;
-    auStack_fc0[1] = 0xffffffff;
-    auStack_fc0[2] = 1;
-    auStack_fc0[3] = 0;
-    auStack_fc0[4] = 0;
-    auStack_fc0[5] = 1;
-    auStack_fc0[6] = 0xffffffff;
-    auStack_fc0[7] = 0;
-
-    S32 iStack_fec = 0; // TODO: Name correctly
-
-    B32 bVar3 = FALSE; // TODO: Name correctly
+    U32 OFFSETS[10];
+    OFFSETS[0] = 0;
+    OFFSETS[1] = 0xffffffff;
+    OFFSETS[2] = 1;
+    OFFSETS[3] = 0;
+    OFFSETS[4] = 0;
+    OFFSETS[5] = 1;
+    OFFSETS[6] = 0xffffffff;
+    OFFSETS[7] = 0;
 
     lpMap3D map = Lego_GetMap();
     U32 blockWidth = map->blockWidth;
@@ -1114,141 +1104,140 @@ B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U3
     }
 
     objectGlobs.UnkSurfaceGrid_COUNT = blockWidth * blockHeight;
-    objectGlobs.UnkSurfaceGrid_1_TABLE = Mem_Alloc(objectGlobs.UnkSurfaceGrid_COUNT * sizeof(F32)); // TODO: Should this be sizeof(F32), sizeof another type, or just 4?
+    objectGlobs.UnkSurfaceGrid_1_TABLE = Mem_Alloc(objectGlobs.UnkSurfaceGrid_COUNT * sizeof(F32));
 
 someLabel:
     if (objectGlobs.UnkSurfaceGrid_1_TABLE != NULL)
     {
-        memset(objectGlobs.UnkSurfaceGrid_1_TABLE, 0, blockWidth * blockHeight);
+        B32 someBool = FALSE;
+        S32 status = 0;
+        S32 theCount;
+        memset(objectGlobs.UnkSurfaceGrid_1_TABLE, 0, blockWidth * blockHeight * sizeof(F32));
 
-        S32 fStack_ffc = 1;
+        S32 count = 1;
 
-        U32 auStack_fdc[2];
-        auStack_fdc[0] = 1;
+        U32 coords[2];
+        coords[0] = 1;
 
-        U32* puStack_1008 = auStack_fdc;
+        U32* pCoords = coords;
 
-        U32 uStack_1000 = 0;
+        U32 specialNum = 0;
 
         objectGlobs.UnkSurfaceGrid_1_TABLE[by * blockWidth + bx] = 1.0f;
 
-        auStack_fc0[8] = bx;
-        U32 uStack_f9c = by;
-        auStack_fdc[1] = 0;
+        OFFSETS[8] = bx;
+        OFFSETS[9] = by;
+        coords[1] = 0;
 
         do
         {
-            fStack_ffc++;
+            count++;
 
-            U32 uStack_fe4 = 0;
-            if (*puStack_1008 != 0)
+            U32 iterator2 = 0;
+            if (pCoords[0] != 0)
             {
-                U32* puVar7 = auStack_fc0 + uStack_1000 * 500 + 9;
+                U32* dataIterator = OFFSETS + specialNum * 500 + 9;
                 do
                 {
                     // TODO: Is this correct?
                     //F32 fVar2 = *(F32 *)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + (blockWidth * *puVar7 + puVar7[-1]) * 4);
-                    F32 fVar2 = objectGlobs.UnkSurfaceGrid_1_TABLE[blockWidth * *puVar7 + puVar7[-1]] * 4;
+                    F32 fVar2 = objectGlobs.UnkSurfaceGrid_1_TABLE[blockWidth * *dataIterator + dataIterator[-1]];
 
-                    S32 iStack_100c = 0;
+                    S32 iterator3 = 0;
                     do
                     {
-                        U32 uVar8 = puVar7[-1];
-                        U32 uVar11 = *puVar7;
+                        U32 theX = dataIterator[-1];
+                        U32 theY = *dataIterator;
 
-                        if (iStack_100c == 0)
-                            uVar11--;
-                        else if (iStack_100c == 1)
-                            uVar8++;
-                        else if (iStack_100c == 2)
-                            uVar11++;
-                        else if (iStack_100c == 3)
-                            uVar8--;
+                        if (iterator3 == 0)
+                            theY--;
+                        else if (iterator3 == 1)
+                            theX++;
+                        else if (iterator3 == 2)
+                            theY++;
+                        else if (iterator3 == 3)
+                            theX--;
 
-                        if (uVar8 < blockWidth && uVar11 < blockHeight)
+                        if (theX < blockWidth && theY < blockHeight)
                         {
-                            F32 fStack_ff8 = 1.0f;
-                            U32 uVar9 = auStack_fc0[iStack_100c * 2];
-                            U32 uVar6 = auStack_fc0[iStack_100c * 2 + 1];
+                            F32 someValue = 1.0f;
+                            U32 xOffset = OFFSETS[iterator3 * 2];
+                            U32 yOffset = OFFSETS[iterator3 * 2 + 1];
                             Point2I PStack_fc8;
-                            PStack_fc8.x = uVar9 + uVar8;
-                            PStack_fc8.y = uVar6 + uVar11;
+                            PStack_fc8.x = xOffset + theX;
+                            PStack_fc8.y = yOffset + theY;
 
                             if (Level_Block_IsPath(&PStack_fc8))
-                                fStack_ff8 = 0.5f;
+                                someValue = 0.5f;
 
-                            S32 iVar4;
-                            F32* pfVar1;
-                            CrossTerrainType type = Lego_GetCrossTerrainType(liveObj, uVar8, uVar11, uVar9 + uVar8, uVar6 + uVar11, FALSE);
+                            CrossTerrainType type = Lego_GetCrossTerrainType(liveObj, theX, theY, xOffset + theX, yOffset + theY, FALSE);
                             // TODO: WTF is this if statement?
                             if (type != CrossTerrainType_CantCross &&
-                                (iVar4 = uVar11 * blockWidth + uVar8,
-                                pfVar1 = (F32*)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + iVar4 * sizeof(F32)),
-                                *(F32*)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + iVar4 * sizeof(F32)) == 0.0f || (fStack_ff8 + fVar2 < *pfVar1)))
+                                objectGlobs.UnkSurfaceGrid_1_TABLE[theY * blockWidth + theX] == 0.0f ||
+                                (someValue + fVar2 < objectGlobs.UnkSurfaceGrid_1_TABLE[theY * blockWidth + theX]))
                             {
-                                uVar6 = (U32)(uStack_1000 == 0);
-                                uVar9 = auStack_fdc[uVar6];
-                                iVar4 = uVar9 + uVar6 * 100;
-                                *pfVar1 = fStack_ff8 + fVar2;
-                                auStack_fc0[iVar4 * 5 + 8] = uVar8;
-                                auStack_fc0[iVar4 * 5 + 9] = uVar11;
-                                auStack_fdc[uVar6] = uVar9 + 1;
+                                yOffset = (U32)(specialNum == 0);
+                                xOffset = coords[yOffset];
+                                objectGlobs.UnkSurfaceGrid_1_TABLE[theY * blockWidth + theX] = someValue + fVar2;
+                                OFFSETS[(xOffset + yOffset * 100) * 5 + 8] = theX;
+                                OFFSETS[(xOffset + yOffset * 100) * 5 + 9] = theY;
+                                coords[yOffset] = xOffset + 1;
 
                                 if (callback == NULL)
                                 {
-                                    if (uVar8 == bx2 && uVar11 == by2)
+                                    if (theX == bx2 && theY == by2)
                                     {
-                                        bVar3 = TRUE;
-                                        fStack_fd4 = fStack_ffc;
+                                        someBool = TRUE;
+                                        theCount = count;
                                     }
                                 }
                                 else
                                 {
                                     Point2I PStack_fd0;
-                                    PStack_fd0.x = uVar8;
-                                    PStack_fd0.y = uVar11;
+                                    PStack_fd0.x = theX;
+                                    PStack_fd0.y = theY;
                                     if (callback(liveObj, &PStack_fd0, data))
                                     {
-                                        iStack_fec = 1;
-                                        bx2 = uVar8;
-                                        by2 = uVar11;
+                                        status = 1;
+                                        bx2 = theX;
+                                        by2 = theY;
                                     }
                                 }
                             }
                         }
 
-                        iStack_100c++;
-                    } while (iStack_100c < 4);
+                        iterator3++;
+                    } while (iterator3 < 4);
 
-                    uStack_fe4++;
-                    puVar7 += 5;
-                } while (uStack_fe4 < *puStack_1008);
+                    iterator2++;
+                    dataIterator += 5;
+                } while (iterator2 < pCoords[0]);
             }
 
-            *puStack_1008 = 0;
-            uStack_1000 = (U32)(uStack_1000 == 0);
-            puStack_1008 = auStack_fdc + uStack_1000;
-            if (auStack_fdc[uStack_1000] == 0)
+            pCoords[0] = 0;
+            specialNum = (U32)(specialNum == 0);
+            pCoords = coords + specialNum;
+            if (coords[specialNum] == 0)
             {
-                iStack_fec = -1;
+                status = -1;
             }
 
-        } while (iStack_fec == 0);
+        } while (status == 0);
 
-        if (bVar3)
+        if (someBool)
         {
-            iStack_fec = 1;
-            fStack_ffc = fStack_fd4; // TODO: fStack_fd4 might not be initialized here
+            status = 1;
+            count = theCount;
         }
 
-        if (iStack_fec == -1)
+        if (status == -1)
             return FALSE;
 
-        U32* puVar7 = Mem_Alloc(fStack_ffc * sizeof(U32));
+        U32* puVar7 = Mem_Alloc(count * sizeof(U32));
         U32* buffer;
-        if (puVar7 != NULL && (buffer = Mem_Alloc(fStack_ffc * sizeof(U32)), buffer != NULL))
+        if (puVar7 != NULL && (buffer = Mem_Alloc(count * sizeof(U32)), buffer != NULL))
         {
-            S32 iVar4 = fStack_ffc - 1;
+            S32 iVar4 = count - 1;
             puVar7[iVar4] = bx2;
             U32* puStack_ff0 = buffer + iVar4;
             *puStack_ff0 = by2;
@@ -1257,30 +1246,30 @@ someLabel:
 
             if (iVar4 != 1)
             {
-                U32 uStack_fe4 = fStack_ffc - 2;
-                U32 uVar8 = bx2;
-                U32 uVar11 = by2;
+                U32 iterator2 = count - 2;
+                U32 theX = bx2;
+                U32 theY = by2;
                 do
                 {
                     F32 fStack_1008 = 10000.0f;
-                    S32 iStack_100c = 0;
+                    S32 iterator3 = 0;
                     do
                     {
-                        U32 uVar9 = uVar8;
+                        U32 uVar9 = theX;
                         U32 uVar6;
-                        if (iStack_100c == 0)
+                        if (iterator3 == 0)
                         {
-                            uVar6 = uVar11 - 1;
+                            uVar6 = theY - 1;
                         }
                         else
                         {
-                            uVar6 = uVar11;
-                            if (iStack_100c == 1)
-                                uVar9 = uVar8 + 1;
-                            else if (iStack_100c == 2)
-                                uVar6 = uVar11 + 1;
-                            else if (iStack_100c == 3)
-                                uVar9 = uVar8 - 1;
+                            uVar6 = theY;
+                            if (iterator3 == 1)
+                                uVar9 = theX + 1;
+                            else if (iterator3 == 2)
+                                uVar6 = theY + 1;
+                            else if (iterator3 == 3)
+                                uVar9 = theX - 1;
                         }
 
                         Point2I PStack_fd0;
@@ -1288,32 +1277,30 @@ someLabel:
                         PStack_fd0.y = uVar6;
 
                         if ((uVar9 < blockWidth && uVar6 < blockHeight) &&
-                            (fStack_fd4 = (S32)(*(F32*)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + (uVar11 * blockWidth + uVar8) * sizeof(F32)) -
-                                *(F32*)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + (uVar6 * blockWidth + uVar9) * sizeof(F32)),
-                                fStack_fd4 > 0.0f && ((F32)fStack_fd4 < (F32)fStack_1008))) ||
-                                ((F32)fStack_fd4 == (F32)fStack_1008 &&
-                                    (Level_Block_IsPath(&PStack_fd0))))
+                            (theCount = objectGlobs.UnkSurfaceGrid_1_TABLE[theY * blockWidth + theX] - objectGlobs.UnkSurfaceGrid_1_TABLE[uVar6 * blockWidth + uVar9],
+                            theCount > 0.0f && (F32)theCount < fStack_1008) ||
+                            ((F32)theCount == fStack_1008 && Level_Block_IsPath(&PStack_fd0)))
                         {
-                            fStack_1008 = fStack_fd4;
-                            auStack_fdc[0] = uVar9;
-                            auStack_fdc[1] = uVar6;
+                            fStack_1008 = theCount;
+                            coords[0] = uVar9;
+                            coords[1] = uVar6;
                         }
 
-                        iStack_100c++;
-                    } while (iStack_100c < 4);
+                        iterator3++;
+                    } while (iterator3 < 4);
 
                     puStack_ff0--;
-                    *(U32*)(((S32)puVar7 - (S32)buffer) + (S32)puStack_ff0) = auStack_fdc[0];
-                    *puStack_ff0 = auStack_fdc[1];
-                    uStack_fe4--;
-                    uVar8 = auStack_fdc[0];
-                    uVar11 = auStack_fdc[1];
-                } while (uStack_fe4 != 0);
+                    *(U32*)(((S32)puVar7 - (S32)buffer) + (S32)puStack_ff0) = coords[0];
+                    *puStack_ff0 = coords[1];
+                    iterator2--;
+                    theX = coords[0];
+                    theY = coords[1];
+                } while (iterator2 != 0);
             }
 
             *outNewBXs = (S32*)puVar7;
             *outNewBYs = (S32*)buffer;
-            *outCount = fStack_ffc;
+            *outCount = count;
 
             U32 uVar8;
             U32 uVar11;
@@ -1331,9 +1318,7 @@ someLabel:
         }
     }
 
-    return TRUE;*/
-
-    return FALSE;
+    return TRUE;
 }
 
 B32 LegoObject_Route_ScoreSub_FUN_00440f30(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, U32** outNewBXs, U32** outNewBYs, U32* outCount, LegoObject_CheckBlock_Callback callback, void* data)

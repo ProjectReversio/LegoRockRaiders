@@ -461,7 +461,7 @@ typedef struct LegoObject_Globs
     const char* activityName[79]; // [activityType:79]
 
     F32* UnkSurfaceGrid_1_TABLE;
-    void* UnkSurfaceGrid_2_TABLE;
+    F32* UnkSurfaceGrid_2_TABLE;
     U32 UnkSurfaceGrid_COUNT;
     F32 radarSurveyCycleTimer; // Timer for how often survey scans update.
     U32 listCount;
