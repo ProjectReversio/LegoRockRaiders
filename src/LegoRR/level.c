@@ -775,7 +775,168 @@ void Level_UpdateEffects(lpLego_Level level, F32 elapsedGame)
 // 0 = Can't Cross, 1 = Can Cross (floor), 2 = diagonal, 3 = wall
 CrossTerrainType Lego_GetCrossTerrainType(lpLegoObject liveObj, S32 bx1, S32 by1, S32 bx2, S32 by2, B32 param6)
 {
-    // TODO: Implement Lego_GetCrossTerrainType
+    B32 checkWater = FALSE;
+    B32 checkLand = TRUE;
+    B32 checkLava = FALSE;
+    B32 checkEnterToolStore = FALSE;
 
-    return CrossTerrainType_CantCross;
+    Lego_Block block = legoGlobs.currLevel->blocks[by1 * legoGlobs.currLevel->width + bx1];
+
+    const Point2I DIRECTIONS[4] = {
+        {0, -1},
+        {1, 0},
+        {0, 1},
+        {-1, 0},
+    };
+
+    B32 result = CrossTerrainType_CanCross;
+
+    StatsFlags1 sflags1;
+    if ((liveObj != NULL &&
+        (sflags1 = StatsObject_GetStatsFlags1(liveObj),
+        (sflags1 & STATS1_CANBEDRIVEN) != STATS1_NONE)) && liveObj->driveObject == NULL)
+    {
+        return CrossTerrainType_CantCross;
+    }
+
+
+    S32 i;
+    for (i = 0; i < 4; i++)
+    {
+        if (DIRECTIONS[i].x + bx2 == bx1 && DIRECTIONS[i].y + by2 == by1)
+            break;
+    }
+
+    B32 checkSingleWidthDig;
+    if (liveObj == NULL)
+    {
+        checkSingleWidthDig = FALSE;
+    }
+    else
+    {
+        if (liveObj->type == LegoObject_ElectricFence)
+        {
+            return CrossTerrainType_CantCross;
+        }
+
+        checkEnterToolStore = StatsObject_GetStatsFlags3(liveObj) & STATS3_ENTERTOOLSTORE;
+        checkSingleWidthDig = StatsObject_GetStatsFlags1(liveObj) & STATS1_SINGLEWIDTHDIG;
+        checkWater = StatsObject_GetStatsFlags1(liveObj) & STATS1_CROSSWATER;
+        checkLand = StatsObject_GetStatsFlags1(liveObj) & STATS1_CROSSLAND;
+        checkLava = StatsObject_GetStatsFlags2(liveObj) & STATS2_CROSSLAVA;
+
+        Point2I blockPos;
+        if ((!param6 &&
+            LegoObject_GetBlockPos(liveObj, &blockPos.x, &blockPos.y)) &&
+            (blockPos.x == bx1 && blockPos.y == by1))
+        {
+            return CrossTerrainType_CanCross;
+        }
+    }
+
+    if (block.terrain == Lego_SurfaceType8_Lake)
+    {
+        if (!checkWater)
+        {
+            return CrossTerrainType_CantCross;
+        }
+    }
+    else if (!checkLand)
+    {
+        return CrossTerrainType_CantCross;
+    }
+
+    if ((block.terrain == Lego_SurfaceType8_Lava && !checkLava) &&
+        (block.flags1 & BLOCK1_NOTHOT) == BLOCK1_NONE)
+    {
+        return CrossTerrainType_CantCross;
+    }
+
+    if ((block.flags1 & BLOCK1_BUILDINGSOLID) != BLOCK1_NONE)
+    {
+        return CrossTerrainType_CantCross;
+    }
+
+    if (param6 && (block.flags1 & BLOCK1_INCORNER) != BLOCK1_NONE)
+    {
+        return CrossTerrainType_CantCross;
+    }
+
+    if (!checkEnterToolStore && (block.flags2 & BLOCK2_TOOLSTORE) != BLOCK2_NONE)
+    {
+        return CrossTerrainType_CantCross;
+    }
+
+    if (!checkSingleWidthDig)
+    {
+        if ((block.flags1 & BLOCK1_FLOOR) == BLOCK1_NONE)
+        {
+            return CrossTerrainType_CantCross;
+        }
+    }
+    else
+    {
+        if ((block.flags1 & BLOCK1_WALL) != BLOCK1_NONE)
+        {
+            result = CrossTerrainType_Wall;
+        }
+
+        if (block.predug == Lego_PredugType_Wall)
+        {
+            return CrossTerrainType_CantCross;
+        }
+
+        S32 index = by1 * legoGlobs.currLevel->width + bx1;
+
+        B32 isWall = legoGlobs.currLevel->blocks[index].flags1 & BLOCK1_WALL;
+        if (isWall)
+        {
+            if (legoGlobs.currLevel->blocks[index - 1].terrain == Lego_SurfaceType8_Lava)
+            {
+                return CrossTerrainType_CantCross;
+            }
+
+            if (legoGlobs.currLevel->blocks[(by1 - 1) * legoGlobs.currLevel->width + bx1].terrain == Lego_SurfaceType8_Lava)
+            {
+                return CrossTerrainType_CantCross;
+            }
+        }
+
+        if (isWall)
+        {
+            if (legoGlobs.currLevel->blocks[index - 1].terrain == Lego_SurfaceType8_Water)
+            {
+                return CrossTerrainType_CantCross;
+            }
+
+            if (legoGlobs.currLevel->blocks[(by1 - 1) * legoGlobs.currLevel->width + bx1].terrain == Lego_SurfaceType8_Water)
+            {
+                return CrossTerrainType_CantCross;
+            }
+        }
+
+        if (i == 0)
+        {
+            if ((block.flags1 & BLOCK1_DIAGONAL) != BLOCK1_NONE)
+            {
+                result = CrossTerrainType_Diagonal;
+            }
+
+            if ((legoGlobs.currLevel->blocks[by2 * legoGlobs.currLevel->width + bx2].flags1 & BLOCK1_DIAGONAL) != BLOCK1_NONE)
+            {
+                result = CrossTerrainType_Diagonal;
+            }
+        }
+    }
+
+    if (bx2 != bx1 && by2 != by1)
+    {
+        if ((legoGlobs.currLevel->blocks[by2 * legoGlobs.currLevel->width + bx1].flags1 & BLOCK1_FLOOR) != BLOCK1_NONE &&
+            (legoGlobs.currLevel->blocks[by1 * legoGlobs.currLevel->width + bx2].flags1 & BLOCK1_FLOOR) != BLOCK1_NONE)
+        {
+            return CrossTerrainType_Diagonal;
+        }
+    }
+
+    return result;
 }

@@ -22,10 +22,26 @@ B32 StatsObject_SetObjectLevel(struct LegoObject* liveObj, U32 newLevel)
     return FALSE;
 }
 
+StatsFlags1 StatsObject_GetStatsFlags1(struct LegoObject* liveObj)
+{
+    if (liveObj->stats == NULL) // TEMP: This check not in original code, remove for accuracy later
+        return STATS1_NONE;
+
+    return liveObj->stats->flags1;
+}
+
 StatsFlags2 StatsObject_GetStatsFlags2(struct LegoObject* liveObj)
 {
     if (liveObj->stats == NULL) // TEMP: This check not in original code, remove for accuracy later
         return STATS2_NONE;
 
     return liveObj->stats->flags2;
+}
+
+StatsFlags3 StatsObject_GetStatsFlags3(struct LegoObject* liveObj)
+{
+    if (liveObj->stats == NULL) // TEMP: This check not in original code, remove for accuracy later
+        return STATS3_NONE;
+
+    return liveObj->stats->flags3;
 }
