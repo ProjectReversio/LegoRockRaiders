@@ -42,6 +42,10 @@ extern void Level_Block_SetBusy(Point2I* blockPos, B32 state);
 
 extern void Level_BlockActivity_UpdateAll(lpLego_Level level, F32 elapsedGame);
 
+// NOTE: This does not DIRECTLY remove the block activity. But it will subsequently mark it for
+// removal in the next UpdateAll loop.
+extern void Level_BlockActivity_Destroy(lpLego_Level level, Point2I blockPos, B32 wallDestroyed);
+
 extern void Level_UpdateEffects(lpLego_Level level, F32 elapsedGame);
 
 // 0 = Can't Cross, 1 = Can Cross (floor), 2 = diagonal, 3 = wall

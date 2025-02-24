@@ -76,6 +76,11 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
 
         // TODO: Implement Level_DestroyWall
 
+        level->blocks[by * level->width + bx].flags1 |= BLOCK1_FLOOR;
+
+        Point2I blockPos = { bx, by };
+        Level_BlockActivity_Destroy(level, blockPos, TRUE);
+
         level->blocks[by * level->width + bx].flags1 &= ~BLOCK1_REINFORCED;
         level->blocks[by * level->width + bx].flags1 |= BLOCK1_EXPOSEDFLOORCHECKS;
 
@@ -765,6 +770,13 @@ void Level_Block_SetBusy(Point2I* blockPos, B32 state)
 void Level_BlockActivity_UpdateAll(lpLego_Level level, F32 elapsedGame)
 {
     // TODO: Implement Level_BlockActivity_UpdateAll
+}
+
+// NOTE: This does not DIRECTLY remove the block activity. But it will subsequently mark it for
+// removal in the next UpdateAll loop.
+void Level_BlockActivity_Destroy(lpLego_Level level, Point2I blockPos, B32 wallDestroyed)
+{
+    // TODO: Implement Level_BlockActivity_Destroy
 }
 
 void Level_UpdateEffects(lpLego_Level level, F32 elapsedGame)
