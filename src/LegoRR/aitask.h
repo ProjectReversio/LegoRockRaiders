@@ -166,6 +166,8 @@ extern lpAITask AITask_Create(AITask_Type taskType);
 // levelCleanup is only true when called by `AITask_Callback_Remove`.
 extern void AITask_Remove(lpAITask aiTask, B32 levelCleanup);
 
+extern lpAITask AITask_Clone(lpAITask aiTask);
+
 extern void AITask_RemoveGetToolReferences(lpAITask aiTask);
 
 extern void AITask_Game_SetNoGather(B32 noGather);
@@ -200,6 +202,14 @@ extern void AITask_FUN_00405b40();
 
 extern void AITask_FUN_00405880();
 
+extern void AITask_FUN_00406290(lpAITask aiTask1, lpAITask aiTask2, lpLegoObject liveObj);
+
+// Removes references to object_48.
+// But only from the `aiGlobs.AITaskUnkPtr` linked list.
+extern void AITask_RemoveObject48References(lpLegoObject obj48);
+
 extern void AITask_LiveObject_SetAITaskUnk(struct LegoObject* liveObj, AITask_Type taskType, struct LegoObject* liveObj2, B32 param4);
 
 extern void AITask_LiveObject_FUN_00404110(struct LegoObject* liveObj);
+
+extern void AITask_DoAnimationWait(struct LegoObject* liveObj);

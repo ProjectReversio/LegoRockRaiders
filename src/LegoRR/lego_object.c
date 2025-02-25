@@ -295,9 +295,61 @@ void LegoObject_UpdatePowerConsumption(lpLegoObject liveObj)
 
 B32 LegoObject_UpdateActivityChange(lpLegoObject liveObj)
 {
-    // TODO: Implement LegoObject_UpdateActivityChange
+    const char* actName = liveObj->activityName1;
+    if (actName == liveObj->activityName2)
+        return FALSE;
 
-    return FALSE;
+    if (actName != objectGlobs.activityName[0] &&
+        actName != objectGlobs.activityName[1] &&
+        actName != objectGlobs.activityName[4] &&
+        actName != objectGlobs.activityName[6] &&
+        actName != objectGlobs.activityName[8] &&
+        actName != objectGlobs.activityName[0x11] &&
+        actName != objectGlobs.activityName[0x16] &&
+        actName != objectGlobs.activityName[2])
+    {
+        AITask_DoAnimationWait(liveObj);
+    }
+
+    B32 result = FALSE;
+
+    switch (liveObj->type)
+    {
+        case LegoObject_Vehicle:
+        {
+            // TODO: Implement LegoObject_UpdateActivityChange
+            break;
+        }
+        case LegoObject_MiniFigure:
+        {
+            result = Creature_SetActivity(liveObj->miniFigure, liveObj->activityName1, liveObj->animTime);
+            liveObj->cameraNull = Creature_GetCameraNull(liveObj->miniFigure, liveObj->cameraFrame);
+            break;
+        }
+        case LegoObject_RockMonster:
+        {
+            // TODO: Implement LegoObject_UpdateActivityChange
+            break;
+        }
+        case LegoObject_Building:
+        {
+            // TODO: Implement LegoObject_UpdateActivityChange
+            break;
+        }
+    }
+
+    if ((StatsObject_GetStatsFlags1(liveObj) & STATS1_CANBEDRIVEN) != STATS1_NONE && liveObj->driveObject != NULL &&
+        liveObj->driveObject->type == LegoObject_MiniFigure)
+    {
+        // TODO: Implement LegoObject_UpdateActivityChange
+    }
+
+    liveObj->animTime = 0.0f;
+    liveObj->activityName2 = liveObj->activityName1;
+
+    liveObj->flags2 &= ~LIVEOBJ2_UNK_20000;
+
+    return result;
 }
 
 void LegoObject_SetActivity(lpLegoObject liveObj, Activity_Type activityType, U32 repeatCount)
@@ -1356,6 +1408,46 @@ B32 LegoObject_FUN_004439d0(lpLegoObject liveObj, Point2I* blockPos, Point2I* ou
     return TRUE;
 }
 
+B32 LegoObject_Check_LotsOfFlags1AndFlags2_FUN_0043bdb0(lpLegoObject liveObj)
+{
+    if ((liveObj->flags1 & (LIVEOBJ1_UNUSED_10000000|LIVEOBJ1_TELEPORTINGUP|LIVEOBJ1_TELEPORTINGDOWN|LIVEOBJ1_CRUMBLING|
+       LIVEOBJ1_PLACING|LIVEOBJ1_CLEARING|LIVEOBJ1_STORING|LIVEOBJ1_GETTINGHIT|
+       LIVEOBJ1_GATHERINGROCK|LIVEOBJ1_EXPANDING|LIVEOBJ1_TURNRIGHT|LIVEOBJ1_REINFORCING|
+       LIVEOBJ1_DRILLINGSTART|LIVEOBJ1_DRILLING|LIVEOBJ1_TURNING|LIVEOBJ1_LIFTING)) != LIVEOBJ1_NONE)
+    {
+        return TRUE;
+    }
+
+    return (liveObj->flags2 & (LIVEOBJ2_FIRINGFREEZER|LIVEOBJ2_FIRINGPUSHER|LIVEOBJ2_FIRINGLASER|
+                 LIVEOBJ2_BUILDPATH|LIVEOBJ2_THROWN|LIVEOBJ2_THROWING)) != LIVEOBJ2_NONE;
+}
+
+B32 LegoObject_TryWaiting(lpLegoObject liveObj)
+{
+    if ((liveObj->flags1 & LIVEOBJ1_CARRYING) != LIVEOBJ1_NONE)
+        return FALSE;
+
+    if (LegoObject_Check_LotsOfFlags1AndFlags2_FUN_0043bdb0(liveObj))
+        return FALSE;
+
+    // 5 Attempts to pick a valid waiting animation
+    U32 attempt = 0;
+    do
+    {
+        U32 repeatCount = 1;
+        S16 rng = Maths_Rand();
+        LegoObject_SetActivity(liveObj, (S32)rng % 21 + Activity_Waiting1, repeatCount);
+        if (LegoObject_UpdateActivityChange(liveObj))
+        {
+            liveObj->flags1 |= LIVEOBJ1_WAITING;
+            return TRUE;
+        }
+        attempt++;
+    } while (attempt < 5);
+
+    return FALSE;
+}
+
 // Update energy drain while carrying and attempt to rest when needed
 void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed)
 {
@@ -1365,6 +1457,13 @@ void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed)
 void LegoObject_RockMonster_FUN_0043ad70(lpLegoObject liveObj)
 {
     // TODO: Implement LegoObject_RockMonster_FUN_0043ad70
+}
+
+B32 LegoObject_VehicleMaxCarryChecksTime_FUN_00439c80(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_VehicleMaxCarryChecksTime_FUN_00439c80
+
+    return FALSE;
 }
 
 B32 LegoObject_GetBlockPos(lpLegoObject liveObj, S32* outBx, S32* outBy)

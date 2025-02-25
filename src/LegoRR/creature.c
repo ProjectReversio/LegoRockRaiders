@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "activities.h"
+#include "dummy.h"
 #include "meshLOD.h"
 #include "utils.h"
 
@@ -105,4 +106,44 @@ F32 Creature_MoveAnimation(lpCreatureModel creature, F32 elapsed, U32 unkFrameNo
     }
 
     return anim;
+}
+
+B32 Creature_SetActivity(lpCreatureModel creature, const char* activityName, F32 elapsed)
+{
+    MeshLOD_RemoveTargets(creature->polyMedium);
+    MeshLOD_RemoveTargets(creature->polyHigh);
+    MeshLOD_RemoveTargets(creature->polyFP);
+
+    creature->drillNull = NULL;
+    creature->footStepNull = NULL;
+    creature->carryNull = NULL;
+    creature->throwNull = NULL;
+    creature->depositNull = NULL;
+    if (creature->cameraNullFrames != 0)
+    {
+        for (U32 i = 0; i < creature->cameraNullFrames; i++)
+        {
+            creature->cameraNulls[i] = NULL;
+        }
+    }
+
+    B32 success = Container_SetActivity(creature->contAct, activityName);
+    Container_SetAnimationTime(creature->contAct, elapsed);
+
+    return success;
+}
+
+lpContainer Creature_GetCameraNull(lpCreatureModel creature, S32 cameraIndex)
+{
+    const char* name = creature->cameraNullName;
+    if (name == NULL)
+        return NULL;
+
+    if (creature->cameraNulls[cameraIndex] == NULL)
+    {
+        lpContainer container = Object_SearchForPartName((BasicObjectModel*)creature, name, cameraIndex);
+        creature->cameraNulls[cameraIndex] = container;
+    }
+
+    return creature->cameraNulls[cameraIndex];
 }

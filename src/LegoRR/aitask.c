@@ -6,6 +6,7 @@
 #include "map3d.h"
 #include "mem.h"
 #include "message.h"
+#include "bubble.h"
 
 AITask_Globs aiGlobs = {};
 
@@ -164,6 +165,20 @@ void AITask_Remove(lpAITask aiTask, B32 levelCleanup)
 
     aiTask->nextFree = aiGlobs.freeList;
     aiGlobs.freeList = aiTask;
+}
+
+lpAITask AITask_Clone(lpAITask aiTask)
+{
+    AITask* newAITask = AITask_Create(aiTask->taskType);
+    AITask* nextFree = newAITask->nextFree;
+
+    memcpy(newAITask, aiTask, sizeof(AITask));
+
+    newAITask->nextFree = nextFree;
+    newAITask->flags |= AITASK_FLAG_CLONED;
+    newAITask->next = NULL;
+
+    return newAITask;
 }
 
 void AITask_RemoveGetToolReferences(lpAITask aiTask)
@@ -372,7 +387,37 @@ B32 AITask_Callback_UpdateObject(lpLegoObject liveObj, void* context)
             (liveObj->flags4 & (LIVEOBJ4_ENTRANCEOCCUPIED | LIVEOBJ4_DOCKOCCUPIED)) != LIVEOBJ4_NONE ||
             !LegoObject_FUN_004439d0(liveObj, &blockPos, &pos, 0))
         {
-            // TODO: Implement AITask_Callback_UpdateObject
+            if (liveObj->aiTimer_338 <= 250.0f)
+            {
+                AITask* unkAiTask = NULL;
+                AITask* aiTask = aiGlobs.pendingTaskList;
+                if (aiGlobs.pendingTaskList == NULL)
+                {
+someLabel:
+                    if (aiTask != NULL)
+                    {
+                        AITask_FUN_00406290(aiTask, unkAiTask, liveObj);
+                        goto endFunc;
+                    }
+                }
+                else
+                {
+                    // TODO: Implement AITask_Callback_UpdateObject
+                }
+
+                if (!LegoObject_VehicleMaxCarryChecksTime_FUN_00439c80(liveObj))
+                {
+                    // TODO: Implement AITask_Callback_UpdateObject
+                }
+            }
+            else
+            {
+                if (liveObj->type == LegoObject_MiniFigure && !Lego_IsFPObject(liveObj))
+                {
+                    LegoObject_TryWaiting(liveObj);
+                }
+                liveObj->aiTimer_338 = 0.0f;
+            }
         }
         else if (pos.x != 0 && pos.y != 0)
         {
@@ -451,6 +496,56 @@ void AITask_FUN_00405880()
     // TODO: Implement AITask_FUN_00405880
 }
 
+void AITask_FUN_00406290(lpAITask aiTask1, lpAITask aiTask2, lpLegoObject liveObj)
+{
+    if ((aiTask1->flags & AITASK_FLAG_DUPLICATE) == AITASK_FLAG_NONE)
+    {
+        if (aiTask2 == NULL)
+        {
+            aiGlobs.pendingTaskList = aiTask1->next;
+        }
+        else
+        {
+            aiTask2->next = aiTask1->next;
+        }
+        aiTask1->next = NULL;
+        liveObj->aiTask = aiTask1;
+    }
+    else
+    {
+        liveObj->aiTask = AITask_Clone(aiTask1);
+        if ((aiTask1->flags & AITASK_FLAG_PAUSEDDUPLICATION) != AITASK_FLAG_NONE)
+        {
+            // 1 second
+            aiTask1->timeIn = 25.0f;
+        }
+    }
+    AITask_RemoveObject48References(liveObj);
+    Bubble_LiveObject_MiniFigure_FUN_00407380(liveObj);
+}
+
+// Removes references to object_48.
+// But only from the `aiGlobs.AITaskUnkPtr` linked list.
+void AITask_RemoveObject48References(lpLegoObject obj48)
+{
+    if (aiGlobs.pendingTaskList == NULL)
+        return;
+
+    AITask **pTask;
+    AITask *task;
+
+    task = aiGlobs.pendingTaskList;
+    do
+    {
+        if (task->assignedToObject == obj48)
+        {
+            task->assignedToObject = NULL;
+        }
+        pTask = &task->next;
+        task = *pTask;
+    } while (*pTask != NULL);
+}
+
 void AITask_LiveObject_SetAITaskUnk(lpLegoObject liveObj, AITask_Type taskType, lpLegoObject liveObj2, B32 param4)
 {
     // TODO: Implement AITask_LiveObject_SetAITaskUnk
@@ -483,4 +578,14 @@ void AITask_LiveObject_FUN_00404110(lpLegoObject liveObj)
     }
 
     AITask_Remove(aiTask, FALSE);
+}
+
+void AITask_DoAnimationWait(struct LegoObject* liveObj)
+{
+    if (liveObj->aiTask == NULL || liveObj->aiTask->taskType != AITask_Type_AnimationWait)
+    {
+        AITask* newAITask = AITask_Create(AITask_Type_AnimationWait);
+        newAITask->next = liveObj->aiTask;
+        liveObj->aiTask = newAITask;
+    }
 }

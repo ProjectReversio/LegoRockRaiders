@@ -595,10 +595,16 @@ extern B32 LegoObject_Route_ScoreSub_FUN_00440f30(lpLegoObject liveObj, U32 bx, 
 
 extern B32 LegoObject_FUN_004439d0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockPos, U32 unused);
 
+extern B32 LegoObject_Check_LotsOfFlags1AndFlags2_FUN_0043bdb0(lpLegoObject liveObj);
+
+extern B32 LegoObject_TryWaiting(lpLegoObject liveObj);
+
 // Update energy drain while carrying and attempt to rest when needed
 extern void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed);
 
 extern void LegoObject_RockMonster_FUN_0043ad70(lpLegoObject liveObj);
+
+extern B32 LegoObject_VehicleMaxCarryChecksTime_FUN_00439c80(lpLegoObject liveObj);
 
 extern B32 LegoObject_GetBlockPos(lpLegoObject liveObj, S32* outBx, S32* outBy);
 

@@ -45,3 +45,6 @@ extern void Creature_SetOrientation(lpCreatureModel creature, F32 xDir, F32 yDir
 extern void Creature_SetPosition(lpCreatureModel creature, F32 xPos, F32 yPos, GetWorldZCallback zCallback, struct Map3D* map);
 
 extern F32 Creature_MoveAnimation(lpCreatureModel creature, F32 elapsed, U32 unkFrameNo);
+
+extern B32 Creature_SetActivity(lpCreatureModel creature, const char* activityName, F32 elapsed);
+extern lpContainer Creature_GetCameraNull(lpCreatureModel creature, S32 cameraIndex);
