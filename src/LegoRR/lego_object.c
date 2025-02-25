@@ -14,7 +14,121 @@ LegoObject_Globs objectGlobs = { NULL };
 
 void LegoObject_Initialize()
 {
-    // TODO: Implement LegoObject_Initialize
+    memset(&objectGlobs, 0, sizeof(LegoObject_Globs));
+
+    objectGlobs.activityName[Activity_Stand] = "Activity_Stand";
+    objectGlobs.activityName[Activity_Route] = "Activity_Route";
+    objectGlobs.activityName[Activity_RouteRubble] = "Activity_RouteRubble";
+    objectGlobs.activityName[Activity_RunPanic] = "Activity_RunPanic";
+    objectGlobs.activityName[Activity_Drill] = "Activity_Drill";
+    objectGlobs.activityName[Activity_Teleport] = "Activity_Teleport";
+    objectGlobs.activityName[Activity_Walk] = "Activity_Walk";
+    objectGlobs.activityName[Activity_Reinforce] = "Activity_Reinforce";
+    objectGlobs.activityName[Activity_Reverse] = "Activity_Reverse";
+    objectGlobs.activityName[Activity_TurnLeft] = "Activity_TurnLeft";
+    objectGlobs.activityName[Activity_TurnRight] = "Activity_TurnRight";
+    objectGlobs.activityName[Activity_CantDo] = "Activity_CantDo";
+    objectGlobs.activityName[Activity_Emerge] = "Activity_Emerge";
+    objectGlobs.activityName[Activity_Enter] = "Activity_Enter";
+    objectGlobs.activityName[Activity_EnterRein] = "Activity_EnterRein";
+    objectGlobs.activityName[Activity_Collect] = "Activity_Collect";
+    objectGlobs.activityName[Activity_Gather] = "Activity_Gather";
+    objectGlobs.activityName[Activity_Carry] = "Activity_Carry";
+    objectGlobs.activityName[Activity_CarryRubble] = "Activity_CarryRubble";
+    objectGlobs.activityName[Activity_Throw] = "Activity_Throw";
+    objectGlobs.activityName[Activity_CarryTurnLeft] = "Activity_CarryTurnLeft";
+    objectGlobs.activityName[Activity_CarryTurnRight] = "Activity_CarryTurnRight";
+    objectGlobs.activityName[Activity_CarryStand] = "Activity_CarryStand";
+    objectGlobs.activityName[Activity_HitLeft] = "Activity_HitLeft";
+    objectGlobs.activityName[Activity_HitRight] = "Activity_HitRight";
+    objectGlobs.activityName[Activity_HitFront] = "Activity_HitFront";
+    objectGlobs.activityName[Activity_HitBack] = "Activity_HitBack";
+    objectGlobs.activityName[Activity_HitHard] = "Activity_HitHard";
+    objectGlobs.activityName[Activity_Dynamite] = "Activity_Dynamite";
+    objectGlobs.activityName[Activity_Deposit] = "Activity_Deposit";
+    objectGlobs.activityName[Activity_Clear] = "Activity_Clear";
+    objectGlobs.activityName[Activity_Place] = "Activity_Place";
+    objectGlobs.activityName[Activity_Repair] = "Activity_Repair";
+    objectGlobs.activityName[Activity_Slip] = "Activity_Slip";
+    objectGlobs.activityName[Activity_Rest] = "Activity_Rest";
+    objectGlobs.activityName[Activity_Eat] = "Activity_Eat";
+    objectGlobs.activityName[Activity_Stamp] = "Activity_Stamp";
+    objectGlobs.activityName[Activity_ThrowMan] = "Activity_ThrowMan";
+    objectGlobs.activityName[Activity_ThrownByRockMonster] = "Activity_ThrownByRockMonster";
+    objectGlobs.activityName[Activity_GetUp] = "Activity_GetUp";
+    objectGlobs.activityName[Activity_BuildPath] = "Activity_BuildPath";
+    objectGlobs.activityName[Activity_Upgrade] = "Activity_Upgrade";
+    objectGlobs.activityName[Activity_Explode] = "Activity_Explode";
+    objectGlobs.activityName[Activity_Unpowered] = "Activity_Unpowered";
+    objectGlobs.activityName[Activity_FireLaser] = "Activity_FireLaser";
+    objectGlobs.activityName[Activity_Freezed] = "Activity_Freezed";
+    objectGlobs.activityName[Activity_FreezeStart] = "Activity_FreezeStart";
+    objectGlobs.activityName[Activity_FreezeMelt] = "Activity_FreezeMelt";
+    objectGlobs.activityName[Activity_Recharge] = "Activity_Recharge";
+    objectGlobs.activityName[Activity_WakeUp] = "Activity_WakeUp";
+    objectGlobs.activityName[Activity_Train] = "Activity_Train";
+    objectGlobs.activityName[Activity_FloatOn] = "Activity_FloatOn";
+    objectGlobs.activityName[Activity_FloatOff] = "Activity_FloatOff";
+    objectGlobs.activityName[Activity_Opening] = "Activity_Opening";
+    objectGlobs.activityName[Activity_Closing] = "Activity_Closing";
+    objectGlobs.activityName[Activity_Open] = "Activity_Open";
+    objectGlobs.activityName[Activity_Waiting1] = "Activity_Waiting1";
+    objectGlobs.activityName[Activity_Waiting2] = "Activity_Waiting2";
+    objectGlobs.activityName[Activity_Waiting3] = "Activity_Waiting3";
+    objectGlobs.activityName[Activity_Waiting4] = "Activity_Waiting4";
+    objectGlobs.activityName[Activity_Waiting5] = "Activity_Waiting5";
+    objectGlobs.activityName[Activity_Waiting6] = "Activity_Waiting6";
+    objectGlobs.activityName[Activity_Waiting7] = "Activity_Waiting7";
+    objectGlobs.activityName[Activity_Waiting8] = "Activity_Waiting8";
+    objectGlobs.activityName[Activity_Waiting9] = "Activity_Waiting9";
+    objectGlobs.activityName[Activity_Waiting10] = "Activity_Waiting10";
+    objectGlobs.activityName[Activity_Waiting11] = "Activity_Waiting11";
+    objectGlobs.activityName[Activity_Waiting12] = "Activity_Waiting12";
+    objectGlobs.activityName[Activity_Waiting13] = "Activity_Waiting13";
+    objectGlobs.activityName[Activity_Waiting14] = "Activity_Waiting14";
+    objectGlobs.activityName[Activity_Waiting15] = "Activity_Waiting15";
+    objectGlobs.activityName[Activity_Waiting16] = "Activity_Waiting16";
+    objectGlobs.activityName[Activity_Waiting17] = "Activity_Waiting17";
+    objectGlobs.activityName[Activity_Waiting18] = "Activity_Waiting18";
+    objectGlobs.activityName[Activity_Waiting19] = "Activity_Waiting19";
+    objectGlobs.activityName[Activity_Waiting20] = "Activity_Waiting20";
+    objectGlobs.activityName[Activity_Waiting21] = "Activity_Waiting21";
+    objectGlobs.activityName[Activity_Crumble] = "Activity_Crumble";
+    objectGlobs.activityName[Activity_TeleportIn] = "Activity_TeleportIn";
+
+    objectGlobs.abilityName[0] = "LegoObject_AbilityType_Pilot";
+    objectGlobs.abilityName[1] = "LegoObject_AbilityType_Sailor";
+    objectGlobs.abilityName[2] = "LegoObject_AbilityType_Driver";
+    objectGlobs.abilityName[3] = "LegoObject_AbilityType_Dynamite";
+    objectGlobs.abilityName[4] = "LegoObject_AbilityType_Repair";
+    objectGlobs.abilityName[5] = "LegoObject_AbilityType_Scanner";
+
+    memset(objectGlobs.listSet, 0, sizeof(objectGlobs.listSet));
+
+    legoGlobs.toolName[0] = "LegoObject_ToolType_Drill";
+    legoGlobs.toolName[1] = "LegoObject_ToolType_Spade";
+    legoGlobs.toolName[2] = "LegoObject_ToolType_Hammer";
+    legoGlobs.toolName[3] = "LegoObject_ToolType_Spanner";
+    legoGlobs.toolName[4] = "LegoObject_ToolType_Laser";
+    legoGlobs.toolName[5] = "LegoObject_ToolType_PusherGun";
+    legoGlobs.toolName[6] = "LegoObject_ToolType_BirdScarer";
+    legoGlobs.toolName[7] = "LegoObject_ToolType_FreezerGun";
+
+    objectGlobs.toolNullIndex[0] = 0;
+    objectGlobs.toolNullIndex[1] = 0;
+    objectGlobs.toolNullIndex[2] = 1;
+    objectGlobs.toolNullIndex[3] = 1;
+    objectGlobs.toolNullIndex[4] = 4;
+    objectGlobs.toolNullIndex[5] = 4;
+    objectGlobs.toolNullIndex[6] = 4;
+    objectGlobs.toolNullIndex[7] = 4;
+    objectGlobs.toolNullIndex[8] = 3;
+    objectGlobs.toolNullIndex[9] = 2;
+    objectGlobs.toolNullIndex[10] = 4;
+
+    objectGlobs.freeList = NULL;
+    objectGlobs.listCount = 0;
+    objectGlobs.flags = OBJECT_GLOB_FLAG_INITIALISED;
 }
 
 void LegoObject_AddList()
