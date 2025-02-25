@@ -71,15 +71,17 @@ lpMeshLOD MeshLOD_Clone(lpMeshLOD srcMeshLOD)
 
     S32 i = 0;
 
+    MeshLOD* currentLOD = clonedMeshLOD;
     while (srcMeshLOD != NULL)
     {
-        memcpy(clonedMeshLOD, srcMeshLOD, sizeof(MeshLOD));
-        clonedMeshLOD->setID = 0;
-        clonedMeshLOD->flags &= ~MESHLOD_FLAG_MEMBLOCK;
-        clonedMeshLOD->flags |= MESHLOD_FLAG_CLONED;
-        clonedMeshLOD->next = &clonedMeshLOD[i + 1];
+        memcpy(currentLOD, srcMeshLOD, sizeof(MeshLOD));
+        currentLOD->contMeshTarget = NULL;
+        currentLOD->flags &= ~MESHLOD_FLAG_MEMBLOCK;
+        currentLOD->flags |= MESHLOD_FLAG_CLONED;
+        currentLOD->next = &clonedMeshLOD[i + 1];
         i++;
         srcMeshLOD = srcMeshLOD->next;
+        currentLOD = currentLOD->next;
     }
 
     clonedMeshLOD->flags |= MESHLOD_FLAG_MEMBLOCK;
