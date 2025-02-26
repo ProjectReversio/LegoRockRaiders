@@ -200,7 +200,10 @@ void AITask_DoCollect(lpLegoObject liveObj, F32 param2)
 
 void AITask_LiveObject_Unk_UpdateAITask_AnimationWait(lpLegoObject liveObj)
 {
-    // TODO: Implement AITask_LiveObject_Unk_UpdateAITask_AnimationWait
+    if (liveObj->aiTask != NULL && liveObj->aiTask->taskType == AITask_Type_AnimationWait)
+    {
+        AITask_LiveObject_FUN_00404110(liveObj);
+    }
 }
 
 B32 AITask_RemoveAttackPathReferences(Point2I* blockPos)
