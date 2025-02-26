@@ -220,4 +220,5 @@ extern void AITask_DoAnimationWait(struct LegoObject* liveObj);
 extern void AITask_Debug_UpdateInfo(struct LegoObject* liveObj);
 extern void AITask_Debug_UpdateInfoString();
 extern void AITask_Debug_GetInfoString(char* outString, U32* length);
+extern void AITask_Debug_GetPendingTasksString(char* outString, U32* length);
 #endif

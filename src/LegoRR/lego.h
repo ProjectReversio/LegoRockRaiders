@@ -747,5 +747,5 @@ extern void Lego_PlayMovie_old(const char* fName, Point2F* optScreenPt);
 
 #ifdef LEGORR_DEBUG_SHOW_INFO
 extern void Lego_Debug_ShowInfo();
-extern void Lego_Debug_PrintAITaskInfo();
+extern U32 Lego_Debug_PrintAITaskInfo();
 #endif

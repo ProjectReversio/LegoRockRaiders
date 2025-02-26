@@ -3785,10 +3785,17 @@ void Lego_Debug_ShowInfo()
 
     Font_PrintF(legoGlobs.bmpToolTipFont, 10, 70, "Mouse Position: (%d,%d)", inputGlobs.msx, inputGlobs.msy);
 
-    Lego_Debug_PrintAITaskInfo();
+    U32 offset = Lego_Debug_PrintAITaskInfo();
+
+    U32 len;
+    AITask_Debug_GetPendingTasksString(NULL, &len);
+    char* debugAIPendingTasks = Mem_Alloc(len + 1);
+    AITask_Debug_GetPendingTasksString(debugAIPendingTasks, &len);
+
+    Font_PrintF(legoGlobs.bmpToolTipFont, 10, offset, "Pending Tasks: %s", debugAIPendingTasks);
 }
 
-void Lego_Debug_PrintAITaskInfo()
+U32 Lego_Debug_PrintAITaskInfo()
 {
     U32 debugAILen;
     AITask_Debug_GetInfoString(NULL, &debugAILen);
@@ -3827,5 +3834,7 @@ void Lego_Debug_PrintAITaskInfo()
     }
     //Font_PrintF(legoGlobs.bmpToolTipFont, 10, 100 + debugAIInfoIt * 10, "}");
     Mem_Free(debugAIInfo);
+
+    return 100 + debugAIInfoIt * 10;
 }
 #endif

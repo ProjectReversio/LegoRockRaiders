@@ -753,4 +753,46 @@ void AITask_Debug_GetInfoString(char* outString, U32* length)
         strcpy(outString, sAITask_Debug_InfoString);
     }
 }
+
+void AITask_Debug_GetPendingTasksString(char* outString, U32* length)
+{
+    const U32 limit = 4;
+    U32 size = 0;
+    AITask* task = aiGlobs.pendingTaskList;
+    U32 i = 0;
+    do
+    {
+        if (i >= limit)
+            break;
+        const char* name = aiGlobs.aitaskName[task->taskType];
+        size += strlen(name) + 2; // +2 for comma and space
+
+        task = task->next;
+
+        i++;
+    } while (task != NULL);
+
+    *length = size + 1; // +1 for null-terminator
+
+    if (!outString)
+        return;
+
+    outString[0] = '\0';
+
+    task = aiGlobs.pendingTaskList;
+    i = 0;
+    do
+    {
+        if (i >= limit)
+            break;
+        const char* name = aiGlobs.aitaskName[task->taskType];
+
+        strcat_s(outString, *length, name);
+        strcat_s(outString, *length, ", ");
+
+        task = task->next;
+
+        i++;
+    } while (task != NULL);
+}
 #endif
