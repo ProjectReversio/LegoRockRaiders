@@ -424,10 +424,10 @@ someLabel:
                            ((flags & AITASK_FLAG_IMMEDIATESELECTION) == AITASK_FLAG_NONE ||
                            Message_FindIndexOfObject(task->unitList, task->unitListCount, liveObj, NULL)))
                         {
-                            Point2I blockPos = task->blockPos;
+                            Point2I blockPos2 = task->blockPos;
 
                             B32 outBool;
-                            if (AITask_FUN_00404ef0(task, liveObj, NULL, &blockPos, &outBool, TRUE, TRUE) && !outBool)
+                            if (AITask_FUN_00404ef0(task, liveObj, NULL, &blockPos2, &outBool, TRUE, TRUE) && !outBool)
                             {
                                 if (flags & AITASK_FLAG_ACCEPTCARRYING != AITASK_FLAG_NONE)
                                 {
@@ -444,18 +444,18 @@ someLabel:
                                     (taskType == AITask_Type_Dig && (task->flags & AITASK_FLAG_DIGCONNECTION) == AITASK_FLAG_NONE))
                                 {
                                     U32 uVar8;
-                                    if (objBlockPos.x == blockPos.x &&
-                                       (uVar8 = blockPos.y - objBlockPos.y >> 0x1f,
-                                       (blockPos.y - objBlockPos.y ^ uVar8) - uVar8 == 1) ||
-                                       (blockPos.y == objBlockPos.y &&
-                                       (uVar8 = blockPos.x - objBlockPos.x >> 0x1f,
-                                       (blockPos.x - objBlockPos.x ^ uVar8) - uVar8 == 1)))
+                                    if (objBlockPos.x == blockPos2.x &&
+                                       (uVar8 = blockPos2.y - objBlockPos.y >> 0x1f,
+                                       (blockPos2.y - objBlockPos.y ^ uVar8) - uVar8 == 1) ||
+                                       (blockPos2.y == objBlockPos.y &&
+                                       (uVar8 = blockPos2.x - objBlockPos.x >> 0x1f,
+                                       (blockPos2.x - objBlockPos.x ^ uVar8) - uVar8 == 1)))
                                     {
                                         aiTask = task;
                                         goto someLabel;
                                     }
                                 }
-                                else if (objBlockPos.x == blockPos.x && objBlockPos.y == blockPos.y)
+                                else if (objBlockPos.x == blockPos2.x && objBlockPos.y == blockPos2.y)
                                 {
                                     aiTask = task;
                                     goto someLabel;
