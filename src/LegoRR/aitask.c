@@ -463,7 +463,20 @@ someLabel:
                             }
                         }
 
-                        // TODO: Implement AITask_Callback_UpdateObject
+                        if ((task->flags & AITASK_FLAG_CARRYTASK) != AITASK_FLAG_NONE &&
+                            LegoObject_VehicleMaxCarryChecksTime_FUN_00439c80(liveObj) &&
+                            (liveObj->flags3 & LIVEOBJ3_SELECTED) == LIVEOBJ3_NONE &&
+                            liveObj->type != LegoObject_RockMonster)
+                        {
+                            // TODO: Implement AITask_Callback_UpdateObject
+                        }
+
+                        if ((task->flags & AITASK_FLAG_IMMEDIATESELECTION) != AITASK_FLAG_NONE &&
+                            Message_FindIndexOfObject(task->unitList, task->unitListCount, liveObj, NULL))
+                        {
+                            aiTask = NULL;
+                            goto someLabel;
+                        }
 
                         task = task->next;
                     } while (task != NULL);
@@ -499,6 +512,21 @@ someLabel:
         AITask_LiveObject_FUN_00404110(liveObj);
         LegoObject_Route_End(liveObj, FALSE);
         goto endFunc;
+    }
+
+    AITask_Type taskType = liveObj->aiTask->taskType;
+    //Error_Debug(Error_Format("Task Type: %s\n", aiGlobs.aitaskName[taskType]));
+
+    if (taskType != AITask_Type_Wait || liveObj->aiTask->time > 0.0f)
+    {
+        if (taskType == AITask_Type_Goto)
+        {
+            // TODO: Implement AITask_Callback_UpdateObject
+        }
+    }
+    else
+    {
+        AITask_LiveObject_FUN_00404110(liveObj);
     }
 
     // TODO: Implement AITask_Callback_UpdateObject
