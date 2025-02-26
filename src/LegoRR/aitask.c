@@ -1,5 +1,7 @@
 #include "aitask.h"
 
+#include <stdio.h>
+
 #include "lego.h"
 #include "lego_object.h"
 #include "level.h"
@@ -372,6 +374,10 @@ B32 AITask_Callback_UpdateObject(lpLegoObject liveObj, void* context)
         goto endFunc;
     }
 
+#ifdef _DEBUG
+    AITask_Debug_UpdateInfo(liveObj);
+#endif
+
     if (liveObj->aiTask == NULL)
     {
         Point2I pos;
@@ -589,3 +595,97 @@ void AITask_DoAnimationWait(struct LegoObject* liveObj)
         liveObj->aiTask = newAITask;
     }
 }
+
+#ifdef LEGORR_DEBUG_SHOW_INFO
+#define AITask_Debug_InfoStringsCount 30
+static char* sAITask_Debug_InfoStrings[AITask_Debug_InfoStringsCount] = { NULL };
+static char* sAITask_Debug_InfoString = NULL;
+static U32 sAITask_Debug_InfoStringCount = 0;
+void AITask_Debug_UpdateInfo(lpLegoObject liveObject)
+{
+    if (liveObject->index >= AITask_Debug_InfoStringsCount)
+        return;
+
+    if (sAITask_Debug_InfoStrings[liveObject->index] != NULL)
+    {
+        Mem_Free(sAITask_Debug_InfoStrings[liveObject->index]);
+        sAITask_Debug_InfoStrings[liveObject->index] = NULL;
+    }
+
+    if (liveObject->aiTask == NULL)
+    {
+        char buffer[256];
+        sprintf_s(buffer, 256, "%d(%s): No AI Task", liveObject->index, LegoObject_Debug_GetTypeName(liveObject->type));
+        U32 len = strlen(buffer) + 1;
+        sAITask_Debug_InfoStrings[liveObject->index] = Mem_Alloc(len);
+        strcpy_s(sAITask_Debug_InfoStrings[liveObject->index], len, buffer);
+        return;
+    }
+
+    char buffer[256];
+    sprintf_s(buffer, 256, "%d(%s): %s", liveObject->index, LegoObject_Debug_GetTypeName(liveObject->type), aiGlobs.aitaskName[liveObject->aiTask->taskType]);
+    U32 len = strlen(buffer) + 1;
+    sAITask_Debug_InfoStrings[liveObject->index] = Mem_Alloc(len);
+    strcpy_s(sAITask_Debug_InfoStrings[liveObject->index], len, buffer);
+
+    AITask_Debug_UpdateInfoString();
+}
+
+void AITask_Debug_UpdateInfoString()
+{
+    if (sAITask_Debug_InfoString != NULL)
+    {
+        Mem_Free(sAITask_Debug_InfoString);
+        sAITask_Debug_InfoString = NULL;
+    }
+
+    sAITask_Debug_InfoStringCount = 0;
+
+    U32 size = 0;
+    for (U32 i = 0; i < AITask_Debug_InfoStringsCount; i++)
+    {
+        if (sAITask_Debug_InfoStrings[i] != NULL)
+        {
+            // +1 for newline
+            size += strlen(sAITask_Debug_InfoStrings[i]) + 1;
+
+            sAITask_Debug_InfoStringCount++;
+        }
+    }
+
+    sAITask_Debug_InfoString = Mem_Alloc(size + 1);
+    sAITask_Debug_InfoString[0] = '\0';
+
+    for (U32 i = 0; i < AITask_Debug_InfoStringsCount; i++)
+    {
+        const char* str = sAITask_Debug_InfoStrings[i];
+        if (str != NULL)
+        {
+            strcat_s(sAITask_Debug_InfoString, size + 1, str);
+            strcat_s(sAITask_Debug_InfoString, size + 1, "\n");
+        }
+    }
+
+    sAITask_Debug_InfoString[size] = '\0';
+}
+
+void AITask_Debug_GetInfoString(char* outString, U32* length)
+{
+    if (sAITask_Debug_InfoString == NULL || sAITask_Debug_InfoStringCount == 0)
+    {
+        const char* test = "No Tasks";
+        *length = strlen(test);
+        if (outString != NULL)
+        {
+            strcpy(outString, test);
+        }
+        return;
+    }
+
+    *length = strlen(sAITask_Debug_InfoString);
+    if (outString != NULL)
+    {
+        strcpy(outString, sAITask_Debug_InfoString);
+    }
+}
+#endif

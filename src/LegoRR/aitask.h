@@ -213,3 +213,9 @@ extern void AITask_LiveObject_SetAITaskUnk(struct LegoObject* liveObj, AITask_Ty
 extern void AITask_LiveObject_FUN_00404110(struct LegoObject* liveObj);
 
 extern void AITask_DoAnimationWait(struct LegoObject* liveObj);
+
+#ifdef LEGORR_DEBUG_SHOW_INFO
+extern void AITask_Debug_UpdateInfo(struct LegoObject* liveObj);
+extern void AITask_Debug_UpdateInfoString();
+extern void AITask_Debug_GetInfoString(char* outString, U32* length);
+#endif

@@ -346,6 +346,9 @@ typedef struct LegoObject
 {
     LegoObject_Type type;
     LegoObject_ID id;
+#ifdef LEGORR_DEBUG_SHOW_INFO
+	U32 index;
+#endif
     const char* customName; // max size is 11 (NOT null-terminated)
     struct VehicleModel* vehicle; // Model for vehicle objects only.
     struct CreatureModel* miniFigure; // Model for mini-figure objects only.
@@ -609,3 +612,7 @@ extern B32 LegoObject_VehicleMaxCarryChecksTime_FUN_00439c80(lpLegoObject liveOb
 extern B32 LegoObject_GetBlockPos(lpLegoObject liveObj, S32* outBx, S32* outBy);
 
 extern B32 LiveObject_GetDamageFromSurface(lpLegoObject liveObj, S32 bx, S32 by, F32 elapsedGame, F32* optOutDamage);
+
+#ifdef LEGORR_DEBUG_SHOW_INFO
+extern const char* LegoObject_Debug_GetTypeName(LegoObject_Type objType);
+#endif

@@ -292,6 +292,12 @@ lpLegoObject LegoObject_Create_internal()
     liveObj->targetBlockPos.x = -1.0f;
     liveObj->targetBlockPos.y = -1.0f;
 
+#ifdef LEGORR_DEBUG_SHOW_INFO
+    static U32 count = 0;
+    liveObj->index = count;
+    count++;
+#endif
+
     return liveObj;
 }
 
@@ -1601,3 +1607,58 @@ B32 LiveObject_GetDamageFromSurface(lpLegoObject liveObj, S32 bx, S32 by, F32 el
 
     return FALSE;
 }
+
+#ifdef LEGORR_DEBUG_SHOW_INFO
+const char* LegoObject_Debug_GetTypeName(LegoObject_Type objType)
+{
+    switch (objType)
+    {
+        case LegoObject_None:
+            return "None";
+        case LegoObject_Vehicle:
+            return "Vehicle";
+        case LegoObject_MiniFigure:
+            return "MiniFigure";
+        case LegoObject_RockMonster:
+            return "RockMonster";
+        case LegoObject_Building:
+            return "Building";
+        case LegoObject_Boulder:
+            return "Boulder";
+        case LegoObject_PowerCrystal:
+            return "PowerCrystal";
+        case LegoObject_Ore:
+            return "Ore";
+        case LegoObject_Dynamite:
+            return "Dynamite";
+        case LegoObject_Barrier:
+            return "Barrier";
+        case LegoObject_UpgradePart:
+            return "UpgradePart";
+        case LegoObject_ElectricFence:
+            return "ElectricFence";
+        case LegoObject_SpiderWeb:
+            return "SpiderWeb";
+        case LegoObject_OohScary:
+            return "OohScary";
+        case LegoObject_ElectricFenceStud:
+            return "ElectricFenceStud";
+        case LegoObject_Path:
+            return "Path";
+        case LegoObject_Pusher:
+            return "Pusher";
+        case LegoObject_Freezer:
+            return "Freezer";
+        case LegoObject_IceCube:
+            return "IceCube";
+        case LegoObject_LaserShot:
+            return "LaserShot";
+        case LegoObject_Type_Count:
+            return "Type_Count";
+        case LegoObject_TVCamera:
+            return "TVCamera";
+        default:
+            return "Unknown";
+    }
+}
+#endif

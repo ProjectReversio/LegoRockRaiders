@@ -744,3 +744,8 @@ extern B32 Lego_UpdateObject3DSounds(lpLegoObject liveObj, void* context);
 // All movie playback seen in LegoRR is done by Front_PlayMovie (which supports
 //  skipping, and scales to screen, but not playing at a specified position).
 extern void Lego_PlayMovie_old(const char* fName, Point2F* optScreenPt);
+
+#ifdef LEGORR_DEBUG_SHOW_INFO
+extern void Lego_Debug_ShowInfo();
+extern void Lego_Debug_PrintAITaskInfo();
+#endif

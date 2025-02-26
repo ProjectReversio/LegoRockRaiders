@@ -968,22 +968,8 @@ B32 Lego_MainLoop(F32 elapsed)
 
     // TODO: Implement Lego_MainLoop
 
-
 #ifdef LEGORR_DEBUG_SHOW_INFO
-    // Show Debug Info
-    {
-        Point3F debugCameraPos;
-        //Camera_GetTopdownWorldPos(legoGlobs.cameraMain, legoGlobs.currLevel->map, &debugCameraPos);
-        Container_GetPosition(legoGlobs.cameraMain->contCam, NULL, &debugCameraPos);
-        Font_PrintF(legoGlobs.bmpToolTipFont, 10, 50, "Camera Position: (%f,%f,%f)", debugCameraPos.x, debugCameraPos.y,
-                    debugCameraPos.z);
-
-        Point3F lightPos;
-        Container_GetPosition(legoGlobs.rootLight, NULL, &lightPos);
-        Font_PrintF(legoGlobs.bmpToolTipFont, 10, 60, "Light Position: (%f,%f,%f)", lightPos.x, lightPos.y, lightPos.z);
-
-        Font_PrintF(legoGlobs.bmpToolTipFont, 10, 70, "Mouse Position: (%d,%d)", inputGlobs.msx, inputGlobs.msy);
-    }
+        Lego_Debug_ShowInfo();
 #endif
 
     // TODO: Implement Lego_MainLoop
@@ -3783,3 +3769,63 @@ void Lego_PlayMovie_old(const char* fName, Point2F* optScreenPt)
 {
     // TODO: Implement Lego_PlayMovie_old
 }
+
+#ifdef LEGORR_DEBUG_SHOW_INFO
+void Lego_Debug_ShowInfo()
+{
+    Point3F debugCameraPos;
+    //Camera_GetTopdownWorldPos(legoGlobs.cameraMain, legoGlobs.currLevel->map, &debugCameraPos);
+    Container_GetPosition(legoGlobs.cameraMain->contCam, NULL, &debugCameraPos);
+    Font_PrintF(legoGlobs.bmpToolTipFont, 10, 50, "Camera Position: (%f,%f,%f)", debugCameraPos.x, debugCameraPos.y,
+                debugCameraPos.z);
+
+    Point3F lightPos;
+    Container_GetPosition(legoGlobs.rootLight, NULL, &lightPos);
+    Font_PrintF(legoGlobs.bmpToolTipFont, 10, 60, "Light Position: (%f,%f,%f)", lightPos.x, lightPos.y, lightPos.z);
+
+    Font_PrintF(legoGlobs.bmpToolTipFont, 10, 70, "Mouse Position: (%d,%d)", inputGlobs.msx, inputGlobs.msy);
+
+    Lego_Debug_PrintAITaskInfo();
+}
+
+void Lego_Debug_PrintAITaskInfo()
+{
+    U32 debugAILen;
+    AITask_Debug_GetInfoString(NULL, &debugAILen);
+
+    char* debugAIInfo = Mem_Alloc(debugAILen + 1);
+    AITask_Debug_GetInfoString(debugAIInfo, &debugAILen);
+    debugAIInfo[debugAILen] = '\0';
+
+    Font_PrintF(legoGlobs.bmpToolTipFont, 10, 80, "AI Info:");
+    //Font_PrintF(legoGlobs.bmpToolTipFont, 10, 90, "{");
+    char* debugAIInfoPtr = debugAIInfo;
+    S32 debugAIInfoIt = 0;
+    B32 firstTime = TRUE;
+    while (*debugAIInfoPtr != '\0')
+    {
+        if (*debugAIInfoPtr == '\n' || firstTime)
+        {
+            if (!firstTime)
+                debugAIInfoPtr++;
+            U32 nextIndex = 0;
+            while (debugAIInfoPtr[nextIndex + 1] != '\n' && debugAIInfoPtr[nextIndex + 1] != '\0')
+                nextIndex++;
+            nextIndex++;
+            char* buf = Mem_Alloc(nextIndex + 1);
+            memcpy(buf, debugAIInfoPtr, nextIndex);
+            buf[nextIndex] = '\0';
+            Font_PrintF(legoGlobs.bmpToolTipFont, 14, 90 + debugAIInfoIt * 10, buf);
+            Mem_Free(buf);
+            debugAIInfoIt++;
+            firstTime = FALSE;
+        }
+        else
+        {
+            debugAIInfoPtr++;
+        }
+    }
+    //Font_PrintF(legoGlobs.bmpToolTipFont, 10, 100 + debugAIInfoIt * 10, "}");
+    Mem_Free(debugAIInfo);
+}
+#endif
