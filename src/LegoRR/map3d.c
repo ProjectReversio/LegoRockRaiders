@@ -476,6 +476,9 @@ B32 Map3D_Intersections_Sub2_FUN_004518a0(lpMap3D map, U32 bx, U32 by, Point3F *
     Point3F endPoint;
     if (Maths_RayPlaneIntersection(&endPoint, rayOrigin, ray, &positions[0], &normal))
     {
+        points[0].x = positions[0].x;
+        points[0].y = positions[0].y;
+
         if (rotated)
         {
             points[1].x = positions[2].x;
@@ -486,6 +489,11 @@ B32 Map3D_Intersections_Sub2_FUN_004518a0(lpMap3D map, U32 bx, U32 by, Point3F *
             points[1].x = positions[1].x;
             points[1].y = positions[1].y;
         }
+
+        points[2].x = positions[3].x;
+        points[2].y = positions[3].y;
+        points[3].x = positions[0].x;
+        points[3].y = positions[0].y;
 
         Point2F endPointCopy;
         endPointCopy.x = endPoint.x;
