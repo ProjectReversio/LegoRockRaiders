@@ -353,21 +353,21 @@ lpLegoObject LegoObject_Create(void** objModel, LegoObject_Type objType, LegoObj
         // TODO: Implement LegoObject_Create
     }
 
-    liveObj->activityName2 = objectGlobs.activityName[0];
-    liveObj->activityName1 = objectGlobs.activityName[9];
+    liveObj->activityName2 = objectGlobs.activityName[Activity_Stand];
+    liveObj->activityName1 = objectGlobs.activityName[Activity_TurnLeft];
 
     if (LegoObject_UpdateActivityChange(liveObj))
         liveObj->flags3 |= LIVEOBJ3_CANTURN;
 
-    liveObj->activityName1 = objectGlobs.activityName[16];
+    liveObj->activityName1 = objectGlobs.activityName[Activity_Gather];
     if (LegoObject_UpdateActivityChange(liveObj))
         liveObj->flags3 |= LIVEOBJ3_CANGATHER;
 
-    liveObj->activityName1 = objectGlobs.activityName[2];
+    liveObj->activityName1 = objectGlobs.activityName[Activity_RouteRubble];
     if (LegoObject_UpdateActivityChange(liveObj))
         liveObj->flags3 |= LIVEOBJ3_CANROUTERUBBLE;
 
-    liveObj->activityName1 = objectGlobs.activityName[0];
+    liveObj->activityName1 = objectGlobs.activityName[Activity_Stand];
     LegoObject_UpdateActivityChange(liveObj);
 
     AITask_LiveObject_Unk_UpdateAITask_AnimationWait(liveObj);
@@ -413,14 +413,14 @@ B32 LegoObject_UpdateActivityChange(lpLegoObject liveObj)
     if (actName == liveObj->activityName2)
         return FALSE;
 
-    if (actName != objectGlobs.activityName[0] &&
-        actName != objectGlobs.activityName[1] &&
-        actName != objectGlobs.activityName[4] &&
-        actName != objectGlobs.activityName[6] &&
-        actName != objectGlobs.activityName[8] &&
-        actName != objectGlobs.activityName[0x11] &&
-        actName != objectGlobs.activityName[0x16] &&
-        actName != objectGlobs.activityName[2])
+    if (actName != objectGlobs.activityName[Activity_Stand] &&
+        actName != objectGlobs.activityName[Activity_Route] &&
+        actName != objectGlobs.activityName[Activity_Drill] &&
+        actName != objectGlobs.activityName[Activity_Walk] &&
+        actName != objectGlobs.activityName[Activity_Reverse] &&
+        actName != objectGlobs.activityName[Activity_Carry] &&
+        actName != objectGlobs.activityName[Activity_CarryStand] &&
+        actName != objectGlobs.activityName[Activity_RouteRubble])
     {
         AITask_DoAnimationWait(liveObj);
     }
@@ -1550,7 +1550,12 @@ B32 LegoObject_TryWaiting(lpLegoObject liveObj)
     {
         U32 repeatCount = 1;
         S16 rng = Maths_Rand();
-        LegoObject_SetActivity(liveObj, (S32)rng % 21 + Activity_Waiting1, repeatCount);
+
+        // there are 21 different waiting activities, they are all in a row
+        // starting from Activity_Waiting1
+        // so we can just pick a random number between 0 and 20 and add it to Activity_Waiting1
+        Activity_Type activity = (S32)rng % 21 + Activity_Waiting1;
+        LegoObject_SetActivity(liveObj, activity, repeatCount);
         if (LegoObject_UpdateActivityChange(liveObj))
         {
             liveObj->flags1 |= LIVEOBJ1_WAITING;
