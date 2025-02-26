@@ -595,6 +595,7 @@ typedef B32 (*LegoObject_CheckBlock_Callback)(lpLegoObject liveObj, Point2I* blo
 extern B32 LegoObject_CheckBlock_FUN_00443b00(lpLegoObject liveObj, Point2I* blockPos, void* data);
 extern B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, S32** outNewBXs, S32** outNewBYs, U32* outCount, LegoObject_CheckBlock_Callback callback, void* data);
 extern B32 LegoObject_Route_ScoreSub_FUN_00440f30(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, U32** outNewBXs, U32** outNewBYs, U32* outCount, LegoObject_CheckBlock_Callback callback, void* data);
+extern B32 LegoObject_Route_ScoreNoCallback_FUN_00440ef0(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, S32** outNewBXs, S32** outNewBYs, U32* outCount);
 
 extern B32 LegoObject_FUN_004439d0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockPos, U32 unused);
 
@@ -611,7 +612,13 @@ extern B32 LegoObject_VehicleMaxCarryChecksTime_FUN_00439c80(lpLegoObject liveOb
 
 extern B32 LegoObject_GetBlockPos(lpLegoObject liveObj, S32* outBx, S32* outBy);
 
+extern void LegoObject_GetPosition(lpLegoObject liveObj, F32* outX, F32* outY);
+
+extern void LegoObject_GetFaceDirection(lpLegoObject liveObj, Point2F* outDirection);
+
 extern B32 LiveObject_GetDamageFromSurface(lpLegoObject liveObj, S32 bx, S32 by, F32 elapsedGame, F32* optOutDamage);
+
+extern B32 LiveObject_FUN_00431ba0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockOffPos, B32 param4);
 
 #ifdef LEGORR_DEBUG_SHOW_INFO
 extern const char* LegoObject_Debug_GetTypeName(LegoObject_Type objType);

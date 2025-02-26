@@ -580,7 +580,164 @@ void AITask_FUN_00402240(lpAITask* refAiTask)
 
 void AITask_FUN_00405b40()
 {
-    // TODO: Implement AITask_FUN_00405b40
+    B32 bVar1;
+
+    U32 someThing;
+    F32 someThingX;
+    F32 someThingY;
+
+    AITask* taskLast = NULL;
+    F32 local_44 = 99999.0f;
+    AITask* taskNext = aiGlobs.pendingTaskList;
+    if (aiGlobs.pendingTaskList != NULL)
+    {
+        AITask* aiTask;
+        do
+        {
+            aiTask = taskNext;
+            if (aiTask->timeIn <= 0.0f &&
+                (aiTask->flags & (AITASK_FLAG_DISABLED | AITASK_FLAG_CARRYTASK)) == AITASK_FLAG_NONE)
+            {
+                LegoObject* legoObj = NULL;
+                LegoObject* legoObj2 = NULL;
+                U32 iter = 0;
+                if (aiGlobs.freeUnitCount != 0)
+                {
+                    LegoObject** freeUnitList = aiGlobs.freeUnitList;
+                    LegoObject* objIter = legoObj;
+                    do
+                    {
+                        legoObj = *freeUnitList;
+                        if (legoObj != NULL)
+                        {
+                            if ((aiTask->flags & AITASK_FLAG_IMMEDIATESELECTION) == AITASK_FLAG_NONE)
+                            {
+                                B32 bVar3 = Message_LiveObject_Check_IsSelected_OrFlags3_200000(legoObj, NULL);
+                                objIter = legoObj2;
+                                if (!bVar3)
+                                {
+                                    if ((aiTask->flags & AITASK_FLAG_IMMEDIATESELECTION) != AITASK_FLAG_NONE)
+                                    {
+                                        goto lab1;
+                                    }
+                                    goto lab2;
+                                }
+                            }
+                            else
+                            {
+lab1:
+                                B32 bVar3 = Message_FindIndexOfObject(aiTask->unitList, aiTask->unitListCount, legoObj, NULL);
+                                objIter = legoObj2;
+                                if (bVar3)
+                                {
+lab2:
+                                    F32 objX, objY;
+                                    LegoObject_GetPosition(legoObj, &objX, &objY);
+
+                                    Point2F somePoint;
+                                    S32 someBool;
+                                    B32 bVar3_ = AITask_FUN_00404ef0(aiTask, legoObj, &somePoint, NULL, &someBool, TRUE, TRUE);
+                                    if (bVar3_)
+                                    {
+                                        Point2I newPoint;
+                                        F32 someX = somePoint.x;
+                                        F32 someY = somePoint.y;
+                                        if (Map3D_WorldToBlockPos_NoZ(Lego_GetMap(), someX, someY, &newPoint.x, &newPoint.y))
+                                        {
+                                            Point2I newPoint2;
+                                            someX = objX;
+                                            someY = objY;
+                                            if (Map3D_WorldToBlockPos_NoZ(Lego_GetMap(), someX, someY, &newPoint2.x, &newPoint2.y))
+                                            {
+                                                AITask_Type taskType = aiTask->taskType;
+                                                bVar1 = TRUE;
+
+                                                U32 uVar5;
+
+                                                if (((taskType == AITask_Type_Dig && (aiTask->flags & AITASK_FLAG_DIGCONNECTION) == AITASK_FLAG_NONE) ||
+                                                    taskType == AITask_Type_Repair || taskType == AITask_Type_Reinforce || taskType == AITask_Type_Train || taskType == AITask_Type_GetTool) &&
+                                                    ((newPoint2.x != newPoint.x || (uVar5 = newPoint2.y - newPoint.y >> 0x1f, (newPoint2.y - newPoint.y ^ uVar5) - uVar5 != 1)) &&
+                                                    (newPoint2.y != newPoint.y || (uVar5 = newPoint2.x - newPoint.x >> 0x1f, (newPoint2.x - newPoint.x ^ uVar5) - uVar5 != 1))))
+                                                {
+                                                    Point2I newPoint3;
+                                                    newPoint3.x = newPoint.x;
+                                                    newPoint3.y = newPoint.y;
+                                                    if (!LiveObject_FUN_00431ba0(legoObj2, &newPoint3, &newPoint, TRUE))
+                                                    {
+                                                        bVar1 = FALSE;
+                                                    }
+                                                }
+
+                                                if (bVar1)
+                                                {
+                                                    S32* local_30;
+                                                    S32* local_38;
+                                                    U32 count;
+                                                    if (!LegoObject_Route_ScoreNoCallback_FUN_00440ef0(legoObj, newPoint2.x, newPoint2.y, newPoint.x, newPoint.y, &local_30, &local_38, &count))
+                                                    {
+                                                        aiTask->timeIn = 75.0f;
+                                                    }
+                                                    else
+                                                    {
+                                                        Mem_Free(local_30);
+                                                        Mem_Free(local_38);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (someBool)
+                                    {
+                                        someThing = iter;
+                                        someThingX = somePoint.x;
+                                        someThingY = somePoint.y;
+                                        break;
+                                    }
+
+                                    objIter = legoObj2;
+
+                                    if (bVar3_)
+                                    {
+                                        F32 localF32 = somePoint.y - objY;
+                                        F32 someSqrt = sqrtf(localF32 * localF32 + (somePoint.x - objX) * (somePoint.x - objX));
+                                        Point2F dir;
+                                        LegoObject_GetFaceDirection(legoObj, &dir);
+                                        if (legoObj2 == NULL || someSqrt < local_44)
+                                        {
+                                            someThing = iter;
+                                            someThingX = somePoint.x;
+                                            someThingY = somePoint.y;
+                                            objIter = legoObj;
+                                            legoObj2 = legoObj;
+                                            local_44 = someSqrt;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        legoObj = objIter;
+                        iter++;
+                        freeUnitList++;
+                        objIter = legoObj;
+                    } while (iter < aiGlobs.freeUnitCount);
+                }
+
+                if (legoObj == NULL)
+                {
+                    // TODO: Implement AITask_FUN_00405b40
+                }
+                else
+                {
+                    // TODO: Implement AITask_FUN_00405b40
+                }
+            }
+
+            taskNext = aiTask->next;
+            taskLast = aiTask;
+        } while (aiTask->next != NULL);
+    }
 }
 
 void AITask_FUN_00405880()

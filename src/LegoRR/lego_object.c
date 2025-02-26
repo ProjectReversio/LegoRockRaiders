@@ -1498,6 +1498,11 @@ B32 LegoObject_Route_ScoreSub_FUN_00440f30(lpLegoObject liveObj, U32 bx, U32 by,
     return FALSE;
 }
 
+B32 LegoObject_Route_ScoreNoCallback_FUN_00440ef0(lpLegoObject liveObj, U32 bx, U32 by, U32 bx2, U32 by2, S32** outNewBXs, S32** outNewBYs, U32* outCount)
+{
+    return LegoObject_Route_Score_FUN_004413b0(liveObj, bx, by, bx2, by2, outNewBXs, outNewBYs, outCount, NULL, NULL);
+}
+
 B32 LegoObject_FUN_004439d0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockPos, U32 unused)
 {
     B32 allowWall = FALSE;
@@ -1601,9 +1606,40 @@ B32 LegoObject_GetBlockPos(lpLegoObject liveObj, S32* outBx, S32* outBy)
     return Map3D_WorldToBlockPos_NoZ(Lego_GetMap(), position.x, position.y, outBx, outBy);
 }
 
+void LegoObject_GetPosition(lpLegoObject liveObj, F32* outX, F32* outY)
+{
+    lpContainer cont = LegoObject_GetActivityContainer(liveObj);
+
+    Point3F position;
+    Container_GetPosition(cont, NULL, &position);
+
+    *outX = position.x;
+    *outY = position.y;
+}
+
+void LegoObject_GetFaceDirection(lpLegoObject liveObj, Point2F* outDirection)
+{
+    lpContainer cont = LegoObject_GetActivityContainer(liveObj);
+
+    Point3F vecDir;
+    Container_GetOrientation(cont, NULL, &vecDir, NULL);
+
+    F32 norm = 1.0f / sqrtf(vecDir.x * vecDir.x + vecDir.y * vecDir.y);
+
+    outDirection->x = norm * vecDir.x;
+    outDirection->y = norm * vecDir.y;
+}
+
 B32 LiveObject_GetDamageFromSurface(lpLegoObject liveObj, S32 bx, S32 by, F32 elapsedGame, F32* optOutDamage)
 {
     // TODO: Implement LiveObject_GetDamageFromSurface
+
+    return FALSE;
+}
+
+B32 LiveObject_FUN_00431ba0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockOffPos, B32 param4)
+{
+    // TODO: Implement LiveObject_FUN_00431ba0
 
     return FALSE;
 }
