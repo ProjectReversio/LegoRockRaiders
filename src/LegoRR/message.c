@@ -38,3 +38,33 @@ void Message_PTL_Update()
 {
     // TODO: Implement Message_PTL_Update
 }
+
+B32 Message_LiveObject_Check_IsSelected_OrFlags3_200000(lpLegoObject liveObj, U32* outIndex)
+{
+    // TODO: Implement Message_LiveObject_Check_IsSelected_OrFlags3_200000
+
+    return FALSE;
+}
+
+B32 Message_FindIndexOfObject(lpLegoObject* objsTable, U32 objsCount, lpLegoObject thisObj, U32* outIndex)
+{
+    if (objsCount == 0)
+        return FALSE;
+
+    U32 i = 0;
+    do
+    {
+        if (*objsTable == thisObj)
+        {
+            if (outIndex != NULL)
+                *outIndex = i;
+
+            return TRUE;
+        }
+
+        i++;
+        objsTable++;
+    } while (i < objsCount);
+
+    return FALSE;
+}

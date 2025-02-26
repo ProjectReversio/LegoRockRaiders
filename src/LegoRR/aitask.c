@@ -411,7 +411,62 @@ someLabel:
                 }
                 else
                 {
-                    // TODO: Implement AITask_Callback_UpdateObject
+                    AITask* task = aiTask;
+                    do
+                    {
+                        AITaskFlags flags = task->flags;
+                        if ((((flags & AITASK_FLAG_DISABLED) == AITASK_FLAG_NONE &&
+                           ((flags & AITASK_FLAG_ACCEPTCARRYING) != AITASK_FLAG_NONE ||
+                           (!LegoObject_VehicleMaxCarryChecksTime_FUN_00439c80(liveObj) &&
+                           (flags & AITASK_FLAG_CARRYTASK) == AITASK_FLAG_NONE))) &&
+                           (flags & AITASK_FLAG_IMMEDIATESELECTION) != AITASK_FLAG_NONE ||
+                           !Message_LiveObject_Check_IsSelected_OrFlags3_200000(liveObj, NULL)) &&
+                           ((flags & AITASK_FLAG_IMMEDIATESELECTION) == AITASK_FLAG_NONE ||
+                           Message_FindIndexOfObject(task->unitList, task->unitListCount, liveObj, NULL)))
+                        {
+                            Point2I blockPos = task->blockPos;
+
+                            B32 outBool;
+                            if (AITask_FUN_00404ef0(task, liveObj, NULL, &blockPos, &outBool, TRUE, TRUE) && !outBool)
+                            {
+                                if (flags & AITASK_FLAG_ACCEPTCARRYING != AITASK_FLAG_NONE)
+                                {
+                                    aiTask = task;
+                                    goto someLabel;
+                                }
+
+                                Point2I objBlockPos;
+                                LegoObject_GetBlockPos(liveObj, &objBlockPos.x, &objBlockPos.y);
+
+                                AITask_Type taskType = task->taskType;
+                                if (taskType == AITask_Type_Repair || taskType == AITask_Type_Reinforce || taskType == AITask_Type_Train ||
+                                    taskType == AITask_Type_Upgrade ||
+                                    (taskType == AITask_Type_Dig && (task->flags & AITASK_FLAG_DIGCONNECTION) == AITASK_FLAG_NONE))
+                                {
+                                    U32 uVar8;
+                                    if (objBlockPos.x == blockPos.x &&
+                                       (uVar8 = blockPos.y - objBlockPos.y >> 0x1f,
+                                       (blockPos.y - objBlockPos.y ^ uVar8) - uVar8 == 1) ||
+                                       (blockPos.y == objBlockPos.y &&
+                                       (uVar8 = blockPos.x - objBlockPos.x >> 0x1f,
+                                       (blockPos.x - objBlockPos.x ^ uVar8) - uVar8 == 1)))
+                                    {
+                                        aiTask = task;
+                                        goto someLabel;
+                                    }
+                                }
+                                else if (objBlockPos.x == blockPos.x && objBlockPos.y == blockPos.y)
+                                {
+                                    aiTask = task;
+                                    goto someLabel;
+                                }
+                            }
+                        }
+
+                        // TODO: Implement AITask_Callback_UpdateObject
+
+                        task = task->next;
+                    } while (task != NULL);
                 }
 
                 if (!LegoObject_VehicleMaxCarryChecksTime_FUN_00439c80(liveObj))
@@ -531,6 +586,13 @@ void AITask_FUN_00406290(lpAITask aiTask1, lpAITask aiTask2, lpLegoObject liveOb
     }
     AITask_RemoveObject48References(liveObj);
     Bubble_LiveObject_MiniFigure_FUN_00407380(liveObj);
+}
+
+B32 AITask_FUN_00404ef0(lpAITask aiTask, struct LegoObject* liveObj, Point2F* outPos, Point2I* blockPos, B32 *outBool, B32 param6, B32 param7)
+{
+    // TODO: Implement AITask_FUN_00404ef0
+    *outBool = FALSE;
+    return TRUE;
 }
 
 // Removes references to object_48.

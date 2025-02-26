@@ -204,6 +204,8 @@ extern void AITask_FUN_00405880();
 
 extern void AITask_FUN_00406290(lpAITask aiTask1, lpAITask aiTask2, lpLegoObject liveObj);
 
+extern B32 AITask_FUN_00404ef0(lpAITask aiTask, struct LegoObject* liveObj, Point2F* outPos, Point2I* blockPos, B32 *outBool, B32 param6, B32 param7);
+
 // Removes references to object_48.
 // But only from the `aiGlobs.AITaskUnkPtr` linked list.
 extern void AITask_RemoveObject48References(lpLegoObject obj48);

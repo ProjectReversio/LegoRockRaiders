@@ -87,3 +87,7 @@ extern void Message_AddMessageAction(Message_Type messageType, lpLegoObject argu
 extern lpLegoObject Message_GetPrimarySelectedUnit();
 
 extern void Message_PTL_Update();
+
+extern B32 Message_LiveObject_Check_IsSelected_OrFlags3_200000(lpLegoObject liveObj, U32* outIndex);
+
+extern B32 Message_FindIndexOfObject(lpLegoObject* objsTable, U32 objsCount, lpLegoObject thisObj, U32* outIndex);
