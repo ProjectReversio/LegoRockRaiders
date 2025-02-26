@@ -358,40 +358,44 @@ B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY,
     blockPos.y = 0;
     mousePos.y = (F32)(U64)mouseY;
 
-    Point4F xformMouseZ0;
-    Point4F xformMouseZ1;
+    Point4F frontTransform;
+    Point4F backTransform;
 
-    // xformMouseZ0 = Point4F{mouseX, mouseY, 0.0, 1.0};
-    xformMouseZ0.x = mousePos.x;
-    xformMouseZ0.y = mousePos.y;
-    xformMouseZ0.z = 0.0f;
-    xformMouseZ0.w = 1.0f;
+    // frontTransform = Point4F{mouseX, mouseY, 0.0, 1.0};
+    frontTransform.x = mousePos.x;
+    frontTransform.y = mousePos.y;
+    frontTransform.z = 0.0f;
+    frontTransform.w = 1.0f;
 
-    // xformMouseZ1 = Point4F{mouseX, mouseY, 1.0, 1.0};
-    xformMouseZ1.x = mousePos.x;
-    xformMouseZ1.y = mousePos.y;
-    xformMouseZ1.z = 1.0f;
-    xformMouseZ1.w = 1.0f;
+    // backTransform = Point4F{mouseX, mouseY, 1.0, 1.0};
+    backTransform.x = mousePos.x;
+    backTransform.y = mousePos.y;
+    backTransform.z = 1.0f;
+    backTransform.w = 1.0f;
 
     Point3F rayOrigin;
     Point3F ray;
 
-    Viewport_InverseTransform(view, &rayOrigin, &xformMouseZ0);
-    Viewport_InverseTransform(view, &ray, &xformMouseZ1);
+    Viewport_InverseTransform(view, &rayOrigin, &frontTransform);
+    Viewport_InverseTransform(view, &ray, &backTransform);
 
     F32 x = ray.x - rayOrigin.x;
     F32 y = ray.y - rayOrigin.y;
     F32 z = ray.z - rayOrigin.z;
     F32 length = 1.0f / sqrtf(x * x + y * y + z * z);
 
+    // from the front to end point > the direction the ray will be shot in
     ray.x = x * length;
     ray.y = y * length;
     ray.z = z * length;
 
-    if (!Map3D_Intersections_Sub1_FUN_00450820(map, &rayOrigin, &ray, outVector, &blockPos, 20))
+    // shoot a bunch of rays, front to back
+    if (!Map3D_Intersections_GetApproximateBlockPos(map, &rayOrigin, &ray, outVector, &blockPos, 20))
         return FALSE;
 
     // Do a 2D loop in range: (-2, -2) -> (2, 2)
+    // Now check that the mouse is actually within the 2D rectangle surrounding
+    // the block we got from the raycast
     for (S32 ny = -2; ny < 3; ny++)
     {
         for (S32 nx = -2; nx < 3; nx++)
@@ -399,6 +403,7 @@ B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY,
             Point2I loopOffset = {nx, ny};
             if ((U32)(loopOffset.x + blockPos.x) < map->blockWidth && (U32)(blockPos.y + loopOffset.y) < map->blockHeight)
             {
+                // get the position of that block in 3D
                 Point3F vertPoses[4];
                 Map3D_GetBlockVertexPositions(map, loopOffset.x + blockPos.x, loopOffset.y + blockPos.y, vertPoses);
 
@@ -407,6 +412,7 @@ B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY,
 
                 for (U32 i = 0; i < 4; i++)
                 {
+                    // take the 3D position of that block, and get it in 2D
                     Viewport_Transform(view, &xformPoly, &vertPoses[i]);
 
                     polyPoints[i].x = xformPoly.x / xformPoly.w;
@@ -416,11 +422,12 @@ B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY,
                 polyPoints[4].x = polyPoints[0].x;
                 polyPoints[4].y = polyPoints[0].y;
 
+                // in 2D again, check if mouse is within the rectangle
                 if (Maths_PointInsidePoly(&mousePos, polyPoints, &polyPoints[1], 4))
                 {
                     *outBx = blockPos.x + loopOffset.x;
                     *outBy = blockPos.y + loopOffset.y;
-                    Map3D_Intersections_Sub2_FUN_004518a0(map, *outBx, *outBy, &rayOrigin, &ray, outVector);
+                    Map3D_Intersections_GetPreciseBlockPos(map, *outBx, *outBy, &rayOrigin, &ray, outVector);
                     return TRUE;
                 }
             }
@@ -431,10 +438,22 @@ B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 mouseY,
     return FALSE;
 }
 
-B32 Map3D_Intersections_Sub1_FUN_00450820(lpMap3D map, Point3F *rayOrigin, Point3F *ray, Point3F *outEndPoint, Point2I *outBlockPos, S32 unkCount)
+B32 Map3D_Intersections_GetApproximateBlockPos(lpMap3D map, Point3F *rayOrigin, Point3F *ray, Point3F *outEndPoint, Point2I *outBlockPos, S32 numberOfRays)
 {
     Point3F planePoint;
     Point3F planeNormal;
+
+    // we create an infinite, flat plane beneath the terrain
+    // then, we shoot a ray at that plane, finding the X/Y of where the ray intersects the plane
+    // then, we get the corresponding Z for that X/Y point on the terrain
+    // but, that Z will be off, because the plane is beneath the terrain
+    // so that X/Y on the plane does not match the X/Y of where the ray would intersect the terrain
+    // then, we move the plane to the Z we got, which moves it up, slightly closer to the terrain
+    // then, we repeat the cycle, shooting a ray again to find a slightly closer X/Y and
+    // get the corresponding Z
+    // we do this count times, until the Z of the plane is basically
+    // intersecting the terrain at the X/Y we care about
+    // the result is a rough approximation of where the ray intersects the terrain
 
     planePoint.x = 0.0f;
     planePoint.y = 0.0f;
@@ -444,21 +463,21 @@ B32 Map3D_Intersections_Sub1_FUN_00450820(lpMap3D map, Point3F *rayOrigin, Point
     planeNormal.y = 0.0f;
     planeNormal.z = -1.0f;
 
-    if (unkCount != 0)
+    if (numberOfRays != 0)
     {
         do
         {
             Maths_RayPlaneIntersection(outEndPoint, rayOrigin, ray, &planePoint, &planeNormal);
             planePoint.z = Map3D_GetWorldZ(map, outEndPoint->x, outEndPoint->y);
 
-            unkCount--;
-        } while (unkCount != 0);
+            numberOfRays--;
+        } while (numberOfRays != 0);
     }
 
     return Map3D_WorldToBlockPos_NoZ(map, outEndPoint->x, outEndPoint->y, &outBlockPos->x, &outBlockPos->y);
 }
 
-B32 Map3D_Intersections_Sub2_FUN_004518a0(lpMap3D map, U32 bx, U32 by, Point3F *rayOrigin, Point3F *ray, Point3F *outVector)
+B32 Map3D_Intersections_GetPreciseBlockPos(lpMap3D map, U32 bx, U32 by, Point3F *rayOrigin, Point3F *ray, Point3F *outVector)
 {
     Point2F points[4];
 
