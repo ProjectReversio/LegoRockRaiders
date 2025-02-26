@@ -8,7 +8,7 @@
 #include "message.h"
 #include "bubble.h"
 
-AITask_Globs aiGlobs = {};
+AITask_Globs aiGlobs = { NULL };
 
 void AITask_Initialize()
 {

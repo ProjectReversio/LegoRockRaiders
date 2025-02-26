@@ -1193,11 +1193,7 @@ void Lego_HandleWorld(F32 elapsedGame, F32 elapsedAbs, B32 keyDownT, B32 keyDown
     Lego_Block* theBlock = NULL;
     U32 mouseBlockX, mouseBlockY;
     Point3F mouseWorldPos;
-#ifdef LEGORR_DEBUG_FORCE_INTERSECTION_BUG
-    B32 intersections = Map3D_GetIntersections(legoGlobs.currLevel->map, legoGlobs.viewMain, 100, 82, &mouseBlockX, &mouseBlockY, &mouseWorldPos);
-#else
     B32 intersections = Map3D_GetIntersections(legoGlobs.currLevel->map, legoGlobs.viewMain, inputGlobs.msx, inputGlobs.msy, &mouseBlockX, &mouseBlockY, &mouseWorldPos);
-#endif
     B32 somethingIntersections = intersections == FALSE;
     if (intersections)
     {
@@ -1662,11 +1658,6 @@ void Lego_UpdateTopdownCamera(F32 elapsedAbs)
 {
     if (legoGlobs.viewMode != ViewMode_Top)
         return;
-
-#ifdef LEGORR_DEBUG_FORCE_INTERSECTION_BUG
-    Camera_StopMovement(legoGlobs.cameraMain);
-    return;
-#endif
 
     // TODO: Implement Lego_UpdateTopdownCamera
     // TODO: handle tutorial

@@ -62,9 +62,6 @@
 
     #define LEGORR_DEBUG_SHOW_INFO
 
-    // TEMP: For debug
-    //#define LEGORR_DEBUG_FORCE_INTERSECTION_BUG
-
 
     //#define LEGORR_DEBUG_LOADER
 

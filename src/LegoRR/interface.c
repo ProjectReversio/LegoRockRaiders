@@ -14,7 +14,7 @@
 #include "tooltip.h"
 #include "utils.h"
 
-Interface_Globs interfaceGlobs = {};
+Interface_Globs interfaceGlobs = { NULL };
 
 void Interface_Initialize(U32 x, U32 y, lpFont font)
 {
