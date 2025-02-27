@@ -213,6 +213,13 @@ B32 AITask_RemoveAttackPathReferences(Point2I* blockPos)
     return FALSE;
 }
 
+B32 AITask_Delay_RemoveClearReferences(Point2I* blockPos, B32 delay)
+{
+    // TODO: Implement AITask_Delay_RemoveClearReferences
+
+    return FALSE;
+}
+
 void AITask_DoClear_AtPosition(Point2I* blockPos, Message_Type completeAction)
 {
     lpAITask task = AITask_Create(AITask_Type_Clear);
@@ -405,7 +412,7 @@ B32 AITask_Callback_UpdateObject(lpLegoObject liveObj, void* context)
 someLabel:
                     if (aiTask != NULL)
                     {
-                        AITask_FUN_00406290(aiTask, unkAiTask, liveObj);
+                        AITask_AssignTask(aiTask, unkAiTask, liveObj);
                         goto endFunc;
                     }
                 }
@@ -484,7 +491,19 @@ someLabel:
 
                 if (!LegoObject_VehicleMaxCarryChecksTime_FUN_00439c80(liveObj))
                 {
-                    // TODO: Implement AITask_Callback_UpdateObject
+                    if (aiGlobs.freeUnitCount < AITASK_FREE_UNIT_LIST_COUNT)
+                    {
+                        aiGlobs.freeUnitList[aiGlobs.freeUnitCount] = liveObj;
+                        aiGlobs.freeUnitCount++;
+                    }
+
+                    if (aiGlobs.freeCreatureCount < AITASK_FREE_UNIT_LIST_COUNT &&
+                        liveObj->type == LegoObject_RockMonster &&
+                        (liveObj->flags3 & LIVEOBJ3_POWEROFF) == LIVEOBJ3_NONE)
+                    {
+                        aiGlobs.freeCreatureList[aiGlobs.freeCreatureCount] = liveObj;
+                        aiGlobs.freeCreatureCount++;
+                    }
                 }
             }
             else
@@ -726,11 +745,204 @@ lab2:
 
                 if (legoObj == NULL)
                 {
-                    // TODO: Implement AITask_FUN_00405b40
+                    Point2F thePoint;
+                    if ((aiTask->flags & AITASK_FLAG_WAITINGFORTOOL) == AITASK_FLAG_NONE &&
+                        aiGlobs.freeUnitCount != 0)
+                    {
+                        U32 i = 0;
+                        do
+                        {
+                            LegoObject* theObj = aiGlobs.freeUnitList[i];
+                            if (theObj != NULL)
+                            {
+                                if ((aiTask->flags & AITASK_FLAG_IMMEDIATESELECTION) == AITASK_FLAG_NONE)
+                                {
+                                    if (!Message_LiveObject_Check_IsSelected_OrFlags3_200000(theObj, NULL))
+                                    {
+                                        if ((aiTask->flags & AITASK_FLAG_IMMEDIATESELECTION) != AITASK_FLAG_NONE)
+                                            goto dadLabel;
+
+                                        goto grandpaLabel;
+                                    }
+                                }
+                                else
+                                {
+dadLabel:
+                                    if (Message_FindIndexOfObject(aiTask->unitList, aiTask->unitListCount, theObj, NULL))
+                                    {
+grandpaLabel:
+                                        if (AITask_FUN_00404ef0(aiTask, theObj, NULL, NULL, NULL, FALSE, TRUE))
+                                        {
+                                            AITask_DoGetTool_FromTask(aiTask);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            i++;
+                        } while (i < aiGlobs.freeUnitCount);
+                    }
+
+                    if (aiTask->taskType != AITask_Type_Train &&
+                        aiTask->trainFlags != LegoObject_AbilityType_Pilot &&
+                        (aiTask->flags & AITASK_FLAG_WAITINGFORTRAIN) == AITASK_FLAG_NONE)
+                    {
+                        LegoObject* local_94 = NULL;
+                        B32 theBool = FALSE;
+                        if (aiGlobs.freeUnitCount != 0)
+                        {
+                            U32 i = 0;
+                            do
+                            {
+                                LegoObject* theObj = aiGlobs.freeUnitList[i];
+                                if (theObj != NULL)
+                                {
+                                    if ((aiTask->flags & AITASK_FLAG_IMMEDIATESELECTION) == AITASK_FLAG_NONE)
+                                    {
+                                        if (!Message_LiveObject_Check_IsSelected_OrFlags3_200000(theObj, NULL))
+                                        {
+                                            if ((aiTask->flags & AITASK_FLAG_IMMEDIATESELECTION) != AITASK_FLAG_NONE)
+                                                goto momLabel;
+
+                                            goto grandmaLabel;
+                                        }
+                                    }
+                                    else
+                                    {
+momLabel:
+                                        if (Message_FindIndexOfObject(aiTask->unitList, aiTask->unitListCount, theObj, NULL))
+                                        {
+grandmaLabel:
+                                            B32 newBool = AITask_FUN_00404ef0(aiTask, theObj, &thePoint, NULL, NULL, FALSE, FALSE);
+                                            if (newBool && (newBool = AITask_FUN_00404ef0(aiTask, theObj, &thePoint, NULL, NULL, FALSE, TRUE),
+                                                local_94 = theObj, newBool != FALSE))
+                                            {
+                                                theBool = TRUE;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                i++;
+                            } while (i < aiGlobs.freeUnitCount);
+                        }
+
+                        LegoObject* theLegoObj;
+                        if (local_94 != NULL && !theBool &&
+                            (theLegoObj = LegoObject_Search_FUN_00439110(NULL, &thePoint, aiTask->trainFlags), theLegoObj != NULL))
+                        {
+                            AITask_DoTrain_Target(theLegoObj, aiTask->trainFlags, aiTask->trainFlags != ABILITY_FLAG_REPAIR);
+                            aiTask->flags |= AITASK_FLAG_WAITINGFORTRAIN;
+                        }
+                    }
                 }
                 else
                 {
-                    // TODO: Implement AITask_FUN_00405b40
+                    B32 theNewBool = TRUE;
+                    Point2I theBlockPos;
+                    LegoObject_GetBlockPos(legoObj, &theBlockPos.x, &theBlockPos.y);
+
+                    Point2I theBlockPos2;
+                    Map3D_WorldToBlockPos_NoZ(Lego_GetMap(), someThingX, someThingY, &theBlockPos2.x, &theBlockPos2.y);
+
+                    AITask_Type taskType = aiTask->taskType;
+                    U32 uVar5;
+                    if ((taskType == AITask_Type_Clear || taskType == AITask_Type_Collect ||
+                        taskType == AITask_Type_BuildPath || taskType == AITask_Type_Upgrade) &&
+                        (theBlockPos.x != theBlockPos2.x || theBlockPos.y != theBlockPos2.y))
+                    {
+                        if (aiTask->assignedToObject == NULL)
+                        {
+                            Message_Type msgType;
+                            if (TRUE) // likely a define in the original code
+                            {
+                                switch (taskType)
+                                {
+                                    case AITask_Type_Collect:
+                                        msgType = Message_CollectCrystal;
+                                    break;
+                                    case AITask_Type_Clear:
+                                        msgType = Message_Clear;
+                                    break;
+                                    case AITask_Type_Upgrade:
+                                        msgType = Message_Upgrade;
+                                    break;
+                                    case AITask_Type_BuildPath:
+                                        msgType = Message_BuildPath;
+                                    break;
+                                }
+                            }
+                            Message_AddMessageAction(msgType, legoObj, aiTask, &theBlockPos2);
+                            if ((aiTask->flags & AITASK_FLAG_IMMEDIATESELECTION) == AITASK_FLAG_NONE)
+                            {
+                                aiTask->assignedToObject = legoObj;
+                            }
+
+                            if (aiTask->taskType == AITask_Type_Clear && legoObj->type == LegoObject_Vehicle)
+                            {
+                                AITask_Delay_RemoveClearReferences(&aiTask->blockPos, TRUE);
+                                aiTask->timeIn = 0.0f;
+                            }
+                        }
+nwLabel:
+                        theNewBool = FALSE;
+                    }
+                    else if (((taskType == AITask_Type_Dig && (aiTask->flags & AITASK_FLAG_DIGCONNECTION) == AITASK_FLAG_NONE) ||
+                            (taskType == AITask_Type_Repair || taskType == AITask_Type_Reinforce || taskType == AITask_Type_Train || taskType == AITask_Type_GetTool)) &&
+                            (theBlockPos.x != theBlockPos2.x || (uVar5 = theBlockPos.y - theBlockPos2.y >> 0x1f, (theBlockPos.y - theBlockPos2.y ^ uVar5) - uVar5 != 1)) &&
+                            (theBlockPos.y != theBlockPos2.y || (uVar5 = theBlockPos.x - theBlockPos2.x >> 0x1f, (theBlockPos.x - theBlockPos2.x ^ uVar5) - uVar5 != 1)))
+                    {
+                        if (aiTask->assignedToObject == NULL)
+                        {
+                            Message_Type msgType;
+                            if (TRUE) // likely a define in the original code
+                            {
+                                switch (taskType)
+                                {
+                                    case AITask_Type_Dig:
+                                        msgType = Message_Dig;
+                                    break;
+                                    case AITask_Type_Repair:
+                                        msgType = Message_Repair;
+                                    break;
+                                    case AITask_Type_Reinforce:
+                                        msgType = Message_Reinforce;
+                                    break;
+                                    case AITask_Type_GetTool:
+                                        msgType = Message_CollectTool;
+                                        break;
+                                    case AITask_Type_Train:
+                                        msgType = Message_Train;
+                                    break;
+                                }
+                            }
+
+                            Point2I blockOffPos;
+                            if (!LiveObject_FUN_00431ba0(legoObj, &theBlockPos2, &blockOffPos, TRUE))
+                            {
+                                aiTask->priorityValue--;
+                            }
+                            else
+                            {
+                                Message_AddMessageAction(msgType, legoObj, aiTask, &blockOffPos);
+                                if ((aiTask->flags & AITASK_FLAG_IMMEDIATESELECTION) == AITASK_FLAG_NONE)
+                                {
+                                    aiTask->assignedToObject = legoObj;
+                                }
+                            }
+                        }
+                        goto nwLabel;
+                    }
+
+                    if (theNewBool)
+                    {
+                        AITask_AssignTask(aiTask, taskLast, legoObj);
+                    }
+
+                    S32 freeIndex = aiGlobs.freeUnitCount - 1;
+                    aiGlobs.freeUnitCount--;
+                    aiGlobs.freeUnitList[someThing] = aiGlobs.freeUnitList[freeIndex];
                 }
             }
 
@@ -745,7 +957,7 @@ void AITask_FUN_00405880()
     // TODO: Implement AITask_FUN_00405880
 }
 
-void AITask_FUN_00406290(lpAITask aiTask1, lpAITask aiTask2, lpLegoObject liveObj)
+void AITask_AssignTask(lpAITask aiTask1, lpAITask aiTask2, lpLegoObject liveObj)
 {
     if ((aiTask1->flags & AITASK_FLAG_DUPLICATE) == AITASK_FLAG_NONE)
     {
@@ -780,6 +992,11 @@ B32 AITask_FUN_00404ef0(lpAITask aiTask, struct LegoObject* liveObj, Point2F* ou
     return TRUE;
 }
 
+void AITask_DoGetTool_FromTask(lpAITask aiTask)
+{
+    // TODO: Implement AITask_DoGetTool_FromTask
+}
+
 // Removes references to object_48.
 // But only from the `aiGlobs.AITaskUnkPtr` linked list.
 void AITask_RemoveObject48References(lpLegoObject obj48)
@@ -800,6 +1017,18 @@ void AITask_RemoveObject48References(lpLegoObject obj48)
         pTask = &task->next;
         task = *pTask;
     } while (*pTask != NULL);
+}
+
+lpLegoObject LegoObject_Search_FUN_00439110(lpLegoObject liveObj, Point2F* optWorldPos, LegoObject_AbilityFlags trainedType)
+{
+    // TODO: Implement LegoObject_Search_FUN_00439110
+
+    return NULL;
+}
+
+void AITask_DoTrain_Target(struct LegoObject* targetObj, LegoObject_AbilityFlags trainFlags, B32 param3)
+{
+    // TODO: Implement AITask_DoTrain_Target
 }
 
 void AITask_LiveObject_SetAITaskUnk(lpLegoObject liveObj, AITask_Type taskType, lpLegoObject liveObj2, B32 param4)

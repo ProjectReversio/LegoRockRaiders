@@ -136,6 +136,8 @@ typedef struct AITask
     struct AITask* nextFree; // (for listSet)
 } AITask, *lpAITask;
 
+#define AITASK_FREE_UNIT_LIST_COUNT 50
+
 typedef struct AITask_Globs
 {
     lpAITask listSet[12];
@@ -146,9 +148,9 @@ typedef struct AITask_Globs
     AI_Priority priorityValues[AI_Priority_Count];
     lpAITask pendingTaskList;
     lpAITask creatureTaskList;
-    lpLegoObject freeUnitList[50];
+    lpLegoObject freeUnitList[AITASK_FREE_UNIT_LIST_COUNT];
     U32 freeUnitCount;
-    lpLegoObject freeCreatureList[50];
+    lpLegoObject freeCreatureList[AITASK_FREE_UNIT_LIST_COUNT];
     U32 freeCreatureCount;
     U32 requestObjCounts[20][15][16];
     B32 disabledPriorities[AI_Priority_Count];
@@ -178,6 +180,8 @@ extern void AITask_LiveObject_Unk_UpdateAITask_AnimationWait(struct LegoObject* 
 
 extern B32 AITask_RemoveAttackPathReferences(Point2I* blockPos);
 
+extern B32 AITask_Delay_RemoveClearReferences(Point2I* blockPos, B32 delay);
+
 extern void AITask_DoClear_AtPosition(Point2I* blockPos, Message_Type completeAction);
 
 extern void AITask_DoDig_AtBlockPos(Point2I* blockPos, B32 param2, B32 param3);
@@ -202,13 +206,19 @@ extern void AITask_FUN_00405b40();
 
 extern void AITask_FUN_00405880();
 
-extern void AITask_FUN_00406290(lpAITask aiTask1, lpAITask aiTask2, lpLegoObject liveObj);
+extern void AITask_AssignTask(lpAITask aiTask1, lpAITask aiTask2, lpLegoObject liveObj);
 
 extern B32 AITask_FUN_00404ef0(lpAITask aiTask, struct LegoObject* liveObj, Point2F* outPos, Point2I* blockPos, B32 *outBool, B32 param6, B32 param7);
+
+extern void AITask_DoGetTool_FromTask(lpAITask aiTask);
 
 // Removes references to object_48.
 // But only from the `aiGlobs.AITaskUnkPtr` linked list.
 extern void AITask_RemoveObject48References(lpLegoObject obj48);
+
+extern struct LegoObject* LegoObject_Search_FUN_00439110(struct LegoObject* liveObj, Point2F* optWorldPos, LegoObject_AbilityFlags trainedType);
+
+extern void AITask_DoTrain_Target(struct LegoObject* targetObj, LegoObject_AbilityFlags trainFlags, B32 param3);
 
 extern void AITask_LiveObject_SetAITaskUnk(struct LegoObject* liveObj, AITask_Type taskType, struct LegoObject* liveObj2, B32 param4);
 

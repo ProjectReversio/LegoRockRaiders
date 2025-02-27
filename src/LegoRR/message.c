@@ -1,5 +1,7 @@
 #include "message.h"
 
+#include "aitask.h"
+
 void Message_Initialize()
 {
     // TODO: Implement Message_Initialize
@@ -22,7 +24,7 @@ B32 Message_CopySelectedUnits(lpLegoObject **outUnitsList, U32* outUnitsCount)
     return FALSE;
 }
 
-void Message_AddMessageAction(Message_Type messageType, lpLegoObject argument1Obj, U32 argument2, Point2I* opt_blockPos)
+void Message_AddMessageAction(Message_Type messageType, lpLegoObject argument1Obj, lpAITask argument2, Point2I* opt_blockPos)
 {
     // TODO: Implement Message_AddMessageAction
 }
