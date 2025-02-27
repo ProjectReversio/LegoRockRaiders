@@ -692,7 +692,8 @@ lab2:
                                                     S32* local_30;
                                                     S32* local_38;
                                                     U32 count;
-                                                    if (!LegoObject_Route_ScoreNoCallback_FUN_00440ef0(legoObj, newPoint2.x, newPoint2.y, newPoint.x, newPoint.y, &local_30, &local_38, &count))
+                                                    bVar3_ = LegoObject_Route_ScoreNoCallback_FUN_00440ef0(legoObj, newPoint2.x, newPoint2.y, newPoint.x, newPoint.y, &local_30, &local_38, &count);
+                                                    if (!bVar3_)
                                                     {
                                                         aiTask->timeIn = 75.0f;
                                                     }
@@ -985,10 +986,106 @@ void AITask_AssignTask(lpAITask aiTask1, lpAITask aiTask2, lpLegoObject liveObj)
     Bubble_LiveObject_MiniFigure_FUN_00407380(liveObj);
 }
 
-B32 AITask_FUN_00404ef0(lpAITask aiTask, struct LegoObject* liveObj, Point2F* outPos, Point2I* blockPos, B32 *outBool, B32 param6, B32 param7)
+B32 AITask_FUN_00404ef0(lpAITask aiTask, lpLegoObject liveObj, Point2F* outPos, Point2I* blockPos, B32 *outBool, B32 param6, B32 param7)
 {
+    if (outBool != NULL)
+        *outBool = FALSE;
+
+    if ((aiTask->taskType != AITask_Type_Collect || aiTask->targetObject->type != LegoObject_Dynamite) && aiTask->timeIn > 0.0f)
+    {
+        return FALSE;
+    }
+
+    if ((StatsObject_GetStatsFlags1(liveObj) & STATS1_CANBEDRIVEN) != STATS1_NONE && liveObj->driveObject == NULL)
+        return FALSE;
+
+    if ((liveObj->flags1 & LIVEOBJ1_RUNNINGAWAY) != LIVEOBJ1_NONE)
+        return FALSE;
+
+    if ((liveObj->flags4 & LIVEOBJ4_UNK_400) != LIVEOBJ4_NONE)
+        return FALSE;
+
+    if ((legoGlobs.flags2 & GAME2_CALLTOARMS) != GAME2_NONE &&
+        LegoObject_MiniFigureHasBeamEquipped2(liveObj) &&
+        aiTask->taskType != AITask_Type_AttackRockMonster)
+    {
+        return FALSE;
+    }
+
+    AITask_Type taskType = aiTask->taskType;
+    if (taskType == AITask_Type_AttackRockMonster)
+    {
+        // TODO: Implement AITask_FUN_00404ef0
+    }
+    else if (taskType == AITask_Type_FindLoad)
+    {
+        // TODO: Implement AITask_FUN_00404ef0
+    }
+    else if (taskType == AITask_Type_Collect)
+    {
+        // TODO: Implement AITask_FUN_00404ef0
+    }
+    else if (taskType == AITask_Type_Dig || taskType == AITask_Type_Goto ||
+             taskType == AITask_Type_Reinforce || taskType == AITask_Type_Clear)
+    {
+        B32 someBool = TRUE;
+        if (taskType == AITask_Type_Dig)
+        {
+            someBool = LiveObject_BlockCheck_FUN_004326a0(liveObj, aiTask->blockPos.x, aiTask->blockPos.y,
+                aiTask->flags & AITASK_FLAG_DIGCONNECTION, TRUE);
+        }
+
+        if (param6 && (taskType = aiTask->taskType, taskType != AITask_Type_Goto) &&
+            (taskType != AITask_Type_Dynamite &&
+                !LegoObject_TaskHasTool_FUN_0044b780(liveObj, taskType)))
+        {
+            return FALSE;
+        }
+
+        if (aiTask->taskType == AITask_Type_Reinforce && liveObj->type != LegoObject_MiniFigure)
+        {
+            return FALSE;
+        }
+
+        if (aiTask->taskType == AITask_Type_Clear &&
+            (StatsObject_GetStatsFlags1(liveObj) & STATS1_CANCLEARRUBBLE) == STATS1_NONE)
+        {
+            return FALSE;
+        }
+
+        if (aiTask->taskType == AITask_Type_Dig)
+        {
+            if ((liveObj->flags3 & LIVEOBJ3_CANDIG) == LIVEOBJ3_NONE)
+                return FALSE;
+
+            if (!someBool)
+                return FALSE;
+
+            if ((aiTask->flags & AITASK_FLAG_DIGCONNECTION) != AITASK_FLAG_NONE &&
+                (StatsObject_GetStatsFlags1(liveObj) & STATS1_SINGLEWIDTHDIG) == STATS1_NONE)
+            {
+                return FALSE;
+            }
+        }
+
+        if (outPos != NULL)
+        {
+            Map3D_BlockToWorldPos(Lego_GetMap(), aiTask->blockPos.x, aiTask->blockPos.y, &outPos->x, &outPos->y);
+        }
+
+        if (blockPos != NULL)
+        {
+            blockPos->x = aiTask->blockPos.x;
+            blockPos->y = aiTask->blockPos.y;
+        }
+    }
+    else
+    {
+        // TODO: Implement AITask_FUN_00404ef0
+    }
+
     // TODO: Implement AITask_FUN_00404ef0
-    *outBool = FALSE;
+
     return TRUE;
 }
 

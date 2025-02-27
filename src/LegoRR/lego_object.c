@@ -5,6 +5,7 @@
 #include "aitask.h"
 #include "creature.h"
 #include "dummy.h"
+#include "game_control.h"
 #include "lego.h"
 #include "level.h"
 #include "mem.h"
@@ -1578,6 +1579,28 @@ B32 LegoObject_TryWaiting(lpLegoObject liveObj)
     return FALSE;
 }
 
+// Seems to be completely identical to LiveObject_MiniFigureHasBeamEquipped @ 004496a0
+B32 LegoObject_MiniFigureHasBeamEquipped2(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_MiniFigureHasBeamEquipped2
+
+    return FALSE;
+}
+
+B32 LiveObject_BlockCheck_FUN_004326a0(lpLegoObject liveObj, U32 bx, U32 by, B32 param4, B32 param5)
+{
+    // TODO: Implement LiveObject_BlockCheck_FUN_004326a0
+
+    return TRUE;
+}
+
+B32 LegoObject_TaskHasTool_FUN_0044b780(lpLegoObject liveObj, AITask_Type taskType)
+{
+    // TODO: Implement LegoObject_TaskHasTool_FUN_0044b780
+
+    return TRUE;
+}
+
 // Update energy drain while carrying and attempt to rest when needed
 void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed)
 {
@@ -1639,9 +1662,65 @@ B32 LiveObject_GetDamageFromSurface(lpLegoObject liveObj, S32 bx, S32 by, F32 el
 
 B32 LiveObject_FUN_00431ba0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockOffPos, B32 param4)
 {
-    // TODO: Implement LiveObject_FUN_00431ba0
+    Point2I DIRECTIONS[4];
+    DIRECTIONS[0].x = 0;
+    DIRECTIONS[0].y = -1;
+    DIRECTIONS[1].x = 1;
+    DIRECTIONS[1].y = 0;
+    DIRECTIONS[2].x = 0;
+    DIRECTIONS[2].y = 1;
+    DIRECTIONS[3].x = -1;
+    DIRECTIONS[3].y = 0;
 
-    return FALSE;
+    gamectrlGlobs.direction_178 += DIRECTION_RIGHT;
+
+    U32 i = 0;
+    Lego_Level* level = legoGlobs.currLevel;
+    do
+    {
+        Direction dir = gamectrlGlobs.direction_178 + i & 3;
+        if (!param4)
+        {
+somelbl:
+            S32 bx1 = blockPos->x + DIRECTIONS[dir].x;
+            S32 by1 = blockPos->y + DIRECTIONS[dir].y;
+            CrossTerrainType crossType = Lego_GetCrossTerrainType(liveObj, bx1, by1, bx1, by1, FALSE);
+            if (crossType != CrossTerrainType_CantCross)
+            {
+                outBlockOffPos->x = DIRECTIONS[dir].x + blockPos->x;
+                outBlockOffPos->y = DIRECTIONS[dir].y + blockPos->y;
+                return TRUE;
+            }
+
+        }
+        else
+        {
+            B32 bVar1;
+
+            // TODO: Should these be S32?
+            U32 theX = DIRECTIONS[dir].x + blockPos->x;
+            U32 theY = DIRECTIONS[dir].y + blockPos->y;
+
+            BlockFlags1 bflags1;
+            if (theX < level->width - 1 && theY < level->height - 1 &&
+                (bflags1 = level->blocks[theY * level->width + theX].flags1,
+                (bflags1 & BLOCK1_WALL) != BLOCK1_NONE && (bflags1 & BLOCK1_FLOOR) == BLOCK1_NONE))
+            {
+                bVar1 = TRUE;
+            }
+            else
+            {
+                bVar1 = FALSE;
+            }
+
+            if (!bVar1)
+                goto somelbl;
+        }
+
+        i++;
+        if (i > 3)
+            return FALSE;
+    } while (TRUE);
 }
 
 #ifdef LEGORR_DEBUG_SHOW_INFO

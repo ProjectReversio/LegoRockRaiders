@@ -159,6 +159,7 @@ typedef enum LiveFlags4
     LIVEOBJ4_ENTRANCEOCCUPIED   = 0x80,
     LIVEOBJ4_USEDBYCONSTRUCTION = 0x100,
     LIVEOBJ4_DONTSHOWHELPWINDOW = 0x200,
+    LIVEOBJ4_UNK_400			= 0x400,
     LIVEOBJ4_CRYORECOSTDROPPED  = 0x800,
     LIVEOBJ4_UNK_1000           = 0x1000,
     LIVEOBJ4_UNK_2000           = 0x2000,
@@ -602,6 +603,13 @@ extern B32 LegoObject_FUN_004439d0(lpLegoObject liveObj, Point2I* blockPos, Poin
 extern B32 LegoObject_Check_LotsOfFlags1AndFlags2_FUN_0043bdb0(lpLegoObject liveObj);
 
 extern B32 LegoObject_TryWaiting(lpLegoObject liveObj);
+
+// Seems to be completely identical to LiveObject_MiniFigureHasBeamEquipped @ 004496a0
+extern B32 LegoObject_MiniFigureHasBeamEquipped2(lpLegoObject liveObj);
+
+extern B32 LiveObject_BlockCheck_FUN_004326a0(lpLegoObject liveObj, U32 bx, U32 by, B32 param4, B32 param5);
+
+extern B32 LegoObject_TaskHasTool_FUN_0044b780(lpLegoObject liveObj, enum AITask_Type taskType);
 
 // Update energy drain while carrying and attempt to rest when needed
 extern void LegoObject_UpdateCarryingEnergy(lpLegoObject liveObj, F32 elapsed);
