@@ -1239,14 +1239,14 @@ B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U3
 {
     // TODO: Cleanup this decompiled code
 
-    U32 OFFSETS[10];
+    S32 OFFSETS[10];
     OFFSETS[0] = 0;
-    OFFSETS[1] = 0xffffffff;
+    OFFSETS[1] = -1;
     OFFSETS[2] = 1;
     OFFSETS[3] = 0;
     OFFSETS[4] = 0;
     OFFSETS[5] = 1;
-    OFFSETS[6] = 0xffffffff;
+    OFFSETS[6] = -1;
     OFFSETS[7] = 0;
 
     lpMap3D map = Lego_GetMap();
@@ -1309,7 +1309,7 @@ someLabel:
             U32 iterator2 = 0;
             if (pCoords[0] != 0)
             {
-                U32* dataIterator = OFFSETS + specialNum * 500 + 9;
+                S32* dataIterator = OFFSETS + specialNum * 500 + 9;
                 do
                 {
                     // TODO: Is this correct?

@@ -93,6 +93,12 @@ typedef enum StatsFlags3
     STATS3_ENTERTOOLSTORE      = 0x200,
 } StatsFlags3;
 
+typedef struct ToolStats
+{
+    enum AITask_Type taskTypes[3]; // Up to 3 AITaskTypes can be associated with a tool
+    U32 taskCount;
+} ToolStats, *lpToolStats;
+
 typedef struct ObjectStats
 {
     // TODO: Implement ObjectStats
@@ -107,6 +113,15 @@ typedef struct ObjectStats
     StatsFlags3 flags3;
 
 } ObjectStats, *lpObjectStats;
+
+typedef struct Stats_Globs
+{
+    ObjectStats** objectStats[20]; // [objType:20][*objIndex][*objLevel]
+    U32 objectLevels[20][15]; // [objType:20][objIndex:15]
+    ToolStats toolStats[11]; // [toolType:11]
+} Stats_Globs;
+
+extern Stats_Globs statsGlobs;
 
 extern B32 Stats_Initialize(lpConfig config, const char* gameName);
 
