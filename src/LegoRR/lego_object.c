@@ -1239,20 +1239,21 @@ B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U3
 {
     // TODO: Cleanup this decompiled code
 
-    S32 OFFSETS[10];
-    OFFSETS[0] = 0;
-    OFFSETS[1] = -1;
-    OFFSETS[2] = 1;
-    OFFSETS[3] = 0;
-    OFFSETS[4] = 0;
-    OFFSETS[5] = 1;
-    OFFSETS[6] = -1;
-    OFFSETS[7] = 0;
+    S32 DIRECTIONS[8];
+    DIRECTIONS[0] = 0;
+    DIRECTIONS[1] = -1;
+    DIRECTIONS[2] = 1;
+    DIRECTIONS[3] = 0;
+    DIRECTIONS[4] = 0;
+    DIRECTIONS[5] = 1;
+    DIRECTIONS[6] = -1;
+    DIRECTIONS[7] = 0;
 
     lpMap3D map = Lego_GetMap();
     U32 blockWidth = map->blockWidth;
     U32 blockHeight = map->blockHeight;
 
+    // TODO: double check this is correct interpretation of OR and AND
     if (bx >= blockWidth || by >= blockHeight)
         return FALSE;
 
@@ -1270,10 +1271,10 @@ B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U3
         if (objectGlobs.UnkSurfaceGrid_COUNT == blockWidth * blockHeight)
             goto someLabel;
 
-        if (objectGlobs.UnkSurfaceGrid_1_TABLE != NULL)
-        {
+        //if (objectGlobs.UnkSurfaceGrid_1_TABLE != NULL)
+        //{
             Mem_Free(objectGlobs.UnkSurfaceGrid_1_TABLE);
-        }
+        //}
     }
 
     objectGlobs.UnkSurfaceGrid_COUNT = blockWidth * blockHeight;
@@ -1282,122 +1283,126 @@ B32 LegoObject_Route_Score_FUN_004413b0(lpLegoObject liveObj, U32 bx, U32 by, U3
 someLabel:
     if (objectGlobs.UnkSurfaceGrid_1_TABLE != NULL)
     {
-        B32 someBool = FALSE;
+        B32 thereWasNoCallback = FALSE;
         S32 status = 0;
-        S32 theCount;
-        memset(objectGlobs.UnkSurfaceGrid_1_TABLE, 0, blockWidth * blockHeight * sizeof(F32));
+        F64 theCount = 0;
+        memset(objectGlobs.UnkSurfaceGrid_1_TABLE, 0, objectGlobs.UnkSurfaceGrid_COUNT * sizeof(F32));
 
         S32 count = 1;
 
         U32 coords[2];
         coords[0] = 1;
+        coords[1] = 0;
 
         U32* pCoords = coords;
 
-        U32 specialNum = 0;
+        B32 currentlyXorYLoop = 0;
 
-        objectGlobs.UnkSurfaceGrid_1_TABLE[by * blockWidth + bx] = 1.0f;
+        objectGlobs.UnkSurfaceGrid_1_TABLE[(by * blockWidth) + bx] = 1.0f;
 
-        OFFSETS[8] = bx;
-        OFFSETS[9] = by;
-        coords[1] = 0;
+        S32 blocksXY[1000];
+        blocksXY[0] = bx;
+        blocksXY[1] = by;
+
+        Point2I tmpPoint;
 
         do
         {
             count++;
 
-            U32 iterator2 = 0;
+            U32 i = 0;
             if (pCoords[0] != 0)
             {
-                S32* dataIterator = OFFSETS + specialNum * 500 + 9;
+                S32* currentBlockXY = &blocksXY[currentlyXorYLoop * 500];
                 do
                 {
                     // TODO: Is this correct?
-                    //F32 fVar2 = *(F32 *)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + (blockWidth * *puVar7 + puVar7[-1]) * 4);
-                    F32 fVar2 = objectGlobs.UnkSurfaceGrid_1_TABLE[blockWidth * *dataIterator + dataIterator[-1]];
+                    //F32 distanceAway = *(F32 *)((S32)objectGlobs.UnkSurfaceGrid_1_TABLE + (blockWidth * *newBXs + newBXs[-1]) * 4);
+                    F32 distanceAway = objectGlobs.UnkSurfaceGrid_1_TABLE[(blockWidth * currentBlockXY[1]) + currentBlockXY[0]];
 
-                    S32 iterator3 = 0;
+                    S32 direction = 0;
                     do
                     {
-                        U32 theX = dataIterator[-1];
-                        U32 theY = *dataIterator;
+                        U32 evaluationX = currentBlockXY[0];
+                        U32 evaluationY = currentBlockXY[1];
 
-                        if (iterator3 == 0)
-                            theY--;
-                        else if (iterator3 == 1)
-                            theX++;
-                        else if (iterator3 == 2)
-                            theY++;
-                        else if (iterator3 == 3)
-                            theX--;
+                        if (direction == 0)
+                            evaluationY--;
+                        else if (direction == 1)
+                            evaluationX++;
+                        else if (direction == 2)
+                            evaluationY++;
+                        else if (direction == 3)
+                            evaluationX--;
 
-                        if (theX < blockWidth && theY < blockHeight)
+                        if (evaluationX < blockWidth && evaluationY < blockHeight)
                         {
-                            F32 someValue = 1.0f;
-                            U32 xOffset = OFFSETS[iterator3 * 2];
-                            U32 yOffset = OFFSETS[iterator3 * 2 + 1];
-                            Point2I PStack_fc8;
-                            PStack_fc8.x = xOffset + theX;
-                            PStack_fc8.y = yOffset + theY;
+                            F32 howMuchIWantToAvoid = 1.0f;
+                            U32 absoluteX = DIRECTIONS[direction * 2] + evaluationX;
+                            U32 absoluteY = DIRECTIONS[(direction * 2) + 1] + evaluationY;
 
-                            if (Level_Block_IsPath(&PStack_fc8))
-                                someValue = 0.5f;
+                            tmpPoint.x = absoluteX;
+                            tmpPoint.y = absoluteY;
 
-                            CrossTerrainType type = Lego_GetCrossTerrainType(liveObj, theX, theY, xOffset + theX, yOffset + theY, FALSE);
+                            if (Level_Block_IsPath(&tmpPoint))
+                                howMuchIWantToAvoid = 0.5f;
+
+                            CrossTerrainType type = Lego_GetCrossTerrainType(liveObj, evaluationX, evaluationY, absoluteX, absoluteY, FALSE);
                             // TODO: WTF is this if statement?
                             if (type != CrossTerrainType_CantCross &&
-                                objectGlobs.UnkSurfaceGrid_1_TABLE[theY * blockWidth + theX] == 0.0f ||
-                                (someValue + fVar2 < objectGlobs.UnkSurfaceGrid_1_TABLE[theY * blockWidth + theX]))
+                                objectGlobs.UnkSurfaceGrid_1_TABLE[(evaluationY * blockWidth) + evaluationX] == 0.0f ||
+                                (objectGlobs.UnkSurfaceGrid_1_TABLE[(evaluationY * blockWidth) + evaluationX] > howMuchIWantToAvoid + distanceAway))
                             {
-                                yOffset = (U32)(specialNum == 0);
-                                xOffset = coords[yOffset];
-                                objectGlobs.UnkSurfaceGrid_1_TABLE[theY * blockWidth + theX] = someValue + fVar2;
-                                OFFSETS[(xOffset + yOffset * 100) * 5 + 8] = theX;
-                                OFFSETS[(xOffset + yOffset * 100) * 5 + 9] = theY;
-                                coords[yOffset] = xOffset + 1;
+                                U32 notCurrentlyXorYLoop = (U32)(!currentlyXorYLoop);
+                                objectGlobs.UnkSurfaceGrid_1_TABLE[(evaluationY * blockWidth) + evaluationX] = howMuchIWantToAvoid + distanceAway;
+                                U32 coordinate = coords[notCurrentlyXorYLoop];
+                                U32 index = 5 * (coordinate + 100 * notCurrentlyXorYLoop);
+                                blocksXY[index] = evaluationX;
+                                blocksXY[index + 1] = evaluationY;
+                                coords[notCurrentlyXorYLoop]++;
 
                                 if (callback == NULL)
                                 {
-                                    if (theX == bx2 && theY == by2)
+                                    if (evaluationX == bx2 && evaluationY == by2)
                                     {
-                                        someBool = TRUE;
-                                        theCount = count;
+                                        thereWasNoCallback = TRUE;
+                                        theCount = (F64)((F32)count);
                                     }
                                 }
                                 else
                                 {
-                                    Point2I PStack_fd0;
-                                    PStack_fd0.x = theX;
-                                    PStack_fd0.y = theY;
-                                    if (callback(liveObj, &PStack_fd0, data))
+                                    tmpPoint.x = evaluationX;
+                                    tmpPoint.y = evaluationY;
+                                    if (callback(liveObj, &tmpPoint, data))
                                     {
                                         status = 1;
-                                        bx2 = theX;
-                                        by2 = theY;
+                                        bx2 = evaluationX;
+                                        by2 = evaluationY;
                                     }
                                 }
                             }
                         }
 
-                        iterator3++;
-                    } while (iterator3 < 4);
+                        // TODO: confirm
+                        direction++;
+                    } while (direction < 4);
 
-                    iterator2++;
-                    dataIterator += 5;
-                } while (iterator2 < pCoords[0]);
+                    i++;
+                    currentBlockXY += 5;
+                } while (i < pCoords[0]);
             }
 
             pCoords[0] = 0;
-            specialNum = (U32)(specialNum == 0);
-            pCoords = coords + specialNum;
-            if (coords[specialNum] == 0)
+            currentlyXorYLoop = !currentlyXorYLoop;
+            pCoords = coords + currentlyXorYLoop;
+            if (!coords[currentlyXorYLoop])
             {
                 status = -1;
             }
 
-        } while (status == 0);
+        } while (!status);
 
-        if (someBool)
+        if (thereWasNoCallback)
         {
             status = 1;
             count = theCount;
@@ -1406,85 +1411,84 @@ someLabel:
         if (status == -1)
             return FALSE;
 
-        U32* puVar7 = Mem_Alloc(count * sizeof(U32));
-        U32* buffer;
-        if (puVar7 != NULL && (buffer = Mem_Alloc(count * sizeof(U32)), buffer != NULL))
+        U32* newBXs = Mem_Alloc(count * sizeof(U32));
+        U32* newBYs;
+        if (newBXs != NULL && (newBYs = Mem_Alloc(count * sizeof(U32)), newBYs != NULL))
         {
-            S32 iVar4 = count - 1;
-            puVar7[iVar4] = bx2;
-            U32* puStack_ff0 = buffer + iVar4;
-            *puStack_ff0 = by2;
-            *puVar7 = bx;
-            *buffer = by;
+            U32 x = bx2;
+            U32 y = by2;
+            S32 countMinusOne = count - 1;
+            newBXs[countMinusOne] = bx2;
+            newBYs[countMinusOne] = by2;
+            U32* lastNewBX = &newBXs[countMinusOne];
+            U32* lastNewBY = &newBYs[countMinusOne];
+            *newBXs = bx;
+            *newBYs = by;
 
-            if (iVar4 != 1)
+            if (countMinusOne != 1)
             {
-                U32 iterator2 = count - 2;
-                U32 theX = bx2;
-                U32 theY = by2;
+                U32 i = count - 2;
                 do
                 {
-                    F32 fStack_1008 = 10000.0f;
-                    S32 iterator3 = 0;
+                    F32 startsWith10000 = 10000.0f;
+                    S32 direction2 = 0;
                     do
                     {
-                        U32 uVar9 = theX;
-                        U32 uVar6;
-                        if (iterator3 == 0)
+                        U32 offsetX = x;
+                        U32 offsetY = y;
+                        if (direction2 == 0)
                         {
-                            uVar6 = theY - 1;
+                            offsetY = y - 1;
                         }
                         else
                         {
-                            uVar6 = theY;
-                            if (iterator3 == 1)
-                                uVar9 = theX + 1;
-                            else if (iterator3 == 2)
-                                uVar6 = theY + 1;
-                            else if (iterator3 == 3)
-                                uVar9 = theX - 1;
+                            if (direction2 == 1)
+                                offsetX = x + 1;
+                            else if (direction2 == 2)
+                                offsetY = y + 1;
+                            else if (direction2 == 3)
+                                offsetX = x - 1;
                         }
 
-                        Point2I PStack_fd0;
-                        PStack_fd0.x = uVar9;
-                        PStack_fd0.y = uVar6;
+                        tmpPoint.x = offsetX;
+                        tmpPoint.y = offsetY;
 
-                        if ((uVar9 < blockWidth && uVar6 < blockHeight) &&
-                            (theCount = objectGlobs.UnkSurfaceGrid_1_TABLE[theY * blockWidth + theX] - objectGlobs.UnkSurfaceGrid_1_TABLE[uVar6 * blockWidth + uVar9],
-                            theCount > 0.0f && (F32)theCount < fStack_1008) ||
-                            ((F32)theCount == fStack_1008 && Level_Block_IsPath(&PStack_fd0)))
+                        if ((offsetX < blockWidth && offsetY < blockHeight) &&
+                            (theCount = (F64)objectGlobs.UnkSurfaceGrid_1_TABLE[(y * blockWidth) + x] - (F64)objectGlobs.UnkSurfaceGrid_1_TABLE[(offsetY * blockWidth) + offsetX],
+                            count = theCount,
+                            count > 0.0f && count < startsWith10000) ||
+                            (count == startsWith10000 && Level_Block_IsPath(&tmpPoint)))
                         {
-                            fStack_1008 = theCount;
-                            coords[0] = uVar9;
-                            coords[1] = uVar6;
+                            theCount = count;
+                            startsWith10000 = theCount;
+                            coords[0] = offsetX;
+                            coords[1] = offsetY;
                         }
 
-                        iterator3++;
-                    } while (iterator3 < 4);
+                        direction2++;
+                    } while (direction2 < 4);
 
-                    puStack_ff0--;
-                    *(U32*)(((S32)puVar7 - (S32)buffer) + (S32)puStack_ff0) = coords[0];
-                    *puStack_ff0 = coords[1];
-                    iterator2--;
-                    theX = coords[0];
-                    theY = coords[1];
-                } while (iterator2 != 0);
+                    lastNewBX--;
+                    lastNewBY--;
+                    x = coords[0];
+                    y = coords[1];
+                    *lastNewBX = x;
+                    *lastNewBY = y;
+                    i--;
+                } while (i);
             }
 
-            *outNewBXs = (S32*)puVar7;
-            *outNewBYs = (S32*)buffer;
+            *outNewBXs = (S32*)newBXs;
+            *outNewBYs = (S32*)newBYs;
             *outCount = count;
 
-            U32 uVar8;
-            U32 uVar11;
-            if ((*puVar7 != puVar7[1] ||
-                (uVar8 = (S32)(*buffer - buffer[1]) >> 0x1f, (*buffer - buffer[1] ^ uVar8) - uVar8 != 1)) &&
-                ((*buffer != buffer[1] ||
-                    (uVar8 = *puVar7 - puVar7[1], uVar11 = (S32)uVar8 >> 0x1f,
-                    (uVar8 ^ uVar11) - uVar11 != 1))))
+            if ((newBXs[0] != newBXs[1] ||
+                abs(newBYs[0] - newBYs[1]) != 1) &&
+                (newBYs[0] != newBYs[1] ||
+                abs(newBXs[0] - newBXs[1]) != 1))
             {
-                Mem_Free(puVar7);
-                Mem_Free(buffer);
+                Mem_Free(newBXs);
+                Mem_Free(newBYs);
 
                 return LegoObject_Route_ScoreSub_FUN_00440f30(liveObj, bx, by, bx2, by2, (U32**) outNewBXs, (U32**) outNewBYs, (U32*) outCount, callback, data);
             }
