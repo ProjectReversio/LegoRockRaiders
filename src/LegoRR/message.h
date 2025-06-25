@@ -86,6 +86,7 @@ extern void Message_AddMessageAction(Message_Type messageType, lpLegoObject argu
 
 extern lpLegoObject Message_GetPrimarySelectedUnit();
 
+extern Message_Type Message_LookupPTLEventIndex(const char* ptlName);
 extern void Message_PTL_Update();
 
 extern B32 Message_LiveObject_Check_IsSelected_OrFlags3_200000(lpLegoObject liveObj, U32* outIndex);

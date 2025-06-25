@@ -36,6 +36,11 @@ lpLegoObject Message_GetPrimarySelectedUnit()
     return NULL;
 }
 
+Message_Type Message_LookupPTLEventIndex(const char* ptlName)
+{
+    return Message_Null; // TODO: Implement Message_LookupPTLEventIndex
+}
+
 void Message_PTL_Update()
 {
     // TODO: Implement Message_PTL_Update
