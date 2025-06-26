@@ -1,5 +1,6 @@
 #pragma once
 
+#include "input.h"
 #include "platform.h"
 #include "maths.h"
 #include "lego_object.h"
@@ -73,6 +74,31 @@ typedef enum Message_Type
     Message_Debug_DestroyAll              = 64,
     Message_Type_Count                    = 65,
 } Message_Type;
+
+typedef struct Message_Event
+{
+    Message_Type type;
+    lpLegoObject argumentObj; // (this argument is only used for objects)
+    void* argument2; // (this can be many types, and depends on the message)
+    Point2I blockPos;
+} Message_Event, *lpMessage_Event;
+
+typedef struct Message_Globs
+{
+    Message_Event eventLists[2][2048];
+    U32 eventCounts[2];
+    B32 eventAB; // Whether to use index 0 or 1 of eventLists, eventCounts.
+    lpLegoObject selectedUnitList[100];
+    Keys8 hotKeyKeyList[10];
+    U16 padding1;
+    Message_Event hotKeyEventList[10];
+    char* messageName[Message_Type_Count];
+    U32 reserved1;
+    U32 selectedUnitCount;
+    U32 hotKeyCount;
+} Message_Globs;
+
+extern Message_Globs messageGlobs;
 
 extern void Message_Initialize();
 
