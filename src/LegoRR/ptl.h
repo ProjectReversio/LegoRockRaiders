@@ -20,3 +20,5 @@ typedef struct PTL_Globs
 extern PTL_Globs ptlGlobs;
 
 extern B32 PTL_Initialize(const char* filename, const char* gameName);
+
+extern void PTL_EventToAction(lpMessage_Event ref_message);

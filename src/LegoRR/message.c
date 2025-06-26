@@ -1,6 +1,7 @@
 #include "message.h"
 
 #include "aitask.h"
+#include "ptl.h"
 
 Message_Globs messageGlobs = { 0 };
 
@@ -118,6 +119,39 @@ Message_Type Message_LookupPTLEventIndex(const char* ptlName)
 void Message_PTL_Update()
 {
     // TODO: Implement Message_PTL_Update
+
+    for (U32 i = 0; i < messageGlobs.eventCounts[messageGlobs.eventAB]; i++)
+    {
+        PTL_EventToAction(&messageGlobs.eventLists[messageGlobs.eventAB][i]);
+    }
+
+    B32 eventAB = messageGlobs.eventAB; // Store the current eventAB state
+    U32 count = messageGlobs.eventCounts[messageGlobs.eventAB];
+    messageGlobs.eventCounts[messageGlobs.eventAB] = 0;
+    messageGlobs.eventAB = !messageGlobs.eventAB; // Toggle between 0 and 1
+    messageGlobs.eventCounts[messageGlobs.eventAB] = 0;
+
+    for (U32 i = 0; i < count; i++)
+    {
+        Message_Event event = messageGlobs.eventLists[eventAB][i];
+        if (TRUE) // TODO: Why is this in the original code?
+        {
+            switch (event.type)
+            {
+                // TODO: Implement all the message types
+
+                case Message_Goto:
+                case Message_RockMonsterGoto:
+                    AITask_Game_PTL_GotoOrRMGoto(event.argumentObj, &event.blockPos, (AITask*)event.argument2);
+                    break;
+                case Message_UserGoto:
+                    AITask_QueueGotoBlock_Group(messageGlobs.selectedUnitList, messageGlobs.selectedUnitCount, &event.blockPos, (B32)event.argument2);
+                    break;
+
+                // TODO: Implement all the message types
+            }
+        }
+    }
 }
 
 B32 Message_LiveObject_Check_IsSelected_OrFlags3_200000(lpLegoObject liveObj, U32* outIndex)

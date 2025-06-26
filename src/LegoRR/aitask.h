@@ -170,6 +170,10 @@ extern void AITask_Remove(lpAITask aiTask, B32 levelCleanup);
 
 extern lpAITask AITask_Clone(lpAITask aiTask);
 
+// Returns the last task in the object's linked list of tasks.
+// Or null if the object has no tasks.
+extern lpAITask AITask_GetObjectTaskListTail(struct LegoObject* liveObj);
+
 extern void AITask_RemoveGetToolReferences(lpAITask aiTask);
 
 extern void AITask_Game_SetNoGather(B32 noGather);
@@ -225,6 +229,9 @@ extern void AITask_LiveObject_SetAITaskUnk(struct LegoObject* liveObj, AITask_Ty
 extern void AITask_LiveObject_FUN_00404110(struct LegoObject* liveObj);
 
 extern void AITask_DoAnimationWait(struct LegoObject* liveObj);
+
+extern void AITask_Game_PTL_GotoOrRMGoto(struct LegoObject* liveObj, Point2I* blockPos, AITask* referrerTask);
+extern void AITask_QueueGotoBlock_Group(struct LegoObject** unitList, U32 unitCount, Point2I* blockPos, B32 reEvalTasks);
 
 #ifdef LEGORR_DEBUG_SHOW_INFO
 extern void AITask_Debug_UpdateInfo(struct LegoObject* liveObj);

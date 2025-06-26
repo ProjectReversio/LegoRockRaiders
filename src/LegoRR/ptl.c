@@ -25,3 +25,15 @@ B32 PTL_Initialize(const char* filename, const char* gameName)
     }
     return FALSE;
 }
+
+void PTL_EventToAction(lpMessage_Event ref_message)
+{
+    for (U32 i = 0; i < ptlGlobs.count; i++)
+    {
+        if (ref_message->type == ptlGlobs.table[i].fromType)
+        {
+            ref_message->type = ptlGlobs.table[i].toType;
+            return;
+        }
+    }
+}

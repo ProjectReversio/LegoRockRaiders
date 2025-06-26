@@ -183,6 +183,22 @@ lpAITask AITask_Clone(lpAITask aiTask)
     return newAITask;
 }
 
+// Returns the last task in the object's linked list of tasks.
+// Or null if the object has no tasks.
+lpAITask AITask_GetObjectTaskListTail(struct LegoObject* liveObj)
+{
+    lpAITask task = liveObj->aiTask;
+    if (task != NULL)
+    {
+        for (lpAITask taskNext = task->next; taskNext != NULL; taskNext = taskNext->next)
+        {
+            task = taskNext;
+        }
+    }
+
+    return task;
+}
+
 void AITask_RemoveGetToolReferences(lpAITask aiTask)
 {
     // TODO: Implement AITask_RemoveGetToolReferences
@@ -1170,6 +1186,29 @@ void AITask_DoAnimationWait(struct LegoObject* liveObj)
         newAITask->next = liveObj->aiTask;
         liveObj->aiTask = newAITask;
     }
+}
+
+void AITask_Game_PTL_GotoOrRMGoto(struct LegoObject* liveObj, Point2I* blockPos, AITask* referrerTask)
+{
+    lpAITask newAITask = AITask_Create(AITask_Type_Goto);
+    newAITask->blockPos.x = blockPos->x;
+    newAITask->blockPos.y = blockPos->y;
+    newAITask->referrerTask = referrerTask;
+
+    lpAITask tail = AITask_GetObjectTaskListTail(liveObj);
+    if (tail != NULL)
+    {
+        tail->next = newAITask;
+        return;
+    }
+    // If no tail, then this is the first task for this object.
+    liveObj->aiTask = newAITask;
+    Bubble_LiveObject_MiniFigure_FUN_00407380(liveObj);
+}
+
+void AITask_QueueGotoBlock_Group(struct LegoObject** unitList, U32 unitCount, Point2I* blockPos, B32 reEvalTasks)
+{
+    // TODO: Implement AITask_QueueGotoBlock_Group
 }
 
 #ifdef LEGORR_DEBUG_SHOW_INFO
