@@ -81,7 +81,7 @@ void Message_Debug_RegisterSelectedUnitHotkey(U8 key, Message_Type messageType, 
 
 B32 Message_AnyUnitSelected()
 {
-    return FALSE;
+    return messageGlobs.selectedUnitCount != 0;
 }
 
 B32 Message_CopySelectedUnits(lpLegoObject **outUnitsList, U32* outUnitsCount)
