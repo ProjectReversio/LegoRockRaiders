@@ -1277,7 +1277,32 @@ void AITask_QueueGotoBlock_Group(struct LegoObject** unitList, U32 unitCount, Po
 
 B32 AITask_LiveObject_FUN_00404d30(struct LegoObject* liveObj, Point2I* blockPos, Point2F* pos2D)
 {
-    // TODO: Implement AITask_LiveObject_FUN_00404d30
+    Point2I pos;
+    LegoObject_GetBlockPos(liveObj, &pos.x, &pos.y);
+    U32 count;
+    S32* newX;
+    S32* newY;
+    if (pos.x == blockPos->x && pos.y == blockPos->y)
+    {
+        newX = &pos.x;
+        newY = &pos.y;
+        count = 1;
+    }
+    else
+    {
+        if (!LegoObject_Route_ScoreNoCallback_FUN_00440ef0(liveObj, pos.x, pos.y, blockPos->x, blockPos->y, &newX, &newY, &count))
+        {
+            return FALSE;
+        }
+    }
+
+    LegoObject_Route_AllocPtr_FUN_004419c0(liveObj, count, newX, newY, pos2D);
+    if (newX != &pos.x)
+    {
+        Mem_Free(newX);
+        Mem_Free(newY);
+    }
+
     return TRUE;
 }
 

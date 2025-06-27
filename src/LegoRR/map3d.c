@@ -606,6 +606,80 @@ B32 Map3D_Intersections_GetPreciseBlockPos(lpMap3D map, U32 bx, U32 by, Point3F 
     return TRUE;
 }
 
+// Always returns false.
+B32 Map3D_FUN_0044fb30(lpMap3D map, Point2F* wPos2D, Point2F* blockPosF, Point2F* centerDir)
+{
+    S32 posX, posY;
+    if (Map3D_WorldToBlockPos_NoZ(map, wPos2D->x, wPos2D->y, &posX, &posY))
+    {
+        if (blockPosF != NULL)
+        {
+            blockPosF->x = (F32)posX;
+            blockPosF->y = (F32)posY;
+        }
+        if (centerDir != NULL)
+        {
+            F32 newPosX, newPosY;
+            Map3D_BlockToWorldPos(map, posX, posY, &newPosX, &newPosY);
+            centerDir->x = wPos2D->x - newPosX;
+            centerDir->y = wPos2D->y - newPosY;
+            F32 scale = 1.0f / map->blockSize;
+            centerDir->x = scale * centerDir->x + 0.5f;
+            centerDir->y = scale * centerDir->y + 0.5f;
+        }
+    }
+    return FALSE;
+}
+
+S32 Map3D_CheckRoutingComparison_FUN_00450b60(S32 param1, S32 param2, S32 param3, S32 param4)
+{
+    // TODO: Figure out what this function does.
+    S32 num1;
+    S32 num2;
+
+    num1 = -1;
+    if (param1 == param3)
+    {
+        if (param2 - 1 == param4)
+            return 0;
+        if (param2 + 1 == param4)
+            return 2;
+    }
+    else
+    {
+        num2 = param1 + 1;
+        if (param2 == param4)
+        {
+            if (num2 == param3)
+                return 1;
+            if (param1 - 1 == param3)
+                return 3;
+        }
+        else
+        {
+            if (num2 == param3)
+            {
+                if (param2 - 1 == param4)
+                    return 4;
+                if ((num2 == param3) && (param2 + 1 == param4))
+                    return 5;
+            }
+
+            if (param1 - 1 == param3)
+            {
+                if (param2 + 1 == param4)
+                    return 6;
+                if ((param1 - 1 == param3) && (param2 - 1 == param4))
+                {
+                    num1 = 7;
+                }
+            }
+        }
+    }
+
+    return num1;
+}
+
 B32 Map3D_GetBlockVertexPositions(lpMap3D map, U32 bx, U32 by, Point3F* outVertPositions)
 {
     Vertex vertices[4];

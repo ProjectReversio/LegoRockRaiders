@@ -167,6 +167,11 @@ extern B32 Map3D_GetIntersections(lpMap3D map, lpViewport view, U32 mouseX, U32 
 extern B32 Map3D_Intersections_GetApproximateBlockPos(lpMap3D map, Point3F *rayOrigin, Point3F *ray, Point3F *outEndPoint, Point2I *outBlockPos, S32 numberOfRays);
 extern B32 Map3D_Intersections_GetPreciseBlockPos(lpMap3D map, U32 bx, U32 by, Point3F *rayOrigin, Point3F *ray, Point3F *outVector);
 
+// Always returns false.
+extern B32 Map3D_FUN_0044fb30(lpMap3D map, Point2F* wPos2D, Point2F* blockPosF, Point2F* centerDir);
+
+extern S32 Map3D_CheckRoutingComparison_FUN_00450b60(S32 param1, S32 param2, S32 param3, S32 param4);
+
 extern B32 Map3D_GetBlockVertexPositions(lpMap3D map, U32 bx, U32 by, Point3F* outVertPositions);
 
 extern B32 Map3D_GetBlockDirectionNormal(lpMap3D map, U32 bx, U32 by, Direction direction, Point3F* outNormal);

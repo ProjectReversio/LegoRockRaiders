@@ -5,6 +5,7 @@
 #include "config.h"
 #include "images.h"
 #include "meshLOD.h"
+#include "routing.h"
 #include "sfx.h"
 #include "stats.h"
 #include "upgrade.h"
@@ -358,8 +359,7 @@ typedef struct LegoObject
     lpContainer other; // Model for simple objects only.
     Upgrade_PartModel* upgradePart; // First upgrade part model in linked list of parts.
 
-    // TODO: Implement LegoObject
-
+	lpRoutingBlock routeBlocks;
     U32 routeBlocksTotal; // total blocks to travel for current route
     U32 routeBlocksCurrent; // number of blocks traveled (up to routingBlocksTotal)
 
@@ -569,6 +569,8 @@ extern const char* Object_GetLangName(LegoObject_Type objType, LegoObject_ID obj
 extern void HiddenObject_Add(void* objModel, LegoObject_Type objType, LegoObject_ID objID, Point2F* worldPos, F32 heading, F32 health, const char* thisOLName, const char* drivingOLName);
 
 extern lpMeshLOD LegoObject_LoadMeshLOD(lpConfig act, const char* gameName, const char* dirname, LOD_PolyLevel polyLOD, U32 numCameraFrames);
+
+extern B32 LegoObject_Route_AllocPtr_FUN_004419c0(lpLegoObject liveObj, U32 count, F32* param3, F32* param4, Point2F* pos2D);
 
 extern void LegoObject_Route_End(lpLegoObject liveObj, B32 completed);
 
