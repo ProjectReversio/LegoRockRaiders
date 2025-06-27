@@ -1314,9 +1314,15 @@ void AITask_Debug_GetPendingTasksString(char* outString, U32* length)
     {
         if (i >= limit)
             break;
-        const char* name = aiGlobs.aitaskName[task->taskType];
+        const char* name;
+        if (task == NULL)
+            name = "NULL";
+        else
+            name = aiGlobs.aitaskName[task->taskType];
         size += strlen(name) + 2; // +2 for comma and space
 
+        if (task == NULL)
+            break;
         task = task->next;
 
         i++;
@@ -1335,11 +1341,17 @@ void AITask_Debug_GetPendingTasksString(char* outString, U32* length)
     {
         if (i >= limit)
             break;
-        const char* name = aiGlobs.aitaskName[task->taskType];
+        const char* name;
+        if (task == NULL)
+            name = "NULL";
+        else
+        name = aiGlobs.aitaskName[task->taskType];
 
         strcat_s(outString, *length, name);
         strcat_s(outString, *length, ", ");
 
+        if (task == NULL)
+            break;
         task = task->next;
 
         i++;
