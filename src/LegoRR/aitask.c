@@ -404,6 +404,7 @@ B32 AITask_Callback_UpdateObject(lpLegoObject liveObj, void* context)
     AITask_Debug_UpdateInfo(liveObj);
 #endif
 
+    B32 someSpecialVar = FALSE;
     if (liveObj->aiTask == NULL)
     {
         Point2I pos;
@@ -554,9 +555,57 @@ someLabel:
 
     if (taskType != AITask_Type_Wait || liveObj->aiTask->time > 0.0f)
     {
-        if (taskType == AITask_Type_Goto)
+        if (taskType == AITask_Type_Follow)
         {
             // TODO: Implement AITask_Callback_UpdateObject
+        }
+        else if (taskType == AITask_Type_FollowAttack)
+        {
+            // TODO: Implement AITask_Callback_UpdateObject
+        }
+        else if (((liveObj->aiTask->flags & AITASK_FLAG_PERFORMING) == AITASK_FLAG_NONE) &&
+                ((liveObj->flags3 & LIVEOBJ3_SELECTED) == LIVEOBJ3_NONE))
+        {
+            B32 newBoolVar = TRUE;
+            if (TRUE) // TODO: Why?
+            {
+                switch (taskType)
+                {
+                    case AITask_Type_Goto:
+                    {
+                        Point2I blockPos;
+                        LegoObject_GetBlockPos(liveObj, &blockPos.x, &blockPos.y);
+                        if (blockPos.x == liveObj->aiTask->blockPos.x &&
+                            blockPos.y == liveObj->aiTask->blockPos.y)
+                        {
+                            newBoolVar = TRUE;
+                            AITask_LiveObject_FUN_00404110(liveObj);
+                        }
+                        else
+                        {
+                            Point3F vertPoses[4];
+                            Map3D_GetBlockVertexPositions(Lego_GetMap(), liveObj->aiTask->blockPos.x, liveObj->aiTask->blockPos.y, vertPoses);
+                            F32 rand[2];
+                            rand[0] = Maths_RandRange(vertPoses[0].x + 6.0f, vertPoses[2].x - 6.0f);
+                            rand[1] = Maths_RandRange(vertPoses[2].y + 6.0f, vertPoses[0].y - 6.0f);
+                            StatsFlags1 statsFlags = StatsObject_GetStatsFlags1(liveObj);
+                            // TODO: Double check this is correct
+                            newBoolVar = AITask_LiveObject_FUN_00404d30(liveObj, &liveObj->aiTask->blockPos,
+                                ((statsFlags & STATS1_ROUTEAVOIDANCE) != STATS1_NONE) ? rand : NULL);
+                        }
+                        break;
+                    }
+                    // TODO: Implement AITask_Callback_UpdateObject
+                }
+            }
+            if (!newBoolVar)
+            {
+                someSpecialVar = TRUE;
+            }
+            else
+            {
+                liveObj->aiTask->flags |= AITASK_FLAG_PERFORMING;
+            }
         }
     }
     else
@@ -564,7 +613,22 @@ someLabel:
         AITask_LiveObject_FUN_00404110(liveObj);
     }
 
-    // TODO: Implement AITask_Callback_UpdateObject
+labth:
+    if (someSpecialVar)
+    {
+        if ((liveObj->aiTask->taskType == AITask_Type_Dig) &&
+            ((liveObj->aiTask->flags & AITASK_FLAG_DIGCONNECTION) != AITASK_FLAG_NONE))
+        {
+            liveObj->aiTask->timeIn = 100.0f; // (4 seconds)
+        }
+
+        if (((liveObj->aiTask->flags & AITASK_FLAG_REALLOCATE) != AITASK_FLAG_NONE) && (liveObj->aiTask->time < 0.0f))
+        {
+            liveObj->aiTask->time = 1500.0f;
+        }
+
+        AITask_LiveObject_FUN_00404110(liveObj);
+    }
 
 endFunc:
     aiGlobs.flags &= ~AITASK_GLOB_FLAG_UPDATINGOBJECT;
@@ -1209,6 +1273,12 @@ void AITask_Game_PTL_GotoOrRMGoto(struct LegoObject* liveObj, Point2I* blockPos,
 void AITask_QueueGotoBlock_Group(struct LegoObject** unitList, U32 unitCount, Point2I* blockPos, B32 reEvalTasks)
 {
     // TODO: Implement AITask_QueueGotoBlock_Group
+}
+
+B32 AITask_LiveObject_FUN_00404d30(struct LegoObject* liveObj, Point2I* blockPos, F32* unknownParam3)
+{
+    // TODO: Implement AITask_LiveObject_FUN_00404d30
+    return TRUE;
 }
 
 #ifdef LEGORR_DEBUG_SHOW_INFO
