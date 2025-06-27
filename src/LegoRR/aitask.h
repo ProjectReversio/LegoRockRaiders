@@ -233,7 +233,7 @@ extern void AITask_DoAnimationWait(struct LegoObject* liveObj);
 extern void AITask_Game_PTL_GotoOrRMGoto(struct LegoObject* liveObj, Point2I* blockPos, AITask* referrerTask);
 extern void AITask_QueueGotoBlock_Group(struct LegoObject** unitList, U32 unitCount, Point2I* blockPos, B32 reEvalTasks);
 
-extern B32 AITask_LiveObject_FUN_00404d30(struct LegoObject* liveObj, Point2I* blockPos, F32* unknownParam3);
+extern B32 AITask_LiveObject_FUN_00404d30(struct LegoObject* liveObj, Point2I* blockPos, Point2F* pos2D);
 
 #ifdef LEGORR_DEBUG_SHOW_INFO
 extern void AITask_Debug_UpdateInfo(struct LegoObject* liveObj);

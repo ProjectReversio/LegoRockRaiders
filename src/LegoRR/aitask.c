@@ -585,13 +585,13 @@ someLabel:
                         {
                             Point3F vertPoses[4];
                             Map3D_GetBlockVertexPositions(Lego_GetMap(), liveObj->aiTask->blockPos.x, liveObj->aiTask->blockPos.y, vertPoses);
-                            F32 rand[2];
-                            rand[0] = Maths_RandRange(vertPoses[0].x + 6.0f, vertPoses[2].x - 6.0f);
-                            rand[1] = Maths_RandRange(vertPoses[2].y + 6.0f, vertPoses[0].y - 6.0f);
+                            Point2F rand;
+                            rand.x = Maths_RandRange(vertPoses[0].x + 6.0f, vertPoses[2].x - 6.0f);
+                            rand.y = Maths_RandRange(vertPoses[2].y + 6.0f, vertPoses[0].y - 6.0f);
                             StatsFlags1 statsFlags = StatsObject_GetStatsFlags1(liveObj);
                             // TODO: Double check this is correct
                             newBoolVar = AITask_LiveObject_FUN_00404d30(liveObj, &liveObj->aiTask->blockPos,
-                                ((statsFlags & STATS1_ROUTEAVOIDANCE) != STATS1_NONE) ? rand : NULL);
+                                ((statsFlags & STATS1_ROUTEAVOIDANCE) != STATS1_NONE) ? &rand : NULL);
                         }
                         break;
                     }
@@ -1275,7 +1275,7 @@ void AITask_QueueGotoBlock_Group(struct LegoObject** unitList, U32 unitCount, Po
     // TODO: Implement AITask_QueueGotoBlock_Group
 }
 
-B32 AITask_LiveObject_FUN_00404d30(struct LegoObject* liveObj, Point2I* blockPos, F32* unknownParam3)
+B32 AITask_LiveObject_FUN_00404d30(struct LegoObject* liveObj, Point2I* blockPos, Point2F* pos2D)
 {
     // TODO: Implement AITask_LiveObject_FUN_00404d30
     return TRUE;
