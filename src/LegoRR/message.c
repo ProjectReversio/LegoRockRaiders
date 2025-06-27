@@ -93,7 +93,28 @@ B32 Message_CopySelectedUnits(lpLegoObject **outUnitsList, U32* outUnitsCount)
 
 void Message_AddMessageAction(Message_Type messageType, lpLegoObject argument1Obj, lpAITask argument2, Point2I* opt_blockPos)
 {
-    // TODO: Implement Message_AddMessageAction
+    B32 eventAB = messageGlobs.eventAB; // Store the current eventAB state
+    U32 count = messageGlobs.eventCounts[eventAB];
+    if (count < 2048)
+    {
+        messageGlobs.eventCounts[messageGlobs.eventAB] = count + 1;
+        Message_Event* event = &messageGlobs.eventLists[eventAB][count];
+        event->type = Message_Null;
+        messageGlobs.eventLists[eventAB][count].argumentObj = NULL;
+        messageGlobs.eventLists[eventAB][count].argument2 = NULL;
+        messageGlobs.eventLists[eventAB][count].blockPos.x = 0;
+        messageGlobs.eventLists[eventAB][count].blockPos.y = 0;
+
+        event->type = messageType;
+        messageGlobs.eventLists[eventAB][count].argumentObj = argument1Obj;
+        messageGlobs.eventLists[eventAB][count].argument2 = argument2;
+
+        if (opt_blockPos != NULL)
+        {
+            messageGlobs.eventLists[eventAB][count].blockPos.x = opt_blockPos->x;
+            messageGlobs.eventLists[eventAB][count].blockPos.y = opt_blockPos->y;
+        }
+    }
 }
 
 lpLegoObject Message_GetPrimarySelectedUnit()
