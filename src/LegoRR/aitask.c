@@ -301,6 +301,28 @@ void AITask_UnkInitRouting_FUN_00402530(lpAITask aiTask, B32 dropCarried)
     }
 }
 
+void AITask_Route_End(struct LegoObject* liveObj, B32 completed)
+{
+    if (liveObj->aiTask != NULL)
+    {
+        if (!completed)
+            liveObj->aiTask->flags &= ~AITASK_FLAG_PERFORMING;
+        else if (liveObj->aiTask->taskType == AITask_Type_Goto)
+        {
+            AITask_LiveObject_FUN_00404110(liveObj);
+            if (liveObj->type == LegoObject_RockMonster)
+            {
+                Message_AddMessageAction(Message_RockMonsterGotoComplete, liveObj, 0, NULL);
+            }
+        }
+    }
+}
+
+void AITask_LiveObject_FUN_00403b30(struct LegoObject* holderObj, AITask_Type taskType, struct LegoObject* carriedObj)
+{
+    // TODO: Implement AITask_LiveObject_FUN_00403b30
+}
+
 lpAITask AITask_InitTask_1(lpAITask aiTask, AI_Priority priorityType)
 {
     // Prepend to linked list.
@@ -1290,6 +1312,7 @@ B32 AITask_LiveObject_FUN_00404d30(struct LegoObject* liveObj, Point2I* blockPos
     }
     else
     {
+        // TODO: Sometimes count is an absolutely massive number (max int?)
         if (!LegoObject_Route_ScoreNoCallback_FUN_00440ef0(liveObj, pos.x, pos.y, blockPos->x, blockPos->y, &newX, &newY, &count))
         {
             return FALSE;

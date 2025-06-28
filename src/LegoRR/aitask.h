@@ -192,6 +192,10 @@ extern void AITask_DoDig_AtBlockPos(Point2I* blockPos, B32 param2, B32 param3);
 
 extern void AITask_UnkInitRouting_FUN_00402530(lpAITask aiTask, B32 dropCarried);
 
+extern void AITask_Route_End(struct LegoObject* liveObj, B32 completed);
+
+extern void AITask_LiveObject_FUN_00403b30(struct LegoObject* holderObj, AITask_Type taskType, struct LegoObject* carriedObj);
+
 extern lpAITask AITask_InitTask_1(lpAITask aiTask, AI_Priority priorityType);
 
 extern void AITask_UpdateAll(F32 elapsedGame);

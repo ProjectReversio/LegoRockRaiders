@@ -1107,7 +1107,7 @@ somelabel:
     return firstMeshLOD;
 }
 
-B32 LegoObject_Route_AllocPtr_FUN_004419c0(lpLegoObject liveObj, U32 count, F32* param3, F32* param4, Point2F* pos2D)
+B32 LegoObject_Route_AllocPtr_FUN_004419c0(lpLegoObject liveObj, U32 count, S32* param3, S32* param4, Point2F* pos2D)
 {
     if (LegoObject_Check_LotsOfFlags1AndFlags2_FUN_0043bdb0(liveObj))
         return FALSE;
@@ -1122,99 +1122,194 @@ B32 LegoObject_Route_AllocPtr_FUN_004419c0(lpLegoObject liveObj, U32 count, F32*
     {
         liveObj->routeToObject = NULL;
         liveObj->flags4 &= ~LIVEOBJ4_DOCKOCCUPIED;
+    }
 
-        RoutingBlock* routingBlock = Mem_Alloc(count * sizeof(RoutingBlock));
+    RoutingBlock* routingBlock = Mem_Alloc(count * sizeof(RoutingBlock));
 
-        if (routingBlock != NULL && count != 0)
+    if (routingBlock != NULL && count != 0)
+    {
+        //S32 someNum3 = param4 - param3; // TODO: What?
+        for (U32 i = 0; i < count; i++)
         {
-            S32 someNum3 = (S32)param4 - (S32)param3; // TODO: What?
-            for (U32 i = 0; i < count; i++)
-            {
-                routingBlock[i].blockPos.x = (S32)param3[i];
-                routingBlock[i].blockPos.y = (S32)param4[i];
+            routingBlock[i].blockPos.x = param3[i];
+            routingBlock[i].blockPos.y = param4[i];
 
-                if (pos2D == NULL || i != count - 1)
+            if (pos2D == NULL || i != count - 1)
+            {
+                if (((liveObj->flags3 & LIVEOBJ3_CENTERBLOCKIDLE) == LIVEOBJ3_NONE) &&
+                    (StatsObject_GetStatsFlags1(liveObj) & STATS1_ROUTEAVOIDANCE) != STATS1_NONE)
                 {
-                    if (((liveObj->flags3 & LIVEOBJ3_CENTERBLOCKIDLE) == LIVEOBJ3_NONE) &&
-                        (StatsObject_GetStatsFlags1(liveObj) & STATS1_ROUTEAVOIDANCE) != STATS1_NONE)
-                    {
-                        routingBlock[i].blockOffset.x = Maths_RandRange(0.3f, 0.7f);
-                        routingBlock[i].blockOffset.y = Maths_RandRange(0.3f, 0.7f);
-                    }
-                    else
-                    {
-                        routingBlock[i].blockOffset.x = 0.5f;
-                        routingBlock[i].blockOffset.y = 0.5f;
-                    }
+                    routingBlock[i].blockOffset.x = Maths_RandRange(0.3f, 0.7f);
+                    routingBlock[i].blockOffset.y = Maths_RandRange(0.3f, 0.7f);
                 }
                 else
                 {
-                    Point2F* centerDir = &somePos;
-                    Point2F* blockPosF = NULL;
-                    Point2F* wPos2D = pos2D;
-                    Map3D_FUN_0044fb30(Lego_GetMap(), wPos2D, blockPosF, centerDir);
-                    routingBlock[i].blockOffset.x = somePos.x;
-                    routingBlock[i].blockOffset.y = somePos.y;
+                    routingBlock[i].blockOffset.x = 0.5f;
+                    routingBlock[i].blockOffset.y = 0.5f;
                 }
-
-                routingBlock[i].flagsByte = ROUTE_FLAG_NONE;
-                routingBlock[i].actionByte = ROUTE_ACTION_NONE;
-
-                S32 someNum2 = someNum;
-                if (i < count - 1)
-                {
-                    // TODO: What even are the arguments to this function???
-                    someNum2 = Map3D_CheckRoutingComparison_FUN_00450b60(param3[i], param3[someNum3], param3[i], param4[i]);
-                    if (someNum2 == -1)
-                    {
-                        theBool = TRUE;
-                        break;
-                    }
-                    if (i != 0 && someNum != someNum2 &&
-                        Lego_GetCrossTerrainType(liveObj, param3[i], param3[someNum3], param3[i - 1], param4[i - 1], FALSE) == CrossTerrainType_Diagonal)
-                    {
-                        routingBlock[i].flagsByte |= ROUTE_FLAG_UNK_10;
-                    }
-                }
-
-                someNum = someNum2;
             }
-        }
+            else
+            {
+                Point2F* centerDir = &somePos;
+                Point2F* blockPosF = NULL;
+                Point2F* wPos2D = pos2D;
+                Map3D_FUN_0044fb30(Lego_GetMap(), wPos2D, blockPosF, centerDir);
+                routingBlock[i].blockOffset.x = somePos.x;
+                routingBlock[i].blockOffset.y = somePos.y;
+            }
 
-        if (!theBool)
-        {
-            LegoObject_Route_End(liveObj, FALSE);
-            // TODO: This seems wrong?
-            liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|LIVEOBJ3_CANROUTERUBBLE|
-                              LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_UNK_2000000|
-                              LIVEOBJ3_UNK_1000000|LIVEOBJ3_REMOVING|LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_SELECTED|
-                              LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_UPGRADEPART|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|
-                              LIVEOBJ3_UNK_10000|LIVEOBJ3_CANDYNAMITE|LIVEOBJ3_UNK_4000|LIVEOBJ3_UNK_2000|
-                              LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNUSED_800|LIVEOBJ3_UNK_200|LIVEOBJ3_CANSELECT|
-                              LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|LIVEOBJ3_CANCARRY|LIVEOBJ3_CANFIRSTPERSON|
-                              LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);
-            liveObj->flags1 |= LIVEOBJ1_MOVING;
-            liveObj->routeBlocks = routingBlock;
-            liveObj->routeBlocksTotal = count;
-            liveObj->routeBlocksCurrent = 0;
-            liveObj->routeCurveCurrDist = 0.0f;
-            liveObj->routeCurveTotalDist = 0.0f;
-            return TRUE;
+            routingBlock[i].flagsByte = ROUTE_FLAG_NONE;
+            routingBlock[i].actionByte = ROUTE_ACTION_NONE;
+
+            S32 someNum2 = someNum;
+            if (i < count - 1)
+            {
+                // TODO: What even are the arguments to this function???
+                someNum2 = Map3D_CheckRoutingComparison_FUN_00450b60(param3[i], param4[i], param3[i], param4[i]);
+                if (someNum2 == -1)
+                {
+                    theBool = TRUE;
+                    break;
+                }
+                if (i != 0 && someNum != someNum2 &&
+                    Lego_GetCrossTerrainType(liveObj, param3[i], param4[i], param3[i - 1], param4[i - 1], FALSE) == CrossTerrainType_Diagonal)
+                {
+                    routingBlock[i].flagsByte |= ROUTE_FLAG_UNK_10;
+                }
+            }
+
+            someNum = someNum2;
         }
-        Mem_Free(routingBlock);
     }
+
+    if (!theBool)
+    {
+        LegoObject_Route_End(liveObj, FALSE);
+        // TODO: This seems wrong?
+        liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|LIVEOBJ3_CANROUTERUBBLE|
+                          LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_UNK_2000000|
+                          LIVEOBJ3_UNK_1000000|LIVEOBJ3_REMOVING|LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_SELECTED|
+                          LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_UPGRADEPART|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|
+                          LIVEOBJ3_UNK_10000|LIVEOBJ3_CANDYNAMITE|LIVEOBJ3_UNK_4000|LIVEOBJ3_UNK_2000|
+                          LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNUSED_800|LIVEOBJ3_UNK_200|LIVEOBJ3_CANSELECT|
+                          LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|LIVEOBJ3_CANCARRY|LIVEOBJ3_CANFIRSTPERSON|
+                          LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);
+        liveObj->flags1 |= LIVEOBJ1_MOVING;
+        liveObj->routeBlocks = routingBlock;
+        liveObj->routeBlocksTotal = count;
+        liveObj->routeBlocksCurrent = 0;
+        liveObj->routeCurveCurrDist = 0.0f;
+        liveObj->routeCurveTotalDist = 0.0f;
+        return TRUE;
+    }
+    Mem_Free(routingBlock);
 
     return FALSE;
 }
 
 void LegoObject_Route_End(lpLegoObject liveObj, B32 completed)
 {
-    // TODO: Implement LegoObject_Route_End
+    if (liveObj->routeBlocks != NULL)
+    {
+        if (!completed)
+        {
+            // Loop from current block to total blocks (ignoring 0-current)
+            for (U32 i = liveObj->routeBlocksCurrent; i < liveObj->routeBlocksTotal; i++)
+            {
+                if (liveObj->routeBlocks[i].actionByte == ROUTE_ACTION_GATHERROCK)
+                {
+                    // TODO: Implement LegoObject_Route_End
+                    if (liveObj->routeToObject != NULL)
+                    {
+                        if (liveObj->routeToObject->type == LegoObject_Boulder)
+                        {
+                            LegoObject_DestroyBoulder_AndCreateExplode(liveObj->routeToObject);
+                        }
+                        else
+                        {
+                            liveObj->routeToObject->interactObject = NULL;
+                        }
+
+                        liveObj->routeToObject = NULL;
+                    }
+                    break;
+                }
+
+                if (liveObj->routeBlocks[i].actionByte == ROUTE_ACTION_STORE)
+                {
+                    liveObj->routeToObject = NULL;
+                    break;
+                }
+            }
+
+            if (liveObj->type == LegoObject_RockMonster)
+            {
+                if (((liveObj->flags1 & LIVEOBJ1_CARRYING) != LIVEOBJ1_NONE) &&
+                    (liveObj->carriedObjects[0]->type == LegoObject_Boulder))
+                {
+                    LegoObject_DropCarriedObject(liveObj, FALSE);
+                }
+                AITask_LiveObject_FUN_00403b30(liveObj, AITask_Type_Gather, NULL);
+                AITask_LiveObject_FUN_00403b30(liveObj, AITask_Type_Repair, NULL);
+            }
+
+            if ((liveObj->flags1 & LIVEOBJ1_DRILLING) != LIVEOBJ1_NONE)
+            {
+                Point2I blockPos;
+                blockPos.x = (S32)liveObj->targetBlockPos.x;
+                blockPos.y = (S32)liveObj->targetBlockPos.y;
+                Level_Block_SetBusy(&blockPos, FALSE);
+            }
+        }
+        else if (liveObj->type == LegoObject_MiniFigure)
+        {
+            Creature_SetOrientation(liveObj->miniFigure, liveObj->point_298.x, liveObj->point_298.y);
+            liveObj->faceDirection.x = liveObj->point_298.x;
+            liveObj->faceDirection.y = liveObj->point_298.y;
+        }
+        Mem_Free(liveObj->routeBlocks);
+        liveObj->routeBlocks = NULL;
+        AITask_Route_End(liveObj, completed);
+    }
+    liveObj->routeBlocksTotal = 0;
+    liveObj->routeBlocksCurrent = 0;
+    liveObj->routeCurveCurrDist = 0.0f;
+    liveObj->routeCurveTotalDist = 0.0f;
+    liveObj->routeCurveInitialDist = 0.0f;
+    liveObj->flags1 &= ~(LIVEOBJ1_RUNNINGAWAY | LIVEOBJ1_MOVING);
+    liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|LIVEOBJ3_CANROUTERUBBLE|
+        LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_UNK_2000000|LIVEOBJ3_UNK_1000000|
+        LIVEOBJ3_REMOVING|LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_SELECTED|LIVEOBJ3_ALLOWCULLING_UNK|
+        LIVEOBJ3_UPGRADEPART|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|LIVEOBJ3_UNK_10000|
+        LIVEOBJ3_CANDYNAMITE|LIVEOBJ3_UNK_2000|LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNUSED_800|
+        LIVEOBJ3_UNK_200|LIVEOBJ3_CANSELECT|LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|LIVEOBJ3_CANCARRY|
+        LIVEOBJ3_CANFIRSTPERSON|LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANDIG|
+        LIVEOBJ3_UNK_1);
+
+    if (liveObj->routeToObject != NULL)
+    {
+        liveObj->routeToObject->flags4 &= ~LIVEOBJ4_UNK_10;
+    }
+
+    if ((liveObj->flags1 & LIVEOBJ1_LIFTING) != LIVEOBJ1_NONE)
+    {
+        liveObj->faceDirection.x *= -1.0f;
+        liveObj->faceDirection.y *= -1.0f;
+        liveObj->faceDirection.z *= -1.0f;
+        liveObj->flags1 &= ~LIVEOBJ1_LIFTING;
+    }
+
+    LegoObject_SetActivity(liveObj, Activity_Stand, 0);
 }
 
 void LegoObject_DropCarriedObject(lpLegoObject liveObj, B32 putAway)
 {
     // TODO: Implement LegoObject_DropCarriedObject
+}
+
+void LegoObject_DestroyBoulder_AndCreateExplode(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_DestroyBoulder_AndCreateExplode
 }
 
 F32 LegoObject_MoveAnimation(lpLegoObject liveObj, F32 elapsed)

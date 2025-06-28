@@ -570,11 +570,13 @@ extern void HiddenObject_Add(void* objModel, LegoObject_Type objType, LegoObject
 
 extern lpMeshLOD LegoObject_LoadMeshLOD(lpConfig act, const char* gameName, const char* dirname, LOD_PolyLevel polyLOD, U32 numCameraFrames);
 
-extern B32 LegoObject_Route_AllocPtr_FUN_004419c0(lpLegoObject liveObj, U32 count, F32* param3, F32* param4, Point2F* pos2D);
+extern B32 LegoObject_Route_AllocPtr_FUN_004419c0(lpLegoObject liveObj, U32 count, S32* param3, S32* param4, Point2F* pos2D);
 
 extern void LegoObject_Route_End(lpLegoObject liveObj, B32 completed);
 
 extern void LegoObject_DropCarriedObject(lpLegoObject liveObj, B32 putAway);
+
+extern void LegoObject_DestroyBoulder_AndCreateExplode(lpLegoObject liveObj);
 
 extern F32 LegoObject_MoveAnimation(lpLegoObject liveObj, F32 elapsed);
 
