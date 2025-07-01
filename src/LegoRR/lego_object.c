@@ -1107,7 +1107,7 @@ somelabel:
     return firstMeshLOD;
 }
 
-B32 LegoObject_Route_AllocPtr_FUN_004419c0(lpLegoObject liveObj, U32 count, S32* param3, S32* param4, Point2F* pos2D)
+B32 LegoObject_Route_AllocPtr_FUN_004419c0(lpLegoObject liveObj, U32 count, S32* newX, S32* newY, Point2F* pos2D)
 {
     if (LegoObject_Check_LotsOfFlags1AndFlags2_FUN_0043bdb0(liveObj))
         return FALSE;
@@ -1128,11 +1128,11 @@ B32 LegoObject_Route_AllocPtr_FUN_004419c0(lpLegoObject liveObj, U32 count, S32*
 
     if (routingBlock != NULL && count != 0)
     {
-        //S32 someNum3 = param4 - param3; // TODO: What?
+        //S32 someNum3 = newY - newX; // TODO: What?
         for (U32 i = 0; i < count; i++)
         {
-            routingBlock[i].blockPos.x = param3[i];
-            routingBlock[i].blockPos.y = param4[i];
+            routingBlock[i].blockPos.x = newX[i];
+            routingBlock[i].blockPos.y = newY[i];
 
             if (pos2D == NULL || i != count - 1)
             {
@@ -1165,14 +1165,16 @@ B32 LegoObject_Route_AllocPtr_FUN_004419c0(lpLegoObject liveObj, U32 count, S32*
             if (i < count - 1)
             {
                 // TODO: What even are the arguments to this function???
-                someNum2 = Map3D_CheckRoutingComparison_FUN_00450b60(param3[i], param4[i], param3[i], param4[i]);
+                someNum2 = Map3D_CheckRoutingComparison_FUN_00450b60(newX[i + 1], newY[i + 1], newX[i], newY[i]);
                 if (someNum2 == -1)
                 {
                     theBool = TRUE;
                     break;
                 }
+
+                // remember there is a hack here
                 if (i != 0 && someNum != someNum2 &&
-                    Lego_GetCrossTerrainType(liveObj, param3[i], param4[i], param3[i - 1], param4[i - 1], FALSE) == CrossTerrainType_Diagonal)
+                    Lego_GetCrossTerrainType(liveObj, newX[i + 1], newY[i + 1], newX[i - 1], newY[i - 1], FALSE) == CrossTerrainType_Diagonal)
                 {
                     routingBlock[i].flagsByte |= ROUTE_FLAG_UNK_10;
                 }
@@ -1481,7 +1483,7 @@ someLabel:
     {
         B32 thereWasNoCallback = FALSE;
         S32 status = 0;
-        F64 theCount = 0;
+        F64 weightDifference = 0;
         memset(objectGlobs.UnkSurfaceGrid_1_TABLE, 0, objectGlobs.UnkSurfaceGrid_COUNT * sizeof(F32));
 
         S32 count = 1;
@@ -1544,36 +1546,51 @@ someLabel:
                                 howMuchIWantToAvoid = 0.5f;
 
                             CrossTerrainType type = Lego_GetCrossTerrainType(liveObj, evaluationX, evaluationY, absoluteX, absoluteY, FALSE);
-                            // TODO: WTF is this if statement?
-                            if (type != CrossTerrainType_CantCross &&
-                                objectGlobs.UnkSurfaceGrid_1_TABLE[(evaluationY * blockWidth) + evaluationX] == 0.0f ||
-                                (objectGlobs.UnkSurfaceGrid_1_TABLE[(evaluationY * blockWidth) + evaluationX] > howMuchIWantToAvoid + distanceAway))
-                            {
-                                U32 notCurrentlyXorYLoop = (U32)(!currentlyXorYLoop);
-                                objectGlobs.UnkSurfaceGrid_1_TABLE[(evaluationY * blockWidth) + evaluationX] = howMuchIWantToAvoid + distanceAway;
-                                U32 coordinate = coords[notCurrentlyXorYLoop];
-                                U32 index = 5 * (coordinate + 100 * notCurrentlyXorYLoop);
-                                blocksXY[index] = evaluationX;
-                                blocksXY[index + 1] = evaluationY;
-                                coords[notCurrentlyXorYLoop]++;
 
-                                if (callback == NULL)
+                            // in Driller Night, these blocks should be crossable
+                            // this hack is to make them crossable
+                            // even though GetCrossTerrainType currently returns wrong value
+                            /*
+                            if ((evaluationX == 14 && evaluationY == 15)
+                                || (evaluationX == 10 && evaluationY == 18)) {
+                                // syke!
+                                type = CrossTerrainType_CanCross;
+                            }
+                            */
+
+                            // TODO: WTF is this if statement?
+                            if (type != CrossTerrainType_CantCross)
+                            {
+                                F32* weight = &objectGlobs.UnkSurfaceGrid_1_TABLE[(evaluationY * blockWidth) + evaluationX];
+
+                                if (*weight == 0.0f || (*weight > howMuchIWantToAvoid + distanceAway))
                                 {
-                                    if (evaluationX == bx2 && evaluationY == by2)
+                                    U32 notCurrentlyXorYLoop = (U32)(!currentlyXorYLoop);
+                                    *weight = howMuchIWantToAvoid + distanceAway;
+                                    U32 coordinate = coords[notCurrentlyXorYLoop];
+                                    U32 index = 5 * (coordinate + 100 * notCurrentlyXorYLoop);
+                                    blocksXY[index] = evaluationX;
+                                    blocksXY[index + 1] = evaluationY;
+                                    coords[notCurrentlyXorYLoop]++;
+
+                                    if (callback == NULL)
                                     {
-                                        thereWasNoCallback = TRUE;
-                                        theCount = (F64)((F32)count);
+                                        if (evaluationX == bx2 && evaluationY == by2)
+                                        {
+                                            thereWasNoCallback = TRUE;
+                                            weightDifference = (F64)((F32)count);
+                                        }
                                     }
-                                }
-                                else
-                                {
-                                    tmpPoint.x = evaluationX;
-                                    tmpPoint.y = evaluationY;
-                                    if (callback(liveObj, &tmpPoint, data))
+                                    else
                                     {
-                                        status = 1;
-                                        bx2 = evaluationX;
-                                        by2 = evaluationY;
+                                        tmpPoint.x = evaluationX;
+                                        tmpPoint.y = evaluationY;
+                                        if (callback(liveObj, &tmpPoint, data))
+                                        {
+                                            status = 1;
+                                            bx2 = evaluationX;
+                                            by2 = evaluationY;
+                                        }
                                     }
                                 }
                             }
@@ -1601,7 +1618,7 @@ someLabel:
         if (thereWasNoCallback)
         {
             status = 1;
-            count = theCount;
+            count = weightDifference;
         }
 
         if (status == -1)
@@ -1628,37 +1645,38 @@ someLabel:
                 {
                     F32 startsWith10000 = 10000.0f;
                     S32 direction2 = 0;
+
+                    // loop four times, one for each direction
                     do
                     {
                         U32 offsetX = x;
                         U32 offsetY = y;
+
                         if (direction2 == 0)
-                        {
                             offsetY = y - 1;
-                        }
-                        else
-                        {
-                            if (direction2 == 1)
-                                offsetX = x + 1;
-                            else if (direction2 == 2)
-                                offsetY = y + 1;
-                            else if (direction2 == 3)
-                                offsetX = x - 1;
-                        }
+                        else if (direction2 == 1)
+                            offsetX = x + 1;
+                        else if (direction2 == 2)
+                            offsetY = y + 1;
+                        else if (direction2 == 3)
+                            offsetX = x - 1;
 
                         tmpPoint.x = offsetX;
                         tmpPoint.y = offsetY;
 
-                        if ((offsetX < blockWidth && offsetY < blockHeight) &&
-                            (theCount = (F64)objectGlobs.UnkSurfaceGrid_1_TABLE[(y * blockWidth) + x] - (F64)objectGlobs.UnkSurfaceGrid_1_TABLE[(offsetY * blockWidth) + offsetX],
-                            count = theCount,
-                            count > 0.0f && count < startsWith10000) ||
-                            (count == startsWith10000 && Level_Block_IsPath(&tmpPoint)))
-                        {
-                            theCount = count;
-                            startsWith10000 = theCount;
-                            coords[0] = offsetX;
-                            coords[1] = offsetY;
+                        // only if the point is within the map
+                        if (offsetX < blockWidth && offsetY < blockHeight) {
+                            weightDifference = (F64)objectGlobs.UnkSurfaceGrid_1_TABLE[(y * blockWidth) + x]
+                                             - (F64)objectGlobs.UnkSurfaceGrid_1_TABLE[(offsetY * blockWidth) + offsetX];
+                            
+                            if ((weightDifference > 0.0f && weightDifference < startsWith10000)
+                                || (weightDifference == startsWith10000 && Level_Block_IsPath(&tmpPoint)))
+                            {
+                                startsWith10000 = weightDifference;
+
+                                coords[0] = offsetX;
+                                coords[1] = offsetY;
+                            }
                         }
 
                         direction2++;

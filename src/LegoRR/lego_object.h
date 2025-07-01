@@ -464,7 +464,7 @@ typedef struct LegoObject_Globs
     SFX_ID objectTtSFX[20][15]; // [objType:20][objIndex:15] (cfg: ObjTtSFXs)
     const char* activityName[79]; // [activityType:79]
 
-    F32* UnkSurfaceGrid_1_TABLE;
+    F32* WeightsGrid_1_TABLE;
     F32* UnkSurfaceGrid_2_TABLE;
     U32 UnkSurfaceGrid_COUNT;
     F32 radarSurveyCycleTimer; // Timer for how often survey scans update.
