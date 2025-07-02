@@ -1411,7 +1411,45 @@ void LegoObject_Proc_FUN_0043c7f0(lpLegoObject liveObj)
 
 void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
 {
+    if (liveObj->routeBlocks == NULL)
+    {
+        LegoObject_Route_End(liveObj, FALSE);
+        return;
+    }
+
+    if (liveObj->type == LegoObject_Vehicle)
+    {
+        liveObj->elapsedTime1 = 0.0f;
+    }
+
+    B32 theBool = TRUE;
+    if (liveObj->routeCurveTotalDist <= liveObj->routeCurveCurrDist)
+    {
+        // TODO: Implement LegoObject_Route_UpdateMovement
+    }
+
+    if (!theBool)
+        return;
+
+    Point2F curveInter;
+
+    // TEMP: initialize to SOMETHING
+    curveInter.x = 0;
+    curveInter.y = 0;
+
     // TODO: Implement LegoObject_Route_UpdateMovement
+
+    if ((liveObj->flags3 & LIVEOBJ3_UNK_4000) == LIVEOBJ3_NONE)
+    {
+        LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(liveObj, curveInter.x, curveInter.y);
+    }
+
+    // TODO: Implement LegoObject_Route_UpdateMovement
+}
+
+void LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(lpLegoObject liveObj, F32 xPos, F32 yPos)
+{
+    // TODO: Implement LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0
 }
 
 B32 LegoObject_CheckBlock_FUN_00443b00(lpLegoObject liveObj, Point2I* blockPos, void* data)
