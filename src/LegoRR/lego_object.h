@@ -560,6 +560,8 @@ extern void Level_PowerGrid_UpdateLevelBlocks_PointsAAC();
 // Otherwise, we can turn on power updating mode right now.
 extern void LegoObject_RequestPowerGridUpdate();
 
+extern F32 LegoObject_GetWorldZCallback(F32 xPos, F32 yPos, struct Map3D* map);
+
 // The same as `LegoObject_GetWorldZCallback`, but returns a lower Z value with over Lake terrain.
 // Objects wading in a lake (aka, not sailing) will have their Z lowered a bit, and have it at the lowest near the center of a lake BLOCK.
 extern F32 LegoObject_GetWorldZCallback_Lake(F32 xPos, F32 yPos, struct Map3D* map);

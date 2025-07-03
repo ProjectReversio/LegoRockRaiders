@@ -23,3 +23,13 @@ F32 Vehicle_MoveAnimation(lpVehicleModel vehicle, F32 elapsed1, F32 elapsed2, U3
 
     return 0.0f;
 }
+
+void Vehicle_SetOrientation(lpVehicleModel vehicle, F32 xDir, F32 yDir, F32 zDir)
+{
+    Container_SetOrientation(vehicle->contAct1, NULL, xDir, yDir, zDir, 0.0f, 0.0f, -1.0f);
+}
+
+void Vehicle_SetPosition(lpVehicleModel vehicle, F32 xPos, F32 yPos, GetWorldZCallback zCallback, struct Map3D* map)
+{
+    // TODO: Implement Vehicle_SetPosition
+}

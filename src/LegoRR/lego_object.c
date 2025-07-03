@@ -1014,6 +1014,11 @@ void LegoObject_RequestPowerGridUpdate()
     // TODO: Implement LegoObject_RequestPowerGridUpdate
 }
 
+F32 LegoObject_GetWorldZCallback(F32 xPos, F32 yPos, struct Map3D* map)
+{
+    return Map3D_GetWorldZ(map, xPos, yPos);
+}
+
 // The same as `LegoObject_GetWorldZCallback`, but returns a lower Z value with over Lake terrain.
 // Objects wading in a lake (aka, not sailing) will have their Z lowered a bit, and have it at the lowest near the center of a lake BLOCK.
 F32 LegoObject_GetWorldZCallback_Lake(F32 xPos, F32 yPos, struct Map3D* map)
@@ -1449,7 +1454,92 @@ void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
 
 void LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(lpLegoObject liveObj, F32 xPos, F32 yPos)
 {
-    // TODO: Implement LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0
+    lpContainer cont;
+    if (liveObj->type == LegoObject_Vehicle)
+    {
+        cont = Vehicle_GetActivityContainer(liveObj->vehicle);
+    }
+    else if (liveObj->type == LegoObject_MiniFigure)
+    {
+        cont = Object_GetActivityContainer((lpBasicObjectModel)liveObj->miniFigure);
+    }
+    else if (liveObj->type == LegoObject_RockMonster)
+    {
+        cont = Object_GetActivityContainer((lpBasicObjectModel)liveObj->rockMonster);
+    }
+    else
+    {
+        cont = NULL;
+
+        // TODO: Show Error?
+    }
+
+    Point3F currentPos;
+    Container_GetPosition(cont, NULL, &currentPos);
+
+    if (xPos != currentPos.x || yPos != currentPos.y)
+    {
+        liveObj->faceDirection.x = xPos;
+        liveObj->faceDirection.y = yPos;
+        liveObj->faceDirection.z = 0.0f;
+
+        liveObj->tempPosition.x = currentPos.x;
+        liveObj->tempPosition.y = currentPos.y;
+        liveObj->tempPosition.z = currentPos.z;
+
+        liveObj->faceDirection.x -= liveObj->tempPosition.x;
+        liveObj->faceDirection.y -= liveObj->tempPosition.y;
+        liveObj->faceDirection.z -= liveObj->tempPosition.z;
+        liveObj->faceDirection.z = 0.0f; // uh okay?
+
+        liveObj->faceDirectionLength = 1.0f / sqrtf(liveObj->faceDirection.x * liveObj->faceDirection.x +
+                                                       liveObj->faceDirection.y * liveObj->faceDirection.y +
+                                                       liveObj->faceDirection.z * liveObj->faceDirection.z);
+
+        liveObj->faceDirection.x *= liveObj->faceDirectionLength;
+        liveObj->faceDirection.y *= liveObj->faceDirectionLength;
+        liveObj->faceDirection.z *= liveObj->faceDirectionLength;
+    }
+
+    if (liveObj->type == LegoObject_Vehicle)
+    {
+        Point3F faceDir;
+        if ((liveObj->flags1 & LIVEOBJ1_LIFTING) == LIVEOBJ1_NONE)
+        {
+            faceDir.x = liveObj->faceDirection.x;
+            faceDir.y = liveObj->faceDirection.y;
+            faceDir.z = liveObj->faceDirection.z;
+        }
+        else
+        {
+            faceDir.x = -liveObj->faceDirection.x;
+            faceDir.y = -liveObj->faceDirection.y;
+            faceDir.z = -liveObj->faceDirection.z;
+        }
+
+        Vehicle_SetOrientation(liveObj->vehicle, faceDir.x, faceDir.y, faceDir.z);
+        Vehicle_SetPosition(liveObj->vehicle, xPos, yPos, LegoObject_GetWorldZCallback, Lego_GetMap());
+    } else if (liveObj->type == LegoObject_MiniFigure)
+    {
+        Point2F faceDir;
+        if ((liveObj->flags1 & LIVEOBJ1_LIFTING) == LIVEOBJ1_NONE)
+        {
+            faceDir.x = liveObj->faceDirection.x;
+            faceDir.y = liveObj->faceDirection.y;
+        }
+        else
+        {
+            faceDir.x = -liveObj->faceDirection.x;
+            faceDir.y = -liveObj->faceDirection.y;
+        }
+
+        Creature_SetOrientation(liveObj->miniFigure, faceDir.x, faceDir.y);
+        Creature_SetPosition(liveObj->miniFigure, xPos, yPos, LegoObject_GetWorldZCallback_Lake, Lego_GetMap());
+    } else if (liveObj->type == LegoObject_RockMonster)
+    {
+        Creature_SetOrientation(liveObj->rockMonster, liveObj->faceDirection.x, liveObj->faceDirection.y);
+        Creature_SetPosition(liveObj->rockMonster, xPos, yPos, LegoObject_GetWorldZCallback, Lego_GetMap());
+    }
 }
 
 B32 LegoObject_CheckBlock_FUN_00443b00(lpLegoObject liveObj, Point2I* blockPos, void* data)

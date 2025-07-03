@@ -1,5 +1,6 @@
 #pragma once
 
+#include "creature.h"
 #include "platform.h"
 #include "lego_object.h"
 
@@ -21,3 +22,6 @@ extern void Vehicle_Hide(lpVehicleModel vehicle, B32 hide);
 extern lpContainer Vehicle_GetActivityContainer(lpVehicleModel vehicle);
 
 extern F32 Vehicle_MoveAnimation(lpVehicleModel vehicle, F32 elapsed1, F32 elapsed2, U32 unkFrameNo);
+
+extern void Vehicle_SetOrientation(lpVehicleModel vehicle, F32 xDir, F32 yDir, F32 zDir);
+extern void Vehicle_SetPosition(lpVehicleModel vehicle, F32 xPos, F32 yPos, GetWorldZCallback zCallback, struct Map3D* map);
