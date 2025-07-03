@@ -599,6 +599,8 @@ extern void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed);
 
 extern B32 LegoObject_RoutingUnk_SetupCurve_FUN_00444940(lpLegoObject liveObj, B32 useRoutingPos, B32 flags3_8, B32 notFlags1_10000);
 
+extern void LegoObject_Route_CurveSolid_FUN_004454a0(lpLegoObject liveObj);
+
 extern lpLegoObject LegoObject_DoCollisionCallbacks_FUN_00446030(lpLegoObject liveObj, Point2F* param2, F32 param3, B32 param4);
 
 extern void LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(lpLegoObject liveObj, F32 xPos, F32 yPos);

@@ -1584,9 +1584,172 @@ void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
 
 B32 LegoObject_RoutingUnk_SetupCurve_FUN_00444940(lpLegoObject liveObj, B32 useRoutingPos, B32 flags3_8, B32 notCarrying)
 {
-    // TODO: Implement LegoObject_RoutingUnk_SetupCurve_FUN_00444940
+    B32 result = TRUE;
 
-    return FALSE;
+    Point2I objBlockPos;
+    LegoObject_GetBlockPos(liveObj, &objBlockPos.x, &objBlockPos.y);
+
+    Point2F objWorldPos;
+    LegoObject_GetPosition(liveObj, &objWorldPos.x, &objWorldPos.y);
+
+    Point2I blockPos = liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos;
+
+    Point2F faceDir;
+    faceDir.x = liveObj->faceDirection.x;
+    faceDir.y = liveObj->faceDirection.y;
+
+    Point2F blockWorldPos;
+    if (useRoutingPos)
+    {
+        Map3D_BlockToWorldPos(Lego_GetMap(), blockPos.x, blockPos.y, &blockWorldPos.x, &blockWorldPos.y);
+        blockPos.x = objBlockPos.x;
+        blockPos.y = objBlockPos.y;
+    }
+    else
+    {
+        // why is this here?
+        Point2F unusedBlockWorldPos;
+        Map3D_BlockToWorldPos(Lego_GetMap(), blockPos.x, blockPos.y, &unusedBlockWorldPos.x, &unusedBlockWorldPos.y);
+
+        liveObj->routeBlocksCurrent++;
+
+        Point2I nextBlockPos;
+        nextBlockPos.x = liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.x;
+        nextBlockPos.y = liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.y;
+
+        Map3D_BlockToWorldPos(Lego_GetMap(), nextBlockPos.x,nextBlockPos.y, &blockWorldPos.x, &blockWorldPos.y);
+    }
+
+    Point2F finalPos;
+    Map3D_BlockToWorldPos(Lego_GetMap(), blockPos.x, blockPos.y, &finalPos.x, &finalPos.y);
+
+    Point2F somePoint;
+    somePoint.x = 0.0f;
+    somePoint.y = 0.0f;
+
+    F32 someValY = somePoint.y;
+    F32 someValX = somePoint.x;
+
+    Point2F blockOffset;
+    blockOffset.x = somePoint.x;
+    blockOffset.y = somePoint.y;
+    if (liveObj->routeBlocks[liveObj->routeBlocksCurrent].actionByte != ROUTE_ACTION_UNK_1)
+    {
+        // TODO: Implement LegoObject_RoutingUnk_SetupCurve_FUN_00444940
+    }
+
+    if (someValY == 0.0f)
+    {
+        // TODO: Implement LegoObject_RoutingUnk_SetupCurve_FUN_00444940
+    }
+
+    RouteFlags rflags = liveObj->routeBlocks[liveObj->routeBlocksCurrent].flagsByte;
+    if ((rflags & ROUTE_FLAG_GOTOBUILDING) != ROUTE_FLAG_NONE)
+    {
+        switch (rflags & ROUTE_DIRECTION_MASK)
+        {
+            case ROUTE_FLAG_NONE:
+                finalPos.x = 0.0f;
+                finalPos.y = 1.0f;
+                flags3_8 = FALSE;
+                break;
+            case ROUTE_DIRECTION_1:
+                finalPos.x = 1.0f;
+                finalPos.y = 0.0f;
+                flags3_8 = FALSE;
+                break;
+            case ROUTE_DIRECTION_2:
+                finalPos.x = 0.0f;
+                finalPos.y = -1.0f;
+                flags3_8 = FALSE;
+                break;
+            case ROUTE_DIRECTION_MASK:
+                finalPos.x = -1.0f;
+                finalPos.y = 0.0f;
+                flags3_8 = FALSE;
+                break;
+            default:
+                flags3_8 = FALSE;
+                break;
+        }
+    } else if ((rflags & ROUTE_FLAG_RUNAWAY) != ROUTE_FLAG_NONE)
+    {
+        finalPos.x = blockWorldPos.x - objWorldPos.x;
+        finalPos.y = blockWorldPos.y - objWorldPos.y;
+    } else if (((rflags & ROUTE_FLAG_UNK_8) != ROUTE_FLAG_NONE) &&
+               ((blockOffset.x != 0.0f || blockOffset.y != 0.0f)))
+    {
+        finalPos.x = blockOffset.x;
+        finalPos.y = blockOffset.y;
+    }
+    else
+    {
+        finalPos.x = blockWorldPos.x - finalPos.x;
+        finalPos.y = blockWorldPos.y - finalPos.y;
+
+        if (someValY != 0.0f && someValX == 0.0f)
+        {
+            if (fabsf(finalPos.x) <= fabsf(finalPos.y))
+                finalPos.x = 0.0f;
+            else
+                finalPos.y = 0.0f;
+        }
+        else if (finalPos.x == 0.0f || finalPos.y == 0.0f)
+        {
+            finalPos.x = blockWorldPos.x - objWorldPos.x;
+            finalPos.y = blockWorldPos.y - objWorldPos.y;
+        }
+    }
+
+    if (flags3_8)
+    {
+        // TODO: Implement LegoObject_RoutingUnk_SetupCurve_FUN_00444940
+    }
+
+    F32 lenThing = sqrtf((objWorldPos.y - blockWorldPos.y) * (objWorldPos.y - blockWorldPos.y) +
+                       (objWorldPos.x - blockWorldPos.x) * (objWorldPos.x - blockWorldPos.x)) * 0.2f;
+    if (lenThing <= 0.1f)
+    {
+        liveObj->routeCurve.points[0].x = objWorldPos.x;
+        liveObj->routeCurve.points[0].y = objWorldPos.y;
+        liveObj->routeCurve.count = 0;
+    }
+    else
+    {
+        if (_finite(faceDir.x) == 0)
+        {
+            faceDir.x = 1.0f;
+            faceDir.y = 0.0f;
+        }
+
+        BezierCurve_Vector2DChangeLength(&faceDir, lenThing);
+        BezierCurve_Vector2DChangeLength(&finalPos, lenThing * 1.6f);
+        BezierCurve_BuildPoints(&liveObj->routeCurve, &objWorldPos, &faceDir, &blockWorldPos, &finalPos, 50);
+
+        LegoObject_Route_CurveSolid_FUN_004454a0(liveObj);
+    }
+
+    liveObj->routeCurveTotalDist = BezierCurve_UpdateDistances(&liveObj->routeCurve);
+    liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|LIVEOBJ3_CANROUTERUBBLE|
+                        LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_UNK_2000000|
+                        LIVEOBJ3_UNK_1000000|LIVEOBJ3_REMOVING|LIVEOBJ3_AITASK_UNK_400000|
+                        LIVEOBJ3_SELECTED|LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_UPGRADEPART|
+                        LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|LIVEOBJ3_UNK_10000|LIVEOBJ3_CANDYNAMITE|
+                        LIVEOBJ3_UNK_4000|LIVEOBJ3_UNK_2000|LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNK_400|
+                        LIVEOBJ3_UNK_200|LIVEOBJ3_CANSELECT|LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|
+                        LIVEOBJ3_CANCARRY|LIVEOBJ3_CANFIRSTPERSON|LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|
+                        LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);
+
+    liveObj->routeCurveCurrDist = liveObj->routeCurveInitialDist;
+    liveObj->point_298.x = finalPos.x;
+    liveObj->point_298.y = finalPos.y;
+
+    return result;
+}
+
+void LegoObject_Route_CurveSolid_FUN_004454a0(lpLegoObject liveObj)
+{
+    // TODO: Implement LegoObject_Route_CurveSolid_FUN_004454a0
 }
 
 lpLegoObject LegoObject_DoCollisionCallbacks_FUN_00446030(lpLegoObject liveObj, Point2F* param2, F32 param3, B32 param4)

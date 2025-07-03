@@ -6,6 +6,8 @@
 typedef enum RouteFlags
 {
     ROUTE_FLAG_NONE         = 0,
+    ROUTE_DIRECTION_1       = 0x1,
+    ROUTE_DIRECTION_2       = 0x2,
     ROUTE_DIRECTION_MASK    = 0x3,
     ROUTE_FLAG_GOTOBUILDING = 0x4,
     ROUTE_FLAG_UNK_8        = 0x8,
@@ -57,5 +59,15 @@ typedef struct RoutingBlock
 
     // TODO: Implement RoutingBlock
 } RoutingBlock, *lpRoutingBlock;
+
+extern void BezierCurve_BuildPoints(lpBezierCurve curve, Point2F* p0, Point2F* p1, Point2F *p2, Point2F* p3, U32 count);
+
+extern void BezierCurve_Curve(Point2F* out_r, Point2F* p0, Point2F* p1, Point2F* p2, Point2F* p3, F32 t);
+
+extern F32 BezierCurve_UpdateDistances(lpBezierCurve curve);
+
+extern Point2F* BezierCurve_Vector2DChangeLength(Point2F* ref_r, F32 newLength);
+
+extern F32 BezierCurve_Vector2DDistance(Point2F *a, Point2F *b);
 
 extern U32 BezierCurve_Interpolate(lpBezierCurve curve, F32 currentDist, Point2F* out_r);
