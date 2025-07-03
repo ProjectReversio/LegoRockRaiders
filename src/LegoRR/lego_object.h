@@ -363,8 +363,7 @@ typedef struct LegoObject
     U32 routeBlocksTotal; // total blocks to travel for current route
     U32 routeBlocksCurrent; // number of blocks traveled (up to routingBlocksTotal)
 
-    // TODO: Implement LegoObject
-
+	BezierCurve routeCurve; // BezierCurve/Catmull-rom spline data
     F32 routeCurveTotalDist;
     F32 routeCurveCurrDist;
     F32 routeCurveInitialDist; // Used as spill-over when distance taveled is beyond routeCurveTotalDist.
@@ -598,6 +597,10 @@ extern void LegoObject_Proc_FUN_0043c7f0(lpLegoObject liveObj);
 
 extern void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed);
 
+extern B32 LegoObject_RoutingUnk_SetupCurve_FUN_00444940(lpLegoObject liveObj, B32 useRoutingPos, B32 flags3_8, B32 notFlags1_10000);
+
+extern lpLegoObject LegoObject_DoCollisionCallbacks_FUN_00446030(lpLegoObject liveObj, Point2F* param2, F32 param3, B32 param4);
+
 extern void LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(lpLegoObject liveObj, F32 xPos, F32 yPos);
 
 typedef B32 (*LegoObject_CheckBlock_Callback)(lpLegoObject liveObj, Point2I* blockPos, void* data);
@@ -635,6 +638,8 @@ extern void LegoObject_GetFaceDirection(lpLegoObject liveObj, Point2F* outDirect
 extern B32 LiveObject_GetDamageFromSurface(lpLegoObject liveObj, S32 bx, S32 by, F32 elapsedGame, F32* optOutDamage);
 
 extern B32 LiveObject_FUN_00431ba0(lpLegoObject liveObj, Point2I* blockPos, Point2I* outBlockOffPos, B32 param4);
+
+extern B32 LiveObject_FUN_00433b40(lpLegoObject liveObj, F32 param2, B32 param3);
 
 #ifdef LEGORR_DEBUG_SHOW_INFO
 extern const char* LegoObject_Debug_GetTypeName(LegoObject_Type objType);

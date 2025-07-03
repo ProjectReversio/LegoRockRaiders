@@ -1430,26 +1430,170 @@ void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
     B32 theBool = TRUE;
     if (liveObj->routeCurveTotalDist <= liveObj->routeCurveCurrDist)
     {
-        // TODO: Implement LegoObject_Route_UpdateMovement
+        LiveFlags3 lflags3 = liveObj->flags3;
+        if ((lflags3 & LIVEOBJ3_UNK_400) != LIVEOBJ3_NONE)
+        {
+            liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|
+                        LIVEOBJ3_CANROUTERUBBLE|LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|
+                        LIVEOBJ3_UNK_2000000|LIVEOBJ3_UNK_1000000|LIVEOBJ3_REMOVING|
+                        LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_SELECTED|LIVEOBJ3_ALLOWCULLING_UNK|
+                        LIVEOBJ3_UPGRADEPART|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|
+                        LIVEOBJ3_UNK_10000|LIVEOBJ3_CANDYNAMITE|LIVEOBJ3_UNK_4000|LIVEOBJ3_UNK_2000|
+                        LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNUSED_800|LIVEOBJ3_UNK_200|
+                        LIVEOBJ3_CANSELECT|LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|LIVEOBJ3_CANCARRY|
+                        LIVEOBJ3_CANFIRSTPERSON|LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|
+                        LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);
+
+            switch (liveObj->routeBlocks[liveObj->routeBlocksCurrent].actionByte)
+            {
+                // TODO: Implement LegoObject_Route_UpdateMovement
+            }
+
+            if ((liveObj->routeBlocks[liveObj->routeBlocksCurrent].flagsByte & ROUTE_FLAG_UNK_20) != ROUTE_FLAG_NONE)
+            {
+                liveObj->flags2 |= LIVEOBJ2_UNK_80000;
+            }
+
+            LegoObject_Route_End(liveObj, TRUE);
+
+            if ((liveObj->flags1 & LIVEOBJ1_SCAREDBYPLAYER) == LIVEOBJ1_NONE)
+                return;
+
+            if (Maths_Rand() % (U32)(S64)(10.0f / elapsed))
+            {
+                LiveObject_FUN_00433b40(liveObj, 150.0f, TRUE);
+            }
+            else
+            {
+                liveObj->flags1 &= ~LIVEOBJ1_SCAREDBYPLAYER;
+            }
+
+            return;
+        }
+
+        B32 useRoutingPos = FALSE;
+        if (liveObj->routeBlocksTotal < 2)
+        {
+            liveObj->flags3 = lflags3 | LIVEOBJ3_UNK_400;
+            liveObj->routeBlocks[liveObj->routeBlocksCurrent].flagsByte |= ROUTE_FLAG_UNK_8;
+        }
+        else
+        {
+            liveObj->routeBlocksCurrent++;
+            if (((liveObj->routeBlocks[liveObj->routeBlocksCurrent].flagsByte & ROUTE_FLAG_UNK_10) != ROUTE_FLAG_NONE) &&
+                (liveObj->routeBlocks[liveObj->routeBlocksCurrent].actionByte != ROUTE_ACTION_UNK_1))
+            {
+                useRoutingPos = TRUE;
+            }
+        }
+
+        U32 current = liveObj->routeBlocksCurrent;
+        if (useRoutingPos)
+            current++;
+
+        if (liveObj->routeBlocks[current].actionByte == ROUTE_ACTION_UNK_5)
+        {
+            // TODO: Implement LegoObject_Route_UpdateMovement
+        }
+
+        theBool = LegoObject_RoutingUnk_SetupCurve_FUN_00444940(liveObj, useRoutingPos,
+            liveObj->flags3 & LIVEOBJ3_CANTURN,
+            (liveObj->flags1 & LIVEOBJ1_CARRYING) == LIVEOBJ1_NONE
+            );
+
+        if (liveObj->routeBlocksTotal - 1 <= liveObj->routeBlocksCurrent)
+            liveObj->flags3 |= LIVEOBJ3_UNK_400;
     }
 
     if (!theBool)
         return;
 
-    Point2F curveInter;
-
-    // TEMP: initialize to SOMETHING
-    curveInter.x = 0;
-    curveInter.y = 0;
-
     // TODO: Implement LegoObject_Route_UpdateMovement
+
+    F32 routeSpeed;
+    F32 transSpeed;
+    LegoObject_CalculateSpeeds(liveObj, elapsed, &routeSpeed, &transSpeed);
+
+    if ((liveObj->flags3 & LIVEOBJ3_UNK_4000) == LIVEOBJ3_NONE)
+    {
+        liveObj->routeCurveCurrDist += routeSpeed;
+    }
+    if (liveObj->routeCurveTotalDist < liveObj->routeCurveCurrDist)
+    {
+        F32 temp = liveObj->routeCurveCurrDist;
+        liveObj->routeCurveCurrDist = liveObj->routeCurveTotalDist;
+        liveObj->routeCurveInitialDist = temp - liveObj->routeCurveTotalDist;
+    }
+
+    Point2F curveInter;
+    BezierCurve_Interpolate(&liveObj->routeCurve, liveObj->routeCurveCurrDist, &curveInter);
+
+    RouteAction action = liveObj->routeBlocks[liveObj->routeBlocksCurrent].actionByte;
+
+    if (action == ROUTE_ACTION_GATHERROCK)
+    {
+        // TODO: Implement LegoObject_Route_UpdateMovement
+    }
+    else if (action == ROUTE_ACTION_UNK_12)
+    {
+        // TODO: Implement LegoObject_Route_UpdateMovement
+    }
+    else if (action == ROUTE_ACTION_PLACE &&
+            (liveObj->routeBlocks[liveObj->routeBlocksCurrent].flagsByte & ROUTE_UNK_MASK_c) == ROUTE_FLAG_NONE)
+    {
+        // TODO: Implement LegoObject_Route_UpdateMovement
+    }
+
+    lpLegoObject lobj;
+    if (((((liveObj->flags3 & LIVEOBJ3_UNUSED_800) == LIVEOBJ3_NONE) &&
+        (action = liveObj->routeBlocks[liveObj->routeBlocksCurrent].actionByte,
+            action != ROUTE_ACTION_STORE)) && (action != ROUTE_ACTION_REPAIRDRAIN)) &&
+            (((action != ROUTE_ACTION_GATHERROCK && (action != ROUTE_ACTION_UNK_5)) &&
+                (lobj = LegoObject_DoCollisionCallbacks_FUN_00446030(liveObj, &curveInter, 0.0f, FALSE),
+                    lobj != NULL))))
+    {
+        StatsFlags1 sflags1 = StatsObject_GetStatsFlags1(liveObj);
+        if ((sflags1 & STATS1_BUMPDAMAGE) != STATS1_NONE && lobj->type == LegoObject_Vehicle)
+        {
+            LegoObject_Route_End(liveObj, FALSE);
+            LegoObject_SetActivity(liveObj, Activity_Repair, 0);
+            LegoObject_UpdateActivityChange(liveObj);
+
+            liveObj->routeToObject = lobj;
+            liveObj->flags2 |= LIVEOBJ2_UNK_40000;
+
+            return;
+        }
+
+        LegoObject_RoutingUnk_SetupCurve_FUN_00444940(liveObj, FALSE, FALSE, FALSE);
+        liveObj->flags3 |= LIVEOBJ3_UNUSED_800;
+        liveObj->routeCurveCurrDist += routeSpeed;
+    }
 
     if ((liveObj->flags3 & LIVEOBJ3_UNK_4000) == LIVEOBJ3_NONE)
     {
         LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(liveObj, curveInter.x, curveInter.y);
     }
 
-    // TODO: Implement LegoObject_Route_UpdateMovement
+    if (liveObj->routeBlocks[liveObj->routeBlocksTotal - 1].actionByte == ROUTE_ACTION_CLEAR &&
+        liveObj->type == LegoObject_Vehicle)
+    {
+        // TODO: Implement LegoObject_Route_UpdateMovement
+    }
+}
+
+B32 LegoObject_RoutingUnk_SetupCurve_FUN_00444940(lpLegoObject liveObj, B32 useRoutingPos, B32 flags3_8, B32 notCarrying)
+{
+    // TODO: Implement LegoObject_RoutingUnk_SetupCurve_FUN_00444940
+
+    return FALSE;
+}
+
+lpLegoObject LegoObject_DoCollisionCallbacks_FUN_00446030(lpLegoObject liveObj, Point2F* param2, F32 param3, B32 param4)
+{
+    // TODO: Implement LegoObject_DoCollisionCallbacks_FUN_00446030
+
+    return NULL;
 }
 
 void LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(lpLegoObject liveObj, F32 xPos, F32 yPos)
@@ -2067,6 +2211,13 @@ somelbl:
         if (i > 3)
             return FALSE;
     } while (TRUE);
+}
+
+B32 LiveObject_FUN_00433b40(lpLegoObject liveObj, F32 param2, B32 param3)
+{
+    // TODO: Implement LiveObject_FUN_00433b40
+
+    return FALSE;
 }
 
 #ifdef LEGORR_DEBUG_SHOW_INFO

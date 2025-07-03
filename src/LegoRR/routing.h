@@ -41,6 +41,13 @@ typedef enum RouteAction
     ROUTE_ACTION_21          = 21,
 } RouteAction;
 
+typedef struct BezierCurve
+{
+    U32 count;
+    Point2F points[50];
+    F32 distances[50];
+} BezierCurve, *lpBezierCurve;
+
 typedef struct RoutingBlock
 {
     Point2I blockPos;
@@ -50,3 +57,5 @@ typedef struct RoutingBlock
 
     // TODO: Implement RoutingBlock
 } RoutingBlock, *lpRoutingBlock;
+
+extern U32 BezierCurve_Interpolate(lpBezierCurve curve, F32 currentDist, Point2F* out_r);
