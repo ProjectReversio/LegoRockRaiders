@@ -43,11 +43,13 @@ typedef enum RouteAction
     ROUTE_ACTION_21          = 21,
 } RouteAction;
 
+#define BEZIERCURVE_MAX_POINTS 50
+
 typedef struct BezierCurve
 {
     U32 count;
-    Point2F points[50];
-    F32 distances[50];
+    Point2F points[BEZIERCURVE_MAX_POINTS];
+    F32 distances[BEZIERCURVE_MAX_POINTS];
 } BezierCurve, *lpBezierCurve;
 
 typedef struct RoutingBlock
