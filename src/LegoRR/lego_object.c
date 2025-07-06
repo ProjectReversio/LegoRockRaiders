@@ -1853,7 +1853,7 @@ B32 LegoObject_RouteToDig_FUN_00447100(lpLegoObject liveObj, U32 bx, U32 by, B32
 {
     // TODO: Implement LegoObject_RouteToDig_FUN_00447100
 
-    return FALSE;
+    return TRUE;
 }
 
 B32 LegoObject_CheckBlock_FUN_00443b00(lpLegoObject liveObj, Point2I* blockPos, void* data)
