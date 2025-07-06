@@ -45,7 +45,7 @@ F32 BezierCurve_UpdateDistances(lpBezierCurve curve)
         // Calculate distance from previous point to current point.
         F32 dist = BezierCurve_Vector2DDistance(&curve->points[index - 1], &curve->points[index]);
         totalDist += dist;
-        curve->distances[index] = totalDist;
+        curve->distances[index] = dist;
     }
 
     return totalDist;
