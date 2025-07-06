@@ -618,6 +618,19 @@ someLabel:
                         break;
                     }
                     // TODO: Implement AITask_Callback_UpdateObject
+                    case AITask_Type_Dig:
+                    {
+                        StatsFlags1 sflags1;
+                        if ((((liveObj->aiTask->flags & AITASK_FLAG_DIGCONNECTION) != AITASK_FLAG_NONE) &&
+                            (sflags1 = StatsObject_GetStatsFlags1(liveObj),
+                                (sflags1 & STATS1_SINGLEWIDTHDIG) != STATS1_NONE)) ||
+                                ((liveObj->aiTask->flags & AITASK_FLAG_DIGCONNECTION) == AITASK_FLAG_NONE))
+                        {
+                            newBoolVar = LegoObject_RouteToDig_FUN_00447100(liveObj, liveObj->aiTask->blockPos.x, liveObj->aiTask->blockPos.y,
+                                (liveObj->aiTask->flags & AITASK_FLAG_DIGCONNECTION) != AITASK_FLAG_NONE);
+                        }
+                        break;
+                    }
                 }
             }
             if (!newBoolVar)
