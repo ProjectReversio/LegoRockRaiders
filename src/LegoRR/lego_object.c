@@ -1849,9 +1849,96 @@ void LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(lpLegoObject liveO
     }
 }
 
+B32 LegoObject_BlockRoute_FUN_00446c80(lpLegoObject liveObj, U32 bx, U32 by, B32 useWideRange, Direction* optout_direction, B32 countIs8)
+{
+    // TODO: Implement LegoObject_BlockRoute_FUN_00446c80
+    return FALSE;
+}
+
+B32 LegoObject_RoutingPtr_Realloc_FUN_00446b80(lpLegoObject liveObj, U32 bx, U32 by)
+{
+    if ((liveObj->flags1 & LIVEOBJ1_MOVING) == LIVEOBJ1_NONE)
+        return FALSE;
+
+    U32 oldCount = liveObj->routeBlocksTotal;
+    RoutingBlock* routeBlocks = liveObj->routeBlocks;
+    U32 x = routeBlocks[oldCount - 1].blockPos.x;
+    U32 y = routeBlocks[oldCount - 1].blockPos.y;
+    if (((bx == x && ((by == y - 1 || (by == y + 1)))) ||
+        ((by == y && ((bx == x - 1 || (bx == x + 1)))))) &&
+        (routeBlocks = (RoutingBlock*)Mem_ReAlloc(routeBlocks, (oldCount + 1) * sizeof(RoutingBlock)),
+            routeBlocks != NULL))
+    {
+        liveObj->routeBlocks = routeBlocks;
+        routeBlocks[liveObj->routeBlocksTotal].blockPos.x = bx;
+        liveObj->routeBlocks[liveObj->routeBlocksTotal].blockPos.y = by;
+        liveObj->routeBlocks[liveObj->routeBlocksTotal].blockOffset.x = 0.5f;
+        liveObj->routeBlocks[liveObj->routeBlocksTotal].blockOffset.y = 0.5f;
+        liveObj->routeBlocks[liveObj->routeBlocksTotal].flagsByte = ROUTE_FLAG_NONE;
+        liveObj->routeBlocks[liveObj->routeBlocksTotal].actionByte = ROUTE_ACTION_UNK_1;
+        liveObj->routeBlocksTotal++;
+        liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|LIVEOBJ3_CANROUTERUBBLE|
+                            LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_UNK_2000000|
+                            LIVEOBJ3_UNK_1000000|LIVEOBJ3_REMOVING|LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_SELECTED|
+                            LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_UPGRADEPART|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|
+                            LIVEOBJ3_UNK_10000|LIVEOBJ3_CANDYNAMITE|LIVEOBJ3_UNK_4000|LIVEOBJ3_UNK_2000|
+                            LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNUSED_800|LIVEOBJ3_UNK_200|LIVEOBJ3_CANSELECT|
+                            LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|LIVEOBJ3_CANCARRY|LIVEOBJ3_CANFIRSTPERSON|
+                            LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);
+
+        return TRUE;
+    }
+    return FALSE;
+}
+
 B32 LegoObject_RouteToDig_FUN_00447100(lpLegoObject liveObj, U32 bx, U32 by, B32 tunnelDig)
 {
-    // TODO: Implement LegoObject_RouteToDig_FUN_00447100
+    if (!LiveObject_BlockCheck_FUN_004326a0(liveObj, bx, by, tunnelDig, TRUE))
+        return FALSE;
+
+    Direction directions[18];
+
+    if (!LegoObject_BlockRoute_FUN_00446c80(liveObj, bx, by, tunnelDig, directions, TRUE))
+        return FALSE;
+
+    if (tunnelDig)
+    {
+        directions[1] = -1;
+        directions[2] = -1;
+        directions[3] = 0;
+        directions[4] = -1;
+        directions[5] = 0;
+        directions[6] = 0;
+        directions[7] = -1;
+        directions[8] = 0;
+        directions[9] = 0;
+        directions[10] = 1;
+        directions[11] = 1;
+        directions[12] = 2;
+        directions[13] = 2;
+        directions[14] = 3;
+        directions[15] = 3;
+        directions[16] = 0;
+        directions[17] = 0.9f;
+        // TODO: Implement LegoObject_RouteToDig_FUN_00447100
+    }
+    else
+    {
+        LegoObject_RoutingPtr_Realloc_FUN_00446b80(liveObj, bx, by);
+        liveObj->routeBlocks[liveObj->routeBlocksTotal - 1].blockOffset.x = Maths_RandRange(0.3f, 0.7f);
+        liveObj->routeBlocks[liveObj->routeBlocksTotal - 1].blockOffset.y = Maths_RandRange(0.3f, 0.7f);
+        liveObj->targetBlockPos.x = bx;
+        liveObj->targetBlockPos.y = by;
+        liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|
+                            LIVEOBJ3_CANROUTERUBBLE|LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|
+                            LIVEOBJ3_UNK_1000000|LIVEOBJ3_REMOVING|LIVEOBJ3_AITASK_UNK_400000|
+                            LIVEOBJ3_SELECTED|LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_UPGRADEPART|
+                            LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|LIVEOBJ3_UNK_10000|LIVEOBJ3_CANDYNAMITE
+                            |LIVEOBJ3_UNK_4000|LIVEOBJ3_UNK_2000|LIVEOBJ3_CENTERBLOCKIDLE|
+                            LIVEOBJ3_UNUSED_800|LIVEOBJ3_UNK_400|LIVEOBJ3_UNK_200|LIVEOBJ3_CANSELECT|
+                            LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|LIVEOBJ3_CANCARRY|LIVEOBJ3_CANFIRSTPERSON|
+                            LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);
+    }
 
     return TRUE;
 }

@@ -605,6 +605,10 @@ extern lpLegoObject LegoObject_DoCollisionCallbacks_FUN_00446030(lpLegoObject li
 
 extern void LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(lpLegoObject liveObj, F32 xPos, F32 yPos);
 
+extern B32 LegoObject_BlockRoute_FUN_00446c80(lpLegoObject liveObj, U32 bx, U32 by, B32 useWideRange, Direction* optout_direction, B32 countIs8);
+
+extern B32 LegoObject_RoutingPtr_Realloc_FUN_00446b80(lpLegoObject liveObj, U32 bx, U32 by);
+
 extern B32 LegoObject_RouteToDig_FUN_00447100(lpLegoObject liveObj, U32 bx, U32 by, B32 tunnelDig);
 
 typedef B32 (*LegoObject_CheckBlock_Callback)(lpLegoObject liveObj, Point2I* blockPos, void* data);
