@@ -1851,8 +1851,170 @@ void LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(lpLegoObject liveO
 
 B32 LegoObject_BlockRoute_FUN_00446c80(lpLegoObject liveObj, U32 bx, U32 by, B32 useWideRange, Direction* optout_direction, B32 countIs8)
 {
-    // TODO: Implement LegoObject_BlockRoute_FUN_00446c80
-    return FALSE;
+    B32 someBools[8];
+    memset(someBools, 0, sizeof(someBools));
+
+    //  \X -2 -1  0  1
+    //  Y\ __ __ __ __
+    // -2 |__|_0|_1|__|
+    // -1 |_7|__|__|_2|
+    //  0 |_6|__|__|_3|
+    //  1 |__|_5|_4|__|
+
+    Point2F DIRECTIONS_THIN[4];
+    DIRECTIONS_THIN[0].x = 0.0f;
+    DIRECTIONS_THIN[0].y = -1.0f;
+    DIRECTIONS_THIN[1].x = 1.0f;
+    DIRECTIONS_THIN[1].y = 0.0f;
+    DIRECTIONS_THIN[2].x = 0.0f;
+    DIRECTIONS_THIN[2].y = 1.0f;
+    DIRECTIONS_THIN[3].x = -1.0f;
+    DIRECTIONS_THIN[3].y = 0.0f;
+
+    Point2F DIRECTIONS_WIDE[8];
+    DIRECTIONS_WIDE[0].x = -1.0f;
+    DIRECTIONS_WIDE[0].y = -2.0f;
+    DIRECTIONS_WIDE[1].x = 0.0f;
+    DIRECTIONS_WIDE[1].y = -2.0f;
+    DIRECTIONS_WIDE[2].x = 1.0f;
+    DIRECTIONS_WIDE[2].y = -1.0f;
+    DIRECTIONS_WIDE[3].x = 1.0f;
+    DIRECTIONS_WIDE[3].y = 0.0f;
+    DIRECTIONS_WIDE[4].x = 0.0f;
+    DIRECTIONS_WIDE[4].y = 1.0f;
+    DIRECTIONS_WIDE[5].x = -1.0f;
+    DIRECTIONS_WIDE[5].y = 1.0f;
+    DIRECTIONS_WIDE[6].x = -2.0f;
+    DIRECTIONS_WIDE[6].y = 0.0f;
+    DIRECTIONS_WIDE[7].x = -2.0f;
+    DIRECTIONS_WIDE[7].y = -1.0f;
+
+    B32 bVar2 = TRUE;
+
+    Point2F* directions;
+    U32 count;
+
+    if (useWideRange)
+    {
+        directions = DIRECTIONS_WIDE;
+        count = 8;
+    }
+    else
+    {
+        directions = DIRECTIONS_THIN;
+        count = DIRECTION_COUNT;
+    }
+
+    Point2I objBlockPos;
+    LegoObject_GetBlockPos(liveObj, &objBlockPos.x, &objBlockPos.y);
+
+    if (!countIs8)
+    {
+        Point2F blockWorldPos;
+        Map3D_BlockToWorldPos(Lego_GetMap(), bx, by, &blockWorldPos.x, &blockWorldPos.y);
+        Point2F objWorldPos;
+        LegoObject_GetPosition(liveObj, &objWorldPos.x, &objWorldPos.y);
+        F32 dist = sqrtf((blockWorldPos.y - objWorldPos.y) * (blockWorldPos.y - objWorldPos.y) +
+                           (blockWorldPos.x - objWorldPos.x) * (blockWorldPos.x - objWorldPos.x));
+        if (dist < Lego_GetMap()->blockSize)
+            bVar2 = FALSE;
+    }
+
+    S32 dir = -1;
+    for (S32 i = 0; i < count; i++)
+    {
+        directions[i].x += (F32)bx;
+        directions[i].y += (F32)by;
+        if (directions[i].x == (F32)objBlockPos.x && directions[i].y == (F32)objBlockPos.y && bVar2 &&
+            (dir = i, useWideRange != 0 || !Level_Block_IsWall(objBlockPos.x, objBlockPos.y)))
+        {
+            break;
+        }
+        dir = -1;
+    }
+
+    if (dir != -1)
+    {
+        if (!LegoObject_Route_AllocPtr_FUN_004419c0(liveObj, 1, &objBlockPos.x, &objBlockPos.y, NULL))
+        {
+            return FALSE;
+        }
+
+        if (optout_direction != NULL)
+        {
+            *optout_direction = (Direction)dir;
+        }
+
+        return TRUE;
+    }
+
+    S32* outNewBxs[8];
+    S32* outNewBys[8];
+    U32 outCount[8];
+
+    for (U32 i = 0; i < count; i++)
+    {
+        if ((F32)objBlockPos.x != directions[i].x || (F32)objBlockPos.y != directions[i].y)
+        {
+            if (LegoObject_Route_Score_FUN_004413b0(liveObj, objBlockPos.x, objBlockPos.y, directions[i].x, directions[i].y, outNewBxs[i], outNewBys[i], outCount, NULL, NULL))
+            {
+                someBools[i] = TRUE;
+            }
+        }
+    }
+
+    S32 local_108 = -1;
+    U32 local_f8 = 0xffffffff;
+    for (U32 i = 0; i < count; i++)
+    {
+        if (local_108 != -1 && i == count)
+            break;
+
+        S32 num = i % count;
+        if (someBools[num] != 0)
+        {
+            if (i < count)
+            {
+                if (Level_Block_IsWall(directions[num].x, directions[num].y))
+                    continue;
+            }
+
+            if (outCount[num] < local_f8)
+            {
+                local_108 = num;
+                local_f8 = outCount[num];
+            }
+        }
+    }
+
+    B32 result = FALSE;
+
+    if (local_108 != -1)
+    {
+        if (LegoObject_Route_AllocPtr_FUN_004419c0(liveObj, outCount[local_108], outNewBxs[local_108], outNewBys[local_108], NULL))
+        {
+            if (optout_direction != NULL)
+            {
+                *optout_direction = (Direction)local_108;
+            }
+            result = TRUE;
+        }
+        else
+        {
+            result = FALSE;
+        }
+    }
+
+    for (U32 i = 0; i < count; i++)
+    {
+        if (someBools[i] != 0)
+        {
+            Mem_Free(outNewBxs[i]);
+            Mem_Free(outNewBys[i]);
+        }
+    }
+
+    return result;
 }
 
 B32 LegoObject_RoutingPtr_Realloc_FUN_00446b80(lpLegoObject liveObj, U32 bx, U32 by)
