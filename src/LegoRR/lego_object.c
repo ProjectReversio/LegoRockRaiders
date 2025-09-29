@@ -2498,9 +2498,37 @@ B32 LegoObject_MiniFigureHasBeamEquipped2(lpLegoObject liveObj)
 
 B32 LiveObject_BlockCheck_FUN_004326a0(lpLegoObject liveObj, U32 bx, U32 by, B32 param4, B32 param5)
 {
-    // TODO: Implement LiveObject_BlockCheck_FUN_004326a0
+    Lego_Level* level = legoGlobs.currLevel;
+    Lego_Block* curBlock = &level->blocks[by * level->width + bx];
+    if (((StatsObject_GetStatsFlags1(liveObj) & STATS1_CANBEDRIVEN) != STATS1_NONE && liveObj->driveObject == NULL))
+        return FALSE;
 
-    return TRUE;
+    if (param4 && ((StatsObject_GetStatsFlags1(liveObj) & STATS1_SINGLEWIDTHDIG) == STATS1_NONE))
+        return FALSE;
+
+    if ((!param5 || (liveObj->flags1 & LIVEOBJ1_CARRYING) == LIVEOBJ1_NONE) &&
+        (liveObj->flags3 & LIVEOBJ3_CANDIG) != LIVEOBJ3_NONE &&
+        StatsObject_GetDrillTimeType(liveObj, (U32)curBlock->terrain) != 0.0f &&
+            bx < level->width - 2 && by < level->height - 2)
+    {
+        if (!param4)
+        {
+            if ((curBlock->flags1 & BLOCK1_WALL) != BLOCK1_NONE &&
+                (curBlock->flags1 & BLOCK1_INCORNER) == BLOCK1_NONE &&
+                curBlock->terrain != Lego_SurfaceType8_Immovable &&
+                curBlock->terrain != Lego_SurfaceType8_Water &&
+                curBlock->terrain != Lego_SurfaceType8_RechargeSeam)
+            {
+                return TRUE;
+            }
+        }
+        else if (curBlock->predug == Lego_PredugType_Wall)
+        {
+            // TODO: Implement LiveObject_BlockCheck_FUN_004326a0
+        }
+    }
+
+    return FALSE;
 }
 
 B32 LegoObject_TaskHasTool_FUN_0044b780(lpLegoObject liveObj, AITask_Type taskType)

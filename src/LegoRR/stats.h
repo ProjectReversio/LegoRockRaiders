@@ -133,3 +133,4 @@ extern B32 StatsObject_SetObjectLevel(struct LegoObject* liveObj, U32 newLevel);
 extern StatsFlags1 StatsObject_GetStatsFlags1(struct LegoObject* liveObj);
 extern StatsFlags2 StatsObject_GetStatsFlags2(struct LegoObject* liveObj);
 extern StatsFlags3 StatsObject_GetStatsFlags3(struct LegoObject* liveObj);
+extern F32 StatsObject_GetDrillTimeType(struct LegoObject* liveObj, enum Lego_SurfaceType surfaceType);

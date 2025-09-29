@@ -1,4 +1,6 @@
 #include "stats.h"
+
+#include "lego.h"
 #include "lego_object.h"
 
 Stats_Globs statsGlobs = { NULL };
@@ -60,4 +62,11 @@ StatsFlags3 StatsObject_GetStatsFlags3(lpLegoObject liveObj)
         return STATS3_NONE;
 
     return liveObj->stats->flags3;
+}
+
+F32 StatsObject_GetDrillTimeType(lpLegoObject liveObj, Lego_SurfaceType surfaceType)
+{
+    // TODO: Implement StatsObject_GetDrillTimeType
+    return 1.0f;
+    //return liveObj->stats->DrillTimes[surfaceType];
 }
