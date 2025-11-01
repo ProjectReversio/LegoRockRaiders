@@ -147,3 +147,18 @@ lpContainer Creature_GetCameraNull(lpCreatureModel creature, S32 cameraIndex)
 
     return creature->cameraNulls[cameraIndex];
 }
+
+lpContainer Creature_GetDrillNull(lpCreatureModel creature)
+{
+    const char* name = creature->drillNullName;
+    if (name == NULL)
+        return NULL;
+
+    if (creature->drillNull == NULL)
+    {
+        lpContainer container = Object_SearchForPartName((BasicObjectModel*)creature, name, 0);
+        creature->drillNull = container;
+    }
+
+    return creature->drillNull;
+}

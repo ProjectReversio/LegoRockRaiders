@@ -588,7 +588,7 @@ someLabel:
         else if (((liveObj->aiTask->flags & AITASK_FLAG_PERFORMING) == AITASK_FLAG_NONE) &&
                 ((liveObj->flags3 & LIVEOBJ3_SELECTED) == LIVEOBJ3_NONE))
         {
-            B32 newBoolVar = TRUE;
+            B32 taskPerformed = TRUE;
             if (TRUE) // TODO: Why?
             {
                 switch (taskType)
@@ -600,7 +600,7 @@ someLabel:
                         if (blockPos.x == liveObj->aiTask->blockPos.x &&
                             blockPos.y == liveObj->aiTask->blockPos.y)
                         {
-                            newBoolVar = TRUE;
+                            taskPerformed = TRUE;
                             AITask_LiveObject_FUN_00404110(liveObj);
                         }
                         else
@@ -612,7 +612,7 @@ someLabel:
                             rand.y = Maths_RandRange(vertPoses[2].y + 6.0f, vertPoses[0].y - 6.0f);
                             StatsFlags1 statsFlags = StatsObject_GetStatsFlags1(liveObj);
                             // TODO: Double check this is correct
-                            newBoolVar = AITask_LiveObject_FUN_00404d30(liveObj, &liveObj->aiTask->blockPos,
+                            taskPerformed = AITask_LiveObject_FUN_00404d30(liveObj, &liveObj->aiTask->blockPos,
                                 ((statsFlags & STATS1_ROUTEAVOIDANCE) != STATS1_NONE) ? &rand : NULL);
                         }
                         break;
@@ -626,14 +626,14 @@ someLabel:
                                 (sflags1 & STATS1_SINGLEWIDTHDIG) != STATS1_NONE)) ||
                                 ((liveObj->aiTask->flags & AITASK_FLAG_DIGCONNECTION) == AITASK_FLAG_NONE))
                         {
-                            newBoolVar = LegoObject_RouteToDig_FUN_00447100(liveObj, liveObj->aiTask->blockPos.x, liveObj->aiTask->blockPos.y,
+                            taskPerformed = LegoObject_RouteToDig_FUN_00447100(liveObj, liveObj->aiTask->blockPos.x, liveObj->aiTask->blockPos.y,
                                 (liveObj->aiTask->flags & AITASK_FLAG_DIGCONNECTION) != AITASK_FLAG_NONE);
                         }
                         break;
                     }
                 }
             }
-            if (!newBoolVar)
+            if (!taskPerformed)
             {
                 someSpecialVar = TRUE;
             }
