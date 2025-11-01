@@ -1508,7 +1508,48 @@ void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
     if (!theBool)
         return;
 
-    // TODO: Implement LegoObject_Route_UpdateMovement
+    // TODO: this is the check that a minifigure has made it to its destination wall
+    // implemented in a super janky way so it should probably be redone
+    /*
+    U32 lastRouteBlock = liveObj->routeBlocksTotal - 1;
+
+    if ((liveObj->flags1 & LIVEOBJ1_DRILLING) == LIVEOBJ1_NONE
+        && liveObj->routeBlocks[lastRouteBlock].actionByte == ROUTE_ACTION_UNK_1) {
+        lpContainer* drillNull = Creature_GetDrillNull(liveObj->miniFigure);
+        
+        if (drillNull) {
+            // TODO: move to LegoObject_GetDrillNullPosition
+            Point3F drillNullPos;
+            Container_GetPosition(drillNull, 0, &drillNullPos);
+
+            S32 wallBx;
+            S32 wallBy;
+
+            // TODO: this should properly be Lego_WorldToBlockPos_NoZ
+            if (Map3D_WorldToBlockPos_NoZ(legoGlobs.currLevel->map, drillNullPos.x, drillNullPos.y, &wallBx, &wallBy)) {
+                if (Level_Block_IsWall(wallBx, wallBy)
+                    && wallBx == liveObj->routeBlocks[lastRouteBlock].blockPos.x
+                    && wallBy == liveObj->routeBlocks[lastRouteBlock].blockPos.y) {
+                    B32 strangeWall = !LiveObject_BlockCheck_FUN_004326a0(
+                        liveObj,
+                        liveObj->targetBlockPos.x,
+                        liveObj->targetBlockPos.y,
+                        liveObj->flags3 & LIVEOBJ2_ACTIVEELECTRICFENCE,
+                        TRUE
+                    );
+
+                    if (strangeWall) {
+                        liveObj->flags1 |= LIVEOBJ2_UNK_80000000;
+                    }
+                    else {
+                        liveObj->flags1 &= 0xFFFFFF00; // clear the bottom byte worth of flags
+                        liveObj->flags1 |= LIVEOBJ2_UNK_10 | LIVEOBJ2_DRIVING;
+                    }
+                }
+            }
+        }
+    }
+    */
 
     F32 routeSpeed;
     F32 transSpeed;
@@ -1565,6 +1606,8 @@ void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
             return;
         }
 
+        // stop moving because we've collided with something
+        // so edit our curve back to be empty
         LegoObject_RoutingUnk_SetupCurve_FUN_00444940(liveObj, FALSE, FALSE, FALSE);
         liveObj->flags3 |= LIVEOBJ3_UNUSED_800;
         liveObj->routeCurveCurrDist += routeSpeed;
@@ -1601,23 +1644,24 @@ B32 LegoObject_RoutingUnk_SetupCurve_FUN_00444940(lpLegoObject liveObj, B32 useR
     Point2F blockWorldPos;
     if (useRoutingPos)
     {
-        Map3D_BlockToWorldPos(Lego_GetMap(), blockPos.x, blockPos.y, &blockWorldPos.x, &blockWorldPos.y);
-        blockPos.x = objBlockPos.x;
-        blockPos.y = objBlockPos.y;
-    }
-    else
-    {
-        // why is this here?
+        // this is unused in the final version of the game
         Point2F unusedBlockWorldPos;
         Map3D_BlockToWorldPos(Lego_GetMap(), blockPos.x, blockPos.y, &unusedBlockWorldPos.x, &unusedBlockWorldPos.y);
 
+        // but this is used
         liveObj->routeBlocksCurrent++;
 
         Point2I nextBlockPos;
         nextBlockPos.x = liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.x;
         nextBlockPos.y = liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.y;
 
-        Map3D_BlockToWorldPos(Lego_GetMap(), nextBlockPos.x,nextBlockPos.y, &blockWorldPos.x, &blockWorldPos.y);
+        Map3D_BlockToWorldPos(Lego_GetMap(), nextBlockPos.x, nextBlockPos.y, &blockWorldPos.x, &blockWorldPos.y);
+    }
+    else
+    {
+        Map3D_BlockToWorldPos(Lego_GetMap(), blockPos.x, blockPos.y, &blockWorldPos.x, &blockWorldPos.y);
+        blockPos.x = objBlockPos.x;
+        blockPos.y = objBlockPos.y;
     }
 
     Point2F finalPos;
@@ -1849,7 +1893,7 @@ void LegoObject_UpdateRoutingVectors_SetPosition_FUN_004428b0(lpLegoObject liveO
     }
 }
 
-B32 LegoObject_BlockRoute_FUN_00446c80(lpLegoObject liveObj, U32 bx, U32 by, B32 useWideRange, Direction* optout_direction, B32 countIs8)
+B32 LegoObject_BlockRoute_FUN_00446c80(lpLegoObject liveObj, U32 bx, U32 by, B32 useWideRange, Direction* optout_direction, B32 dontCheckWithinSingleBlockDist)
 {
     B32 someBools[8];
     memset(someBools, 0, sizeof(someBools));
@@ -1902,13 +1946,13 @@ B32 LegoObject_BlockRoute_FUN_00446c80(lpLegoObject liveObj, U32 bx, U32 by, B32
     else
     {
         directions = DIRECTIONS_THIN;
-        count = DIRECTION_COUNT;
+        count = 4;
     }
 
     Point2I objBlockPos;
     LegoObject_GetBlockPos(liveObj, &objBlockPos.x, &objBlockPos.y);
 
-    if (!countIs8)
+    if (!dontCheckWithinSingleBlockDist)
     {
         Point2F blockWorldPos;
         Map3D_BlockToWorldPos(Lego_GetMap(), bx, by, &blockWorldPos.x, &blockWorldPos.y);
@@ -1920,15 +1964,19 @@ B32 LegoObject_BlockRoute_FUN_00446c80(lpLegoObject liveObj, U32 bx, U32 by, B32
             bVar2 = FALSE;
     }
 
+    // get the direction from the player to the wall on a compass rose
     S32 dir = -1;
     for (S32 i = 0; i < count; i++)
     {
         directions[i].x += (F32)bx;
         directions[i].y += (F32)by;
-        if (directions[i].x == (F32)objBlockPos.x && directions[i].y == (F32)objBlockPos.y && bVar2 &&
-            (dir = i, useWideRange != 0 || !Level_Block_IsWall(objBlockPos.x, objBlockPos.y)))
+        if (directions[i].x == (F32)objBlockPos.x && directions[i].y == (F32)objBlockPos.y && bVar2)
         {
-            break;
+            dir = i;
+
+            if (useWideRange != 0 || !Level_Block_IsWall(objBlockPos.x, objBlockPos.y)) {
+                break;
+            }
         }
         dir = -1;
     }
@@ -1948,6 +1996,7 @@ B32 LegoObject_BlockRoute_FUN_00446c80(lpLegoObject liveObj, U32 bx, U32 by, B32
         return TRUE;
     }
 
+    // if we didn't find it
     S32* outNewBxs[8];
     S32* outNewBys[8];
     U32 outCount[8];
@@ -2026,6 +2075,7 @@ B32 LegoObject_RoutingPtr_Realloc_FUN_00446b80(lpLegoObject liveObj, U32 bx, U32
     RoutingBlock* routeBlocks = liveObj->routeBlocks;
     U32 x = routeBlocks[oldCount - 1].blockPos.x;
     U32 y = routeBlocks[oldCount - 1].blockPos.y;
+    // if going in straight line, not diagonal
     if (((bx == x && ((by == y - 1 || (by == y + 1)))) ||
         ((by == y && ((bx == x - 1 || (bx == x + 1)))))) &&
         (routeBlocks = (RoutingBlock*)Mem_ReAlloc(routeBlocks, (oldCount + 1) * sizeof(RoutingBlock)),
@@ -2055,6 +2105,9 @@ B32 LegoObject_RoutingPtr_Realloc_FUN_00446b80(lpLegoObject liveObj, U32 bx, U32
 
 B32 LegoObject_RouteToDig_FUN_00447100(lpLegoObject liveObj, U32 bx, U32 by, B32 tunnelDig)
 {
+    // check a bunch of conditions to verify
+    // that this is a very ordinary wall
+    // if it is a strange wall, return FALSE
     if (!LiveObject_BlockCheck_FUN_004326a0(liveObj, bx, by, tunnelDig, TRUE))
         return FALSE;
 
@@ -2519,6 +2572,7 @@ B32 LiveObject_BlockCheck_FUN_004326a0(lpLegoObject liveObj, U32 bx, U32 by, B32
                 curBlock->terrain != Lego_SurfaceType8_Water &&
                 curBlock->terrain != Lego_SurfaceType8_RechargeSeam)
             {
+                // this is a very ordinary wall
                 return TRUE;
             }
         }
