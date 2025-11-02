@@ -2118,7 +2118,8 @@ B32 LegoObject_RouteToDig_FUN_00447100(lpLegoObject liveObj, U32 bx, U32 by, B32
 
     if (tunnelDig)
     {
-        directions[1] = -1;
+        Error_Warn(TRUE, "Tunnel Dig not yet implemented in LegoObject_RouteToDig_FUN_00447100");
+        /*directions[1] = -1;
         directions[2] = -1;
         directions[3] = 0;
         directions[4] = -1;
@@ -2134,7 +2135,7 @@ B32 LegoObject_RouteToDig_FUN_00447100(lpLegoObject liveObj, U32 bx, U32 by, B32
         directions[14] = 3;
         directions[15] = 3;
         directions[16] = 0;
-        directions[17] = 0.9f;
+        directions[17] = 0.9f;*/
         // TODO: Implement LegoObject_RouteToDig_FUN_00447100
     }
     else
