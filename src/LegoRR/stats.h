@@ -2,6 +2,7 @@
 
 #include "platform.h"
 #include "config.h"
+#include "sfx.h"
 
 typedef enum StatsFlags1
 {
@@ -134,3 +135,4 @@ extern StatsFlags1 StatsObject_GetStatsFlags1(struct LegoObject* liveObj);
 extern StatsFlags2 StatsObject_GetStatsFlags2(struct LegoObject* liveObj);
 extern StatsFlags3 StatsObject_GetStatsFlags3(struct LegoObject* liveObj);
 extern F32 StatsObject_GetDrillTimeType(struct LegoObject* liveObj, enum Lego_SurfaceType surfaceType);
+extern SFX_ID StatsObject_GetDrillSoundType(struct LegoObject* liveObj, B32 fade);

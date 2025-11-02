@@ -366,6 +366,11 @@ void SFX_Sound3D_Update()
     Sound3D_Update();
 }
 
+void SFX_Sound3D_StopSound(S32 sound3DHandle)
+{
+    Sound3D_StopSound(sound3DHandle);
+}
+
 B32 SFX_IsQueueMode()
 {
     return sfxGlobs.flags & SFX_GLOB_FLAG_QUEUEMODE;

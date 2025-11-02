@@ -25,3 +25,5 @@ extern F32 Vehicle_MoveAnimation(lpVehicleModel vehicle, F32 elapsed1, F32 elaps
 
 extern void Vehicle_SetOrientation(lpVehicleModel vehicle, F32 xDir, F32 yDir, F32 zDir);
 extern void Vehicle_SetPosition(lpVehicleModel vehicle, F32 xPos, F32 yPos, GetWorldZCallback zCallback, struct Map3D* map);
+
+extern lpContainer Vehicle_GetDrillNull(lpVehicleModel vehicle);

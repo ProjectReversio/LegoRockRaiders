@@ -649,6 +649,8 @@ extern B32 LiveObject_FUN_00431ba0(lpLegoObject liveObj, Point2I* blockPos, Poin
 
 extern B32 LiveObject_FUN_00433b40(lpLegoObject liveObj, F32 param2, B32 param3);
 
+extern B32 LegoObject_GetDrillNullPosition(lpLegoObject liveObj, F32 *outXPos, F32* outYPos);
+
 #ifdef LEGORR_DEBUG_SHOW_INFO
 extern const char* LegoObject_Debug_GetTypeName(LegoObject_Type objType);
 #endif

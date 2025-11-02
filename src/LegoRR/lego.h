@@ -730,6 +730,8 @@ extern void Lego_DrawRenameInput(F32 elapsedAbs);
 
 extern void Lego_HandleRadarInput();
 
+extern B32 Lego_WorldToBlockPos_NoZ(F32 xPos, F32 yPos, S32* outBx, S32* outBy);
+
 // Returns TRUE if liveObj (or its drivenObj) is the first-person unit.
 // BUG: When in topdown view, returns TRUE if the objectFP is not NULL and matches the unit's
 // drivenObj.

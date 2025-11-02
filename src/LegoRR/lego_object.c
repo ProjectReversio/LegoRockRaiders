@@ -573,6 +573,45 @@ B32 LegoObject_Callback_Update(lpLegoObject liveObj, void* search)
 
     // TODO: Implement LegoObject_Callback_Update
 
+    if ((liveObj->flags1 & LIVEOBJ1_DRILLING) == LIVEOBJ1_NONE) goto notDrilling;
+    if ((liveObj->flags1 & LIVEOBJ1_DRILLINGSTART) != LIVEOBJ1_NONE)
+    {
+        lpContainer actCont = LegoObject_GetActivityContainer(liveObj);
+        SFX_ID sfxId = StatsObject_GetDrillSoundType(liveObj, FALSE);
+        liveObj->drillSoundHandle = SFX_Random_PlaySound3DOnContainer(actCont, sfxId, TRUE, TRUE, NULL);
+        liveObj->flags4 |= LIVEOBJ4_DRILLSOUNDPLAYING;
+        liveObj->flags1 &= ~LIVEOBJ1_DRILLINGSTART;
+    }
+
+    if (liveObj->routeBlocks == NULL)
+    {
+notRouting:
+        liveObj->flags1 &= ~LIVEOBJ1_DRILLING;
+        liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|LIVEOBJ3_CANROUTERUBBLE|LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_UNK_1000000|LIVEOBJ3_REMOVING|
+          LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_SELECTED|LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_UPGRADEPART|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|LIVEOBJ3_UNK_10000|LIVEOBJ3_CANDYNAMITE|LIVEOBJ3_UNK_4000
+          |LIVEOBJ3_UNK_2000|LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNUSED_800|LIVEOBJ3_UNK_400|LIVEOBJ3_UNK_200|LIVEOBJ3_CANSELECT|LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|LIVEOBJ3_CANCARRY|
+          LIVEOBJ3_CANFIRSTPERSON|LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);
+
+        lpContainer actCont = LegoObject_GetActivityContainer(liveObj);
+        SFX_Sound3D_StopSound(liveObj->drillSoundHandle);
+        liveObj->flags4 &= ~LIVEOBJ4_DRILLSOUNDPLAYING;
+        SFX_ID sfxId = StatsObject_GetDrillSoundType(liveObj, TRUE);
+        SFX_Random_PlaySound3DOnContainer(actCont, sfxId, FALSE, TRUE, NULL);
+
+        //TODO: Empty function? logf_removed(0, 0, 0);
+
+        liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|LIVEOBJ3_CANROUTERUBBLE|LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_UNK_2000000|LIVEOBJ3_UNK_1000000|
+               LIVEOBJ3_REMOVING|LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_SELECTED|LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_UPGRADEPART|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|LIVEOBJ3_UNK_10000|
+               LIVEOBJ3_CANDYNAMITE|LIVEOBJ3_UNK_2000|LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNUSED_800|LIVEOBJ3_UNK_400|LIVEOBJ3_UNK_200|LIVEOBJ3_CANSELECT|LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|
+               LIVEOBJ3_CANCARRY|LIVEOBJ3_CANFIRSTPERSON|LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);;
+    }
+    else
+    {
+
+        // TODO: Implement LegoObject_Callback_Update
+    }
+
+notDrilling:
     if ((liveObj->flags2 & LIVEOBJ2_PUSHED) != LIVEOBJ2_NONE)
         goto objectupdate_end;
 
@@ -1508,48 +1547,24 @@ void LegoObject_Route_UpdateMovement(lpLegoObject liveObj, F32 elapsed)
     if (!theBool)
         return;
 
-    // TODO: this is the check that a minifigure has made it to its destination wall
-    // implemented in a super janky way so it should probably be redone
-    /*
-    U32 lastRouteBlock = liveObj->routeBlocksTotal - 1;
+    Point2F drillPos;
+    Point2I drillBlockPos;
 
-    if ((liveObj->flags1 & LIVEOBJ1_DRILLING) == LIVEOBJ1_NONE
-        && liveObj->routeBlocks[lastRouteBlock].actionByte == ROUTE_ACTION_UNK_1) {
-        lpContainer* drillNull = Creature_GetDrillNull(liveObj->miniFigure);
-        
-        if (drillNull) {
-            // TODO: move to LegoObject_GetDrillNullPosition
-            Point3F drillNullPos;
-            Container_GetPosition(drillNull, 0, &drillNullPos);
+    if (((liveObj->flags1 & LIVEOBJ1_DRILLING) == LIVEOBJ1_NONE
+        && liveObj->routeBlocks[liveObj->routeBlocksCurrent].actionByte == ROUTE_ACTION_UNK_1) &&
+        (theBool = LegoObject_GetDrillNullPosition(liveObj, &drillPos.x, &drillPos.y), theBool != 0) &&
+        (theBool = Lego_WorldToBlockPos_NoZ(drillPos.x, drillPos.y, &drillBlockPos.x, &drillBlockPos.y), theBool != 0 &&
+        (theBool = Level_Block_IsWall(drillBlockPos.x, drillBlockPos.y), theBool != 0) &&
+        (drillBlockPos.x == liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.x && drillBlockPos.y == liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.y)))
+    {
+        theBool = TRUE;
 
-            S32 wallBx;
-            S32 wallBy;
-
-            // TODO: this should properly be Lego_WorldToBlockPos_NoZ
-            if (Map3D_WorldToBlockPos_NoZ(legoGlobs.currLevel->map, drillNullPos.x, drillNullPos.y, &wallBx, &wallBy)) {
-                if (Level_Block_IsWall(wallBx, wallBy)
-                    && wallBx == liveObj->routeBlocks[lastRouteBlock].blockPos.x
-                    && wallBy == liveObj->routeBlocks[lastRouteBlock].blockPos.y) {
-                    B32 strangeWall = !LiveObject_BlockCheck_FUN_004326a0(
-                        liveObj,
-                        liveObj->targetBlockPos.x,
-                        liveObj->targetBlockPos.y,
-                        liveObj->flags3 & LIVEOBJ2_ACTIVEELECTRICFENCE,
-                        TRUE
-                    );
-
-                    if (strangeWall) {
-                        liveObj->flags1 |= LIVEOBJ2_UNK_80000000;
-                    }
-                    else {
-                        liveObj->flags1 &= 0xFFFFFF00; // clear the bottom byte worth of flags
-                        liveObj->flags1 |= LIVEOBJ2_UNK_10 | LIVEOBJ2_DRIVING;
-                    }
-                }
-            }
-        }
+        theBool = LiveObject_BlockCheck_FUN_004326a0(liveObj, liveObj->targetBlockPos.x, liveObj->targetBlockPos.y, liveObj->flags3 & LIVEOBJ3_UNK_2000000, theBool);
+        if (theBool)
+            liveObj->flags1 |= (LIVEOBJ1_DRILLINGSTART | LIVEOBJ1_DRILLING);
+        else
+            liveObj->flags1 |= LIVEOBJ1_CANTDO;
     }
-    */
 
     F32 routeSpeed;
     F32 transSpeed;
@@ -2720,6 +2735,35 @@ B32 LiveObject_FUN_00433b40(lpLegoObject liveObj, F32 param2, B32 param3)
     // TODO: Implement LiveObject_FUN_00433b40
 
     return FALSE;
+}
+
+B32 LegoObject_GetDrillNullPosition(lpLegoObject liveObj, F32 *outXPos, F32* outYPos)
+{
+    lpContainer cont = NULL;
+
+    LegoObject_Type type = liveObj->type;
+    if (type == LegoObject_Vehicle)
+    {
+        cont = Vehicle_GetDrillNull(liveObj->vehicle);
+    }
+    else if (type == LegoObject_MiniFigure)
+    {
+        cont = Creature_GetDrillNull(liveObj->miniFigure);
+    }
+    else if (type == LegoObject_RockMonster)
+    {
+        cont = Creature_GetDrillNull(liveObj->rockMonster);
+    }
+
+    if (cont == NULL)
+        return FALSE;
+
+    Point3F pos;
+    Container_GetPosition(cont, NULL, &pos);
+
+    *outXPos = pos.x;
+    *outYPos = pos.y;
+    return TRUE;
 }
 
 #ifdef LEGORR_DEBUG_SHOW_INFO

@@ -3732,6 +3732,11 @@ void Lego_HandleRadarInput()
     // TODO: Implement Lego_HandleRadarInput
 }
 
+B32 Lego_WorldToBlockPos_NoZ(F32 xPos, F32 yPos, S32* outBx, S32* outBy)
+{
+    return Map3D_WorldToBlockPos_NoZ(legoGlobs.currLevel->map, xPos, yPos, outBx, outBy);
+}
+
 // Returns TRUE if liveObj (or its drivenObj) is the first-person unit.
 // BUG: When in topdown view, returns TRUE if the objectFP is not NULL and matches the unit's
 // drivenObj.

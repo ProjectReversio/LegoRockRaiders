@@ -70,3 +70,13 @@ F32 StatsObject_GetDrillTimeType(lpLegoObject liveObj, Lego_SurfaceType surfaceT
     return 1.0f;
     //return liveObj->stats->DrillTimes[surfaceType];
 }
+
+SFX_ID StatsObject_GetDrillSoundType(struct LegoObject* liveObj, B32 fade)
+{
+    // TODO: Implement StatsObject_GetDrillTimeType
+    return SFX_Drill;
+    /*if (fade)
+        return liveObj->stats->DrillFadeSound;
+    else
+        return liveObj->stats->DrillSound;*/
+}

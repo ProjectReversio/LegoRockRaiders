@@ -48,3 +48,4 @@ extern F32 Creature_MoveAnimation(lpCreatureModel creature, F32 elapsed, U32 unk
 
 extern B32 Creature_SetActivity(lpCreatureModel creature, const char* activityName, F32 elapsed);
 extern lpContainer Creature_GetCameraNull(lpCreatureModel creature, S32 cameraIndex);
+extern lpContainer Creature_GetDrillNull(lpCreatureModel creature);

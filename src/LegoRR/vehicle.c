@@ -33,3 +33,9 @@ void Vehicle_SetPosition(lpVehicleModel vehicle, F32 xPos, F32 yPos, GetWorldZCa
 {
     // TODO: Implement Vehicle_SetPosition
 }
+
+lpContainer Vehicle_GetDrillNull(lpVehicleModel vehicle)
+{
+    // TODO: Implement Vehicle_GetDrillNull
+    return NULL;
+}
