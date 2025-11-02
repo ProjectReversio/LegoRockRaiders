@@ -794,6 +794,9 @@ void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer owner, lpA
         if (actSample != NULL)
             appData->activitySample = actSample;
 
+        if (soundRecord != NULL)
+            appData->soundList = (Sound3D_SoundFrameRecord*)soundRecord;
+
         if (trigger != NULL)
             appData->trigger = *trigger;
     } else {
@@ -822,6 +825,8 @@ void Container_Frame_SetAppData(LPDIRECT3DRMFRAME3 frame, lpContainer owner, lpA
             appData->trigger = 0;
 
         appData->activitySample = actSample;
+
+        appData->soundList = (Sound3D_SoundFrameRecord*)soundRecord;
 
         frame->lpVtbl->SetAppData(frame, (DWORD)appData);
     }
