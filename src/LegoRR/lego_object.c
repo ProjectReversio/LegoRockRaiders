@@ -11,6 +11,7 @@
 #include "mem.h"
 #include "routing.h"
 #include "sfx.h"
+#include "unknown.h"
 
 LegoObject_Globs objectGlobs = { NULL };
 
@@ -598,7 +599,7 @@ notRouting:
         SFX_ID sfxId = StatsObject_GetDrillSoundType(liveObj, TRUE);
         SFX_Random_PlaySound3DOnContainer(actCont, sfxId, FALSE, TRUE, NULL);
 
-        //TODO: Empty function? logf_removed(0, 0, 0);
+        Unknown_Empty_FUN_00410195_LegoStripped(NULL, NULL, 0);
 
         liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|LIVEOBJ3_CANROUTERUBBLE|LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_UNK_2000000|LIVEOBJ3_UNK_1000000|
                LIVEOBJ3_REMOVING|LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_SELECTED|LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_UPGRADEPART|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|LIVEOBJ3_UNK_10000|

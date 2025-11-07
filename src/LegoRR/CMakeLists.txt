@@ -95,6 +95,7 @@ set(MAIN_SRC
     dummy.c
     meshLOD.c
     routing.c
+    unknown.c
     movie.cpp
     G98CMovie.cpp
     platform/d3drm.c
@@ -191,6 +192,7 @@ set(MAIN_SRC
     dummy.h
     meshLOD.h
     routing.h
+    unknown.h
     movie.h
     G98CMovie.hpp
     ../Shared/types.h
