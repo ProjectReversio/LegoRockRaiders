@@ -3737,6 +3737,24 @@ B32 Lego_WorldToBlockPos_NoZ(F32 xPos, F32 yPos, S32* outBx, S32* outBy)
     return Map3D_WorldToBlockPos_NoZ(legoGlobs.currLevel->map, xPos, yPos, outBx, outBy);
 }
 
+lpContainer Lego_GetCurrentCamera_Container()
+{
+    if (legoGlobs.viewMode == ViewMode_Top)
+        return legoGlobs.cameraMain->contCam;
+
+    if (legoGlobs.viewMode == ViewMode_FP)
+        return legoGlobs.cameraFP->contCam;
+
+    Error_Warn(TRUE, "Invalid view mode in Lego_GetCurrentCamera_Container");
+
+    return NULL;
+}
+
+Lego_SurfaceType Lego_GetBlockTerrain(S32 bx, S32 by)
+{
+    return legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * by + bx].terrain;
+}
+
 // Returns TRUE if liveObj (or its drivenObj) is the first-person unit.
 // BUG: When in topdown view, returns TRUE if the objectFP is not NULL and matches the unit's
 // drivenObj.

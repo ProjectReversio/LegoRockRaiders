@@ -106,6 +106,28 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
     return TRUE;
 }
 
+B32 Level_DestroyWallConnection(lpLego_Level level, U32 bx, U32 by)
+{
+    // TODO: Implement Level_DestroyWallConnection
+    return FALSE;
+}
+
+// Increases damage on the block, used in mining
+B32 Level_Block_Damage(U32 bx, U32 by, F32 param3, F32 param4)
+{
+    lpLego_Level level = legoGlobs.currLevel;
+
+    // Divide-by-zero guard
+    if (param3 != 0.0f)
+    {
+        S32 idx = by * level->width + bx;
+        level->blocks[idx].damage += param4 / param3;
+        if (level->blocks[idx].damage > 1.0f)
+            return TRUE;
+    }
+    return FALSE;
+}
+
 Lego_SurfaceType Level_Block_ChoosePathTexture(S32 bx, S32 by, U8* ref_direction, B32 powered)
 {
     // TODO: Implement Level_Block_ChoosePathTexture

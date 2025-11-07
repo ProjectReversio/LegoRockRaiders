@@ -604,12 +604,88 @@ notRouting:
         liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|LIVEOBJ3_CANROUTERUBBLE|LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_UNK_2000000|LIVEOBJ3_UNK_1000000|
                LIVEOBJ3_REMOVING|LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_SELECTED|LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_UPGRADEPART|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|LIVEOBJ3_UNK_10000|
                LIVEOBJ3_CANDYNAMITE|LIVEOBJ3_UNK_2000|LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNUSED_800|LIVEOBJ3_UNK_400|LIVEOBJ3_UNK_200|LIVEOBJ3_CANSELECT|LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|
-               LIVEOBJ3_CANCARRY|LIVEOBJ3_CANFIRSTPERSON|LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);;
+               LIVEOBJ3_CANCARRY|LIVEOBJ3_CANFIRSTPERSON|LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);
     }
     else
     {
+        F32 bpX = (F32)liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.x;
+        F32 bpY = (F32)liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.y;
 
-        // TODO: Implement LegoObject_Callback_Update
+        if (!LiveObject_BlockCheck_FUN_004326a0(liveObj, liveObj->targetBlockPos.x, liveObj->targetBlockPos.y, liveObj->flags3 & LIVEOBJ3_UNK_2000000, TRUE))
+            goto notRouting;
+
+        Point2F drillNullPos;
+        if (!LegoObject_GetDrillNullPosition(liveObj, &drillNullPos.x, &drillNullPos.y))
+            goto notDrilling;
+
+        // Since Unknown_Empty_FUN_00410195_LegoStripped is empty, this doesn't do anything.
+        // But keeping it here for accuracy.
+        if (liveObj->type == LegoObject_MiniFigure)
+        {
+            lpContainer camCont = Lego_GetCurrentCamera_Container();
+            lpContainer drillNull = Creature_GetDrillNull(liveObj->miniFigure);
+            Unknown_Empty_FUN_00410195_LegoStripped(drillNull, camCont, 0);
+        }
+
+        Lego_SurfaceType surfaceType = Lego_GetBlockTerrain(liveObj->targetBlockPos.x, liveObj->targetBlockPos.y);
+        F32 drillSpeed = StatsObject_GetDrillTimeType(liveObj, surfaceType);
+        if ((StatsObject_GetStatsFlags1(liveObj) & STATS1_SINGLEWIDTHDIG) != STATS1_NONE && (liveObj->flags3 & LIVEOBJ3_UNK_2000000) != LIVEOBJ3_NONE)
+            drillSpeed *= 0.5f;
+
+        if (!Level_Block_Damage(liveObj->targetBlockPos.x, liveObj->targetBlockPos.y, drillSpeed, elapsed))
+        {
+            Point2I blPos;
+            B32 blockPosNoZ = Lego_WorldToBlockPos_NoZ(drillNullPos.x, drillNullPos.y, &blPos.x, &blPos.y);
+            if (!blockPosNoZ || blPos.x != bpX || blPos.y != bpY)
+                goto notDrilling;
+
+            liveObj->flags3 |= LIVEOBJ3_UNK_4000;
+            goto notDrilling;
+        }
+
+        if (LiveObject_BlockCheck_FUN_004326a0(liveObj, liveObj->targetBlockPos.x, liveObj->targetBlockPos.y, liveObj->flags3 & LIVEOBJ3_UNK_2000000, TRUE))
+        {
+            Point2F targetBlock;
+            targetBlock.x = liveObj->targetBlockPos.x;
+            targetBlock.y = liveObj->targetBlockPos.y;
+
+            B32 destroyedWall;
+            if ((liveObj->flags3 & LIVEOBJ3_UNK_2000000) == LIVEOBJ3_NONE)
+            {
+                destroyedWall = Level_DestroyWall(Lego_GetLevel(), bpX, bpY, FALSE);
+            }
+            else
+            {
+                destroyedWall = Level_DestroyWallConnection(Lego_GetLevel(), targetBlock.x, targetBlock.y);
+            }
+
+            if (!destroyedWall)
+                goto notDrilling;
+
+            AITask_LiveObject_SetAITaskUnk(liveObj, AITask_Type_Dig, NULL, TRUE);
+            liveObj->flags1 &= ~LIVEOBJ1_DRILLING;
+
+            Point2I targetBlockI;
+            targetBlockI.x = (S32)targetBlock.x;
+            targetBlockI.y = (S32)targetBlock.y;
+            Level_Block_SetBusy(&targetBlockI, FALSE);
+
+            if (liveObj->routeBlocks[liveObj->routeBlocksTotal - 1].actionByte == ROUTE_ACTION_UNK_1)
+                liveObj->routeBlocks[liveObj->routeBlocksTotal - 1].actionByte = ROUTE_ACTION_NONE;
+
+            lpContainer actCont = LegoObject_GetActivityContainer(liveObj);
+            SFX_Sound3D_StopSound(liveObj->drillSoundHandle);
+            liveObj->flags4 &= ~LIVEOBJ4_DRILLSOUNDPLAYING;
+            SFX_ID sfxId = StatsObject_GetDrillSoundType(liveObj, TRUE);
+            SFX_Random_PlaySound3DOnContainer(actCont, sfxId, FALSE, TRUE, NULL);
+
+            Unknown_Empty_FUN_00410195_LegoStripped(NULL, NULL, 0);
+
+            liveObj->flags3 &= (LIVEOBJ3_POWEROFF|LIVEOBJ3_UNK_40000000|LIVEOBJ3_HASPOWER|LIVEOBJ3_CANROUTERUBBLE|LIVEOBJ3_MONSTER_UNK_8000000|LIVEOBJ3_CANGATHER|LIVEOBJ3_UNK_2000000|LIVEOBJ3_UNK_1000000|
+                   LIVEOBJ3_REMOVING|LIVEOBJ3_AITASK_UNK_400000|LIVEOBJ3_SELECTED|LIVEOBJ3_ALLOWCULLING_UNK|LIVEOBJ3_UPGRADEPART|LIVEOBJ3_CANDAMAGE|LIVEOBJ3_SIMPLEOBJECT|LIVEOBJ3_UNK_10000|
+                   LIVEOBJ3_CANDYNAMITE|LIVEOBJ3_UNK_2000|LIVEOBJ3_CENTERBLOCKIDLE|LIVEOBJ3_UNUSED_800|LIVEOBJ3_UNK_400|LIVEOBJ3_UNK_200|LIVEOBJ3_CANSELECT|LIVEOBJ3_CANYESSIR|LIVEOBJ3_CANPICKUP|
+                   LIVEOBJ3_CANCARRY|LIVEOBJ3_CANFIRSTPERSON|LIVEOBJ3_CANTURN|LIVEOBJ3_CANREINFORCE|LIVEOBJ3_CANDIG|LIVEOBJ3_UNK_1);
+        }
     }
 
 notDrilling:

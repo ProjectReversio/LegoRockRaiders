@@ -732,6 +732,10 @@ extern void Lego_HandleRadarInput();
 
 extern B32 Lego_WorldToBlockPos_NoZ(F32 xPos, F32 yPos, S32* outBx, S32* outBy);
 
+extern lpContainer Lego_GetCurrentCamera_Container();
+
+extern Lego_SurfaceType Lego_GetBlockTerrain(S32 bx, S32 by);
+
 // Returns TRUE if liveObj (or its drivenObj) is the first-person unit.
 // BUG: When in topdown view, returns TRUE if the objectFP is not NULL and matches the unit's
 // drivenObj.
