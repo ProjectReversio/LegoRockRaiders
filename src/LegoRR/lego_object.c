@@ -1144,7 +1144,7 @@ F32 LegoObject_GetWorldZCallback_Lake(F32 xPos, F32 yPos, struct Map3D* map)
     F32 zModifier = 0.0f;
     if (Map3D_WorldToBlockPos(map, xPos, yPos, &blockPos.x, &blockPos.y, &zModifier) != 0)
     {
-        if (legoGlobs.currLevel->blocks[(legoGlobs.currLevel->width * blockPos.y + blockPos.x)].terrain == Lego_SurfaceType8_Lake)
+        if (legoGlobs.currLevel->blocks[(legoGlobs.currLevel->width * blockPos.y + blockPos.x)].terrain == Lego_SurfaceType_Lake)
         {
             zModifier *= 8.0f;
         }
@@ -2661,9 +2661,9 @@ B32 LiveObject_BlockCheck_FUN_004326a0(lpLegoObject liveObj, U32 bx, U32 by, B32
         {
             if ((curBlock->flags1 & BLOCK1_WALL) != BLOCK1_NONE &&
                 (curBlock->flags1 & BLOCK1_INCORNER) == BLOCK1_NONE &&
-                curBlock->terrain != Lego_SurfaceType8_Immovable &&
-                curBlock->terrain != Lego_SurfaceType8_Water &&
-                curBlock->terrain != Lego_SurfaceType8_RechargeSeam)
+                curBlock->terrain != Lego_SurfaceType_Immovable &&
+                curBlock->terrain != Lego_SurfaceType_Water &&
+                curBlock->terrain != Lego_SurfaceType_RechargeSeam)
             {
                 // this is a very ordinary wall
                 return TRUE;

@@ -100,27 +100,28 @@ typedef enum Lego_PredugType // : U8
     Lego_PredugType_SlugHole_Hidden  = 4,
 } Lego_PredugType;
 
-typedef enum Lego_SurfaceType8 // : U8
+typedef enum Lego_SurfaceType // : U8
 {
-    Lego_SurfaceType8_Tunnel        = 0,
-    Lego_SurfaceType8_Immovable     = 1,
-    Lego_SurfaceType8_Hard          = 2,
-    Lego_SurfaceType8_Medium        = 3,
-    Lego_SurfaceType8_Loose         = 4,
-    Lego_SurfaceType8_Soil          = 5,
-    Lego_SurfaceType8_Lava          = 6,
-    Lego_SurfaceType8_Water         = 7,
-    Lego_SurfaceType8_OreSeam       = 8,
-    Lego_SurfaceType8_Lake          = 9,
-    Lego_SurfaceType8_CrystalSeam   = 10,
-    Lego_SurfaceType8_RechargeSeam  = 11,
-    Lego_SurfaceType8_Rubble        = 12,
-    Lego_SurfaceType8_Reinforcement = 13,
-    Lego_SurfaceType8_Path          = 14,
-    Lego_SurfaceType8_SlugHole      = 15,
-    Lego_SurfaceType8_Undiscovered  = 16,
-    Lego_SurfaceType8_Cavern        = 17,
-} Lego_SurfaceType8;
+    Lego_SurfaceType_Tunnel,
+    Lego_SurfaceType_Immovable,
+    Lego_SurfaceType_Hard,
+    Lego_SurfaceType_Medium,
+    Lego_SurfaceType_Loose,
+    Lego_SurfaceType_Soil,
+    Lego_SurfaceType_Lava,
+    Lego_SurfaceType_Water,
+    Lego_SurfaceType_OreSeam,
+    Lego_SurfaceType_Lake,
+    Lego_SurfaceType_CrystalSeam,
+    Lego_SurfaceType_RechargeSeam,
+    Lego_SurfaceType_Rubble,
+    Lego_SurfaceType_Reinforcement,
+    Lego_SurfaceType_Path,
+    Lego_SurfaceType_SlugHole,
+    Lego_SurfaceType_Undiscovered,
+    Lego_SurfaceType_Cavern,
+    Lego_SurfaceType_Count,
+} Lego_SurfaceType;
 
 typedef enum Lego_CryOreType
 {
@@ -191,7 +192,7 @@ typedef struct Lego_Block
 {
     Lego_PredugType predug;
     SurfaceTexture texture;
-    Lego_SurfaceType8 terrain;
+    Lego_SurfaceType terrain;
     U8 direction; // clockwise (does not determine corner/wall type)
     U8 blockpointer;
     Lego_CryOreType cryOre;
@@ -362,29 +363,6 @@ typedef enum GameFlags3
     GAME3_UNK_40        = 0x40,
     GAME3_PLACEBUILDING = 0x80,
 } GameFlags3;
-
-typedef enum Lego_SurfaceType
-{
-    Lego_SurfaceType_Tunnel,
-    Lego_SurfaceType_Immovable,
-    Lego_SurfaceType_Hard,
-    Lego_SurfaceType_Medium,
-    Lego_SurfaceType_Loose,
-    Lego_SurfaceType_Soil,
-    Lego_SurfaceType_Lava,
-    Lego_SurfaceType_Water,
-    Lego_SurfaceType_OreSeam,
-    Lego_SurfaceType_Lake,
-    Lego_SurfaceType_CrystalSeam,
-    Lego_SurfaceType_RechargeSeam,
-    Lego_SurfaceType_Rubble,
-    Lego_SurfaceType_Reinforcement,
-    Lego_SurfaceType_Path,
-    Lego_SurfaceType_SlugHole,
-    Lego_SurfaceType_Undiscovered,
-    Lego_SurfaceType_Cavern,
-    Lego_SurfaceType_Count,
-} Lego_SurfaceType;
 
 typedef enum ViewMode
 {

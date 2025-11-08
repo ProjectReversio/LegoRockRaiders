@@ -1391,7 +1391,7 @@ nextLbl:
                                     isFloor = FALSE;
                                 }
 
-                                if (isFloor && (legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * legoGlobs.mouseBlockPos.y + legoGlobs.mouseBlockPos.x].terrain == Lego_SurfaceType8_Immovable || legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * legoGlobs.mouseBlockPos.y + legoGlobs.mouseBlockPos.x].terrain == Lego_SurfaceType8_RechargeSeam))
+                                if (isFloor && (legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * legoGlobs.mouseBlockPos.y + legoGlobs.mouseBlockPos.x].terrain == Lego_SurfaceType_Immovable || legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * legoGlobs.mouseBlockPos.y + legoGlobs.mouseBlockPos.x].terrain == Lego_SurfaceType_RechargeSeam))
                                 {
                                     if ((theBlock->flags1 & BLOCK1_FLOOR) == BLOCK1_NONE)
                                     {
@@ -1456,8 +1456,8 @@ nextLbl:
                                         }
 
                                         B32 someBool3 = FALSE;
-                                        Lego_SurfaceType8 surfType;
-                                        if (!someBool2 && (surfType = theBlock->terrain, surfType != Lego_SurfaceType8_Lava && surfType != Lego_SurfaceType8_Lake) && (theBlock->flags2 & BLOCK2_SLUGHOLE_EXPOSED) == BLOCK2_NONE)
+                                        Lego_SurfaceType surfType;
+                                        if (!someBool2 && (surfType = theBlock->terrain, surfType != Lego_SurfaceType_Lava && surfType != Lego_SurfaceType_Lake) && (theBlock->flags2 & BLOCK2_SLUGHOLE_EXPOSED) == BLOCK2_NONE)
                                         {
                                             Interface_MenuType menuType;
                                             if ((theBlock->flags1 & BLOCK1_FLOOR) != BLOCK1_NONE)
@@ -1565,7 +1565,7 @@ whatlabel:
                                                 goto wowlabel;
                                             }
 
-                                            if (surfType == Lego_SurfaceType8_Immovable || (theBlock->flags1 & BLOCK1_INCORNER) != BLOCK1_NONE ||
+                                            if (surfType == Lego_SurfaceType_Immovable || (theBlock->flags1 & BLOCK1_INCORNER) != BLOCK1_NONE ||
                                                 (someBool3 = TRUE, leftReleased == 0 || Level_BlockPointerCheck(&legoGlobs.mouseBlockPos)))
                                             {
                                                 goto thinglabel;
@@ -2273,7 +2273,7 @@ B32 Lego_LoadMapSet(lpLego_Level level, const char* surfaceMap, const char* pred
                         {
                             level->blocks[y * level->width + x].predug = Lego_PredugType_Wall;
                             level->blocks[y * level->width + x].texture = TEXTURE_FLOOR_STD;
-                            level->blocks[y * level->width + x].terrain = Lego_SurfaceType8_Tunnel;
+                            level->blocks[y * level->width + x].terrain = Lego_SurfaceType_Tunnel;
                             level->blocks[y * level->width + x].flags1 = BLOCK1_NONE;
                             level->blocks[y * level->width + x].direction = 0;
                             level->blocks[y * level->width + x].activity = NULL;
@@ -2593,19 +2593,19 @@ B32 Lego_LoadPreDugMap(lpLego_Level level, const char* filename, S32 modifier)
                     do
                     {
                         U32 block = MapShared_GetBlock(handle, bx, by);
-                        Lego_SurfaceType8 terrain = block - modifier;
-                        if (terrain == Lego_SurfaceType8_Immovable || terrain == Lego_SurfaceType8_Medium)
+                        Lego_SurfaceType terrain = block - modifier;
+                        if (terrain == Lego_SurfaceType_Immovable || terrain == Lego_SurfaceType_Medium)
                         {
                             Level_DestroyWall(level, bx, by, TRUE);
 
                             // TODO: Implement Lego_LoadPreDugMap
                         }
-                        else if (terrain == Lego_SurfaceType8_Hard || terrain == Lego_SurfaceType8_Loose)
+                        else if (terrain == Lego_SurfaceType_Hard || terrain == Lego_SurfaceType_Loose)
                         {
                             level->blocks[(S32)(bx + by * level->width)].flags1 |= BLOCK1_HIDDEN;
                         }
 
-                        if (terrain == Lego_SurfaceType8_Medium)
+                        if (terrain == Lego_SurfaceType_Medium)
                         {
                             level->blocks[(S32)(bx + by * level->width)].flags2 |= BLOCK2_SLUGHOLE_EXPOSED;
 
@@ -2615,7 +2615,7 @@ B32 Lego_LoadPreDugMap(lpLego_Level level, const char* filename, S32 modifier)
                             LegoObject_RegisterSlimySlugHole(&blockPos);
                         }
 
-                        if (terrain == Lego_SurfaceType8_Loose)
+                        if (terrain == Lego_SurfaceType_Loose)
                         {
                             level->blocks[(S32)(bx + by * level->width)].flags2 |= BLOCK2_SLUGHOLE_HIDDEN;
                         }
@@ -2654,19 +2654,19 @@ B32 Lego_LoadTerrainMap(lpLego_Level level, const char* filename, S32 modifier)
         for (U32 x = 0; x < width; x++)
         {
             U32 block = MapShared_GetBlock(memHandle, x, y);
-            Lego_SurfaceType8 terrain = block - modifier;
+            Lego_SurfaceType terrain = block - modifier;
 
             // Soil SurfaceType was removed, change to Dirt
-            if (terrain == Lego_SurfaceType8_Soil)
-                terrain = Lego_SurfaceType8_Loose;
+            if (terrain == Lego_SurfaceType_Soil)
+                terrain = Lego_SurfaceType_Loose;
 
             level->blocks[x + y * level->width].terrain = terrain;
 
-            if (terrain == Lego_SurfaceType8_Lava)
+            if (terrain == Lego_SurfaceType_Lava)
             {
                 level->blocks[x + y * level->width].erodeLevel = 4;
             }
-            else if (terrain == Lego_SurfaceType8_RechargeSeam)
+            else if (terrain == Lego_SurfaceType_RechargeSeam)
             {
                 // TODO: Implement Lego_LoadTerrainMap
             }

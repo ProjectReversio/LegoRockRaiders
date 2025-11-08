@@ -27,7 +27,7 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isPredug)
     if ((block->flags1 & BLOCK1_FLOOR) != 0)
         return 0;
 
-    if (block->terrain == Lego_SurfaceType8_OreSeam || block->terrain == Lego_SurfaceType8_CrystalSeam)
+    if (block->terrain == Lego_SurfaceType_OreSeam || block->terrain == Lego_SurfaceType_CrystalSeam)
     {
         // TODO: Implement Level_DestroyWall
     }
@@ -320,7 +320,7 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
 
         // TODO: Implement Level_BlockUpdateSurface
 
-        if (blocks[blockIndex].terrain == Lego_SurfaceType8_Lava || (ogFlags = blocks[blockIndex].flags1, (ogFlags & BLOCK1_ERODEACTIVE) != BLOCK1_NONE))
+        if (blocks[blockIndex].terrain == Lego_SurfaceType_Lava || (ogFlags = blocks[blockIndex].flags1, (ogFlags & BLOCK1_ERODEACTIVE) != BLOCK1_NONE))
         {
             Erode_Block_FUN_0040ed80(&blockPos, TRUE);
 
@@ -370,7 +370,7 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
                 }
             }
         }
-        else if (blocks[blockIndex].terrain == Lego_SurfaceType8_Lake)
+        else if (blocks[blockIndex].terrain == Lego_SurfaceType_Lake)
         {
             blocks[blockIndex].texture = TEXTURE_FLOOR_WATER;
             Map3D_SetBlockUVWobbles(level->map, bx, by, TRUE);
@@ -448,20 +448,20 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
             {
                 switch (blocks[blockIndex].terrain)
                 {
-                    case Lego_SurfaceType8_Immovable:
-                    case Lego_SurfaceType8_Water:
+                    case Lego_SurfaceType_Immovable:
+                    case Lego_SurfaceType_Water:
                         blocks[blockIndex].texture = TEXTURE_INCORNER_IMM;
                     break;
-                    case Lego_SurfaceType8_Hard:
+                    case Lego_SurfaceType_Hard:
                         blocks[blockIndex].texture = TEXTURE_INCORNER_HARD;
                     break;
-                    case Lego_SurfaceType8_Medium:
+                    case Lego_SurfaceType_Medium:
                         blocks[blockIndex].texture = TEXTURE_INCORNER_MED;
                     break;
-                    case Lego_SurfaceType8_Loose:
+                    case Lego_SurfaceType_Loose:
                         blocks[blockIndex].texture = TEXTURE_INCORNER_LOOSE;
                     break;
-                    case Lego_SurfaceType8_Soil:
+                    case Lego_SurfaceType_Soil:
                         blocks[blockIndex].texture = TEXTURE_INCORNER_SOIL;
                     break;
                 }
@@ -476,20 +476,20 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
             {
                 switch (blocks[blockIndex].terrain)
                 {
-                    case Lego_SurfaceType8_Immovable:
-                    case Lego_SurfaceType8_Water:
+                    case Lego_SurfaceType_Immovable:
+                    case Lego_SurfaceType_Water:
                         blocks[blockIndex].texture = TEXTURE_OUTCORNER_IMM;
                     break;
-                    case Lego_SurfaceType8_Hard:
+                    case Lego_SurfaceType_Hard:
                         blocks[blockIndex].texture = TEXTURE_OUTCORNER_HARD;
                     break;
-                    case Lego_SurfaceType8_Medium:
+                    case Lego_SurfaceType_Medium:
                         blocks[blockIndex].texture = TEXTURE_OUTCORNER_MED;
                     break;
-                    case Lego_SurfaceType8_Loose:
+                    case Lego_SurfaceType_Loose:
                         blocks[blockIndex].texture = TEXTURE_OUTCORNER_LOOSE;
                     break;
-                    case Lego_SurfaceType8_Soil:
+                    case Lego_SurfaceType_Soil:
                         blocks[blockIndex].texture = TEXTURE_OUTCORNER_SOIL;
                     break;
                 }
@@ -519,11 +519,11 @@ void Level_BlockUpdateSurface(lpLego_Level level, S32 bx, S32 by, B32 reserved)
             {
                 switch (blocks[blockIndex].terrain)
                 {
-                    case Lego_SurfaceType8_Immovable:
-                    case Lego_SurfaceType8_Hard:
-                    case Lego_SurfaceType8_Medium:
-                    case Lego_SurfaceType8_Loose:
-                    case Lego_SurfaceType8_Soil:
+                    case Lego_SurfaceType_Immovable:
+                    case Lego_SurfaceType_Hard:
+                    case Lego_SurfaceType_Medium:
+                    case Lego_SurfaceType_Loose:
+                    case Lego_SurfaceType_Soil:
                         break;
                     default:
                         blocks[blockIndex].direction = DIRECTION_UP;
@@ -571,11 +571,11 @@ somelabel:
     {
         switch (blocks[blockIndex].terrain)
         {
-            case Lego_SurfaceType8_Immovable:
-            case Lego_SurfaceType8_Hard:
-            case Lego_SurfaceType8_Medium:
-            case Lego_SurfaceType8_Loose:
-            case Lego_SurfaceType8_Soil:
+            case Lego_SurfaceType_Immovable:
+            case Lego_SurfaceType_Hard:
+            case Lego_SurfaceType_Medium:
+            case Lego_SurfaceType_Loose:
+            case Lego_SurfaceType_Soil:
                 blocks[blockIndex].texture = TEXTURE_DIAGONAL_STD;
         }
 
@@ -592,24 +592,24 @@ somelabel:
     {
         switch (blocks[blockIndex].terrain)
         {
-            case Lego_SurfaceType8_Immovable:
-            case Lego_SurfaceType8_Water:
+            case Lego_SurfaceType_Immovable:
+            case Lego_SurfaceType_Water:
                 blocks[blockIndex].texture = TEXTURE_REINWALL_IMM;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Hard:
+            case Lego_SurfaceType_Hard:
                 blocks[blockIndex].texture = TEXTURE_REINWALL_HARD;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Medium:
+            case Lego_SurfaceType_Medium:
                 blocks[blockIndex].texture = TEXTURE_REINWALL_MED;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Loose:
+            case Lego_SurfaceType_Loose:
                 blocks[blockIndex].texture = TEXTURE_REINWALL_LOOSE;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Soil:
+            case Lego_SurfaceType_Soil:
                 blocks[blockIndex].texture = TEXTURE_REINWALL_SOIL;
                 blocks[blockIndex].direction = dir;
             break;
@@ -626,36 +626,36 @@ somelabel:
     {
         switch (blocks[blockIndex].terrain)
         {
-            case Lego_SurfaceType8_Immovable:
-            case Lego_SurfaceType8_Water:
+            case Lego_SurfaceType_Immovable:
+            case Lego_SurfaceType_Water:
                 blocks[blockIndex].texture = TEXTURE_WALL_IMM;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Hard:
+            case Lego_SurfaceType_Hard:
                 blocks[blockIndex].texture = TEXTURE_WALL_HARD;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Medium:
+            case Lego_SurfaceType_Medium:
                 blocks[blockIndex].texture = TEXTURE_WALL_MED;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Loose:
+            case Lego_SurfaceType_Loose:
                 blocks[blockIndex].texture = TEXTURE_WALL_LOOSE;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Soil:
+            case Lego_SurfaceType_Soil:
                 blocks[blockIndex].texture = TEXTURE_WALL_SOIL;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_OreSeam:
+            case Lego_SurfaceType_OreSeam:
                 blocks[blockIndex].texture = TEXTURE_WALL_ORESEAM;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_CrystalSeam:
+            case Lego_SurfaceType_CrystalSeam:
                 blocks[blockIndex].texture = TEXTURE_WALL_CRYSTALSEAM;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_RechargeSeam:
+            case Lego_SurfaceType_RechargeSeam:
                 blocks[blockIndex].texture = TEXTURE_WALL_RECHARGESEAM;
                 blocks[blockIndex].direction = dir;
             break;
@@ -668,36 +668,36 @@ somelabel:
     {
         switch (blocks[blockIndex].terrain)
         {
-            case Lego_SurfaceType8_Immovable:
-            case Lego_SurfaceType8_Water:
+            case Lego_SurfaceType_Immovable:
+            case Lego_SurfaceType_Water:
                 blocks[blockIndex].texture = TEXTURE_WALL_IMM;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Hard:
+            case Lego_SurfaceType_Hard:
                 blocks[blockIndex].texture = TEXTURE_WALL_HARD;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Medium:
+            case Lego_SurfaceType_Medium:
                 blocks[blockIndex].texture = TEXTURE_WALL_MED;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Loose:
+            case Lego_SurfaceType_Loose:
                 blocks[blockIndex].texture = TEXTURE_WALL_LOOSE;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_Soil:
+            case Lego_SurfaceType_Soil:
                 blocks[blockIndex].texture = TEXTURE_WALL_SOIL;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_OreSeam:
+            case Lego_SurfaceType_OreSeam:
                 blocks[blockIndex].texture = TEXTURE_WALL_ORESEAM;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_CrystalSeam:
+            case Lego_SurfaceType_CrystalSeam:
                 blocks[blockIndex].texture = TEXTURE_WALL_CRYSTALSEAM;
                 blocks[blockIndex].direction = dir;
             break;
-            case Lego_SurfaceType8_RechargeSeam:
+            case Lego_SurfaceType_RechargeSeam:
                 blocks[blockIndex].texture = TEXTURE_WALL_RECHARGESEAM;
                 blocks[blockIndex].direction = dir;
             break;
@@ -710,8 +710,8 @@ somelabel:
 somelabel2:
     ogFlags = blocks[blockIndex].flags1;
     if ((ogFlags & BLOCK1_SURVEYED) != 0 && (ogFlags & BLOCK1_DIGREQUEST) != 0 &&
-        blocks[blockIndex].terrain == Lego_SurfaceType8_Immovable ||
-        blocks[blockIndex].terrain == Lego_SurfaceType8_Water || (ogFlags & BLOCK1_FLOOR) != 0)
+        blocks[blockIndex].terrain == Lego_SurfaceType_Immovable ||
+        blocks[blockIndex].terrain == Lego_SurfaceType_Water || (ogFlags & BLOCK1_FLOOR) != 0)
     {
         blocks[blockIndex].flags1 = ogFlags & ~BLOCK1_DIGREQUEST;
         Map3D_ClearBlockHighlight(map, bx, by);
@@ -743,51 +743,51 @@ B32 Level_AddCryOreToToolStore(lpLegoObject liveObj, SearchAddCryOre_c* search)
     return FALSE;
 }
 
-void Level_SetPointer_FromSurfaceType(Lego_SurfaceType8 surfaceType)
+void Level_SetPointer_FromSurfaceType(Lego_SurfaceType surfaceType)
 {
-    if (surfaceType == Lego_SurfaceType8_Immovable)
+    if (surfaceType == Lego_SurfaceType_Immovable)
     {
         Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_Immovable);
         return;
     }
 
-    if (surfaceType == Lego_SurfaceType8_Hard)
+    if (surfaceType == Lego_SurfaceType_Hard)
     {
         Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_Hard);
         return;
     }
 
-    if (surfaceType == Lego_SurfaceType8_Medium)
+    if (surfaceType == Lego_SurfaceType_Medium)
     {
         Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_Medium);
         return;
     }
 
-    if (surfaceType == Lego_SurfaceType8_Loose)
+    if (surfaceType == Lego_SurfaceType_Loose)
     {
         Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_Loose);
         return;
     }
 
-    if (surfaceType == Lego_SurfaceType8_Soil)
+    if (surfaceType == Lego_SurfaceType_Soil)
     {
         Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_Soil);
         return;
     }
 
-    if (surfaceType == Lego_SurfaceType8_OreSeam)
+    if (surfaceType == Lego_SurfaceType_OreSeam)
     {
         Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_OreSeam);
         return;
     }
 
-    if (surfaceType == Lego_SurfaceType8_CrystalSeam)
+    if (surfaceType == Lego_SurfaceType_CrystalSeam)
     {
         Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_CrystalSeam);
         return;
     }
 
-    if (surfaceType == Lego_SurfaceType8_RechargeSeam)
+    if (surfaceType == Lego_SurfaceType_RechargeSeam)
     {
         Pointer_SetCurrent_IfTimerFinished(Pointer_SurfaceType_RechargeSeam);
         return;
@@ -810,12 +810,12 @@ B32 Level_FindSelectedUnit_BlockCheck_FUN_00431960(U32 bx, U32 by, B32 param3)
 
 B32 Level_Block_IsImmovable(Point2I* blockPos)
 {
-    return legoGlobs.currLevel->blocks[blockPos->y * legoGlobs.currLevel->width + blockPos->x].terrain == Lego_SurfaceType8_Immovable;
+    return legoGlobs.currLevel->blocks[blockPos->y * legoGlobs.currLevel->width + blockPos->x].terrain == Lego_SurfaceType_Immovable;
 }
 
 B32 Level_Block_IsLava(Point2I* blockPos)
 {
-    return legoGlobs.currLevel->blocks[blockPos->y * legoGlobs.currLevel->width + blockPos->x].terrain == Lego_SurfaceType8_Lava;
+    return legoGlobs.currLevel->blocks[blockPos->y * legoGlobs.currLevel->width + blockPos->x].terrain == Lego_SurfaceType_Lava;
 }
 
 B32 Level_Block_IsPath(Point2I* blockPos)
@@ -946,7 +946,7 @@ CrossTerrainType Lego_GetCrossTerrainType(lpLegoObject liveObj, S32 bx1, S32 by1
         }
     }
 
-    if (block.terrain == Lego_SurfaceType8_Lake)
+    if (block.terrain == Lego_SurfaceType_Lake)
     {
         if (!checkWater)
         {
@@ -958,7 +958,7 @@ CrossTerrainType Lego_GetCrossTerrainType(lpLegoObject liveObj, S32 bx1, S32 by1
         return CrossTerrainType_CantCross;
     }
 
-    if ((block.terrain == Lego_SurfaceType8_Lava && !checkLava) &&
+    if ((block.terrain == Lego_SurfaceType_Lava && !checkLava) &&
         (block.flags1 & BLOCK1_NOTHOT) == BLOCK1_NONE)
     {
         return CrossTerrainType_CantCross;
@@ -1003,12 +1003,12 @@ CrossTerrainType Lego_GetCrossTerrainType(lpLegoObject liveObj, S32 bx1, S32 by1
         B32 isWall = legoGlobs.currLevel->blocks[index].flags1 & BLOCK1_WALL;
         if (isWall)
         {
-            if (legoGlobs.currLevel->blocks[index - 1].terrain == Lego_SurfaceType8_Lava)
+            if (legoGlobs.currLevel->blocks[index - 1].terrain == Lego_SurfaceType_Lava)
             {
                 return CrossTerrainType_CantCross;
             }
 
-            if (legoGlobs.currLevel->blocks[(by1 - 1) * legoGlobs.currLevel->width + bx1].terrain == Lego_SurfaceType8_Lava)
+            if (legoGlobs.currLevel->blocks[(by1 - 1) * legoGlobs.currLevel->width + bx1].terrain == Lego_SurfaceType_Lava)
             {
                 return CrossTerrainType_CantCross;
             }
@@ -1016,12 +1016,12 @@ CrossTerrainType Lego_GetCrossTerrainType(lpLegoObject liveObj, S32 bx1, S32 by1
 
         if (isWall)
         {
-            if (legoGlobs.currLevel->blocks[index - 1].terrain == Lego_SurfaceType8_Water)
+            if (legoGlobs.currLevel->blocks[index - 1].terrain == Lego_SurfaceType_Water)
             {
                 return CrossTerrainType_CantCross;
             }
 
-            if (legoGlobs.currLevel->blocks[(by1 - 1) * legoGlobs.currLevel->width + bx1].terrain == Lego_SurfaceType8_Water)
+            if (legoGlobs.currLevel->blocks[(by1 - 1) * legoGlobs.currLevel->width + bx1].terrain == Lego_SurfaceType_Water)
             {
                 return CrossTerrainType_CantCross;
             }
