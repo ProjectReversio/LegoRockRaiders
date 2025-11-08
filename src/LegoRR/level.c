@@ -7,7 +7,7 @@
 #include "pointer.h"
 #include "smoke.h"
 
-B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
+B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isPredug)
 {
     Point2I ANGLES[8];
 
@@ -74,7 +74,17 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
         ANGLES[7].x = 1;
         ANGLES[7].y = 1;
 
-        // TODO: Implement Level_DestroyWall
+        for (U32 i = 0; i < 8; i++)
+        {
+            S32 ax = ANGLES[i].x + bx;
+            S32 ay = ANGLES[i].y + by;
+            Lego_Block* neighborBlock = &level->blocks[ay * level->width + ax];
+            if ((neighborBlock->flags1 & BLOCK1_FLOOR) == BLOCK1_NONE)
+            {
+                neighborBlock->flags1 |= BLOCK1_WALL;
+                neighborBlock->flags1 &= ~BLOCK1_DESTROYEDCONNECTION;
+            }
+        }
 
         level->blocks[by * level->width + bx].flags1 |= BLOCK1_FLOOR;
 
@@ -91,13 +101,37 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
             RewardQuota_WallDestroyed();
         }
 
-        if (isHiddenCavern)
+        if (isPredug)
         {
             level->blocks[by * level->width + bx].flags1 |= BLOCK1_CLEARED;
         }
         else
         {
+            for (U32 ly = by - 1; ly <= by + 1; ly++)
+            {
+                for (U32 lx = bx - 1; lx <= bx + 1; lx++)
+                {
+                    if ((level->blocks[ly * level->width + lx].flags1 & BLOCK1_HIDDEN) != BLOCK1_NONE)
+                    {
+                        Level_UncoverHiddenCavern(lx, ly);
+
+                        // TODO: Implement Level_DestroyWall
+                    }
+                }
+            }
+
             // TODO: Implement Level_DestroyWall
+
+            Point2I clearPos;
+            clearPos.x = bx;
+            clearPos.y = by;
+
+            for (U32 i = 0; i < 4; i++)
+            {
+                AITask_DoClear_AtPosition(&clearPos, Message_ClearComplete);
+            }
+
+            legoGlobs.currLevel->blocks[legoGlobs.currLevel->width * by + bx].flags1 |= BLOCK1_RUBBLE_FULL;
         }
 
         Point2I digRefPos;
@@ -105,19 +139,25 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
         digRefPos.y = by;
         AITask_RemoveDigReferences(&digRefPos, FALSE);
 
-        for (U32 lx = by - 1; lx < by + 2; lx++)
+        for (U32 ly = by - 1; ly < by + 2; ly++)
         {
-            for (U32 ly = bx - 1; ly < bx + 2; ly++)
+            for (U32 lx = bx - 1; lx < bx + 2; lx++)
             {
-                Level_BlockUpdateSurface(level, ly, lx, isHiddenCavern);
+                Level_BlockUpdateSurface(level, lx, ly, isPredug);
             }
         }
 
         level->blocks[by * level->width + bx].flags1 &= ~BLOCK1_DIGREQUEST;
 
-        // TODO: Implement Level_DestroyWall
+        for (U32 ly = by - 1; ly <= by + 2; ly++)
+        {
+            for (U32 lx = bx - 1; lx <= bx + 2; lx++)
+            {
+                Map3D_SetBlockVertexModified(level->map, lx, ly);
+            }
+        }
 
-        if (!isHiddenCavern && (legoGlobs.flags2 & GAME2_GENERATESPIDERS) != GAME2_NONE)
+        if (!isPredug && (legoGlobs.flags2 & GAME2_GENERATESPIDERS) != GAME2_NONE)
         {
             // TODO: Implement Level_DestroyWall
         }
@@ -129,7 +169,7 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
             // TODO: Implement Level_DestroyWall
         }
 
-        if (!isHiddenCavern)
+        if (!isPredug)
         {
             // TODO: Implement Level_DestroyWall
             return TRUE;
@@ -143,6 +183,11 @@ B32 Level_DestroyWallConnection(lpLego_Level level, U32 bx, U32 by)
 {
     // TODO: Implement Level_DestroyWallConnection
     return FALSE;
+}
+
+void Level_UncoverHiddenCavern(U32 bx, U32 by)
+{
+    // TODO: Implement Level_UncoverHiddenCavern
 }
 
 // Increases damage on the block, used in mining
