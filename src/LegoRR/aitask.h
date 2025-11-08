@@ -176,6 +176,8 @@ extern lpAITask AITask_GetObjectTaskListTail(struct LegoObject* liveObj);
 
 extern void AITask_RemoveGetToolReferences(lpAITask aiTask);
 
+extern void AITask_RemoveDigReferences(Point2I* blockPos, B32 digConnection);
+
 extern void AITask_Game_SetNoGather(B32 noGather);
 
 extern void AITask_DoCollect(struct LegoObject* liveObj, F32 param2);
@@ -204,6 +206,8 @@ extern B32 AITask_Callback_UpdateObject(struct LegoObject* liveObj, void* contex
 
 // Called during AITask_UpdateAll, to update two count-down timers for all tasks.
 extern B32 AITask_Callback_UpdateTask(lpAITask aiTask, void* context);
+
+extern B32 AITask_Callback_RemoveWallReference(lpAITask aiTask, void* context);
 
 typedef B32 (*AITask_RunThroughListsCallback)(lpAITask aiTask, void* data);
 extern B32 AITask_RunThroughLists(AITask_RunThroughListsCallback callback, void* data);

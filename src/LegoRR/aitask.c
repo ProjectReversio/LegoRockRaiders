@@ -204,6 +204,16 @@ void AITask_RemoveGetToolReferences(lpAITask aiTask)
     // TODO: Implement AITask_RemoveGetToolReferences
 }
 
+void AITask_RemoveDigReferences(Point2I* blockPos, B32 digConnection)
+{
+    SearchAITaskDeselect_8 search;
+    search.blockPos = blockPos;
+    search.digConnection = digConnection;
+    AITask_RunThroughLists(AITask_Callback_RemoveWallReference, &search);
+
+    Map3D_ClearBlockHighlight(Lego_GetLevel()->map, blockPos->x, blockPos->y);
+}
+
 void AITask_Game_SetNoGather(B32 noGather)
 {
     // TODO: Implement AITask_Game_SetNoGather
@@ -680,6 +690,41 @@ B32 AITask_Callback_UpdateTask(lpAITask aiTask, void* context)
         aiTask->time -= elapsedGame;
 
     aiTask->timeIn -= elapsedGame;
+
+    return FALSE;
+}
+
+B32 AITask_Callback_RemoveWallReference(lpAITask aiTask, void* context)
+{
+    SearchAITaskDeselect_8* search = (SearchAITaskDeselect_8*)context;
+
+    B32 finishedTask;
+
+    switch (aiTask->taskType)
+    {
+        case AITask_Type_Dig:
+        {
+            // `search->digConnection XNOR (flags & 0x8)` If both or true, or both are false...
+            B32 hasDigConnection = (aiTask->flags & AITASK_FLAG_DIGCONNECTION) != AITASK_FLAG_NONE;
+            finishedTask = search->digConnection == hasDigConnection;
+            break;
+        }
+        case AITask_Type_Dynamite:
+        case AITask_Type_Reinforce:
+            finishedTask = TRUE;
+            break;
+        default:
+            finishedTask = FALSE;
+            break;
+    }
+
+    if (finishedTask &&
+        search->blockPos->x == aiTask->blockPos.x &&
+        search->blockPos->y == aiTask->blockPos.y)
+    {
+        aiTask->flags |= AITASK_FLAG_REMOVING;
+        Level_Block_SetBusy(search->blockPos, FALSE);
+    }
 
     return FALSE;
 }

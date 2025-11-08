@@ -17,3 +17,8 @@ lpRewardLevel Reward_GetRewardLevel()
     // TODO: Implement Reward_GetRewardLevel
     return NULL;
 }
+
+void RewardQuota_WallDestroyed()
+{
+    // TODO: Implement RewardQuota_WallDestroyed
+}

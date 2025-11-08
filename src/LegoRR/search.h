@@ -45,3 +45,9 @@ typedef struct SearchInterfaceUnknown
     LegoObject_Type objType;
     LegoObject_ID objID;
 } SearchInterfaceUnknown, *lpSearchInterfaceUnknown;
+
+typedef struct SearchAITaskDeselect_8
+{
+    Point2I* blockPos;
+    B32 digConnection; // If the task is AITask_Type_Dig, then this must match flag 0x8 (DIGCONNECTION).
+} SearchAITaskDeselect_8, *lpSearchAITaskDeselect_8;

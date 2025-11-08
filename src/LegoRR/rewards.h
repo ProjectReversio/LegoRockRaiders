@@ -18,3 +18,5 @@ extern B32 Reward_LoadGraphics(lpConfig config, const char* gameName);
 extern B32 Reward_Initialize();
 
 extern lpRewardLevel Reward_GetRewardLevel();
+
+extern void RewardQuota_WallDestroyed();

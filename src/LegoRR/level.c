@@ -88,7 +88,7 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
 
         if (((flags1 & BLOCK1_EXPOSED) == BLOCK1_NONE || (flags1 & BLOCK1_HIDDEN) != BLOCK1_NONE) && (flags1 & BLOCK1_DIGREQUEST) != BLOCK1_NONE)
         {
-            // TODO: Implement Level_DestroyWall
+            RewardQuota_WallDestroyed();
         }
 
         if (isHiddenCavern)
@@ -100,7 +100,40 @@ B32 Level_DestroyWall(lpLego_Level level, U32 bx, U32 by, B32 isHiddenCavern)
             // TODO: Implement Level_DestroyWall
         }
 
+        Point2I digRefPos;
+        digRefPos.x = bx;
+        digRefPos.y = by;
+        AITask_RemoveDigReferences(&digRefPos, FALSE);
+
+        for (U32 lx = by - 1; lx < by + 2; lx++)
+        {
+            for (U32 ly = bx - 1; ly < bx + 2; ly++)
+            {
+                Level_BlockUpdateSurface(level, ly, lx, isHiddenCavern);
+            }
+        }
+
+        level->blocks[by * level->width + bx].flags1 &= ~BLOCK1_DIGREQUEST;
+
         // TODO: Implement Level_DestroyWall
+
+        if (!isHiddenCavern && (legoGlobs.flags2 & GAME2_GENERATESPIDERS) != GAME2_NONE)
+        {
+            // TODO: Implement Level_DestroyWall
+        }
+
+        // TODO: Implement Level_DestroyWall
+
+        if ((level->blocks[by * level->width + bx].flags2 & BLOCK2_SLUGHOLE_HIDDEN) != BLOCK2_NONE)
+        {
+            // TODO: Implement Level_DestroyWall
+        }
+
+        if (!isHiddenCavern)
+        {
+            // TODO: Implement Level_DestroyWall
+            return TRUE;
+        }
     }
 
     return TRUE;
