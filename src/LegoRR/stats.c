@@ -67,7 +67,7 @@ StatsFlags3 StatsObject_GetStatsFlags3(lpLegoObject liveObj)
 F32 StatsObject_GetDrillTimeType(lpLegoObject liveObj, Lego_SurfaceType surfaceType)
 {
     // TODO: Implement StatsObject_GetDrillTimeType
-    return 1.0f;
+    return 4.0f * 25.0f;
     //return liveObj->stats->DrillTimes[surfaceType];
 }
 

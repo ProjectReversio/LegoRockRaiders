@@ -645,9 +645,9 @@ notRouting:
 
         if (LiveObject_BlockCheck_FUN_004326a0(liveObj, liveObj->targetBlockPos.x, liveObj->targetBlockPos.y, liveObj->flags3 & LIVEOBJ3_UNK_2000000, TRUE))
         {
-            Point2F targetBlock;
-            targetBlock.x = liveObj->targetBlockPos.x;
-            targetBlock.y = liveObj->targetBlockPos.y;
+            Point2I targetBlock;
+            targetBlock.x = (S32)liveObj->targetBlockPos.x;
+            targetBlock.y = (S32)liveObj->targetBlockPos.y;
 
             B32 destroyedWall;
             if ((liveObj->flags3 & LIVEOBJ3_UNK_2000000) == LIVEOBJ3_NONE)
@@ -665,10 +665,7 @@ notRouting:
             AITask_LiveObject_SetAITaskUnk(liveObj, AITask_Type_Dig, NULL, TRUE);
             liveObj->flags1 &= ~LIVEOBJ1_DRILLING;
 
-            Point2I targetBlockI;
-            targetBlockI.x = (S32)targetBlock.x;
-            targetBlockI.y = (S32)targetBlock.y;
-            Level_Block_SetBusy(&targetBlockI, FALSE);
+            Level_Block_SetBusy(&targetBlock, FALSE);
 
             if (liveObj->routeBlocks[liveObj->routeBlocksTotal - 1].actionByte == ROUTE_ACTION_UNK_1)
                 liveObj->routeBlocks[liveObj->routeBlocksTotal - 1].actionByte = ROUTE_ACTION_NONE;

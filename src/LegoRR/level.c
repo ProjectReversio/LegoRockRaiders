@@ -191,15 +191,15 @@ void Level_UncoverHiddenCavern(U32 bx, U32 by)
 }
 
 // Increases damage on the block, used in mining
-B32 Level_Block_Damage(U32 bx, U32 by, F32 param3, F32 param4)
+B32 Level_Block_Damage(U32 bx, U32 by, F32 amount, F32 elapsed)
 {
     lpLego_Level level = legoGlobs.currLevel;
 
     // Divide-by-zero guard
-    if (param3 != 0.0f)
+    if (amount != 0.0f)
     {
         S32 idx = by * level->width + bx;
-        level->blocks[idx].damage += param4 / param3;
+        level->blocks[idx].damage += elapsed / amount;
         if (level->blocks[idx].damage > 1.0f)
             return TRUE;
     }
