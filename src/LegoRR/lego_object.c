@@ -608,8 +608,8 @@ notRouting:
     }
     else
     {
-        F32 bpX = (F32)liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.x;
-        F32 bpY = (F32)liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.y;
+        S32 bpX = liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.x;
+        S32 bpY = liveObj->routeBlocks[liveObj->routeBlocksCurrent].blockPos.y;
 
         if (!LiveObject_BlockCheck_FUN_004326a0(liveObj, liveObj->targetBlockPos.x, liveObj->targetBlockPos.y, liveObj->flags3 & LIVEOBJ3_UNK_2000000, TRUE))
             goto notRouting;
