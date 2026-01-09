@@ -4,6 +4,7 @@
 #include "construction.h"
 #include "erode.h"
 #include "interface.h"
+#include "mem.h"
 #include "pointer.h"
 #include "smoke.h"
 
@@ -187,7 +188,81 @@ B32 Level_DestroyWallConnection(lpLego_Level level, U32 bx, U32 by)
 
 void Level_UncoverHiddenCavern(U32 bx, U32 by)
 {
-    // TODO: Implement Level_UncoverHiddenCavern
+    S32 local10[2];
+    F32* local8[2];
+    lpLego_Level level = legoGlobs.currLevel;
+    S32 size = legoGlobs.currLevel->width + legoGlobs.currLevel->height;
+    local10[0] = 0;
+    local10[1] = 0;
+    B32 someBool = FALSE;
+    local8[0] = Mem_Alloc(size * 32);
+
+    if (local8[0] == NULL)
+        return;
+
+    local8[1] = local8[0] + size * 4;
+
+    local10[0] = 1;
+
+    S32 someIndex = 0;
+
+    local8[0][0] = (F32)bx;
+    local8[0][1] = (F32)by;
+
+    do
+    {
+        U32 j = 0;
+        if (local10[someIndex] != 0)
+        {
+            F32* someArray = local8[someIndex];
+            do
+            {
+                F32 fVar2 = someArray[1];
+                F32 fVar3 = someArray[0];
+                S64 sVar1 = (S64)fVar2;
+                S32 thing = (S32)sVar1 - 1;
+                S32 thing2 = (S32)sVar1 + 1;
+                if (thing <= thing2)
+                {
+                    sVar1 = (S32)(fVar3);
+                    U32 someUVar = sVar1 - 1;
+                    U32 newVar = someUVar;
+
+                    do
+                    {
+                        for (; (S32)newVar <= sVar1 + 1; newVar++)
+                        {
+                            if ((level->blocks[thing * level->width + newVar].flags1 & BLOCK1_HIDDEN) != BLOCK1_NONE)
+                            {
+                                Level_DestroyWall(level, newVar, thing, TRUE);
+                                S32 blockIndex = thing * level->width + newVar;
+                                level->blocks[blockIndex].flags1 &= ~BLOCK1_HIDDEN;
+                                if ((fVar3 != (F32)(S32)newVar) || ((F32)(S32)thing != fVar2))
+                                {
+                                    B32 newBool = !someBool;
+                                    S32 newIndex = newBool ? 1 : 0;
+                                    S32 num = local10[newIndex];
+                                    F32* dest = local8[newIndex];
+                                    dest[num * 2] = (F32)(S32)newVar;
+                                    dest[num * 2 + 1] = (F32)(S32)thing;
+                                    local10[newIndex]++;
+                                }
+                            }
+                        }
+                        thing++;
+                        newVar = someUVar;
+                    } while (thing <= thing2);
+                }
+
+                j++;
+            } while (j < local10[someIndex]);
+        }
+        local10[someIndex] = 0;
+        someBool = !someBool;
+        someIndex = someBool ? 1 : 0;
+    } while (local10[someIndex] != 0);
+
+    Mem_Free(local8[0]);
 }
 
 // Increases damage on the block, used in mining
