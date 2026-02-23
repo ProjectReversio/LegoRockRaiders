@@ -1484,9 +1484,9 @@ void LegoObject_CalculateSpeeds(lpLegoObject liveObj, F32 elapsed, F32* outRoute
 {
     // TODO: Implement LegoObject_CalculateSpeeds
 
-    // TEMP: Set to 1.0f for now
-    *outRouteSpeed = 1.0f;
-    *outTransSpeed = 1.0f;
+    // TEMP: Set to 10.0f for now
+    *outRouteSpeed = 10.0f * elapsed;
+    *outTransSpeed = 10.0f * elapsed;
 }
 
 B32 LegoObject_TryDepart_FUN_004499c0(lpLegoObject liveObj)
